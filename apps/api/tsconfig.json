@@ -1,4 +1,7 @@
 {
   "extends": "@trustpro/typescript-config/nestjs.json",
-  "compilerOptions": {}
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./"
+  }
 }

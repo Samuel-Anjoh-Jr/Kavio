@@ -28,6 +28,9 @@ Thumbs.db
 # test/coverage
 coverage/
 
+# local db backups
+backups/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

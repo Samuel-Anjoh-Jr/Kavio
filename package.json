@@ -9,23 +9,60 @@
     "pnpm": ">=9"
   },
   "scripts": {
-    "dev": "concurrently -n web,api -c \"#3D5AFE,#14B86A\" \"bun run --cwd apps/web dev\" \"bun run --cwd apps/api dev\"",
-    "dev:web": "bun run --cwd apps/web dev",
-    "dev:api": "bun run --cwd apps/api dev",
-    "build": "pnpm run -r --if-present build",
-    "build:web": "bun run --cwd apps/web build",
-    "build:api": "bun run --cwd apps/api build",
-    "lint": "pnpm run -r --if-present lint",
-    "type-check": "pnpm run -r --if-present type-check",
-    "format": "prettier --write ."
+    "prepare": "husky",
+    "env:sync": "node scripts/sync-env.mjs",
+    "dev": "pnpm env:sync && turbo run dev",
+    "dev:web": "pnpm env:sync && turbo run dev --filter=@trustpro/web",
+    "dev:api": "pnpm env:sync && pnpm --filter @trustpro/database build && turbo run dev --filter=@trustpro/api",
+    "build": "turbo run build",
+    "build:web": "turbo run build --filter=@trustpro/web",
+    "build:api": "turbo run build --filter=@trustpro/api",
+    "lint": "turbo run lint",
+    "lint:i18n": "eslint --config eslint.i18n.config.mjs \"apps/web/{app,components}/**/*.{ts,tsx}\"",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "full-check": "pnpm lint && pnpm lint:i18n && pnpm type-check && pnpm test",
+    "db:generate": "pnpm --filter @trustpro/database generate",
+    "db:push": "pnpm --filter @trustpro/database push",
+    "db:studio": "pnpm --filter @trustpro/database studio",
+    "db:migrate": "pnpm --filter @trustpro/database migrate:dev",
+    "db:migrate:deploy": "pnpm --filter @trustpro/database migrate:deploy",
+    "db:migrate:reset": "pnpm --filter @trustpro/database migrate:reset",
+    "db:seed": "pnpm --filter @trustpro/database seed",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d && pnpm db:migrate:deploy && pnpm db:generate",
+    "docker:up": "docker compose up -d",
+    "docker:reset": "docker compose down -v && docker compose up -d",
+    "docker:logs": "docker compose logs -f",
+    "dev:setup": "pnpm --filter @trustpro/database build && pnpm db:up && pnpm db:generate && pnpm db:migrate && pnpm db:seed",
+    "backup:db": "bash scripts/docker-db-backup.sh",
+    "keys": "node scripts/keygen.cjs",
+    "32-bytes": "node scripts/random-bytes.mjs",
+    "clean": "node scripts/clean.mjs",
+    "hooks:disable": "node scripts/toggle-hooks.mjs off",
+    "hooks:enable": "node scripts/toggle-hooks.mjs on"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@trustpro/typescript-config": "workspace:*",
-    "concurrently": "^9.1.0",
     "eslint": "^9.18.0",
+    "eslint-plugin-i18next": "^6.1.5",
     "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.1.0",
     "prettier": "^3.4.2",
-    "typescript": "^5.9.3"
+    "turbo": "^2.10.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.20.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "eslint --fix"
+    ],
+    "*.{ts,tsx,js,jsx,json,md,mjs,cjs}": [
+      "prettier --write"
+    ]
   }
 }

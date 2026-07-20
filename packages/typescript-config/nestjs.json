@@ -11,8 +11,6 @@
     "emitDecoratorMetadata": true,
     "declaration": true,
     "removeComments": true,
-    "incremental": true,
-    "outDir": "./dist",
-    "baseUrl": "./"
+    "incremental": true
   }
 }
