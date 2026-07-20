@@ -1,0 +1,31 @@
+{
+  "name": "trustpro",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=20",
+    "bun": ">=1.1",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "concurrently -n web,api -c \"#3D5AFE,#14B86A\" \"bun run --cwd apps/web dev\" \"bun run --cwd apps/api dev\"",
+    "dev:web": "bun run --cwd apps/web dev",
+    "dev:api": "bun run --cwd apps/api dev",
+    "build": "pnpm run -r --if-present build",
+    "build:web": "bun run --cwd apps/web build",
+    "build:api": "bun run --cwd apps/api build",
+    "lint": "pnpm run -r --if-present lint",
+    "type-check": "pnpm run -r --if-present type-check",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@trustpro/typescript-config": "workspace:*",
+    "concurrently": "^9.1.0",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.9.3"
+  }
+}

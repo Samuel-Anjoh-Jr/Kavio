@@ -1,0 +1,4 @@
+{
+  "extends": "@trustpro/typescript-config/nestjs.json",
+  "compilerOptions": {}
+}
