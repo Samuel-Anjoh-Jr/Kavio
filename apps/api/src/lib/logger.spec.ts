@@ -1,9 +1,9 @@
 import { createLogger, setRequestId, getRequestId } from './logger';
 
 describe('Logger', () => {
-  let consoleLogSpy: jest.SpyInstance;
-  let consoleWarnSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
+  let consoleWarnSpy: jest.SpiedFunction<typeof console.warn>;
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>;
 
   beforeEach(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -26,7 +26,7 @@ describe('Logger', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
       expect(output).toContain('[app]');
       expect(output).toContain('Application started');
       expect(output).toContain('INFO');
@@ -40,7 +40,7 @@ describe('Logger', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
       expect(output).toContain('(150ms)');
     });
   });
@@ -53,7 +53,7 @@ describe('Logger', () => {
       });
 
       expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-      const output = consoleWarnSpy.mock.calls[0][0];
+      const output = consoleWarnSpy.mock.calls[0]![0] as string;
       expect(output).toContain('[auth]');
       expect(output).toContain('Failed login attempt');
       expect(output).toContain('WARN');
@@ -67,7 +67,7 @@ describe('Logger', () => {
       });
 
       expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-      const output = consoleWarnSpy.mock.calls[0][0];
+      const output = consoleWarnSpy.mock.calls[0]![0] as string;
       expect(output).toContain('(850ms)');
       expect(output).toContain('Slow query detected');
     });
@@ -83,7 +83,7 @@ describe('Logger', () => {
       });
 
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-      const output = consoleErrorSpy.mock.calls[0][0];
+      const output = consoleErrorSpy.mock.calls[0]![0] as string;
       expect(output).toContain('[api]');
       expect(output).toContain('Database connection error');
       expect(output).toContain('ERROR');
@@ -98,7 +98,7 @@ describe('Logger', () => {
       });
 
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-      const output = consoleErrorSpy.mock.calls[0][0];
+      const output = consoleErrorSpy.mock.calls[0]![0] as string;
       expect(output).toContain('Invalid card');
       expect(output).toContain('transactionId');
     });
@@ -115,7 +115,7 @@ describe('Logger', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
       expect(output).toContain('[REDACTED]');
       expect(output).not.toContain('super_secret_password');
     });
@@ -130,7 +130,7 @@ describe('Logger', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
       expect(output).toContain('[REDACTED]');
       expect(output).not.toContain('eyJhbGciOiJIUzI1NiIs');
       expect(output).not.toContain('refresh_token_xyz');
@@ -146,7 +146,7 @@ describe('Logger', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
       expect(output).toContain('[REDACTED]');
       expect(output).not.toContain('Bearer token_abc123');
     });
@@ -161,7 +161,7 @@ describe('Logger', () => {
       });
 
       expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-      const output = consoleWarnSpy.mock.calls[0][0];
+      const output = consoleWarnSpy.mock.calls[0]![0] as string;
       expect(output).toContain('[REDACTED]');
       expect(output).not.toContain('sk_live_abc123xyz');
     });
@@ -177,7 +177,7 @@ describe('Logger', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
       expect(output).toContain('...');
       expect(output).not.toContain(longString);
     });
@@ -191,7 +191,7 @@ describe('Logger', () => {
       logger.info('Processing request');
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
       expect(output).toContain('req_12345');
     });
 
@@ -213,10 +213,10 @@ describe('Logger', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
 
       try {
-        const parsed = JSON.parse(output);
+        const parsed = JSON.parse(output) as Record<string, unknown>;
         expect(parsed).toMatchObject({
           level: 'info',
           scope: 'app',
@@ -240,8 +240,8 @@ describe('Logger', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const output = consoleLogSpy.mock.calls[0][0];
-      const parsed = JSON.parse(output);
+      const output = consoleLogSpy.mock.calls[0]![0] as string;
+      const parsed = JSON.parse(output) as { payload: { username: string; password: string } };
 
       expect(parsed.payload.username).toBe('john@example.com');
       expect(parsed.payload.password).toBe('[REDACTED]');

@@ -1,16 +1,17 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { createLogger, setRequestId } from './logger';
-import { randomUUID } from 'crypto';
+import { createLogger } from './logger';
 
 const logger = createLogger('http');
 
+/**
+ * Runs after RequestIdMiddleware (which must be first in the chain) so the
+ * requestId is already attached to AsyncLocalStorage and the response header
+ * by the time these logs are emitted.
+ */
 @Injectable()
 export class RequestLoggerMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    const requestId = req.headers['x-request-id'] || randomUUID();
-    setRequestId(String(requestId));
-
     const start = Date.now();
     const originalSend = res.send;
 

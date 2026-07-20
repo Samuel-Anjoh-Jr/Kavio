@@ -1,0 +1,26 @@
+{
+  "Metadata": {
+    "title": "TrustPro — Services locaux de confiance au Cameroun",
+    "description": "Trouvez des travailleurs vérifiés et fiables pour des services locaux à Douala et Yaoundé."
+  },
+  "HomePage": {
+    "heading": "Bienvenue sur TrustPro",
+    "tagline": "La marketplace axée sur la confiance pour les services locaux au Cameroun.",
+    "sampleAmountLabel": "Exemple de frais de service",
+    "sampleDateLabel": "Dernière mise à jour"
+  },
+  "LocaleSwitcher": {
+    "label": "Langue",
+    "en": "Anglais",
+    "fr": "Français"
+  },
+  "ErrorBoundary": {
+    "heading": "Cette page a rencontré un problème",
+    "description": "Veuillez réessayer. Si le problème persiste, contactez le support avec la référence ci-dessous.",
+    "reference": "Référence : {digest}",
+    "retry": "Réessayer"
+  },
+  "FormError": {
+    "reference": "Référence : {requestId}"
+  }
+}
