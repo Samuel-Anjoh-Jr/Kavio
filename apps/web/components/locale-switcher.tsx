@@ -11,12 +11,12 @@ export function LocaleSwitcher() {
   const pathname = usePathname();
 
   return (
-    <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+    <label className="flex items-center gap-2 text-sm text-muted-foreground">
       <span className="sr-only">{t('label')}</span>
       <select
         value={locale}
         onChange={(event) => router.replace(pathname, { locale: event.target.value })}
-        className="rounded-2xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
+        className="rounded-input border border-input bg-surface px-3 py-1.5 font-medium text-surface-foreground"
       >
         {routing.locales.map((value) => (
           <option key={value} value={value}>

@@ -21,13 +21,11 @@ export function FormError({ error }: { error: ApiError | string | null | undefin
   return (
     <div
       role="alert"
-      className="flex flex-col gap-1 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300"
+      className="flex flex-col gap-1 rounded-card border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger"
     >
       <p>{message}</p>
       {requestId && (
-        <p className="font-mono text-xs text-red-500/80 dark:text-red-400/70">
-          {t('reference', { requestId })}
-        </p>
+        <p className="font-mono text-xs text-danger/70">{t('reference', { requestId })}</p>
       )}
     </div>
   );

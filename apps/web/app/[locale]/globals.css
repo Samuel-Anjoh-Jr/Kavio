@@ -1,26 +1,167 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
 
+/* next-themes toggles a `.dark` class on <html>; tell Tailwind v4 to key its
+   `dark:` variant off that class instead of prefers-color-scheme. */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * TrustPro Modern Design System (TMDS) — design tokens.
+ * Every colour, radius, shadow and font used across the app must resolve to
+ * one of these CSS variables (via the Tailwind theme below); no hardcoded
+ * hex/px values in components. Light values live in :root, dark overrides in
+ * .dark. See docs/TrustPro_SRS_Architecture_v3.md §20.1-20.3.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand */
+  --color-indigo: #3d5afe;
+  --color-success: #14b86a;
+  --color-accent: #00c2a8;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* Neutral scale 50 (lightest) -> 900 (darkest), cool/indigo-tinted greys */
+  --color-neutral-50: #f8f9fc;
+  --color-neutral-100: #f1f2f8;
+  --color-neutral-200: #e4e7f1;
+  --color-neutral-300: #cbd0e0;
+  --color-neutral-400: #a6acc5;
+  --color-neutral-500: #7d84a3;
+  --color-neutral-600: #5c6280;
+  --color-neutral-700: #434869;
+  --color-neutral-800: #2e324b;
+  --color-neutral-900: #1b1e2e;
+
+  /* Semantic surface tokens (light) */
+  --background: var(--color-neutral-50);
+  --foreground: var(--color-neutral-900);
+  --surface: #ffffff;
+  --surface-foreground: var(--color-neutral-900);
+  --surface-elevated: #ffffff;
+  --muted: var(--color-neutral-100);
+  --muted-foreground: var(--color-neutral-600);
+  --border: var(--color-neutral-200);
+  --input: var(--color-neutral-200);
+  --ring: var(--color-indigo);
+
+  --primary: var(--color-indigo);
+  --primary-foreground: #ffffff;
+  --success: var(--color-success);
+  --success-foreground: #ffffff;
+  --accent: var(--color-accent);
+  --accent-foreground: #ffffff;
+  --warning: var(--color-warning);
+  --warning-foreground: var(--color-neutral-900);
+  --danger: var(--color-danger);
+  --danger-foreground: #ffffff;
+
+  /* Radii */
+  --radius-card: 20px;
+  --radius-input: 16px;
+  --radius-button: 14px;
+  --radius-image: 24px;
+
+  /* Soft shadow scale (low-opacity, indigo-tinted, "Modern Soft Premium") */
+  --shadow-color: 234 55% 26%;
+  --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.06);
+  --shadow-md: 0 4px 12px hsl(var(--shadow-color) / 0.08);
+  --shadow-lg: 0 12px 32px hsl(var(--shadow-color) / 0.12);
+
+  /* 8pt spacing scale, exposed for reference/showcase use (Tailwind's default
+     4px-based spacing utilities already express every multiple of 8px). */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+
+  --font-heading: var(--font-inter-tight), var(--font-geist-sans), sans-serif;
+  --font-body: var(--font-inter), var(--font-geist-sans), sans-serif;
+  --font-numeric: var(--font-ibm-plex-sans), var(--font-inter), sans-serif;
+}
+
+.dark {
+  --background: var(--color-neutral-900);
+  --foreground: var(--color-neutral-50);
+  --surface: var(--color-neutral-800);
+  --surface-foreground: var(--color-neutral-50);
+  --surface-elevated: var(--color-neutral-700);
+  --muted: var(--color-neutral-800);
+  --muted-foreground: var(--color-neutral-400);
+  --border: var(--color-neutral-700);
+  --input: var(--color-neutral-700);
+  --ring: var(--color-indigo);
+
+  --warning-foreground: var(--color-neutral-900);
+
+  --shadow-color: 0 0% 0%;
+  --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.24);
+  --shadow-md: 0 4px 12px hsl(var(--shadow-color) / 0.32);
+  --shadow-lg: 0 12px 32px hsl(var(--shadow-color) / 0.4);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+
+  --color-neutral-50: var(--color-neutral-50);
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-200: var(--color-neutral-200);
+  --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-400: var(--color-neutral-400);
+  --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-600: var(--color-neutral-600);
+  --color-neutral-700: var(--color-neutral-700);
+  --color-neutral-800: var(--color-neutral-800);
+  --color-neutral-900: var(--color-neutral-900);
+
+  --radius-card: var(--radius-card);
+  --radius-input: var(--radius-input);
+  --radius-button: var(--radius-button);
+  --radius-image: var(--radius-image);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
+  --font-numeric: var(--font-numeric);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
 }
