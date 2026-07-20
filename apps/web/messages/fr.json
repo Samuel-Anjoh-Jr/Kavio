@@ -27,7 +27,7 @@
     "switchToLight": "Passer au thème clair",
     "switchToDark": "Passer au thème sombre"
   },
-  "DesignSystem": {
+  "Styleguide": {
     "title": "Système de design TMDS",
     "description": "TrustPro Modern Design System — tokens et primitives restylés, prévisualisés en direct dans le thème actuel.",
     "colorsHeading": "Couleurs",
@@ -78,6 +78,18 @@
     "toastHeading": "Notification",
     "toastTrigger": "Afficher la notification",
     "toastTitle": "Vérification soumise",
-    "toastDescription": "Nous vous informerons dès que l'examen sera terminé."
+    "toastDescription": "Nous vous informerons dès que l'examen sera terminé.",
+    "motionHeading": "Préréglages de mouvement",
+    "motionReducedNotice": "Votre système est réglé pour réduire les animations — les préréglages ci-dessous s'appliquent instantanément.",
+    "motionPageTransitionLabel": "Transition de page (fondu + échelle + flou)",
+    "motionPageTransitionTrigger": "Rejouer",
+    "motionCardHoverLabel": "Survol de carte (élévation + échelle 1,02)",
+    "motionCardHoverBox": "Survolez-moi ou focus",
+    "motionButtonMicroLabel": "Micro-interaction de bouton",
+    "motionButtonMicroTrigger": "Appuyez-moi",
+    "motionCheckmarkLabel": "Tracé de coche",
+    "motionCheckmarkTrigger": "Rejouer",
+    "motionCountUpLabel": "Comptage progressif",
+    "motionCountUpTrigger": "Rejouer"
   }
 }

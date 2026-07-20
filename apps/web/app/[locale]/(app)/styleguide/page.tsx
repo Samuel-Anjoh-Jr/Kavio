@@ -1,7 +1,18 @@
 'use client';
 
+import { useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ThemeToggle } from '@/components/theme-toggle';
+import {
+  buttonPressIn,
+  buttonPressOut,
+  cardHoverIn,
+  cardHoverOut,
+  countUp,
+  drawCheckmark,
+  pageTransitionIn,
+  useReducedMotion,
+} from '@/lib/motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -83,12 +94,17 @@ const SHADOWS = [
 ] as const;
 
 /**
- * Living reference for the TMDS tokens and restyled shadcn primitives
- * (PROMPT 06 / PROMPT 07). Not part of the marketing site nav — a dev/QA
- * surface to eyeball both themes and confirm nothing is hardcoded.
+ * Living reference for the TMDS tokens, restyled shadcn primitives, and
+ * motion presets (PROMPT 06 / 07 / 08 / 09). Not part of the marketing site
+ * nav — a dev/QA surface to eyeball both themes and trigger every preset.
  */
-export default function DesignSystemPage() {
-  const t = useTranslations('DesignSystem');
+export default function StyleguidePage() {
+  const t = useTranslations('Styleguide');
+  const transitionBoxRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const checkPathRef = useRef<SVGPathElement>(null);
+  const countRef = useRef<HTMLSpanElement>(null);
+  const reduced = useReducedMotion();
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-12 px-6 py-16">
@@ -345,6 +361,104 @@ export default function DesignSystemPage() {
         >
           {t('toastTrigger')}
         </Button>
+      </section>
+
+      <section className="flex flex-col gap-6 border-t border-border pt-12 pb-16">
+        <h2 className="font-heading text-xl font-semibold text-foreground">{t('motionHeading')}</h2>
+        {reduced && <p className="text-sm text-muted-foreground">{t('motionReducedNotice')}</p>}
+
+        <div className="grid gap-8 sm:grid-cols-2">
+          <div className="flex flex-col gap-3">
+            <span className="text-sm text-muted-foreground">{t('motionPageTransitionLabel')}</span>
+            <div
+              ref={transitionBoxRef}
+              className="flex h-20 items-center justify-center rounded-card bg-primary text-primary-foreground shadow-md"
+            >
+              TrustPro
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => transitionBoxRef.current && pageTransitionIn(transitionBoxRef.current)}
+            >
+              {t('motionPageTransitionTrigger')}
+            </Button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <span className="text-sm text-muted-foreground">{t('motionCardHoverLabel')}</span>
+            <div
+              ref={cardRef}
+              tabIndex={0}
+              onMouseEnter={() => cardRef.current && cardHoverIn(cardRef.current)}
+              onMouseLeave={() => cardRef.current && cardHoverOut(cardRef.current)}
+              onFocus={() => cardRef.current && cardHoverIn(cardRef.current)}
+              onBlur={() => cardRef.current && cardHoverOut(cardRef.current)}
+              className="flex h-20 items-center justify-center rounded-card border border-border bg-surface text-surface-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {t('motionCardHoverBox')}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <span className="text-sm text-muted-foreground">{t('motionButtonMicroLabel')}</span>
+            <Button
+              variant="primary"
+              onPointerDown={(e) => buttonPressIn(e.currentTarget)}
+              onPointerUp={(e) => buttonPressOut(e.currentTarget)}
+              onPointerLeave={(e) => buttonPressOut(e.currentTarget)}
+            >
+              {t('motionButtonMicroTrigger')}
+            </Button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <span className="text-sm text-muted-foreground">{t('motionCheckmarkLabel')}</span>
+            <svg
+              viewBox="0 0 48 48"
+              className="h-16 w-16 rounded-card border border-border bg-surface p-2 text-success shadow-sm"
+              aria-hidden="true"
+            >
+              <path
+                ref={checkPathRef}
+                d="M10 25 L20 35 L38 13"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={4}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => checkPathRef.current && drawCheckmark(checkPathRef.current)}
+            >
+              {t('motionCheckmarkTrigger')}
+            </Button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <span className="text-sm text-muted-foreground">{t('motionCountUpLabel')}</span>
+            <span ref={countRef} className="font-numeric text-2xl font-semibold text-foreground">
+              0
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                countRef.current &&
+                countUp(countRef.current, {
+                  from: 0,
+                  to: 128500,
+                  format: (v) => Math.round(v).toLocaleString(),
+                })
+              }
+            >
+              {t('motionCountUpTrigger')}
+            </Button>
+          </div>
+        </div>
       </section>
     </div>
   );

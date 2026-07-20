@@ -27,7 +27,7 @@
     "switchToLight": "Switch to light theme",
     "switchToDark": "Switch to dark theme"
   },
-  "DesignSystem": {
+  "Styleguide": {
     "title": "TMDS design system",
     "description": "TrustPro Modern Design System — tokens and restyled primitives, previewed live in the current theme.",
     "colorsHeading": "Colours",
@@ -78,6 +78,18 @@
     "toastHeading": "Toast",
     "toastTrigger": "Show toast",
     "toastTitle": "Verification submitted",
-    "toastDescription": "We'll notify you once review is complete."
+    "toastDescription": "We'll notify you once review is complete.",
+    "motionHeading": "Motion presets",
+    "motionReducedNotice": "Your system is set to reduce motion — presets below apply instantly instead of animating.",
+    "motionPageTransitionLabel": "Page transition (fade + scale + blur)",
+    "motionPageTransitionTrigger": "Replay",
+    "motionCardHoverLabel": "Card hover (lift + scale 1.02)",
+    "motionCardHoverBox": "Hover or focus me",
+    "motionButtonMicroLabel": "Button micro-interaction",
+    "motionButtonMicroTrigger": "Press me",
+    "motionCheckmarkLabel": "Checkmark draw",
+    "motionCheckmarkTrigger": "Replay",
+    "motionCountUpLabel": "Count-up",
+    "motionCountUpTrigger": "Replay"
   }
 }
