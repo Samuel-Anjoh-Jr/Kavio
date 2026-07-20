@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RequestIdMiddleware } from './lib/request-id.middleware';
 import { RequestLoggerMiddleware } from './lib/request-logger.middleware';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [],
+  imports: [PrismaModule],
   controllers: [AppController],
   providers: [AppService],
 })

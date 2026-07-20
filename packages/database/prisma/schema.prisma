@@ -7,3 +7,80 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
+// PostGIS is enabled via raw SQL in the initial migration (CREATE EXTENSION),
+// not Prisma's declarative `extensions`: managed hosts preinstall a different
+// set of PostGIS sub-extensions, and declaring them here reports false drift.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Identity (SRS §6.1, §11). One User holds many UserRole rows; tier + Trust Score
+// attach to the identity, not the role, so a role switch never re-verifies.
+// Later prompts add their own models + migrations (incremental schema).
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum Role {
+  WORKER
+  CLIENT
+  BUSINESS
+  AGENT
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+  DELETED
+}
+
+/// A single human identity. Phone/email are unique when present. Phone is stored
+/// in E.164 at capture (SMS deferred). passwordHash is nullable for OTP-only users.
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  phone        String?    @unique
+  email        String?    @unique
+  passwordHash String?
+  name         String?
+  avatar       String?
+  locale       String     @default("en")
+  status       UserStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  roles     UserRole[]
+  auditLogs AuditLog[] @relation("AuditLogActor")
+
+  @@index([status, createdAt])
+}
+
+/// A role grant on an identity. `isActive` marks the currently selected role;
+/// permissions are enforced per active role (RBAC lands in a later prompt).
+model UserRole {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  role      Role
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([userId, isActive])
+}
+
+/// Cross-cutting, append-only audit trail for money/verification/privileged events.
+/// `requestId` ties every entry back to the structured logger + error contract.
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @db.Uuid
+  action    String
+  target    String?
+  requestId String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  actor User? @relation("AuditLogActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+}

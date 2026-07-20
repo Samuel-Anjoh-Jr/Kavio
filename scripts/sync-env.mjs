@@ -6,7 +6,13 @@ import { join } from 'node:path';
 
 const root = process.cwd();
 const rootEnvPath = join(root, '.env');
-const targets = [join(root, 'apps', 'web', '.env.local'), join(root, 'apps', 'api', '.env')];
+const targets = [
+  join(root, 'apps', 'web', '.env.local'),
+  join(root, 'apps', 'api', '.env'),
+  // Prisma CLI (migrate/seed/studio) runs from packages/database and loads .env
+  // from its own dir, so the DB package needs the fanned-out env too.
+  join(root, 'packages', 'database', '.env'),
+];
 
 if (!existsSync(rootEnvPath)) {
   console.error(

@@ -3,8 +3,19 @@
   "version": "0.0.1",
   "private": true,
   "license": "UNLICENSED",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "prisma": {
+    "seed": "node ./prisma/seed.mjs"
+  },
   "scripts": {
-    "build": "prisma generate",
+    "build": "prisma generate && tsc",
     "generate": "prisma generate",
     "validate": "prisma validate",
     "push": "prisma db push",
@@ -13,12 +24,14 @@
     "migrate:deploy": "prisma migrate deploy",
     "migrate:reset": "prisma migrate reset",
     "migrate:diff": "prisma migrate diff --from-url \"$DIRECT_URL\" --to-schema-datamodel prisma/schema.prisma --exit-code",
-    "seed": "node ./scripts/seed-placeholder.mjs"
+    "seed": "node ./prisma/seed.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1"
   },
   "devDependencies": {
-    "prisma": "^6.3.1"
+    "prisma": "^6.3.1",
+    "typescript": "^5.7.3",
+    "@trustpro/typescript-config": "workspace:*"
   }
 }
