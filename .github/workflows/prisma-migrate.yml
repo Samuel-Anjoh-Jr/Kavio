@@ -1,0 +1,55 @@
+name: Prisma Migrate (schema-only)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/database/prisma/**'
+
+concurrency:
+  group: prisma-migrate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: '11.8.0'
+  NODE_VERSION: '20'
+
+jobs:
+  migrate-deploy:
+    name: Migrate deploy + schema-drift gate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+
+      - name: Run database migrations (prisma migrate deploy)
+        run: pnpm db:migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+
+      - name: Schema-drift gate (prisma migrate diff --exit-code)
+        run: pnpm db:migrate:diff
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}

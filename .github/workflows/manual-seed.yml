@@ -1,0 +1,60 @@
+name: Manual Seed (production)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type CONFIRM to seed the production database'
+        required: true
+        type: string
+
+env:
+  PNPM_VERSION: '11.8.0'
+  NODE_VERSION: '20'
+
+jobs:
+  seed:
+    name: Generate + seed
+    if: inputs.confirmation == 'CONFIRM'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+
+      - name: Seed database
+        run: pnpm db:seed
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+
+  refused:
+    name: Refused (confirmation not given)
+    if: inputs.confirmation != 'CONFIRM'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain refusal
+        shell: bash
+        run: |
+          echo "::error::Seed refused: input 'confirmation' must be exactly CONFIRM (got '${{ inputs.confirmation }}')."
+          exit 1

@@ -1,0 +1,130 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: deploy-production-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: '11.8.0'
+  NODE_VERSION: '20'
+
+jobs:
+  validate:
+    name: Install, generate, type-check, lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+
+      - name: Type-check
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+  db-migrate:
+    name: Migrate database + schema-drift gate
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      prisma-changed: ${{ steps.check-paths.outputs.prisma }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Job-level `if:` can't use the workflow's `paths:` trigger filter (that only applies
+      # to the whole workflow), so detect prisma changes for this specific push here.
+      - name: Detect packages/database/prisma changes
+        id: check-paths
+        shell: bash
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "prisma=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BEFORE" "${{ github.sha }}" -- packages/database/prisma | grep -q .; then
+            echo "prisma=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prisma=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup pnpm
+        if: steps.check-paths.outputs.prisma == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        if: steps.check-paths.outputs.prisma == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.check-paths.outputs.prisma == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Run database migrations (prisma migrate deploy)
+        if: steps.check-paths.outputs.prisma == 'true'
+        run: pnpm db:migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+
+      - name: Schema-drift gate (prisma migrate diff --exit-code)
+        if: steps.check-paths.outputs.prisma == 'true'
+        run: pnpm db:migrate:diff
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+
+  summary:
+    name: Deployment summary
+    needs: [validate, db-migrate]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write step summary
+        shell: bash
+        run: |
+          {
+            echo "## Deploy Production"
+            echo
+            echo "| Job | Result |"
+            echo "| --- | --- |"
+            echo "| validate (install/generate/type-check/lint) | ${{ needs.validate.result }} |"
+            echo "| db-migrate (migrate deploy + drift gate) | ${{ needs.db-migrate.result }} |"
+            echo
+            echo "This workflow only validates the app and gates schema migrations. It does not deploy"
+            echo "application code: the API auto-deploys via Railway's branch integration and the web app"
+            echo "auto-deploys via Vercel's Git integration, both watching \`main\`."
+          } >> "$GITHUB_STEP_SUMMARY"

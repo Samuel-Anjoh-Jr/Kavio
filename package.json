@@ -30,6 +30,7 @@
     "db:migrate": "pnpm --filter @trustpro/database migrate:dev",
     "db:migrate:deploy": "pnpm --filter @trustpro/database migrate:deploy",
     "db:migrate:reset": "pnpm --filter @trustpro/database migrate:reset",
+    "db:migrate:diff": "pnpm --filter @trustpro/database migrate:diff",
     "db:seed": "pnpm --filter @trustpro/database seed",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
