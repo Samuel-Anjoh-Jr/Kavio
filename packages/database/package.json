@@ -1,0 +1,23 @@
+{
+  "name": "@trustpro/database",
+  "version": "0.0.1",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "prisma generate",
+    "generate": "prisma generate",
+    "validate": "prisma validate",
+    "push": "prisma db push",
+    "studio": "prisma studio",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:reset": "prisma migrate reset",
+    "seed": "node ./scripts/seed-placeholder.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.3.1"
+  }
+}

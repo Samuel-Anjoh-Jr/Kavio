@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: '11.8.0'
+  NODE_VERSION: '20'
+
+jobs:
+  validate:
+    name: Install, typecheck, lint, test, prisma validate
+    runs-on: ubuntu-latest
+    env:
+      # Dummy values: `prisma validate` only parses the schema, it never connects.
+      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/trustpro?schema=public'
+      DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/trustpro?schema=public'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Prisma validate
+        run: pnpm db:validate
+
+  security-scan:
+    name: Security scan (high/critical)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies for high/critical vulnerabilities
+        run: pnpm audit --audit-level high
+
+  deploy:
+    name: Migrate database
+    needs: [validate, security-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
+
+      # Migrations MUST apply before the API/web deploy boots against the new schema.
+      - name: Run database migrations (prisma migrate deploy)
+        run: pnpm db:migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
+
+      # Hosting-provider deploy wiring (Railway/Vercel Git integration, path-triggered
+      # migrate workflow, schema-drift gate, manual seed) lands in PROMPT 02.1.
+      - name: Ready for boot
+        run: echo "Migrations applied. Server boot proceeds only after this job succeeds."

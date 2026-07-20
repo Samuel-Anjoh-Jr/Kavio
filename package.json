@@ -24,6 +24,7 @@
     "format": "prettier --write .",
     "full-check": "pnpm lint && pnpm lint:i18n && pnpm type-check && pnpm test",
     "db:generate": "pnpm --filter @trustpro/database generate",
+    "db:validate": "pnpm --filter @trustpro/database validate",
     "db:push": "pnpm --filter @trustpro/database push",
     "db:studio": "pnpm --filter @trustpro/database studio",
     "db:migrate": "pnpm --filter @trustpro/database migrate:dev",
