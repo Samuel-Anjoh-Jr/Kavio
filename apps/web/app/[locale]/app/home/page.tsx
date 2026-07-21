@@ -45,6 +45,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   }
 
   const t = await getTranslations('Home');
+  const tTrust = await getTranslations('Trust');
   const activeRole = session?.user?.activeRole ?? '';
 
   // AGENT and ADMIN have no self-service onboarding, so they simply get no card.
@@ -94,6 +95,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       )}
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2">
+        <Link
+          href="/app/trust"
+          className="rounded-card border border-border bg-surface p-6 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <h2 className="font-heading text-lg font-semibold text-foreground">
+            {tTrust('viewBreakdown')}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">{tTrust('pillarsBody')}</p>
+        </Link>
+
         <Link
           href="/app/explore"
           className="rounded-card border border-border bg-surface p-6 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

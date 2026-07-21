@@ -13,6 +13,9 @@ import {
   pageTransitionIn,
   useReducedMotion,
 } from '@/lib/motion';
+import { TierBadge } from '@/components/trust/tier-badge';
+import { TrustScoreRing } from '@/components/trust/trust-score-ring';
+import type { VerificationTier } from '@/lib/trust';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -92,6 +95,15 @@ const SHADOWS = [
   { name: 'md', className: 'shadow-md' },
   { name: 'lg', className: 'shadow-lg' },
 ] as const;
+
+/** Every tier plus the suspension override, side by side (TRU-01, TRU-03). */
+const TRUST_PREVIEWS: { tier: VerificationTier; score: number; suspended?: boolean }[] = [
+  { tier: 'TIER_0', score: 32 },
+  { tier: 'TIER_1', score: 48 },
+  { tier: 'TIER_2', score: 71 },
+  { tier: 'TIER_3', score: 93 },
+  { tier: 'TIER_3', score: 93, suspended: true },
+];
 
 /**
  * Living reference for the TMDS tokens, restyled shadcn primitives, and
@@ -458,6 +470,24 @@ export default function StyleguidePage() {
               {t('motionCountUpTrigger')}
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* TRU-01 / TRU-03. The Tier 0 column is the one to check on every visual
+          change: it must stay grey, iconless and labelled "Basic Profile". */}
+      <section className="flex flex-col gap-4">
+        <h2 className="font-heading text-xl font-semibold text-foreground">{t('trustHeading')}</h2>
+        <div className="flex flex-wrap gap-8">
+          {TRUST_PREVIEWS.map(({ tier, score, suspended }) => (
+            <div key={suspended ? 'suspended' : tier} className="flex flex-col items-center gap-3">
+              <TrustScoreRing tier={tier} score={score} suspended={suspended} />
+              <TierBadge tier={tier} suspended={suspended} />
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <TrustScoreRing tier="TIER_2" score={72} size="sm" showLabel={false} />
+          <TrustScoreRing tier="TIER_3" score={91} size="lg" />
         </div>
       </section>
     </div>

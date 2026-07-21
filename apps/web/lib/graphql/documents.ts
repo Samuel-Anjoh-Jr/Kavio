@@ -46,6 +46,62 @@ export const ONBOARDING_QUERY = gql`
   }
 `;
 
+/**
+ * The Trust Score breakdown (TRU-04). `improvements` comes back null unless the
+ * viewer is the subject or staff, which is what the screen keys its "do this
+ * next" section off — see apps/api/src/trust/trust.service.ts.
+ */
+export const TRUST_BREAKDOWN_QUERY = gql`
+  query TrustBreakdown($subjectId: ID!) {
+    trustBreakdown(subjectId: $subjectId) {
+      subjectId
+      total
+      tier
+      suspended
+      subScores {
+        pillar
+        points
+        max
+        scored
+        contributions {
+          type
+          occurrences
+          points
+          max
+          maxed
+          improvementKey
+        }
+      }
+      tierStatus {
+        subjectId
+        tier
+        labelKey
+        verified
+        nextTier
+        requirements {
+          kind
+          checkType
+          labelKey
+          required
+          current
+        }
+      }
+      improvements {
+        type
+        occurrences
+        points
+        max
+        maxed
+        improvementKey
+      }
+    }
+  }
+`;
+
+export interface TrustBreakdownQueryResult {
+  trustBreakdown: import('@/lib/trust').TrustBreakdown;
+}
+
 /** Shapes the components above consume. Kept hand-written: codegen lands later. */
 export interface MeRoleGrant {
   role: string;

@@ -113,6 +113,30 @@ export function drawCheckmark(path: SVGPathElement, overrides: AnimationParams =
   });
 }
 
+/**
+ * Gauge sweep: animates an SVG arc's `stroke-dashoffset` from empty to its
+ * target, so a Trust Score ring fills rather than appearing already full.
+ *
+ * Same deliberate exception as drawCheckmark above — an arc that fills IS a
+ * stroke animation, and there is no transform that expresses it. Both are
+ * scoped to a single visual idea rather than opened up as a general pattern.
+ */
+export function sweepArc(
+  circle: SVGCircleElement,
+  { circumference, offset }: { circumference: number; offset: number },
+  overrides: AnimationParams = {},
+): JSAnimation {
+  circle.style.strokeDasharray = `${circumference}`;
+  circle.style.strokeDashoffset = `${circumference}`;
+
+  return animate(circle, {
+    strokeDashoffset: [circumference, offset],
+    duration: motionDuration(900),
+    ease: 'outExpo',
+    ...overrides,
+  });
+}
+
 export interface CountUpOptions {
   from?: number;
   to: number;

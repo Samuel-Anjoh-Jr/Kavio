@@ -18,6 +18,21 @@ export function createCache(): InMemoryCache {
           onboarding: { merge: true },
         },
       },
+
+      // Trust reads are per-identity, not per-session: the same worker's score
+      // can be on screen in a search result, a profile header and the breakdown
+      // screen at once, and all three must be the SAME cache object so a tier
+      // change updates every one of them.
+      TrustScoreView: { keyFields: ['subjectId'] },
+      TrustBreakdownView: { keyFields: ['subjectId'] },
+      TierStatusView: { keyFields: ['subjectId'] },
+
+      // Sub-scores and contributions have no identity of their own — they are
+      // values belonging to the breakdown that contains them. Left normalizable,
+      // every subject's IDENTITY pillar would collide on the same cache key.
+      TrustSubScoreView: { keyFields: false },
+      TrustContributionView: { keyFields: false },
+      TierRequirementView: { keyFields: false },
     },
   });
 }

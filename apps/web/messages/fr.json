@@ -90,7 +90,8 @@
     "motionCheckmarkLabel": "Tracé de coche",
     "motionCheckmarkTrigger": "Rejouer",
     "motionCountUpLabel": "Comptage progressif",
-    "motionCountUpTrigger": "Rejouer"
+    "motionCountUpTrigger": "Rejouer",
+    "trustHeading": "Anneau de Score de Confiance et badge de niveau"
   },
   "Auth": {
     "signIn": "Se connecter",
@@ -243,6 +244,23 @@
     "outOf": "{score} sur 100",
     "breakdownHeading": "Comment votre Score de Confiance est calculé",
     "suspended": "Ce compte est suspendu en attendant la vérification des documents.",
+    "suspendedShort": "Suspendu",
+    "breakdownHeadingOther": "Comment ce Score de Confiance est calculé",
+    "pillarPoints": "{points} / {max}",
+    "pointsValue": "{points} pts",
+    "pillarComingSoon": "Bientôt disponible",
+    "inputsHeading": "Ce qui compte à ce jour",
+    "nextActionsHeading": "Prochaines actions ({points} pts disponibles)",
+    "pillarsHeading": "Les quatre parties de votre score",
+    "pillarsBody": "Chaque point vient de quelque chose qui s’est réellement passé : une vérification réussie, un travail terminé, un client revenu vers vous.",
+    "topActionHeading": "À faire maintenant",
+    "topActionWorth": "Vaut jusqu’à {points} points.",
+    "nextTierHeading": "Niveau suivant",
+    "requirementsHeading": "Ce qu’il reste à faire",
+    "topTier": "Vous êtes au niveau le plus élevé.",
+    "topTierBody": "Continuez à réaliser des travaux et à obtenir de bons avis pour maintenir votre score.",
+    "loadError": "Nous n’avons pas pu charger votre Score de Confiance pour le moment. Veuillez rafraîchir dans un instant.",
+    "viewBreakdown": "Voir votre Score de Confiance",
     "tier": {
       "TIER_0": "Profil de base",
       "TIER_1": "Pièce d’identité soumise",

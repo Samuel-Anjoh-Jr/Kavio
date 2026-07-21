@@ -90,7 +90,8 @@
     "motionCheckmarkLabel": "Checkmark draw",
     "motionCheckmarkTrigger": "Replay",
     "motionCountUpLabel": "Count-up",
-    "motionCountUpTrigger": "Replay"
+    "motionCountUpTrigger": "Replay",
+    "trustHeading": "Trust Score ring and tier badge"
   },
   "Auth": {
     "signIn": "Sign in",
@@ -243,6 +244,23 @@
     "outOf": "{score} out of 100",
     "breakdownHeading": "How your Trust Score is built",
     "suspended": "This account is suspended pending a document review.",
+    "suspendedShort": "Suspended",
+    "breakdownHeadingOther": "How this Trust Score is built",
+    "pillarPoints": "{points} / {max}",
+    "pointsValue": "{points} pts",
+    "pillarComingSoon": "Coming soon",
+    "inputsHeading": "What counts so far",
+    "nextActionsHeading": "Next actions ({points} pts available)",
+    "pillarsHeading": "The four parts of your score",
+    "pillarsBody": "Every point comes from something that actually happened — a check that passed, a job you finished, a client who came back.",
+    "topActionHeading": "Do this next",
+    "topActionWorth": "Worth up to {points} points.",
+    "nextTierHeading": "Next level",
+    "requirementsHeading": "What is still needed",
+    "topTier": "You are at the highest level.",
+    "topTierBody": "Keep completing jobs and earning good reviews to hold your score.",
+    "loadError": "We could not load your Trust Score just now. Please refresh in a moment.",
+    "viewBreakdown": "View your Trust Score",
     "tier": {
       "TIER_0": "Basic Profile",
       "TIER_1": "ID Submitted",
