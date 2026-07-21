@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { Role } from '@trustpro/database';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   NOTIFICATION_REQUESTED,
@@ -91,15 +92,50 @@ export class PaymentsNotificationListener {
 
   @OnEvent(DISPUTE_OPENED)
   async onDisputeOpened(event: DisputeOpenedEvent): Promise<void> {
+    const jobTitle = await this.jobTitle(event.jobId);
+
+    // The other party learns a dispute was raised and the escrow is frozen.
     this.events.emit(
       NOTIFICATION_REQUESTED,
       new NotificationRequestedEvent({
         userId: event.otherPartyId,
         templateKey: 'dispute.opened',
-        variables: { jobTitle: await this.jobTitle(event.jobId) },
+        variables: { jobTitle },
         requestId: event.requestId,
       }),
     );
+
+    // And the admins who can actually resolve it are ALERTED, not left to poll
+    // the queue (ADM-05). A frozen escrow with nobody watching is a client's
+    // money stuck indefinitely; a dispute must land in front of a resolver the
+    // moment it opens. Everyone holding the ADMIN role is notified.
+    await this.alertAdmins(jobTitle, event.requestId, [event.openedById, event.otherPartyId]);
+  }
+
+  /** Fans the dispute-opened alert out to every admin (ADM-05). */
+  private async alertAdmins(
+    jobTitle: string,
+    requestId: string | undefined,
+    exclude: string[],
+  ): Promise<void> {
+    const grants = await this.prisma.client.userRole.findMany({
+      where: { role: Role.ADMIN },
+      select: { userId: true },
+    });
+    const skip = new Set(exclude);
+    const adminIds = [...new Set(grants.map((g) => g.userId))].filter((id) => !skip.has(id));
+
+    for (const userId of adminIds) {
+      this.events.emit(
+        NOTIFICATION_REQUESTED,
+        new NotificationRequestedEvent({
+          userId,
+          templateKey: 'dispute.opened',
+          variables: { jobTitle },
+          requestId,
+        }),
+      );
+    }
   }
 
   @OnEvent(DISPUTE_RESOLVED)

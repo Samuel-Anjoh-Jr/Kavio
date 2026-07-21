@@ -1394,7 +1394,8 @@
     "accountRequired": "Enter an account number.",
     "methodAdded": "Payment method added.",
     "saveMethod": "Save method",
-    "actionFailed": "That action could not be completed. Please try again."
+    "actionFailed": "That action could not be completed. Please try again.",
+    "disputeFrozenHint": "Funds stay frozen until an admin resolves the dispute."
   },
   "Disputes": {
     "title": "Dispute",
@@ -1407,12 +1408,6 @@
       "OPEN": "Open",
       "ESCALATED": "Escalated",
       "RESOLVED": "Resolved"
-    },
-    "resolution": {
-      "RELEASED": "Released to worker",
-      "REFUNDED": "Refunded to client",
-      "PARTIAL": "Partial settlement",
-      "CLOSED": "Closed"
     },
     "viewJob": "View the job",
     "frozenHeading": "Funds are frozen",
@@ -1437,6 +1432,51 @@
     "openWarning": "Opening a dispute freezes the escrow until an admin resolves it. Use it when you cannot agree directly.",
     "reasonLabel": "Describe the problem",
     "reasonPlaceholder": "What went wrong, and what outcome are you looking for?",
-    "openDispute": "Open dispute"
+    "openDispute": "Open dispute",
+    "openedOn": "Opened on {date}",
+    "you": "You",
+    "evidenceAlt": "Dispute evidence",
+    "removeEvidence": "Remove attachment",
+    "noBooking": "This job has no booking yet, so there is nothing in escrow to dispute.",
+    "resolution": {
+      "RELEASE_TO_WORKER": "Released to worker",
+      "REFUND_TO_CLIENT": "Refunded to client",
+      "REQUEST_INFO": "More information requested",
+      "CLOSE_NO_ACTION": "Closed, no action"
+    },
+    "action": {
+      "RELEASE_TO_WORKER": "Release to worker",
+      "REFUND_TO_CLIENT": "Refund to client",
+      "REQUEST_INFO": "Request more info",
+      "CLOSE_NO_ACTION": "Close, no action"
+    },
+    "actionEffect": {
+      "RELEASE_TO_WORKER": "Releases the held funds to the worker, minus the platform fee, and resolves the dispute.",
+      "REFUND_TO_CLIENT": "Returns the held funds to the client and resolves the dispute.",
+      "REQUEST_INFO": "Keeps the escrow frozen and asks the parties for more information.",
+      "CLOSE_NO_ACTION": "Resolves the dispute without moving money (the parties settled directly)."
+    },
+    "admin": {
+      "title": "Resolve dispute",
+      "queueTitle": "Disputes",
+      "queueSubtitle": "Review and resolve disputes. Each one has frozen a client’s escrow until you decide.",
+      "backToQueue": "Back to the queue",
+      "filterAll": "All",
+      "loadError": "We could not load the dispute queue.",
+      "empty": "No disputes in this lane.",
+      "messageCount": "{count, plural, =0 {No messages} one {# message} other {# messages}}",
+      "resolveHeading": "Resolution",
+      "resolveHint": "Choose how to settle this dispute. Your decision moves the escrow and notifies both parties.",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "Explain the decision for the record.",
+      "confirmResolve": "Confirm",
+      "resolveFailed": "We could not resolve the dispute. Please try again.",
+      "resolved": {
+        "RELEASE_TO_WORKER": "Funds released to the worker.",
+        "REFUND_TO_CLIENT": "Funds refunded to the client.",
+        "REQUEST_INFO": "More information requested.",
+        "CLOSE_NO_ACTION": "Dispute closed."
+      }
+    }
   }
 }

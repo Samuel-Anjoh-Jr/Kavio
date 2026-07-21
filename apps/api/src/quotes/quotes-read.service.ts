@@ -77,6 +77,27 @@ export class QuotesReadService {
     return Promise.all(quotes.map((q) => this.mapQuote(q, previews)));
   }
 
+  /**
+   * Every quote a client has received, across all their jobs (QTE-02, QTE-05).
+   *
+   * The aggregate the client's Received inbox is built on: one indexed query
+   * plus one batched preview lookup, rather than a jobQuotes round trip per job.
+   * The caller groups by jobId for display; the API stays flat and cheap.
+   */
+  async receivedQuotes(user: AuthenticatedUser): Promise<QuoteView[]> {
+    const quotes = await this.prisma.client.quote.findMany({
+      where: {
+        job: { posterId: user.id },
+        // The client sees offers that reached them, never a worker's private draft.
+        status: { not: QuoteStatus.DRAFT },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: this.quoteInclude(),
+    });
+    const previews = await this.workerPreviews(quotes.map((q) => q.workerId));
+    return Promise.all(quotes.map((q) => this.mapQuote(q, previews)));
+  }
+
   /** Both parties' bookings (QTE-04, PAY-01). */
   async myBookings(user: AuthenticatedUser): Promise<BookingView[]> {
     const bookings = await this.prisma.client.booking.findMany({

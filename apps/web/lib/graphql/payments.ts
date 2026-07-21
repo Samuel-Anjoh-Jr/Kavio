@@ -89,6 +89,42 @@ export interface TransactionsQueryResult {
   };
 }
 
+/**
+ * The escrow behind one booking (PAY-01, PAY-02).
+ *
+ * Used by the dispute view to show the exact amount held and frozen. Mirrors
+ * apps/api/src/payments/models/payments.model.ts#EscrowView.
+ */
+export const ESCROW_QUERY = gql`
+  query Escrow($bookingId: ID!) {
+    escrow(bookingId: $bookingId) {
+      id
+      bookingId
+      state
+      amount
+      feeAmount
+      payoutAmount
+      paidAt
+      releasedAt
+    }
+  }
+`;
+
+export interface EscrowSummary {
+  id: string;
+  bookingId: string;
+  state: string;
+  amount: number;
+  feeAmount: number;
+  payoutAmount: number;
+  paidAt: string;
+  releasedAt: string | null;
+}
+
+export interface EscrowQueryResult {
+  escrow: EscrowSummary | null;
+}
+
 export const PAYMENT_METHODS_QUERY = gql`
   query PaymentMethods {
     paymentMethods {

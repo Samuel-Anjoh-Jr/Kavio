@@ -36,6 +36,14 @@ export class QuotesResolver {
     return this.read.jobQuotes(user, jobId);
   }
 
+  @RequirePermissions('quote:respond')
+  @Query(() => [QuoteView], {
+    description: 'Every quote the client received across all their jobs, newest first (QTE-02).',
+  })
+  async receivedQuotes(@CurrentUser() user: AuthenticatedUser): Promise<QuoteView[]> {
+    return this.read.receivedQuotes(user);
+  }
+
   @Query(() => QuoteView, {
     nullable: true,
     description: 'One quote, visible to the worker who sent it or the client it went to.',

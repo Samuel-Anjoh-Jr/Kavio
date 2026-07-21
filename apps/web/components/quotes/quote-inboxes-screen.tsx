@@ -14,13 +14,12 @@ import { useToast } from '@/components/ui/use-toast';
 import { ApiError } from '@/lib/api-error';
 import { ME_QUERY, type MeQueryResult } from '@/lib/graphql/documents';
 import {
-  JOB_QUOTES_QUERY,
   MY_QUOTES_QUERY,
-  type JobQuotesQueryResult,
+  RECEIVED_QUOTES_QUERY,
   type MyQuotesQueryResult,
   type Quote,
+  type ReceivedQuotesQueryResult,
 } from '@/lib/graphql/quotes';
-import { MY_JOBS_QUERY, type MyJobsQueryResult } from '@/lib/graphql/jobs';
 import { restPost } from '@/lib/rest-api';
 import { QuoteCard } from './quote-card';
 import { QuoteClientActions } from './quote-client-actions';
@@ -177,68 +176,58 @@ function WorkerDraftActions({ quote, onChanged }: { quote: Quote; onChanged: () 
 
 function ClientInbox() {
   const t = useTranslations('Quotes');
-  const { data, loading } = useQuery<MyJobsQueryResult>(MY_JOBS_QUERY, {
-    variables: { pageSize: 50 },
+  const { data, loading, refetch } = useQuery<ReceivedQuotesQueryResult>(RECEIVED_QUOTES_QUERY, {
     fetchPolicy: 'cache-and-network',
   });
 
   if (loading && !data) return <InboxSkeleton />;
 
-  const jobsWithQuotes = (data?.myJobs.jobs ?? []).filter((job) => job.quoteCount > 0);
+  // One aggregate read, grouped by job on the client — the API stays flat and
+  // cheap while the inbox still reads job-by-job. Order (newest first) is
+  // preserved from the query.
+  const groups: { jobId: string; jobTitle: string | null; quotes: Quote[] }[] = [];
+  const indexByJob = new Map<string, number>();
+  for (const quote of data?.receivedQuotes ?? []) {
+    let at = indexByJob.get(quote.jobId);
+    if (at === undefined) {
+      at = groups.length;
+      indexByJob.set(quote.jobId, at);
+      groups.push({ jobId: quote.jobId, jobTitle: quote.jobTitle, quotes: [] });
+    }
+    groups[at]!.quotes.push(quote);
+  }
 
   return (
     <Tabs defaultValue="received">
       <TabsList className="w-full">
-        <TabsTrigger value="received">
-          {t('tabReceived', { count: jobsWithQuotes.length })}
-        </TabsTrigger>
+        <TabsTrigger value="received">{t('tabReceived', { count: groups.length })}</TabsTrigger>
       </TabsList>
       <TabsContent value="received" className="mt-6">
-        {jobsWithQuotes.length === 0 ? (
+        {groups.length === 0 ? (
           <EmptyLane message={t('emptyReceived')} />
         ) : (
           <div className="flex flex-col gap-8">
-            {jobsWithQuotes.map((job) => (
-              <JobQuotesGroup key={job.id} jobId={job.id} jobTitle={job.title} />
+            {groups.map((group) => (
+              <section key={group.jobId} className="flex flex-col gap-4">
+                <h2 className="font-heading text-lg font-semibold text-foreground">
+                  {group.jobTitle || t('untitledJob')}
+                </h2>
+                <div className="flex flex-col gap-4">
+                  {group.quotes.map((quote) => (
+                    <QuoteCard
+                      key={quote.id}
+                      quote={quote}
+                      showWorker
+                      footer={<QuoteClientActions quote={quote} onChanged={() => void refetch()} />}
+                    />
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         )}
       </TabsContent>
     </Tabs>
-  );
-}
-
-function JobQuotesGroup({ jobId, jobTitle }: { jobId: string; jobTitle: string | null }) {
-  const t = useTranslations('Quotes');
-  const { data, loading, refetch } = useQuery<JobQuotesQueryResult>(JOB_QUOTES_QUERY, {
-    variables: { jobId },
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const quotes = data?.jobQuotes ?? [];
-
-  return (
-    <section className="flex flex-col gap-4">
-      <h2 className="font-heading text-lg font-semibold text-foreground">
-        {jobTitle || t('untitledJob')}
-      </h2>
-      {loading && quotes.length === 0 ? (
-        <Skeleton className="h-40 w-full rounded-card" />
-      ) : quotes.length === 0 ? (
-        <EmptyLane message={t('noQuotesOnJob')} />
-      ) : (
-        <div className="flex flex-col gap-4">
-          {quotes.map((quote) => (
-            <QuoteCard
-              key={quote.id}
-              quote={quote}
-              showWorker
-              footer={<QuoteClientActions quote={quote} onChanged={() => void refetch()} />}
-            />
-          ))}
-        </div>
-      )}
-    </section>
   );
 }
 

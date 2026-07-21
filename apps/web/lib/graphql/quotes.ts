@@ -120,6 +120,25 @@ export interface JobQuotesQueryResult {
   jobQuotes: Quote[];
 }
 
+/**
+ * Every quote the client received across all their jobs, newest first (QTE-02).
+ *
+ * The Received inbox reads this ONE aggregate and groups by job client-side,
+ * rather than firing a jobQuotes round trip per job. Mirrors
+ * apps/api/src/quotes/quotes-read.service.ts#receivedQuotes.
+ */
+export const RECEIVED_QUOTES_QUERY = gql`
+  query ReceivedQuotes {
+    receivedQuotes {
+      ${QUOTE_FIELDS}
+    }
+  }
+`;
+
+export interface ReceivedQuotesQueryResult {
+  receivedQuotes: Quote[];
+}
+
 /** One quote, for the worker who sent it or the client it went to. */
 export const QUOTE_QUERY = gql`
   query Quote($id: ID!) {

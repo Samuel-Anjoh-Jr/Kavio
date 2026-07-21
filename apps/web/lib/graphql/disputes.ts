@@ -4,54 +4,36 @@ import type { DisputeResolution, DisputeStatus } from '@/lib/disputes';
 /**
  * Dispute READS (DUAL API RULE). Writes are REST (lib/rest-api).
  *
- * Delivered by PROMPT 68 in a parallel lane. The parties' dispute view (PROMPT
- * 69) is built against this contract and renders a friendly pending state until
- * the resolver answers.
+ * Mirrors apps/api/src/payments/models/payments.model.ts#DisputeView. Evidence
+ * is not a separate entity: it rides on messages as attachments, so the thread
+ * IS the record. The `dispute(id)` read resolves only for the two parties (and
+ * a resolving admin); it is never public.
  */
+
+export interface DisputeAttachment {
+  id: string;
+  url: string | null;
+}
 
 export interface DisputeMessage {
   id: string;
   authorId: string;
-  authorName: string | null;
-  authorRole: string | null;
   body: string;
-  createdAt: string;
-}
-
-export interface DisputeEvidence {
-  id: string;
-  caption: string | null;
-  url: string | null;
-  mimeType: string | null;
-  uploadedById: string | null;
-  createdAt: string;
-}
-
-export interface DisputeEvent {
-  id: string;
-  type: string;
-  note: string | null;
+  attachments: DisputeAttachment[];
   createdAt: string;
 }
 
 export interface DisputeDetail {
   id: string;
   jobId: string;
-  jobTitle: string | null;
-  bookingId: string | null;
+  bookingId: string;
   openedById: string;
-  openedByName: string | null;
   reason: string;
   status: DisputeStatus;
   resolution: DisputeResolution | null;
   resolutionNote: string | null;
-  escrowFrozen: boolean;
-  amountInEscrow: number | null;
   messages: DisputeMessage[];
-  evidence: DisputeEvidence[];
-  timeline: DisputeEvent[];
   createdAt: string;
-  resolvedAt: string | null;
 }
 
 export const DISPUTE_QUERY = gql`
@@ -59,44 +41,68 @@ export const DISPUTE_QUERY = gql`
     dispute(id: $id) {
       id
       jobId
-      jobTitle
       bookingId
       openedById
-      openedByName
       reason
       status
       resolution
       resolutionNote
-      escrowFrozen
-      amountInEscrow
       messages {
         id
         authorId
-        authorName
-        authorRole
         body
-        createdAt
-      }
-      evidence {
-        id
-        caption
-        url
-        mimeType
-        uploadedById
-        createdAt
-      }
-      timeline {
-        id
-        type
-        note
+        attachments {
+          id
+          url
+        }
         createdAt
       }
       createdAt
-      resolvedAt
     }
   }
 `;
 
 export interface DisputeQueryResult {
   dispute: DisputeDetail | null;
+}
+
+/**
+ * The admin dispute queue (ADM-05). Admin-only server-side. Kept light — the
+ * board needs a card per dispute, not the full thread, so only message ids come
+ * back (for the count). Mirrors payments.resolver.ts#disputeQueue.
+ */
+export const DISPUTE_QUEUE_QUERY = gql`
+  query DisputeQueue($status: DisputeStatus) {
+    disputeQueue(status: $status) {
+      id
+      jobId
+      bookingId
+      openedById
+      reason
+      status
+      resolution
+      resolutionNote
+      createdAt
+      messages {
+        id
+      }
+    }
+  }
+`;
+
+export interface DisputeQueueItem {
+  id: string;
+  jobId: string;
+  bookingId: string;
+  openedById: string;
+  reason: string;
+  status: DisputeStatus;
+  resolution: DisputeResolution | null;
+  resolutionNote: string | null;
+  createdAt: string;
+  messages: { id: string }[];
+}
+
+export interface DisputeQueueQueryResult {
+  disputeQueue: DisputeQueueItem[];
 }

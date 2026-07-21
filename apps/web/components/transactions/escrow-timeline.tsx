@@ -102,12 +102,7 @@ function EscrowCard({ booking }: { booking: Booking }) {
                 {t(`escrowException.${booking.status}`)}
               </p>
               {booking.status === 'DISPUTED' && (
-                <Link
-                  href={`/app/jobs/${booking.jobId}/dispute`}
-                  className="text-sm text-primary hover:underline"
-                >
-                  {t('viewDispute')}
-                </Link>
+                <p className="text-sm text-muted-foreground">{t('disputeFrozenHint')}</p>
               )}
             </div>
           </div>
