@@ -91,5 +91,37 @@
     "motionCheckmarkTrigger": "Replay",
     "motionCountUpLabel": "Count-up",
     "motionCountUpTrigger": "Replay"
+  },
+  "Auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "errors": {
+      "INVALID_CREDENTIALS": "Invalid phone/email or password.",
+      "SESSION_EXPIRED": "Your session expired. Sign in again.",
+      "INVALID_TOKEN": "Your sign-in could not be verified. Sign in again.",
+      "UNAUTHENTICATED": "Sign in to continue.",
+      "ACCOUNT_SUSPENDED": "This account is not active. Contact support.",
+      "ACCOUNT_NOT_VERIFIED": "Verify your phone number before signing in.",
+      "TWO_FACTOR_REQUIRED": "Enter the code we sent you to finish signing in.",
+      "INVALID_CODE": "That code is not correct. Request a new one.",
+      "CODE_EXPIRED": "That code has expired. Request a new one.",
+      "TOO_MANY_ATTEMPTS": "Too many incorrect attempts. Request a new code.",
+      "RESEND_TOO_SOON": "Wait {seconds}s before requesting another code.",
+      "TOO_MANY_CODES": "You have requested too many codes. Try again later.",
+      "OTP_UNDELIVERABLE": "We could not send your code. Add an email address to your account and try again.",
+      "NO_DESTINATION": "Add a phone number or email address before requesting a code.",
+      "PHONE_ALREADY_REGISTERED": "That phone number is already registered.",
+      "EMAIL_ALREADY_REGISTERED": "That email address is already registered.",
+      "RESET_TOKEN_INVALID": "This reset link is no longer valid. Request a new one.",
+      "PASSWORD_NOT_SET": "Use the reset link to set your first password.",
+      "FORBIDDEN_FOR_ROLE": "Your current role cannot do that. Switch role and try again.",
+      "ROLE_NOT_GRANTED": "You do not have that role yet.",
+      "UNKNOWN_ERROR": "Something went wrong. Please try again."
+    },
+    "resend": {
+      "available": "Resend code",
+      "countdown": "Resend in {seconds}s",
+      "sentTo": "We sent a code to {destination}."
+    }
   }
 }

@@ -2,6 +2,9 @@ packages:
   - 'apps/*'
   - 'packages/*'
 allowBuilds:
+  # Its postinstall only builds the parser Apollo Studio usage reporting needs,
+  # and we do not enable that — GraphQL serves fine without the build step.
+  '@apollo/protobufjs': false
   '@parcel/watcher': true
   '@prisma/client': true
   '@prisma/engines': true

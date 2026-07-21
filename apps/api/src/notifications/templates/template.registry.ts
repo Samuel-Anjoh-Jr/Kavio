@@ -28,6 +28,8 @@ export interface TemplateVariablesMap {
   'auth.otp_code': { code: string; expiresInMinutes: number };
   'auth.password_reset': { resetUrl: string; expiresInMinutes: number };
   'auth.new_device_login': { deviceName: string; occurredAt: string; secureAccountUrl: string };
+  'auth.password_changed': { occurredAt: string };
+  'auth.two_factor_changed': { enabled: boolean };
 }
 
 export type TemplateKey = keyof TemplateVariablesMap;
@@ -268,6 +270,92 @@ const authNewDeviceLogin: TemplateDefinition<'auth.new_device_login'> = {
   },
 };
 
+const authPasswordChanged: TemplateDefinition<'auth.password_changed'> = {
+  key: 'auth.password_changed',
+  category: NotificationCategory.SECURITY,
+  securityCritical: true,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your TrustPro password was changed',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Your TrustPro password was changed.',
+          heading: 'Your password was changed',
+          bodyHtml: paragraphs(
+            `Your TrustPro password was changed on ${escapeHtml(v.occurredAt)}. You have been signed out on every device.`,
+            'If this was not you, reset your password immediately and contact support.',
+          ),
+        }),
+        text: `Your TrustPro password was changed on ${v.occurredAt}. You have been signed out on every device. If this was not you, reset your password immediately and contact support.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre mot de passe TrustPro a été modifié',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Votre mot de passe TrustPro a été modifié.',
+          heading: 'Votre mot de passe a été modifié',
+          bodyHtml: paragraphs(
+            `Votre mot de passe TrustPro a été modifié le ${escapeHtml(v.occurredAt)}. Vous avez été déconnecté de tous vos appareils.`,
+            "Si vous n'êtes pas à l'origine de ce changement, réinitialisez votre mot de passe immédiatement et contactez le support.",
+          ),
+        }),
+        text: `Votre mot de passe TrustPro a été modifié le ${v.occurredAt}. Vous avez été déconnecté de tous vos appareils. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement.`,
+      }),
+    },
+  },
+};
+
+const authTwoFactorChanged: TemplateDefinition<'auth.two_factor_changed'> = {
+  key: 'auth.two_factor_changed',
+  category: NotificationCategory.SECURITY,
+  securityCritical: true,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: v.enabled ? 'Two-factor authentication is on' : 'Two-factor authentication is off',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'A security setting on your TrustPro account changed.',
+          heading: v.enabled
+            ? 'Two-factor authentication enabled'
+            : 'Two-factor authentication disabled',
+          bodyHtml: paragraphs(
+            v.enabled
+              ? 'From now on you will need a code from your verified channel each time you sign in.'
+              : 'Signing in now needs only your password. We recommend turning two-factor authentication back on.',
+            'If you did not make this change, reset your password immediately and contact support.',
+          ),
+        }),
+        text: v.enabled
+          ? 'Two-factor authentication is now ON for your TrustPro account. If you did not make this change, reset your password immediately.'
+          : 'Two-factor authentication is now OFF for your TrustPro account. If you did not make this change, reset your password immediately.',
+      }),
+      fr: (v) => ({
+        subject: v.enabled
+          ? 'La double authentification est activée'
+          : 'La double authentification est désactivée',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un paramètre de sécurité de votre compte TrustPro a changé.',
+          heading: v.enabled
+            ? 'Double authentification activée'
+            : 'Double authentification désactivée',
+          bodyHtml: paragraphs(
+            v.enabled
+              ? 'Désormais, un code envoyé sur votre canal vérifié vous sera demandé à chaque connexion.'
+              : 'Votre mot de passe suffit désormais pour vous connecter. Nous vous recommandons de réactiver la double authentification.',
+            "Si vous n'êtes pas à l'origine de ce changement, réinitialisez votre mot de passe immédiatement et contactez le support.",
+          ),
+        }),
+        text: v.enabled
+          ? "La double authentification est maintenant ACTIVÉE sur votre compte TrustPro. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement."
+          : "La double authentification est maintenant DÉSACTIVÉE sur votre compte TrustPro. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement.",
+      }),
+    },
+  },
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Registry + lookup
 // ─────────────────────────────────────────────────────────────────────────────
@@ -281,6 +369,8 @@ const TEMPLATES: TemplateMap = {
   'auth.otp_code': authOtpCode,
   'auth.password_reset': authPasswordReset,
   'auth.new_device_login': authNewDeviceLogin,
+  'auth.password_changed': authPasswordChanged,
+  'auth.two_factor_changed': authTwoFactorChanged,
 };
 
 export const TEMPLATE_KEYS = Object.keys(TEMPLATES) as TemplateKey[];

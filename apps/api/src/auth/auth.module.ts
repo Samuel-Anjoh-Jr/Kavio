@@ -1,17 +1,40 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { OtpService } from './otp.service';
+import { PasswordService } from './password.service';
+import { SessionService } from './session.service';
+import { TokenService } from './token.service';
 
 /**
- * Auth module (SRS §11, ACC-04). Owns sign-up today; OTP verification, JWT
- * sessions, password reset and RBAC arrive in later prompts and extend this
- * module. AuthService is exported for reuse by those prompts.
+ * Auth module (SRS §11; ACC-04 → ACC-09).
+ *
+ * Marked @Global because the guards are registered application-wide in
+ * AppModule: every feature module added later is protected by default, and none
+ * of them has to import this one to get that.
+ *
+ * JwtModule is registered with NO default secret on purpose — TokenService
+ * passes the access or refresh secret explicitly on every call, so the two can
+ * never be silently interchanged by an omitted option.
  */
+@Global()
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, NotificationsModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [AuthService],
-  exports: [AuthService],
+  providers: [
+    AuthService,
+    OtpService,
+    PasswordService,
+    SessionService,
+    TokenService,
+    JwtAuthGuard,
+    RolesGuard,
+  ],
+  exports: [AuthService, OtpService, SessionService, TokenService, JwtAuthGuard, RolesGuard],
 })
 export class AuthModule {}

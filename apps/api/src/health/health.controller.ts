@@ -1,5 +1,6 @@
 import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
+import { Public } from '../auth/decorators/auth.decorators';
 import { getRequestId } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
@@ -27,6 +28,8 @@ export class HealthController {
     private readonly prisma: PrismaService,
   ) {}
 
+  // Orchestrators and uptime checks cannot hold a token, so the probe is public.
+  @Public()
   @Get()
   @HttpCode(HttpStatus.OK)
   async check(@Res({ passthrough: true }) res: Response): Promise<HealthBody> {

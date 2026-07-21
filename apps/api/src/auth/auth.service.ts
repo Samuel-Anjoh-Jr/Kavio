@@ -1,11 +1,35 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Prisma, Role, UserStatus } from '@trustpro/database';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  Prisma,
+  Role,
+  UserStatus,
+  VerificationPurpose,
+  type UserRole as UserRoleModel,
+} from '@trustpro/database';
 import { AppException } from '../lib/app-exception';
-import { createLogger } from '../lib/logger';
+import { createLogger, getRequestId } from '../lib/logger';
+import { burnPasswordTiming, hashPassword, verifyPassword } from '../lib/password.util';
 import { normalizeToE164 } from '../lib/phone.util';
+import { maskDestination } from '../lib/secret-hash.util';
+import {
+  NOTIFICATION_REQUESTED,
+  NotificationRequestedEvent,
+} from '../notifications/events/notification.events';
 import { buildDefaultPreferences } from '../notifications/notification.config';
 import { PrismaService } from '../prisma/prisma.service';
+import type { SessionTokens } from './auth.types';
+import type {
+  LoginDto,
+  RequestOtpDto,
+  ToggleTwoFactorDto,
+  TwoFactorVerifyDto,
+  VerifyOtpDto,
+} from './dto/auth.dto';
 import type { RoleIntent, SignUpDto } from './dto/sign-up.dto';
+import { identifierWhere, resolveIdentifier } from './identifier.util';
+import { OtpService, type OtpIssueResult } from './otp.service';
+import { SessionService } from './session.service';
 
 const logger = createLogger('auth');
 
@@ -22,14 +46,28 @@ export interface SignUpResult {
   status: UserStatus;
 }
 
+/** Login either completes, or stops at a second factor. Never both. */
+export type LoginResult =
+  | ({ twoFactorRequired: false } & SessionTokens)
+  | { twoFactorRequired: true; destination: string; expiresAt: Date; resendAvailableAt: Date };
+
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly otp: OtpService,
+    private readonly sessions: SessionService,
+    private readonly events: EventEmitter2,
+  ) {}
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Sign-up (ACC-04)
+  // ───────────────────────────────────────────────────────────────────────────
 
   /**
    * Creates a pending User plus their initial active UserRole. The phone number
-   * is normalised to E.164 before it ever reaches the DB. Verification (OTP)
-   * and credentials land in later prompts; the account starts PENDING.
+   * is normalised to E.164 before it ever reaches the DB. The account starts
+   * PENDING and becomes ACTIVE once a verification code is confirmed.
    */
   async signUp(dto: SignUpDto): Promise<SignUpResult> {
     const start = Date.now();
@@ -47,6 +85,7 @@ export class AuthService {
     }
 
     const role = INTENT_TO_ROLE[dto.roleIntent];
+    const passwordHash = dto.password ? await hashPassword(dto.password) : null;
 
     try {
       // User + initial UserRole + default notification preferences are created
@@ -57,6 +96,9 @@ export class AuthService {
         const created = await tx.user.create({
           data: {
             phone,
+            email: dto.email ?? null,
+            passwordHash,
+            passwordUpdatedAt: passwordHash ? new Date() : null,
             status: UserStatus.PENDING,
             roles: { create: { role, isActive: true } },
           },
@@ -84,16 +126,396 @@ export class AuthService {
         status: user.status,
       };
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        // Unique violation on `phone`: an identity already exists.
-        throw new AppException(
+      throw this.mapUniqueViolation(error);
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // OTP (ACC-04)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Requests a code for an identifier.
+   *
+   * Responds identically whether or not the account exists. The endpoint is
+   * public and unauthenticated, so any difference in status or body would turn
+   * it into a way to test which phone numbers are registered.
+   */
+  async requestOtp(dto: RequestOtpDto, locale?: string): Promise<OtpIssueResult> {
+    const identifier = resolveIdentifier(dto.identifier);
+    if (!identifier) {
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        'VALIDATION_ERROR',
+        'Check your phone number or email.',
+        { identifier: ['Enter a valid Cameroon phone number or email address.'] },
+      );
+    }
+
+    const user = await this.prisma.client.user.findUnique({
+      where: identifierWhere(identifier),
+      select: { id: true },
+    });
+
+    if (!user) {
+      logger.info('OTP requested for unknown identifier', {
+        result: { purpose: dto.purpose, kind: identifier.kind },
+      });
+      return this.decoyOtpResult(identifier.value);
+    }
+
+    return this.otp.issue({ userId: user.id, purpose: dto.purpose, locale });
+  }
+
+  /**
+   * Verifies a code and, on success, starts a session. PHONE_VERIFICATION also
+   * activates the account — proving control of the number is what turns a PENDING
+   * sign-up into a usable identity.
+   */
+  async verifyOtp(dto: VerifyOtpDto, userAgent?: string): Promise<SessionTokens> {
+    const identifier = resolveIdentifier(dto.identifier);
+    if (!identifier) {
+      throw this.invalidCode();
+    }
+
+    const user = await this.prisma.client.user.findUnique({
+      where: identifierWhere(identifier),
+      select: { id: true, status: true },
+    });
+
+    if (!user) {
+      // Same error a wrong code produces, for the same anti-enumeration reason.
+      throw this.invalidCode();
+    }
+
+    await this.otp.verify({ userId: user.id, purpose: dto.purpose, code: dto.code });
+
+    if (dto.purpose === VerificationPurpose.PHONE_VERIFICATION) {
+      await this.prisma.client.user.update({
+        where: { id: user.id },
+        data: {
+          phoneVerifiedAt: new Date(),
+          // Only PENDING is promoted: a SUSPENDED account must never be
+          // resurrected by verifying a code.
+          ...(user.status === UserStatus.PENDING ? { status: UserStatus.ACTIVE } : {}),
+        },
+      });
+    }
+
+    return this.sessions.createSession(user.id, userAgent);
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Login (ACC-05, ACC-09)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  async login(dto: LoginDto, userAgent?: string): Promise<LoginResult> {
+    const start = Date.now();
+    const identifier = resolveIdentifier(dto.identifier);
+
+    if (!identifier) {
+      await burnPasswordTiming();
+      throw this.invalidCredentials();
+    }
+
+    const user = await this.prisma.client.user.findUnique({
+      where: identifierWhere(identifier),
+      select: {
+        id: true,
+        passwordHash: true,
+        status: true,
+        locale: true,
+        twoFactorEnabled: true,
+      },
+    });
+
+    if (!user?.passwordHash) {
+      // Equalise timing whether the account is missing or simply has no password,
+      // so response latency does not become an enumeration oracle.
+      await burnPasswordTiming();
+      throw this.invalidCredentials();
+    }
+
+    if (!(await verifyPassword(dto.password, user.passwordHash))) {
+      logger.warn('Login failed: bad credentials', {
+        durationMs: Date.now() - start,
+        payload: { userId: user.id },
+      });
+      // Bad password is ALWAYS "invalid credentials" — never "session expired".
+      // Conflating them is exactly what ACC-09 forbids.
+      throw this.invalidCredentials();
+    }
+
+    if (user.status === UserStatus.SUSPENDED || user.status === UserStatus.DELETED) {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        'ACCOUNT_SUSPENDED',
+        'This account is not active. Contact support.',
+      );
+    }
+
+    if (user.status === UserStatus.PENDING) {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        'ACCOUNT_NOT_VERIFIED',
+        'Verify your phone number before signing in.',
+      );
+    }
+
+    if (user.twoFactorEnabled) {
+      // Credentials were correct, but the session is withheld until the second
+      // factor lands. The challenge is a normal OTP through the same dispatcher.
+      const challenge = await this.otp.issue({
+        userId: user.id,
+        purpose: VerificationPurpose.TWO_FACTOR,
+        locale: user.locale,
+      });
+
+      logger.info('Login pending second factor', {
+        durationMs: Date.now() - start,
+        result: { userId: user.id },
+      });
+
+      return {
+        twoFactorRequired: true,
+        destination: challenge.destination,
+        expiresAt: challenge.expiresAt,
+        resendAvailableAt: challenge.resendAvailableAt,
+      };
+    }
+
+    const tokens = await this.sessions.createSession(user.id, userAgent);
+
+    logger.info('Login succeeded', {
+      durationMs: Date.now() - start,
+      result: { userId: user.id },
+    });
+
+    return { twoFactorRequired: false, ...tokens };
+  }
+
+  /** Completes a 2FA login by consuming the TWO_FACTOR code. */
+  async verifyTwoFactor(dto: TwoFactorVerifyDto, userAgent?: string): Promise<SessionTokens> {
+    const identifier = resolveIdentifier(dto.identifier);
+    if (!identifier) {
+      throw this.invalidCode();
+    }
+
+    const user = await this.prisma.client.user.findUnique({
+      where: identifierWhere(identifier),
+      select: { id: true, twoFactorEnabled: true },
+    });
+
+    if (!user?.twoFactorEnabled) {
+      throw this.invalidCode();
+    }
+
+    await this.otp.verify({
+      userId: user.id,
+      purpose: VerificationPurpose.TWO_FACTOR,
+      code: dto.code,
+    });
+
+    return this.sessions.createSession(user.id, userAgent);
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Two-factor toggle (ACC-08)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Enables or disables 2FA, re-confirming the password first: a stolen access
+   * token must not be enough to strip a factor off someone's account.
+   */
+  async setTwoFactor(
+    userId: string,
+    enabled: boolean,
+    dto: ToggleTwoFactorDto,
+  ): Promise<{ twoFactorEnabled: boolean }> {
+    const user = await this.prisma.client.user.findUnique({
+      where: { id: userId },
+      select: { id: true, passwordHash: true, email: true, phone: true },
+    });
+
+    if (!user?.passwordHash) {
+      throw new AppException(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'PASSWORD_NOT_SET',
+        'Set a password before turning on two-factor authentication.',
+      );
+    }
+
+    if (!(await verifyPassword(dto.password, user.passwordHash))) {
+      throw new AppException(
+        HttpStatus.UNAUTHORIZED,
+        'INVALID_CREDENTIALS',
+        'That password is not correct.',
+        { password: ['Check your password and try again.'] },
+      );
+    }
+
+    if (enabled && !user.email && !user.phone) {
+      throw new AppException(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'NO_DESTINATION',
+        'Add an email address before turning on two-factor authentication.',
+      );
+    }
+
+    await this.prisma.client.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: enabled,
+        twoFactorEnabledAt: enabled ? new Date() : null,
+      },
+    });
+
+    logger.info('Two-factor setting changed', { result: { userId, enabled } });
+
+    // A change to the account's security posture is always announced, so a
+    // takeover cannot quietly disable the owner's second factor.
+    this.events.emit(
+      NOTIFICATION_REQUESTED,
+      new NotificationRequestedEvent({
+        userId,
+        templateKey: 'auth.two_factor_changed',
+        variables: { enabled },
+        requestId: getRequestId(),
+      }),
+    );
+
+    return { twoFactorEnabled: enabled };
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Roles (ACC-06, ACC-07)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Switches the active role and returns a FRESH token pair carrying the new
+   * activeRole claim. No re-authentication: tier and Trust Score live on the
+   * identity, so nothing about the user's verification state changes here.
+   */
+  async switchRole(userId: string, role: Role, userAgent?: string): Promise<SessionTokens> {
+    const grant = await this.prisma.client.userRole.findUnique({
+      where: { userId_role: { userId, role } },
+      select: { id: true },
+    });
+
+    if (!grant) {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        'ROLE_NOT_GRANTED',
+        'You do not have that role yet.',
+      );
+    }
+
+    await this.prisma.client.$transaction([
+      this.prisma.client.userRole.updateMany({
+        where: { userId, isActive: true },
+        data: { isActive: false },
+      }),
+      this.prisma.client.userRole.update({
+        where: { userId_role: { userId, role } },
+        data: { isActive: true },
+      }),
+    ]);
+
+    logger.info('Active role switched', { result: { userId, role } });
+
+    // A new session family, so the previous role's access token is not left
+    // usable alongside the new one.
+    return this.sessions.createSession(userId, userAgent);
+  }
+
+  /** Grants an additional role to an existing identity and switches to it. */
+  async addRole(userId: string, role: Role, userAgent?: string): Promise<SessionTokens> {
+    await this.prisma.client.userRole.upsert({
+      where: { userId_role: { userId, role } },
+      create: { userId, role, isActive: false },
+      update: {},
+    });
+
+    logger.info('Role granted', { result: { userId, role } });
+
+    return this.switchRole(userId, role, userAgent);
+  }
+
+  async listRoles(userId: string): Promise<UserRoleModel[]> {
+    return this.prisma.client.userRole.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Shared errors
+  // ───────────────────────────────────────────────────────────────────────────
+
+  /**
+   * ONE message for every credential failure — wrong password, unknown account,
+   * malformed identifier. Anything more specific hands an attacker a free
+   * account-existence check (ACC-09).
+   */
+  private invalidCredentials() {
+    return new AppException(
+      HttpStatus.UNAUTHORIZED,
+      'INVALID_CREDENTIALS',
+      'Invalid phone/email or password.',
+    );
+  }
+
+  private invalidCode() {
+    return new AppException(
+      HttpStatus.BAD_REQUEST,
+      'INVALID_CODE',
+      'That code is not correct. Request a new one.',
+      { code: ['Check the code and try again.'] },
+    );
+  }
+
+  /**
+   * A well-formed, throttle-consistent response for an identifier with no
+   * account behind it. It must be indistinguishable from a real issue result.
+   */
+  private decoyOtpResult(destination: string): OtpIssueResult {
+    const now = Date.now();
+    return {
+      destination: maskDestination(destination),
+      expiresAt: new Date(now + 600_000),
+      resendAvailableAt: new Date(now + 60_000),
+      attemptsAllowed: 5,
+    };
+  }
+
+  private mapUniqueViolation(error: unknown): unknown {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      // P2002's `target` is string[] on Postgres, but the type is `unknown` and
+      // some engines report a bare string — normalise both, ignore anything else.
+      const target: unknown = error.meta?.target;
+      const fields = Array.isArray(target)
+        ? target.filter((entry): entry is string => typeof entry === 'string')
+        : typeof target === 'string'
+          ? [target]
+          : [];
+
+      if (fields.some((field) => field.includes('email'))) {
+        return new AppException(
           HttpStatus.CONFLICT,
-          'PHONE_ALREADY_REGISTERED',
-          'That phone number is already registered.',
-          { phone: ['This phone number already has an account. Try logging in instead.'] },
+          'EMAIL_ALREADY_REGISTERED',
+          'That email address is already registered.',
+          { email: ['This email already has an account. Try logging in instead.'] },
         );
       }
-      throw error;
+
+      return new AppException(
+        HttpStatus.CONFLICT,
+        'PHONE_ALREADY_REGISTERED',
+        'That phone number is already registered.',
+        { phone: ['This phone number already has an account. Try logging in instead.'] },
+      );
     }
+
+    return error;
   }
 }

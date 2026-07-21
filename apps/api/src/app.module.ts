@@ -15,7 +15,11 @@ import { QueueModule } from './queue/queue.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
+import { GraphQLModule } from './graphql/graphql.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -25,6 +29,10 @@ import { NotificationsModule } from './notifications/notifications.module';
     RealtimeModule,
     HealthModule,
     AuthModule,
+    // GraphQL serves every READ (DUAL API RULE). Registered after AuthModule so
+    // the globally-registered guards are available to resolvers too.
+    GraphQLModule,
+    UsersModule,
     // Typed domain events (SRS §17): business modules emit, the notification
     // dispatcher subscribes. Registered before NotificationsModule so its
     // @OnEvent listeners are bound at bootstrap.
@@ -43,8 +51,14 @@ import { NotificationsModule } from './notifications/notifications.module';
   controllers: [AppController],
   providers: [
     AppService,
-    // Global rate-limit guard; per-route @Throttle/@SkipThrottle can override.
+    // Guard order matters and follows the cost of the check: rate-limit first
+    // (cheapest, and it must apply to anonymous floods), then authentication,
+    // then authorisation. Auth is DENY BY DEFAULT — a route is protected unless
+    // it carries @Public(), so a new controller is never accidentally exposed
+    // (NFR-SEC-02).
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })
 export class AppModule implements NestModule {

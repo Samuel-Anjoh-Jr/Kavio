@@ -91,5 +91,37 @@
     "motionCheckmarkTrigger": "Rejouer",
     "motionCountUpLabel": "Comptage progressif",
     "motionCountUpTrigger": "Rejouer"
+  },
+  "Auth": {
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "errors": {
+      "INVALID_CREDENTIALS": "Téléphone/e-mail ou mot de passe invalide.",
+      "SESSION_EXPIRED": "Votre session a expiré. Reconnectez-vous.",
+      "INVALID_TOKEN": "Votre connexion n'a pas pu être vérifiée. Reconnectez-vous.",
+      "UNAUTHENTICATED": "Connectez-vous pour continuer.",
+      "ACCOUNT_SUSPENDED": "Ce compte n'est pas actif. Contactez le support.",
+      "ACCOUNT_NOT_VERIFIED": "Vérifiez votre numéro de téléphone avant de vous connecter.",
+      "TWO_FACTOR_REQUIRED": "Saisissez le code que nous vous avons envoyé pour terminer la connexion.",
+      "INVALID_CODE": "Ce code n'est pas correct. Demandez-en un nouveau.",
+      "CODE_EXPIRED": "Ce code a expiré. Demandez-en un nouveau.",
+      "TOO_MANY_ATTEMPTS": "Trop de tentatives incorrectes. Demandez un nouveau code.",
+      "RESEND_TOO_SOON": "Attendez {seconds}s avant de demander un autre code.",
+      "TOO_MANY_CODES": "Vous avez demandé trop de codes. Réessayez plus tard.",
+      "OTP_UNDELIVERABLE": "Nous n'avons pas pu envoyer votre code. Ajoutez une adresse e-mail à votre compte et réessayez.",
+      "NO_DESTINATION": "Ajoutez un numéro de téléphone ou une adresse e-mail avant de demander un code.",
+      "PHONE_ALREADY_REGISTERED": "Ce numéro de téléphone est déjà enregistré.",
+      "EMAIL_ALREADY_REGISTERED": "Cette adresse e-mail est déjà enregistrée.",
+      "RESET_TOKEN_INVALID": "Ce lien de réinitialisation n'est plus valide. Demandez-en un nouveau.",
+      "PASSWORD_NOT_SET": "Utilisez le lien de réinitialisation pour définir votre premier mot de passe.",
+      "FORBIDDEN_FOR_ROLE": "Votre rôle actuel ne permet pas cette action. Changez de rôle et réessayez.",
+      "ROLE_NOT_GRANTED": "Vous n'avez pas encore ce rôle.",
+      "UNKNOWN_ERROR": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "resend": {
+      "available": "Renvoyer le code",
+      "countdown": "Renvoyer dans {seconds}s",
+      "sentTo": "Nous avons envoyé un code à {destination}."
+    }
   }
 }

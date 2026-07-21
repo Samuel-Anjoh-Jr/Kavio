@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, NotFoundException, Post } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Throttle } from '@nestjs/throttler';
+import { Public } from '../auth/decorators/auth.decorators';
 import { ZodValidationPipe } from '../lib/zod-validation.pipe';
 import { NOTIFICATION_REQUESTED, NotificationRequestedEvent } from './events/notification.events';
 import { testDispatchSchema, type TestDispatchDto } from './dto/test-dispatch.dto';
@@ -20,6 +21,9 @@ import { testDispatchSchema, type TestDispatchDto } from './dto/test-dispatch.dt
 export class NotificationsController {
   constructor(private readonly events: EventEmitter2) {}
 
+  // Public only because it 404s outside development (see the guard below); a
+  // token would otherwise be needed to smoke-test before any account exists.
+  @Public()
   @Post('test-dispatch')
   @HttpCode(HttpStatus.ACCEPTED)
   @Throttle({ default: { ttl: 60_000, limit: 5 } })

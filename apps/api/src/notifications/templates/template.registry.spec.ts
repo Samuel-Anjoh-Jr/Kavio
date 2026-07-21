@@ -115,6 +115,10 @@ function sampleVariables(key: string): Record<string, unknown> {
         occurredAt: '21 July 2026, 09:14',
         secureAccountUrl: 'https://trustpro.cm/settings/security',
       };
+    case 'auth.password_changed':
+      return { occurredAt: '21 July 2026, 09:14' };
+    case 'auth.two_factor_changed':
+      return { enabled: true };
     default:
       return {};
   }

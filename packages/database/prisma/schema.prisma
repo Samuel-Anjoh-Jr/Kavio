@@ -33,8 +33,21 @@ enum UserStatus {
   DELETED
 }
 
+/// Progressive verification tiers (SRS §21.4, TRU-02). Derived from completed
+/// checks + Trust Score, never set by hand outside Admin. Held on the IDENTITY.
+enum VerificationTier {
+  TIER_0
+  TIER_1
+  TIER_2
+  TIER_3
+}
+
 /// A single human identity. Phone/email are unique when present. Phone is stored
 /// in E.164 at capture (SMS deferred). passwordHash is nullable for OTP-only users.
+///
+/// `tier` and `trustScore` deliberately live HERE and not on UserRole (ACC-06):
+/// switching role must never re-verify, so both attach to the identity. The full
+/// Trust Engine (sub-scores, TrustEvents) lands in Phase 2 and recomputes these.
 model User {
   id           String     @id @default(uuid()) @db.Uuid
   phone        String?    @unique
@@ -47,16 +60,37 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
+  phoneVerifiedAt DateTime?
+  emailVerifiedAt DateTime?
+
+  tier       VerificationTier @default(TIER_0)
+  trustScore Int              @default(0)
+
+  /// Optional second factor (ACC-08). When true, password login stops at a
+  /// challenge and only a verified TWO_FACTOR code completes the session.
+  twoFactorEnabled   Boolean   @default(false)
+  twoFactorEnabledAt DateTime?
+
+  passwordUpdatedAt DateTime?
+  /// Set whenever every session must die at once (password reset, admin action).
+  /// Refresh is rejected for tokens issued before this instant; short-lived
+  /// access tokens age out on their own, which is what keeps them stateless.
+  sessionsRevokedAt DateTime?
+
   roles                   UserRole[]
   auditLogs               AuditLog[]               @relation("AuditLogActor")
   notificationLogs        NotificationLog[]
   notificationPreferences NotificationPreference[]
+  verificationCodes       VerificationCode[]
+  refreshTokens           RefreshToken[]
+  passwordResetTokens     PasswordResetToken[]
 
   @@index([status, createdAt])
 }
 
-/// A role grant on an identity. `isActive` marks the currently selected role;
-/// permissions are enforced per active role (RBAC lands in a later prompt).
+/// A role grant on an identity. `isActive` marks the currently selected role and
+/// is mirrored into the `activeRole` JWT claim that RBAC guards read. Exactly one
+/// row per user is active at a time (enforced in the role-switch transaction).
 model UserRole {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @db.Uuid
@@ -68,6 +102,82 @@ model UserRole {
 
   @@unique([userId, role])
   @@index([userId, isActive])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth: OTP codes, refresh-token sessions, password reset (ACC-04, ACC-05, ACC-08).
+// Nothing here stores a secret in the clear: codes and tokens are persisted as
+// SHA-256 digests, so a database leak alone cannot be replayed against the API.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Why a one-time code was issued. The purpose is part of the lookup, so a code
+/// minted to verify a phone can never be replayed to satisfy a 2FA challenge.
+enum VerificationPurpose {
+  PHONE_VERIFICATION
+  EMAIL_VERIFICATION
+  LOGIN
+  TWO_FACTOR
+}
+
+/// A 6-digit one-time code. Delivered through the NotificationDispatcher only —
+/// email/console at launch, SMS when the flag flips, with no change here.
+model VerificationCode {
+  id      String              @id @default(uuid()) @db.Uuid
+  userId  String              @db.Uuid
+  purpose VerificationPurpose
+  /// The address the code was sent to (E.164 phone or email), kept so a code
+  /// stops working if the user changes the destination mid-flow.
+  destination String
+  codeHash    String
+  expiresAt   DateTime
+  /// Wrong-guess counter; the row is dead once it reaches the configured max.
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Drives both the "newest live code" lookup and the resend-window count.
+  @@index([userId, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+/// A refresh-token session. Access tokens stay fully stateless (no DB read on a
+/// normal request); only refresh is tracked, which is what makes logout, rotation
+/// and reuse-detection possible at all. `familyId` is the rotation lineage: if a
+/// token that was already rotated comes back, the whole family is revoked because
+/// it means the token leaked.
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  familyId  String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  rotatedAt DateTime?
+  revokedAt DateTime?
+  /// Coarse device label for the new-device notice; never a fingerprint.
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([familyId])
+}
+
+/// A single-use password-reset token, delivered as a link through the dispatcher.
+model PasswordResetToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([expiresAt])
 }
 
 /// Cross-cutting, append-only audit trail for money/verification/privileged events.

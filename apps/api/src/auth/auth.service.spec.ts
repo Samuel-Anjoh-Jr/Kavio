@@ -1,8 +1,25 @@
 import { HttpStatus } from '@nestjs/common';
+import type { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma, Role, UserStatus } from '@trustpro/database';
 import { AppException } from '../lib/app-exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
+import type { OtpService } from './otp.service';
+import type { SessionService } from './session.service';
+
+/**
+ * Sign-up touches neither OTP nor sessions, so those collaborators are inert
+ * stubs here; their own behaviour is covered in otp.service.spec.ts and
+ * session.service.spec.ts.
+ */
+function makeService(prisma: PrismaService): AuthService {
+  return new AuthService(
+    prisma,
+    {} as OtpService,
+    {} as SessionService,
+    { emit: jest.fn() } as unknown as EventEmitter2,
+  );
+}
 
 /**
  * Sign-up runs inside a transaction (User + roles + seeded notification
@@ -38,7 +55,7 @@ describe('AuthService.signUp', () => {
       phone: '+237655555555',
       status: UserStatus.PENDING,
     });
-    const service = new AuthService(makePrisma(create));
+    const service = makeService(makePrisma(create));
 
     const result = await service.signUp({ roleIntent: 'find_work', phone: '655 555 555' });
 
@@ -49,9 +66,13 @@ describe('AuthService.signUp', () => {
       status: UserStatus.PENDING,
     });
     // Phone is normalised to E.164 and the initial role is active + pending.
+    // No password was supplied, so the identity is OTP-only for now.
     expect(create).toHaveBeenCalledWith({
       data: {
         phone: '+237655555555',
+        email: null,
+        passwordHash: null,
+        passwordUpdatedAt: null,
         status: UserStatus.PENDING,
         roles: { create: { role: Role.WORKER, isActive: true } },
       },
@@ -65,7 +86,7 @@ describe('AuthService.signUp', () => {
       phone: '+237699999999',
       status: UserStatus.PENDING,
     });
-    const service = new AuthService(makePrisma(create));
+    const service = makeService(makePrisma(create));
 
     const result = await service.signUp({ roleIntent: 'hire', phone: '+237 699 999 999' });
 
@@ -73,11 +94,38 @@ describe('AuthService.signUp', () => {
     expect(create).toHaveBeenCalledWith({
       data: {
         phone: '+237699999999',
+        email: null,
+        passwordHash: null,
+        passwordUpdatedAt: null,
         status: UserStatus.PENDING,
         roles: { create: { role: Role.CLIENT, isActive: true } },
       },
       select: { id: true, phone: true, status: true },
     });
+  });
+
+  it('hashes a supplied password instead of storing it', async () => {
+    const create = jest.fn().mockResolvedValue({
+      id: 'user-4',
+      phone: '+237655555555',
+      status: UserStatus.PENDING,
+    });
+    const service = makeService(makePrisma(create));
+
+    await service.signUp({
+      roleIntent: 'hire',
+      phone: '655555555',
+      password: 'correct horse battery',
+    });
+
+    const call = create.mock.calls[0] as [
+      { data: { passwordHash: string | null; passwordUpdatedAt: Date | null } },
+    ];
+    const { data } = call[0];
+
+    expect(data.passwordHash).toEqual(expect.stringMatching(/^scrypt\$/));
+    expect(data.passwordHash).not.toContain('correct horse battery');
+    expect(data.passwordUpdatedAt).toBeInstanceOf(Date);
   });
 
   it('seeds the default notification preference matrix in the same transaction', async () => {
@@ -89,7 +137,7 @@ describe('AuthService.signUp', () => {
     const createMany: CreateManyMock = jest
       .fn<Promise<{ count: number }>, [CreateManyArgs]>()
       .mockResolvedValue({ count: 33 });
-    const service = new AuthService(makePrisma(create, createMany));
+    const service = makeService(makePrisma(create, createMany));
 
     await service.signUp({ roleIntent: 'find_work', phone: '655 555 555' });
 
@@ -105,7 +153,7 @@ describe('AuthService.signUp', () => {
 
   it('rejects an invalid phone number with a typed field error', async () => {
     const create = jest.fn();
-    const service = new AuthService(makePrisma(create));
+    const service = makeService(makePrisma(create));
 
     const error = await service
       .signUp({ roleIntent: 'hire', phone: '12345' })
@@ -123,7 +171,7 @@ describe('AuthService.signUp', () => {
       clientVersion: 'test',
     });
     const create = jest.fn().mockRejectedValue(p2002);
-    const service = new AuthService(makePrisma(create));
+    const service = makeService(makePrisma(create));
 
     const error = await service
       .signUp({ roleIntent: 'find_work', phone: '655555555' })
@@ -137,7 +185,7 @@ describe('AuthService.signUp', () => {
   it('re-throws unknown database errors untouched', async () => {
     const boom = new Error('connection lost');
     const create = jest.fn().mockRejectedValue(boom);
-    const service = new AuthService(makePrisma(create));
+    const service = makeService(makePrisma(create));
 
     await expect(service.signUp({ roleIntent: 'hire', phone: '655555555' })).rejects.toBe(boom);
   });

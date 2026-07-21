@@ -34,6 +34,11 @@ const vapid = vapidKeyPair();
 const lines = [
   `JWT_ACCESS_SECRET=${jwtSecret()}`,
   `JWT_REFRESH_SECRET=${jwtSecret()}`,
+  // Keys the digests of OTP codes, refresh tokens and reset tokens, so a stolen
+  // database dump holds nothing replayable on its own.
+  `AUTH_SECRET_PEPPER=${jwtSecret()}`,
+  // Encrypts the Auth.js session cookie in apps/web.
+  `AUTH_SECRET=${jwtSecret()}`,
   `VAPID_PUBLIC_KEY=${vapid.publicKey}`,
   `VAPID_PRIVATE_KEY=${vapid.privateKey}`,
 ];

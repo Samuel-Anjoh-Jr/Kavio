@@ -22,10 +22,14 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@apollo/server": "^5.5.1",
     "@nest-lab/throttler-storage-redis": "^1.2.0",
+    "@nestjs/apollo": "^13.4.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/event-emitter": "^3.1.0",
+    "@nestjs/graphql": "^13.4.2",
+    "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.1.28",
     "@nestjs/throttler": "^6.5.0",
@@ -33,6 +37,7 @@
     "@socket.io/redis-adapter": "^8.3.0",
     "@trustpro/database": "workspace:*",
     "bullmq": "^5.80.9",
+    "graphql": "^17.0.2",
     "ioredis": "^5.11.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
