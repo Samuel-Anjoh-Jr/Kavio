@@ -87,6 +87,25 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     visibility: MediaVisibility.PUBLIC,
     prefix: 'portfolio',
   },
+  [MediaAssetKind.JOB_PHOTO]: {
+    // A photo of the work to be done ("here is the broken pipe"), attached to a
+    // public job post. PUBLIC so a guest browsing the board sees it, but its own
+    // kind and prefix so it is never mistaken for a worker's PORTFOLIO_IMAGE,
+    // which the Trust Engine counts as evidence of work performed.
+    mimeTypes: IMAGE_TYPES,
+    maxBytes: 10 * MB,
+    visibility: MediaVisibility.PUBLIC,
+    prefix: 'jobs',
+  },
+  [MediaAssetKind.QUOTE_ATTACHMENT]: {
+    // A sketch or parts list a worker attaches to a quote. Seen only by the two
+    // parties to a negotiation, so PRIVATE and served through signed URLs — a
+    // quote is not public the way a job post is.
+    mimeTypes: DOCUMENT_TYPES,
+    maxBytes: 10 * MB,
+    visibility: MediaVisibility.PRIVATE,
+    prefix: 'quotes',
+  },
 };
 
 /**

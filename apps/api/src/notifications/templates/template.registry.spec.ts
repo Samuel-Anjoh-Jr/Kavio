@@ -151,6 +151,28 @@ function sampleVariables(key: string): Record<string, unknown> {
         checkLabelKey: 'Verification.check.ADDRESS',
         infoRequest: 'Please send a utility bill from the last three months.',
       };
+    case 'job.application_received':
+      return { jobTitle: 'Fix a leaking kitchen tap' };
+    case 'job.invitation_received':
+      return { jobTitle: 'Repaint a two-bedroom flat' };
+    case 'job.application_status_changed':
+      return {
+        jobTitle: 'Fix a leaking kitchen tap',
+        status: 'SHORTLISTED',
+        statusLabelKey: 'Jobs.applicationStatus.SHORTLISTED',
+      };
+    case 'quote.received':
+      return { jobTitle: 'Fix a leaking kitchen tap', price: 25000 };
+    case 'quote.accepted':
+      return { jobTitle: 'Fix a leaking kitchen tap', price: 25000 };
+    case 'quote.declined':
+      return { jobTitle: 'Fix a leaking kitchen tap' };
+    case 'quote.counter_requested':
+      return {
+        jobTitle: 'Fix a leaking kitchen tap',
+        targetPrice: 20000,
+        message: 'Could you do it for a little less?',
+      };
     default:
       // Loud rather than `{}`: an empty object renders "undefined" into real
       // copy, and the parity test above would pass while the email was broken.

@@ -29,6 +29,8 @@ import { GeoModule } from './geo/geo.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { SearchModule } from './search/search.module';
 import { ProfilesModule } from './profiles/profiles.module';
+import { JobsModule } from './jobs/jobs.module';
+import { QuotesModule } from './quotes/quotes.module';
 
 @Module({
   imports: [
@@ -74,6 +76,14 @@ import { ProfilesModule } from './profiles/profiles.module';
     SearchModule,
     // Worker and business profiles, read and owner-edited (PRO-01…PRO-07).
     ProfilesModule,
+    // Jobs & applications (SRS §6 JOB-*). After CatalogModule (jobs are scoped to
+    // the taxonomy), GeoModule (job locations resolve their region) and
+    // TrustModule (the Tier 2+ posting gate derives the poster's tier).
+    JobsModule,
+    // Quotes, negotiation and bookings (SRS §3.6 QTE-*, PAY-01 init). After
+    // JobsModule, whose job state machine it drives on the first quote and on
+    // acceptance.
+    QuotesModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({

@@ -50,6 +50,27 @@ export interface TemplateVariablesMap {
     retryable: boolean;
   };
   'verification.info_requested': { checkLabelKey: string; infoRequest: string };
+  /** A worker applied to the poster's job (JOB-03). */
+  'job.application_received': { jobTitle: string };
+  /** A poster invited the worker to quote a job (JOB-03). */
+  'job.invitation_received': { jobTitle: string };
+  /**
+   * The poster moved the worker's application (JOB-04). `status` is the enum
+   * value; `statusLabelKey` keys the localized chip copy in the web catalogue.
+   */
+  'job.application_status_changed': { jobTitle: string; status: string; statusLabelKey: string };
+  /** A worker sent the client a quote (QTE-01). */
+  'quote.received': { jobTitle: string; price: number };
+  /** The client accepted the worker's quote — a booking now exists (QTE-03). */
+  'quote.accepted': { jobTitle: string; price: number };
+  /** The client declined the worker's quote (QTE-02). */
+  'quote.declined': { jobTitle: string };
+  /** The client asked the worker for a counter-offer (QTE-02). */
+  'quote.counter_requested': {
+    jobTitle: string;
+    targetPrice: number | null;
+    message: string | null;
+  };
 }
 
 export type TemplateKey = keyof TemplateVariablesMap;
@@ -800,6 +821,306 @@ const verificationInfoRequested: TemplateDefinition<'verification.info_requested
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Jobs & Quotes (JOB-03, JOB-04, QTE-01…QTE-03)
+//
+// Every one of these crosses from one party to the other — a worker applies and
+// the CLIENT hears; a client accepts and the WORKER hears. That cross-party
+// direction is exactly why they go through the dispatcher rather than being a
+// screen the actor already sees: the person who needs to know is not the person
+// who acted. XAF has no minor unit, so amounts render as whole grouped numbers.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Whole-XAF formatter. Grouped by locale; no decimals, because XAF has none. */
+function xaf(amount: number, locale: Locale): string {
+  return `${amount.toLocaleString(locale === 'fr' ? 'fr-FR' : 'en-US')} XAF`;
+}
+
+const jobApplicationReceived: TemplateDefinition<'job.application_received'> = {
+  key: 'job.application_received',
+  category: NotificationCategory.JOBS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'You have a new applicant',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Someone applied to your job.',
+          heading: 'New applicant',
+          bodyHtml: paragraphs(
+            `A worker has applied to your job "${escapeHtml(v.jobTitle)}".`,
+            'Open the job to see their profile, Trust Score and message.',
+          ),
+        }),
+        text: `A worker applied to your job "${v.jobTitle}". Open TrustPro to review them.`,
+      }),
+      fr: (v) => ({
+        subject: 'Vous avez une nouvelle candidature',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Quelqu’un a postulé à votre offre.',
+          heading: 'Nouvelle candidature',
+          bodyHtml: paragraphs(
+            `Un artisan a postulé à votre offre « ${escapeHtml(v.jobTitle)} ».`,
+            'Ouvrez l’offre pour voir son profil, son Score de Confiance et son message.',
+          ),
+        }),
+        text: `Un artisan a postulé à votre offre « ${v.jobTitle} ». Ouvrez TrustPro pour l’examiner.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'New applicant', body: `Someone applied to "${v.jobTitle}".` }),
+      fr: (v) => ({
+        title: 'Nouvelle candidature',
+        body: `Une candidature pour « ${v.jobTitle} ».`,
+      }),
+    },
+  },
+};
+
+const jobInvitationReceived: TemplateDefinition<'job.invitation_received'> = {
+  key: 'job.invitation_received',
+  category: NotificationCategory.JOBS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'A client invited you to a job',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'You have a new job request.',
+          heading: 'You’re invited to quote',
+          bodyHtml: paragraphs(
+            `A client invited you to their job "${escapeHtml(v.jobTitle)}".`,
+            'Open it to review the details and send a quote.',
+          ),
+        }),
+        text: `A client invited you to the job "${v.jobTitle}". Open TrustPro to send a quote.`,
+      }),
+      fr: (v) => ({
+        subject: 'Un client vous invite à une mission',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Vous avez une nouvelle demande.',
+          heading: 'Invitation à devis',
+          bodyHtml: paragraphs(
+            `Un client vous a invité à sa mission « ${escapeHtml(v.jobTitle)} ».`,
+            'Ouvrez-la pour consulter les détails et envoyer un devis.',
+          ),
+        }),
+        text: `Un client vous a invité à la mission « ${v.jobTitle} ». Ouvrez TrustPro pour envoyer un devis.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'New job request', body: `You’re invited to "${v.jobTitle}".` }),
+      fr: (v) => ({ title: 'Nouvelle demande', body: `Invitation à « ${v.jobTitle} ».` }),
+    },
+  },
+};
+
+const jobApplicationStatusChanged: TemplateDefinition<'job.application_status_changed'> = {
+  key: 'job.application_status_changed',
+  category: NotificationCategory.JOBS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'An update on your application',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Your application status changed.',
+          heading: 'Application update',
+          bodyHtml: paragraphs(
+            `There is an update on your application to "${escapeHtml(v.jobTitle)}".`,
+            'Open TrustPro to see where things stand.',
+          ),
+        }),
+        text: `Your application to "${v.jobTitle}" has an update on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: 'Mise à jour de votre candidature',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Le statut de votre candidature a changé.',
+          heading: 'Mise à jour',
+          bodyHtml: paragraphs(
+            `Votre candidature à « ${escapeHtml(v.jobTitle)} » a une mise à jour.`,
+            'Ouvrez TrustPro pour voir où en est votre candidature.',
+          ),
+        }),
+        text: `Votre candidature à « ${v.jobTitle} » a une mise à jour sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Application update', body: `Update on "${v.jobTitle}".` }),
+      fr: (v) => ({ title: 'Mise à jour', body: `Candidature « ${v.jobTitle} ».` }),
+    },
+  },
+};
+
+const quoteReceived: TemplateDefinition<'quote.received'> = {
+  key: 'quote.received',
+  category: NotificationCategory.QUOTES,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'You received a new quote',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'A worker sent you a quote.',
+          heading: 'New quote',
+          bodyHtml: paragraphs(
+            `You received a quote of ${xaf(v.price, 'en')} for "${escapeHtml(v.jobTitle)}".`,
+            'Open it to see what’s included and accept, decline, or ask for a counter-offer.',
+          ),
+        }),
+        text: `You received a quote of ${xaf(v.price, 'en')} for "${v.jobTitle}" on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: 'Vous avez reçu un nouveau devis',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un artisan vous a envoyé un devis.',
+          heading: 'Nouveau devis',
+          bodyHtml: paragraphs(
+            `Vous avez reçu un devis de ${xaf(v.price, 'fr')} pour « ${escapeHtml(v.jobTitle)} ».`,
+            'Ouvrez-le pour voir ce qui est inclus et accepter, refuser ou demander une contre-offre.',
+          ),
+        }),
+        text: `Vous avez reçu un devis de ${xaf(v.price, 'fr')} pour « ${v.jobTitle} » sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'New quote', body: `${xaf(v.price, 'en')} for "${v.jobTitle}".` }),
+      fr: (v) => ({
+        title: 'Nouveau devis',
+        body: `${xaf(v.price, 'fr')} pour « ${v.jobTitle} ».`,
+      }),
+    },
+  },
+};
+
+const quoteAccepted: TemplateDefinition<'quote.accepted'> = {
+  key: 'quote.accepted',
+  category: NotificationCategory.QUOTES,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your quote was accepted',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'The client accepted your quote.',
+          heading: 'Quote accepted',
+          bodyHtml: paragraphs(
+            `The client accepted your quote of ${xaf(v.price, 'en')} for "${escapeHtml(v.jobTitle)}".`,
+            'A booking has been created. Once payment is secured in escrow, you can start the work.',
+          ),
+        }),
+        text: `Your quote of ${xaf(v.price, 'en')} for "${v.jobTitle}" was accepted on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre devis a été accepté',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Le client a accepté votre devis.',
+          heading: 'Devis accepté',
+          bodyHtml: paragraphs(
+            `Le client a accepté votre devis de ${xaf(v.price, 'fr')} pour « ${escapeHtml(v.jobTitle)} ».`,
+            'Une réservation a été créée. Dès que le paiement est sécurisé sous séquestre, vous pouvez commencer.',
+          ),
+        }),
+        text: `Votre devis de ${xaf(v.price, 'fr')} pour « ${v.jobTitle} » a été accepté sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Quote accepted', body: `"${v.jobTitle}" — ${xaf(v.price, 'en')}.` }),
+      fr: (v) => ({ title: 'Devis accepté', body: `« ${v.jobTitle} » — ${xaf(v.price, 'fr')}.` }),
+    },
+  },
+};
+
+const quoteDeclined: TemplateDefinition<'quote.declined'> = {
+  key: 'quote.declined',
+  category: NotificationCategory.QUOTES,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'About your quote',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'An update on your quote.',
+          heading: 'About your quote',
+          bodyHtml: paragraphs(
+            `The client did not go ahead with your quote for "${escapeHtml(v.jobTitle)}" this time.`,
+            'Plenty of other jobs are looking for someone with your skills — keep going.',
+          ),
+        }),
+        text: `The client declined your quote for "${v.jobTitle}" on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: 'À propos de votre devis',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Une mise à jour sur votre devis.',
+          heading: 'À propos de votre devis',
+          bodyHtml: paragraphs(
+            `Le client n’a pas donné suite à votre devis pour « ${escapeHtml(v.jobTitle)} » cette fois.`,
+            'D’autres missions cherchent vos compétences — continuez.',
+          ),
+        }),
+        text: `Le client a décliné votre devis pour « ${v.jobTitle} » sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Quote update', body: `Not this time for "${v.jobTitle}".` }),
+      fr: (v) => ({ title: 'Devis', body: `Pas cette fois pour « ${v.jobTitle} ».` }),
+    },
+  },
+};
+
+const quoteCounterRequested: TemplateDefinition<'quote.counter_requested'> = {
+  key: 'quote.counter_requested',
+  category: NotificationCategory.QUOTES,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'The client asked for a counter-offer',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'The client would like to negotiate.',
+          heading: 'Counter-offer requested',
+          bodyHtml: paragraphs(
+            `The client would like a revised quote for "${escapeHtml(v.jobTitle)}".`,
+            ...(v.targetPrice != null
+              ? [`They suggested around ${xaf(v.targetPrice, 'en')}.`]
+              : []),
+            ...(v.message ? [escapeHtml(v.message)] : []),
+            'Open TrustPro to send a revised quote.',
+          ),
+        }),
+        text: `The client asked for a counter-offer on "${v.jobTitle}". Open TrustPro to revise your quote.`,
+      }),
+      fr: (v) => ({
+        subject: 'Le client demande une contre-offre',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Le client souhaite négocier.',
+          heading: 'Contre-offre demandée',
+          bodyHtml: paragraphs(
+            `Le client souhaite un devis révisé pour « ${escapeHtml(v.jobTitle)} ».`,
+            ...(v.targetPrice != null ? [`Il propose environ ${xaf(v.targetPrice, 'fr')}.`] : []),
+            ...(v.message ? [escapeHtml(v.message)] : []),
+            'Ouvrez TrustPro pour envoyer un devis révisé.',
+          ),
+        }),
+        text: `Le client demande une contre-offre pour « ${v.jobTitle} ». Ouvrez TrustPro pour réviser votre devis.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Counter-offer requested', body: `For "${v.jobTitle}".` }),
+      fr: (v) => ({ title: 'Contre-offre demandée', body: `Pour « ${v.jobTitle} ».` }),
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Registry + lookup
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -820,6 +1141,13 @@ const TEMPLATES: TemplateMap = {
   'verification.approved': verificationApproved,
   'verification.rejected': verificationRejected,
   'verification.info_requested': verificationInfoRequested,
+  'job.application_received': jobApplicationReceived,
+  'job.invitation_received': jobInvitationReceived,
+  'job.application_status_changed': jobApplicationStatusChanged,
+  'quote.received': quoteReceived,
+  'quote.accepted': quoteAccepted,
+  'quote.declined': quoteDeclined,
+  'quote.counter_requested': quoteCounterRequested,
 };
 
 export const TEMPLATE_KEYS = Object.keys(TEMPLATES) as TemplateKey[];

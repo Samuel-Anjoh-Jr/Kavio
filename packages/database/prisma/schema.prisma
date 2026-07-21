@@ -90,6 +90,16 @@ model User {
   clientProfile           ClientProfile?
   businessProfile         BusinessProfile?
 
+  postedJobs         Job[]             @relation("JobPoster")
+  jobStatusActs      JobStatusEvent[]  @relation("JobStatusActor")
+  jobApplications    JobApplication[]  @relation("JobApplicationWorker")
+  jobInvitations     JobInvitation[]   @relation("JobInvitationWorker")
+  sentJobInvitations JobInvitation[]   @relation("JobInvitationSender")
+  quotes             Quote[]           @relation("QuoteWorker")
+  workerBookings     Booking[]         @relation("BookingWorker")
+  clientBookings     Booking[]         @relation("BookingClient")
+  bookingStatusActs  BookingStatusEvent[] @relation("BookingStatusActor")
+
   trustScoreRecord      TrustScore?
   trustEvents           TrustEvent[]             @relation("TrustEventSubject")
   actedTrustEvents      TrustEvent[]             @relation("TrustEventActor")
@@ -1040,6 +1050,7 @@ model ServiceCategory {
   parent   ServiceCategory?  @relation("ServiceCategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
   children ServiceCategory[] @relation("ServiceCategoryTree")
   services Service[]
+  jobs     Job[]
 
   /// The browse list: live categories in their admin-chosen order.
   @@index([isActive, sortOrder])
@@ -1173,6 +1184,12 @@ enum MediaAssetKind {
   /// PORTFOLIO_IMAGE: portfolio media is evidence of work done and is counted
   /// as such by the Trust Engine, and a decorative banner must not inflate it.
   WORKER_COVER
+  /// A photo attached to a posted job (JOB-02) — "here is the broken pipe".
+  /// Uploaded by the CLIENT, so it must never be confused with PORTFOLIO_IMAGE,
+  /// which is a worker's evidence of work done and earns trust points.
+  JOB_PHOTO
+  /// A file a worker attaches to a quote (QTE-01): a sketch, a parts list.
+  QUOTE_ATTACHMENT
 }
 
 /// PRIVATE media is served only through short-lived signed URLs; PUBLIC media
@@ -1216,11 +1233,13 @@ model MediaAsset {
 
   createdAt DateTime @default(now())
 
-  owner         User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  portfolio     PortfolioItem[]
-  verifications VerificationDocument[]
-  workerCovers  WorkerProfile[]        @relation("WorkerProfileCover")
-  businessLogos BusinessProfile[]      @relation("BusinessProfileLogo")
+  owner            User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  portfolio        PortfolioItem[]
+  verifications    VerificationDocument[]
+  workerCovers     WorkerProfile[]        @relation("WorkerProfileCover")
+  businessLogos    BusinessProfile[]      @relation("BusinessProfileLogo")
+  jobPhotos        JobPhoto[]
+  quoteAttachments QuoteAttachment[]
 
   @@index([ownerId, kind, createdAt])
   /// The Documents area lists live files only (TRU-08).
@@ -1302,10 +1321,535 @@ model GeoRegion {
   workerProfiles   WorkerProfile[]   @relation("WorkerProfileRegion")
   clientProfiles   ClientProfile[]   @relation("ClientProfileRegion")
   businessProfiles BusinessProfile[] @relation("BusinessProfileRegion")
+  jobs             Job[]             @relation("JobRegion")
 
   /// The region picker: live regions at one level.
   @@index([level, isActive])
   @@index([parentId])
   /// The ingest's "find the row this OSM relation already seeded" lookup.
   @@index([osmId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Jobs & Applications (PROMPTS 54-55, 57; SRS §6 JOB-*, §21.3 lifecycle).
+//
+// A job is the unit of work a Client posts and a Worker competes for. Three
+// things about this area are load-bearing and easy to get wrong:
+//
+//   1. POSTING IS TIER-GATED (JOB-01). Nothing in this schema enforces that —
+//      a tier lives on the identity and the gate is a server-side check in
+//      JobPostingGateService. What the schema DOES do is keep `posterId` an
+//      identity FK, so the gate has exactly one thing to evaluate whether the
+//      poster is an individual or a business owner.
+//
+//   2. THE LIFECYCLE IS A STATE MACHINE, not a mutable label. `status` is only
+//      ever moved through job-lifecycle.model.ts, and every move appends a
+//      JobStatusEvent — which is what makes the status timeline (JOB-06) and
+//      "how long do jobs sit unquoted" answerable at all.
+//
+//   3. LOCATION FOLLOWS THE PROFILE RULES. Same plain lat/lng columns, same
+//      `trustpro_sync_location` trigger, same GIST-indexed geography column,
+//      same "a human pin always overrides an auto-detected fix" provenance.
+//      Proximity search over jobs must run on the same authoritative geometry
+//      as proximity search over workers, or the two disagree about the city.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The job lifecycle, exactly as tabulated in SRS §21.3.
+///
+/// REFUNDED is in the list even though PROMPT 55's summary omits it: the §21.3
+/// state table gives Accepted → Refunded and Disputed → Refunded as real exits,
+/// and a money state the enum cannot express is a state the escrow module would
+/// have to invent a second time in Phase 5.
+enum JobStatus {
+  DRAFT
+  OPEN
+  QUOTED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  RELEASED
+  DISPUTED
+  CANCELLED
+  REFUNDED
+  ARCHIVED
+}
+
+/// How soon the client needs the work (JOB-02).
+///
+/// A closed list rather than a free-text "when do you need this", because it is
+/// a filter and a ranking input for workers deciding what to bid on, and
+/// "urgent!!" typed into a box is neither.
+enum JobUrgency {
+  FLEXIBLE
+  WITHIN_WEEK
+  WITHIN_48_HOURS
+  EMERGENCY
+}
+
+/// Application tracking states (JOB-04), in the words the worker sees on screen.
+///
+/// WITHDRAWN is ours rather than the SRS's: a worker who has taken other work
+/// needs a way out that is not "not selected", which would misreport the
+/// poster's rejection rate and read as a judgement the poster never made.
+enum JobApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  SHORTLISTED
+  NOT_SELECTED
+  HIRED
+  WITHDRAWN
+}
+
+/// A direct invitation's state (JOB-03).
+enum JobInvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  /// Withdrawn by the poster before the worker answered.
+  CANCELLED
+}
+
+/// A posted job (JOB-01, JOB-02).
+model Job {
+  id String @id @default(uuid()) @db.Uuid
+
+  /// The IDENTITY that posted, never a role row. An individual Client and a
+  /// Business owner post the same kind of job and pass the same tier gate.
+  posterId String @db.Uuid
+
+  /// Scoped to the admin taxonomy (JOB-02, ADM-02). Nullable ONLY so the stepper
+  /// can autosave a draft before the category step is done — publish() refuses to
+  /// take a job live without one, so no OPEN job is ever uncategorised. That is
+  /// the opposite trade-off from Service.categoryId (permanently optional): a
+  /// worker's own-words listing is still reachable by name, but a job nobody can
+  /// find in a category browse just sits there, and the poster pays for that.
+  categoryId String? @db.Uuid
+
+  title       String
+  description String
+
+  /// Budget range in whole XAF (no minor unit). Both nullable: JOB-02 asks for
+  /// an encouraged fixed price/range, not a required one, and a client who
+  /// genuinely does not know what a repair costs should not be made to invent a
+  /// number that then anchors every quote they receive.
+  budgetMin Int?
+  budgetMax Int?
+
+  urgency JobUrgency @default(FLEXIBLE)
+  status  JobStatus  @default(DRAFT)
+
+  /// See WorkerProfile's location block — identical rules, same trigger.
+  city           String?
+  area           String?
+  latitude       Float?
+  longitude      Float?
+  locationSource LocationSource?
+  landmark       String?
+  geoRegionId    String?         @db.Uuid
+
+  location Unsupported("geography(Point, 4326)")?
+
+  /// When the job first went OPEN. Distinct from createdAt, which is when the
+  /// draft was started — the two can be days apart, and it is publication, not
+  /// creation, that orders a job board.
+  publishedAt     DateTime?
+  statusUpdatedAt DateTime  @default(now())
+  /// Set on any terminal transition, so "closed in the last 30 days" is one
+  /// indexed range scan rather than a CASE over five timestamps.
+  closedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  poster User @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
+  /// Restrict, not SetNull: the taxonomy is retired rather than deleted (see
+  /// ServiceCategory), so a delete here means something has gone wrong upstream
+  /// and silently orphaning live jobs would hide it. Optional to match the
+  /// nullable scalar — a draft may not have chosen a category yet.
+  category  ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  geoRegion GeoRegion?      @relation("JobRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
+
+  photos       JobPhoto[]
+  statusEvents JobStatusEvent[]
+  applications JobApplication[]
+  invitations  JobInvitation[]
+  quotes       Quote[]
+  bookings     Booking[]
+
+  /// The public job board: open jobs, newest published first.
+  @@index([status, publishedAt])
+  /// "My jobs", the poster's own list including drafts (JOB-07).
+  @@index([posterId, status, createdAt])
+  /// Browse-a-category and the matched-jobs feed workers see (JOB-04).
+  @@index([categoryId, status, publishedAt])
+  /// Region-scoped boards. Equality on the denormalised region rather than a
+  /// polygon containment test on every request.
+  @@index([geoRegionId, status])
+}
+
+/// A photo attached to a job post (JOB-02).
+///
+/// A MediaAsset FK rather than a URL column, for the reason spelled out on
+/// BusinessProfile.logoAssetId: a URL column would be the one path into the
+/// system that skips upload validation, ownership and signed access.
+model JobPhoto {
+  id           String @id @default(uuid()) @db.Uuid
+  jobId        String @db.Uuid
+  mediaAssetId String @db.Uuid
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  job        Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  /// The same photo cannot be attached twice — the idempotency guarantee for a
+  /// retried upload on a flaky connection.
+  @@unique([jobId, mediaAssetId])
+  @@index([jobId, sortOrder])
+}
+
+/// Every move the job made through the lifecycle (JOB-05, JOB-06, §21.3).
+///
+/// Append-only, and the reason the status timeline exists: a job's current
+/// `status` alone cannot answer "when did work actually start", which is both
+/// the client-facing timeline and the input to every completion-rate and
+/// response-time signal the Trust Engine will want.
+model JobStatusEvent {
+  id    String @id @default(uuid()) @db.Uuid
+  jobId String @db.Uuid
+
+  /// Null for the row written when the job is created as a draft.
+  fromStatus JobStatus?
+  toStatus   JobStatus
+
+  /// Null for system transitions (escrow release, automatic expiry).
+  actorId   String? @db.Uuid
+  note      String?
+  /// Ties the transition to the request that caused it, per the error contract.
+  requestId String?
+
+  createdAt DateTime @default(now())
+
+  job   Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  actor User? @relation("JobStatusActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  /// The timeline read path: one job's history in order (JOB-06).
+  @@index([jobId, createdAt])
+  /// Throughput metrics per state over a date window.
+  @@index([toStatus, createdAt])
+}
+
+/// A worker's application to a job (JOB-04).
+///
+/// Deliberately NOT the same thing as a Quote. An application is "I am
+/// interested and here is why me"; a quote is a priced, itemised, acceptable
+/// offer that creates a booking. Collapsing them would either force a price out
+/// of a worker who has not seen the site yet, or let an expression of interest
+/// be accepted into a contract.
+model JobApplication {
+  id    String @id @default(uuid()) @db.Uuid
+  jobId String @db.Uuid
+  /// The worker IDENTITY, not their WorkerProfile: trust, tier and history all
+  /// attach to the identity, and the poster is deciding about a person.
+  workerId String @db.Uuid
+
+  status  JobApplicationStatus @default(SUBMITTED)
+  message String
+
+  statusUpdatedAt DateTime  @default(now())
+  withdrawnAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job    Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  worker User    @relation("JobApplicationWorker", fields: [workerId], references: [id], onDelete: Cascade)
+  quotes Quote[]
+
+  /// One application per worker per job. A worker with second thoughts revises
+  /// the one they have; re-applying to shout louder is not a feature.
+  @@unique([jobId, workerId])
+  /// The poster's applicant list (JOB-03).
+  @@index([jobId, status, createdAt])
+  /// The worker's "my applications" tracker (JOB-04).
+  @@index([workerId, status, createdAt])
+}
+
+/// A poster inviting a specific worker to a job (JOB-03).
+///
+/// Separate from JobApplication because the direction of consent is opposite: an
+/// application is a worker offering themselves, an invitation is a client asking.
+/// Merging them would make "who approached whom" — exactly what a worker weighs
+/// when deciding whether to bother quoting — unrecoverable.
+model JobInvitation {
+  id          String @id @default(uuid()) @db.Uuid
+  jobId       String @db.Uuid
+  workerId    String @db.Uuid
+  invitedById String @db.Uuid
+
+  status  JobInvitationStatus @default(PENDING)
+  message String?
+
+  /// Invitations go stale. An open-ended one leaves a worker's inbox full of
+  /// jobs that were filled weeks ago.
+  expiresAt   DateTime?
+  respondedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  worker    User @relation("JobInvitationWorker", fields: [workerId], references: [id], onDelete: Cascade)
+  invitedBy User @relation("JobInvitationSender", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  /// One invitation per worker per job — re-inviting is nagging.
+  @@unique([jobId, workerId])
+  /// The worker's incoming Job Requests (JOB-04).
+  @@index([workerId, status, createdAt])
+  @@index([jobId, status])
+  /// The lazy expiry sweep.
+  @@index([status, expiresAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Quotes & Negotiation (PROMPT 59; QTE-01, QTE-03, QTE-04).
+//
+// A quote is the priced offer that becomes a contract. Two decisions carry the
+// negotiation:
+//
+//   REVISIONS ARE NEW ROWS. A counter-offer never edits a quote in place —
+//   `parentQuoteId` chains the new offer to the one it supersedes. A price the
+//   client saw must stay retrievable exactly as they saw it, because that is
+//   what a dispute is argued over.
+//
+//   THE CLIENT'S COUNTER-REQUEST IS NOT A QUOTE. QTE-02 lets a client REQUEST a
+//   counter-offer, not author one, so it is fields on the quote being countered
+//   rather than a row of its own — the worker still sets every price in this
+//   system, which is the whole point of a quote.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The six quote states named in QTE-03. Deliberately no SUPERSEDED value: a
+/// revised quote is DECLINED with `supersededAt` set, so the state contract
+/// stays exactly the SRS's while the UI can still label it "Revised" rather
+/// than the misleading "Declined".
+enum QuoteStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+/// The unit an estimate is expressed in (QTE-01).
+///
+/// A unit plus a number rather than a minutes integer: a mason says "three
+/// days", and storing that as 4320 minutes renders back as false precision in
+/// whichever language the reader picked.
+enum QuoteDurationUnit {
+  HOUR
+  DAY
+  WEEK
+}
+
+/// A worker's priced offer on a job (QTE-01, QTE-03).
+model Quote {
+  id       String @id @default(uuid()) @db.Uuid
+  jobId    String @db.Uuid
+  workerId String @db.Uuid
+
+  /// The application this grew out of, when there was one. Null for a quote sent
+  /// straight off an invitation.
+  applicationId String? @db.Uuid
+  /// The quote this one revises. The head of a chain has null here.
+  parentQuoteId String? @db.Uuid
+
+  /// Whole XAF. The number the escrow will hold if this is accepted.
+  price         Int
+  durationValue Int?
+  durationUnit  QuoteDurationUnit?
+
+  /// The itemised "what's included" (QTE-01). A string array rather than a table
+  /// because a line item has no identity of its own — it is never referenced,
+  /// reordered independently or priced separately; it is one field of the offer.
+  includes String[]
+  message  String?
+
+  status QuoteStatus @default(DRAFT)
+
+  sentAt DateTime?
+  /// Set the first time the client opens it — the "Viewed" chip in the worker's
+  /// Sent inbox (QTE-04), and a real signal that silence means no rather than
+  /// unseen.
+  viewedAt     DateTime?
+  respondedAt  DateTime?
+  /// A quote is a price for today's materials, not a standing offer.
+  expiresAt    DateTime?
+  /// Set when a revision replaced this quote. See QuoteStatus.
+  supersededAt DateTime?
+
+  /// The client's counter-offer REQUEST (QTE-02). Overwritten by a second
+  /// request rather than accumulated: only the latest ask is live, and a history
+  /// of asks belongs to the message thread, not to the offer.
+  counterRequestedAt DateTime?
+  counterMessage     String?
+  counterTargetPrice Int?
+
+  /// Why the client said no. Worker- and staff-facing; a coded reason is not
+  /// worth the schema here because nothing branches on it.
+  declineReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job         Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  worker      User            @relation("QuoteWorker", fields: [workerId], references: [id], onDelete: Cascade)
+  application JobApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  parent      Quote?          @relation("QuoteRevision", fields: [parentQuoteId], references: [id], onDelete: SetNull)
+  revisions   Quote[]         @relation("QuoteRevision")
+
+  attachments QuoteAttachment[]
+  booking     Booking?
+
+  /// The client's Received inbox for one job (QTE-04).
+  @@index([jobId, status, createdAt])
+  /// The worker's Sent / Drafts inboxes (QTE-04).
+  @@index([workerId, status, createdAt])
+  /// The lazy expiry sweep.
+  @@index([status, expiresAt])
+  @@index([parentQuoteId])
+}
+
+/// A file attached to a quote (QTE-01): a sketch, a parts list, a spec photo.
+model QuoteAttachment {
+  id           String @id @default(uuid()) @db.Uuid
+  quoteId      String @db.Uuid
+  mediaAssetId String @db.Uuid
+
+  createdAt DateTime @default(now())
+
+  quote      Quote      @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([quoteId, mediaAssetId])
+  @@index([quoteId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bookings (PROMPT 60; QTE-04, PAY-01 init).
+//
+// A booking is the agreement itself: this worker, this client, this price. It is
+// created the moment a quote is accepted and is what the escrow state machine
+// (P62-P65) will hang money off.
+//
+// The money columns are SNAPSHOTS, not derivations. `platformFeeBps` records the
+// fee rate that was shown to the client before they paid (~10%, SRS §21), and
+// the two amounts are computed once from it. Recomputing a fee at payout time
+// from whatever the current rate happens to be would silently re-price an
+// agreement both parties already made — the one failure a marketplace never
+// gets forgiven for.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The escrow lifecycle a booking walks (SRS §21.2; CLAUDE.md PAYMENTS).
+///
+/// PROMPT 60 implements only the entry state: a booking is created
+/// PENDING_PAYMENT and an escrow-initiation event is emitted. Every transition
+/// past that belongs to the payments module, which is why they are modelled here
+/// rather than invented there — the states a booking can reach must be one
+/// closed list, not two that drift.
+enum BookingStatus {
+  /// Created, escrow initiation requested, money not yet held.
+  PENDING_PAYMENT
+  /// Campay confirmed collection; funds held.
+  PAID
+  IN_PROGRESS
+  COMPLETED
+  /// Client confirmed; worker paid out minus the fee. Terminal.
+  RELEASED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
+/// An accepted quote, as an agreement (QTE-03, PAY-01).
+model Booking {
+  id      String @id @default(uuid()) @db.Uuid
+  jobId   String @db.Uuid
+  quoteId String @db.Uuid
+
+  /// Both identities are denormalised onto the booking rather than walked
+  /// through job → poster and quote → worker on every read. This is the row
+  /// money moves against; who is owed what must be readable without a join that
+  /// a later edit to either parent could quietly change.
+  workerId String @db.Uuid
+  clientId String @db.Uuid
+
+  /// Whole XAF. Currency is not a column — the platform is XAF-only by
+  /// requirement, and a column that can only hold one value invites code that
+  /// pretends it can hold two.
+  agreedPrice Int
+  /// The fee rate in basis points, snapshotted at acceptance. 1000 = 10%.
+  platformFeeBps    Int
+  platformFeeAmount Int
+  /// agreedPrice - platformFeeAmount. Stored rather than derived so a rounding
+  /// rule change can never retroactively alter what a worker was promised.
+  workerPayoutAmount Int
+
+  status BookingStatus @default(PENDING_PAYMENT)
+
+  /// When the escrow flow was kicked off (PAY-01). Null means the initiation
+  /// event has not been emitted yet — which, on a live row, is a bug worth
+  /// finding rather than a state worth reaching.
+  escrowInitiatedAt DateTime?
+  statusUpdatedAt   DateTime  @default(now())
+  completedAt       DateTime?
+  releasedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  /// One booking per quote, enforced by the unique below rather than checked in
+  /// code: a double-accept under a double-tap on a bad connection would
+  /// otherwise create two agreements for one offer.
+  quote  Quote @relation(fields: [quoteId], references: [id], onDelete: Restrict)
+  worker User  @relation("BookingWorker", fields: [workerId], references: [id], onDelete: Restrict)
+  client User  @relation("BookingClient", fields: [clientId], references: [id], onDelete: Restrict)
+
+  statusEvents BookingStatusEvent[]
+
+  @@unique([quoteId])
+  /// Both parties' booking lists.
+  @@index([workerId, status, createdAt])
+  @@index([clientId, status, createdAt])
+  @@index([jobId])
+  /// The reconciliation sweep against Campay webhooks.
+  @@index([status, createdAt])
+}
+
+/// Every move a booking made through the escrow states. Append-only.
+///
+/// The money audit trail (CLAUDE.md: "audit-log every money/verification
+/// event"). AuditLog carries the cross-cutting record; this carries the
+/// per-booking one the two parties are entitled to see.
+model BookingStatusEvent {
+  id        String @id @default(uuid()) @db.Uuid
+  bookingId String @db.Uuid
+
+  fromStatus BookingStatus?
+  toStatus   BookingStatus
+
+  /// Null for transitions driven by a Campay webhook rather than by a person.
+  actorId   String? @db.Uuid
+  note      String?
+  requestId String?
+
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  actor   User?   @relation("BookingStatusActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId, createdAt])
 }

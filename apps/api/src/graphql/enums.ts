@@ -2,14 +2,21 @@ import { registerEnumType } from '@nestjs/graphql';
 import { NoProviderReason } from '../search/no-provider.util';
 import {
   BadgeType,
+  BookingStatus,
   EndorsementRelationship,
   GeoRegionLevel,
+  JobApplicationStatus,
+  JobInvitationStatus,
+  JobStatus,
+  JobUrgency,
   LocationSource,
   MediaAssetKind,
   MediaVisibility,
   OnboardingRole,
   PortfolioItemType,
   PortfolioSlot,
+  QuoteDurationUnit,
+  QuoteStatus,
   Role,
   TeamMemberRole,
   TrustEventType,
@@ -130,6 +137,41 @@ export function registerGraphQLEnums(): void {
   registerEnumType(TeamMemberRole, {
     name: 'TeamMemberRole',
     description: 'A member’s role within a business team (BIZ-03).',
+  });
+
+  registerEnumType(JobStatus, {
+    name: 'JobStatus',
+    description: 'A job’s lifecycle state (JOB-05, SRS §21.3).',
+  });
+
+  registerEnumType(JobUrgency, {
+    name: 'JobUrgency',
+    description: 'How soon the client needs the work (JOB-02).',
+  });
+
+  registerEnumType(JobApplicationStatus, {
+    name: 'JobApplicationStatus',
+    description: 'A worker’s application status as they track it (JOB-04).',
+  });
+
+  registerEnumType(JobInvitationStatus, {
+    name: 'JobInvitationStatus',
+    description: 'The state of an invitation to quote a job (JOB-03).',
+  });
+
+  registerEnumType(QuoteStatus, {
+    name: 'QuoteStatus',
+    description: 'A quote’s state (QTE-03): Draft, Sent, Viewed, Accepted, Declined, Expired.',
+  });
+
+  registerEnumType(QuoteDurationUnit, {
+    name: 'QuoteDurationUnit',
+    description: 'The unit a quote’s estimated duration is expressed in (QTE-01).',
+  });
+
+  registerEnumType(BookingStatus, {
+    name: 'BookingStatus',
+    description: 'The escrow lifecycle of a booking (PAY-01, SRS §21.2).',
   });
 
   // Not a Prisma enum: the reason a search came back empty is derived at read
