@@ -20,6 +20,8 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { GraphQLModule } from './graphql/graphql.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UsersModule } from './users/users.module';
+import { StorageModule } from './storage/storage.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
 
 @Module({
   imports: [
@@ -38,6 +40,10 @@ import { UsersModule } from './users/users.module';
     // @OnEvent listeners are bound at bootstrap.
     EventEmitterModule.forRoot({ global: true }),
     NotificationsModule,
+    // Object storage for portfolio media, KYC documents and business papers.
+    // Registered before OnboardingModule, which resolves signed URLs through it.
+    StorageModule,
+    OnboardingModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({

@@ -4,7 +4,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Geist, Geist_Mono, Inter, Inter_Tight, IBM_Plex_Sans } from 'next/font/google';
 import { routing } from '@/i18n/routing';
-import { ThemeProvider } from '@/components/theme-provider';
+import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
@@ -74,12 +74,12 @@ export default async function LocaleLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${interTight.variable} ${ibmPlexSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        <ThemeProvider>
+        <Providers>
           <NextIntlClientProvider>
             {children}
             <Toaster />
           </NextIntlClientProvider>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

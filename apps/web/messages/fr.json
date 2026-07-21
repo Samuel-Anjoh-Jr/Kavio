@@ -116,12 +116,377 @@
       "PASSWORD_NOT_SET": "Utilisez le lien de réinitialisation pour définir votre premier mot de passe.",
       "FORBIDDEN_FOR_ROLE": "Votre rôle actuel ne permet pas cette action. Changez de rôle et réessayez.",
       "ROLE_NOT_GRANTED": "Vous n'avez pas encore ce rôle.",
-      "UNKNOWN_ERROR": "Une erreur est survenue. Veuillez réessayer."
+      "UNKNOWN_ERROR": "Une erreur est survenue. Veuillez réessayer.",
+      "VALIDATION_ERROR": "Certains champs demandent votre attention.",
+      "FILE_REQUIRED": "Choisissez un fichier à envoyer.",
+      "FILE_EMPTY": "Ce fichier semble vide.",
+      "FILE_TOO_LARGE": "Ce fichier est trop volumineux. Essayez-en un plus petit.",
+      "UNSUPPORTED_FILE_TYPE": "Ce type de fichier n'est pas pris en charge.",
+      "UPLOAD_FAILED": "L'envoi n'a pas abouti. Vérifiez votre connexion et réessayez.",
+      "SAVE_FAILED": "Nous n'avons pas pu enregistrer vos modifications. Elles sont toujours à l'écran.",
+      "COMPLETE_FAILED": "Nous n'avons pas encore pu finaliser votre profil. Réessayez.",
+      "ONBOARDING_INCOMPLETE": "Quelques étapes obligatoires manquent encore.",
+      "UNKNOWN_STEP": "Cette étape d'inscription n'existe pas.",
+      "UNKNOWN_ONBOARDING_ROLE": "Parcours d'inscription inconnu."
     },
     "resend": {
       "available": "Renvoyer le code",
       "countdown": "Renvoyer dans {seconds}s",
       "sentTo": "Nous avons envoyé un code à {destination}."
+    },
+    "brandPanel": {
+      "headline": "Une confiance vérifiable, pas seulement annoncée.",
+      "body": "TrustPro vérifie l'identité, les compétences et l'historique de travail : vous savez exactement qui vous recrutez, ou qui vous recrute.",
+      "points": {
+        "verified": "Vérification progressive, du téléphone aux contrôles sur le terrain",
+        "escrow": "Paiements sous séquestre, libérés seulement une fois le travail terminé",
+        "portfolio": "De vrais portfolios et des recommandations locales, pas juste des étoiles"
+      }
+    },
+    "signUp": {
+      "title": "Créez votre compte",
+      "subtitle": "Cela prend une minute. Vous pouvez explorer TrustPro sans compte, mais il en faut un pour publier, postuler ou payer.",
+      "intentLegend": "Qu'est-ce qui vous amène sur TrustPro ?",
+      "intent": {
+        "find_work": {
+          "title": "Je cherche du travail",
+          "description": "Proposez vos compétences et soyez recruté"
+        },
+        "hire": {
+          "title": "Je veux recruter",
+          "description": "Trouvez un artisan vérifié près de chez vous"
+        }
+      },
+      "phoneLabel": "Numéro de téléphone",
+      "phoneHint": "Numéros camerounais uniquement, ex. +237 6XX XX XX XX.",
+      "phoneInvalid": "Saisissez un numéro camerounais valide.",
+      "emailLabel": "Adresse e-mail",
+      "emailHint": "Les codes de vérification arrivent par e-mail tant que le SMS n'est pas activé : ajoutez-en une.",
+      "emailInvalid": "Saisissez une adresse e-mail valide.",
+      "passwordLabel": "Mot de passe",
+      "passwordHint": "Au moins 8 caractères.",
+      "passwordInvalid": "Utilisez au moins 8 caractères.",
+      "submit": "Créer le compte",
+      "submitting": "Création de votre compte…",
+      "haveAccount": "Vous avez déjà un compte ?"
+    },
+    "login": {
+      "title": "Bon retour",
+      "subtitle": "Connectez-vous pour publier des missions, envoyer des devis et gérer votre travail.",
+      "identifierLabel": "Téléphone ou e-mail",
+      "identifierPlaceholder": "+237 6XX XX XX XX ou vous@exemple.com",
+      "identifierRequired": "Saisissez votre téléphone ou votre e-mail.",
+      "passwordLabel": "Mot de passe",
+      "passwordRequired": "Saisissez votre mot de passe.",
+      "forgotPassword": "Mot de passe oublié ?",
+      "submitting": "Connexion en cours…",
+      "useCode": "Se connecter avec un code",
+      "noAccount": "Nouveau sur TrustPro ?",
+      "createAccount": "Créer un compte"
+    },
+    "verify": {
+      "title": "Saisissez votre code",
+      "subtitle": "Nous vous avons envoyé un code à 6 chiffres. Saisissez-le pour confirmer que c'est bien vous.",
+      "identifierLabel": "Téléphone ou e-mail",
+      "codeLabel": "Code de vérification",
+      "codeHint": "Consultez vos e-mails, ou vos messages une fois le SMS activé.",
+      "sentHint": "Nous avons envoyé un code à {destination}.",
+      "submit": "Vérifier et continuer",
+      "submitting": "Vérification du code…",
+      "noCode": "Vous ne l'avez pas reçu ?"
+    },
+    "twoFactor": {
+      "title": "Encore une étape",
+      "subtitle": "La double authentification est active sur votre compte. Saisissez le code que nous venons d'envoyer pour terminer.",
+      "codeLabel": "Code à deux facteurs",
+      "codeHint": "Le code expire dans quelques minutes.",
+      "submit": "Terminer la connexion",
+      "submitting": "Vérification du code…"
+    },
+    "forgotPassword": {
+      "title": "Réinitialiser votre mot de passe",
+      "subtitle": "Indiquez-nous comment vous joindre et nous enverrons un lien de réinitialisation.",
+      "identifierLabel": "Téléphone ou e-mail",
+      "identifierPlaceholder": "+237 6XX XX XX XX ou vous@exemple.com",
+      "identifierRequired": "Saisissez votre téléphone ou votre e-mail.",
+      "submit": "Envoyer le lien",
+      "submitting": "Envoi…",
+      "sent": "Si ce compte existe, un lien de réinitialisation est en route. Consultez vos e-mails.",
+      "backToLogin": "Retour à la connexion"
+    },
+    "resetPassword": {
+      "title": "Choisissez un nouveau mot de passe",
+      "subtitle": "Choisissez-en un que vous n'utilisez pas ailleurs.",
+      "passwordLabel": "Nouveau mot de passe",
+      "passwordHint": "Au moins 8 caractères.",
+      "passwordInvalid": "Utilisez au moins 8 caractères.",
+      "confirmLabel": "Confirmez le nouveau mot de passe",
+      "mismatch": "Les mots de passe ne correspondent pas.",
+      "submit": "Mettre à jour",
+      "submitting": "Mise à jour…",
+      "success": "Votre mot de passe est à jour. Retour à la connexion…",
+      "backToLogin": "Retour à la connexion",
+      "missingToken": "Ce lien de réinitialisation est incomplet. Demandez-en un nouveau depuis l'écran de connexion."
+    },
+    "gated": {
+      "post_job": "Connectez-vous pour publier votre mission. Nous avons gardé votre brouillon.",
+      "apply_job": "Connectez-vous pour postuler. Nous vous ramenons aussitôt.",
+      "contact_worker": "Connectez-vous pour contacter cet artisan.",
+      "request_quote": "Connectez-vous pour demander un devis.",
+      "pay": "Connectez-vous pour passer au paiement.",
+      "save_favorite": "Connectez-vous pour l'ajouter à vos favoris.",
+      "submit_review": "Connectez-vous pour laisser votre avis."
+    }
+  },
+  "Nav": {
+    "primary": "Navigation principale",
+    "explore": "Explorer",
+    "jobs": "Missions",
+    "search": "Rechercher",
+    "account": "Compte",
+    "home": "Mon espace",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter"
+  },
+  "Roles": {
+    "switcherLabel": "Changer de rôle",
+    "switched": "Vous utilisez maintenant TrustPro en tant que {role}.",
+    "names": {
+      "WORKER": "Artisan",
+      "CLIENT": "Client",
+      "BUSINESS": "Entreprise"
+    },
+    "descriptions": {
+      "WORKER": "Proposez vos services et postulez aux missions",
+      "CLIENT": "Publiez des missions et recrutez des artisans vérifiés",
+      "BUSINESS": "Gérez le profil et l'équipe de votre entreprise"
+    }
+  },
+  "Explore": {
+    "title": "Trouvez de l'aide fiable près de chez vous",
+    "subtitle": "Parcourez les artisans vérifiés et les missions ouvertes à Douala et Yaoundé. Aucun compte requis pour regarder.",
+    "searchLabel": "Rechercher un service ou un artisan",
+    "searchPlaceholder": "Plombier, électricien, couturier…",
+    "postJob": "Publier une mission",
+    "workersHeading": "Artisans près de vous",
+    "workersEmpty": "La découverte des artisans arrive avec la recherche et les profils. Votre position et vos filtres alimenteront ce fil.",
+    "jobsHeading": "Missions publiées récemment",
+    "jobsEmpty": "Les missions publiées apparaîtront ici dès l'ouverture de la publication."
+  },
+  "Jobs": {
+    "title": "Missions publiées",
+    "subtitle": "Découvrez ce dont les gens près de chez vous ont besoin.",
+    "post": "Publier une mission",
+    "empty": "Aucune mission pour le moment. Dès l'ouverture de la publication, les missions de votre zone apparaîtront ici."
+  },
+  "PostJob": {
+    "title": "Décrivez votre mission",
+    "subtitle": "Dites-nous ce dont vous avez besoin. Écrivez-le maintenant et connectez-vous quand vous serez prêt à publier.",
+    "titleLabel": "De quoi avez-vous besoin ?",
+    "titlePlaceholder": "Réparer un robinet de cuisine qui fuit",
+    "descriptionLabel": "Décrivez le travail",
+    "descriptionPlaceholder": "Donnez les détails nécessaires pour un devis précis.",
+    "budgetLabel": "Budget (XAF)",
+    "budgetHint": "Une estimation suffit. Francs entiers uniquement.",
+    "submit": "Publier cette mission",
+    "resumed": "Bon retour — nous avons restauré la mission que vous rédigiez.",
+    "pendingBackend": "Votre brouillon est prêt. La publication ouvrira avec la vérification."
+  },
+  "Home": {
+    "title": "Votre espace TrustPro",
+    "greeting": {
+      "WORKER": "Votre activité en un coup d'œil",
+      "CLIENT": "Recrutez en toute confiance",
+      "BUSINESS": "Votre entreprise sur TrustPro"
+    },
+    "subtitle": {
+      "WORKER": "Complétez votre profil, gagnez des missions et faites monter votre Score de Confiance.",
+      "CLIENT": "Publiez ce dont vous avez besoin et recrutez des artisans vérifiés près de chez vous.",
+      "BUSINESS": "Gérez le profil, les documents et l'équipe de votre entreprise."
+    },
+    "onboardingHeading": "Terminez la configuration de votre profil",
+    "onboardingBody": "Vous êtes à {percent} % du parcours. Chaque étape débloque davantage de TrustPro.",
+    "onboardingStart": "Commencer",
+    "onboardingResume": "Continuer",
+    "exploreCard": "Explorer les artisans",
+    "exploreCardBody": "Recherchez des artisans vérifiés près de vous.",
+    "jobsCard": "Missions",
+    "jobsCardBody": {
+      "WORKER": "Trouvez des missions ouvertes correspondant à vos services.",
+      "CLIENT": "Consultez les missions que vous avez publiées.",
+      "BUSINESS": "Suivez les missions publiées par votre entreprise."
+    }
+  },
+  "Onboarding": {
+    "completionHeading": "Complétion du profil",
+    "unlocksAt": "Débloqué à {threshold} %",
+    "stepsLabel": "Étapes d'inscription",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré",
+    "saveFailed": "Nous n'avons pas pu enregistrer votre dernière modification. Elle est toujours à l'écran — vérifiez votre connexion, la sauvegarde sera retentée.",
+    "saveFailedShort": "Non enregistré",
+    "finish": "Terminer la configuration",
+    "finished": "Configuration terminée",
+    "remove": "Supprimer",
+    "uploading": "Envoi… {percent} %",
+    "days": {
+      "0": "Dimanche",
+      "1": "Lundi",
+      "2": "Mardi",
+      "3": "Mercredi",
+      "4": "Jeudi",
+      "5": "Vendredi",
+      "6": "Samedi"
+    },
+    "location": {
+      "useCurrent": "Utiliser ma position actuelle",
+      "locating": "Localisation…",
+      "captured": "Position enregistrée ({lat}, {lng}).",
+      "unsupported": "Ce navigateur ne peut pas détecter votre position. Saisissez votre ville.",
+      "denied": "L'accès à la position a été refusé. Saisissez votre ville.",
+      "failed": "Nous n'avons pas pu détecter votre position. Saisissez votre ville.",
+      "cityLabel": "Ville",
+      "cityPlaceholder": "Douala",
+      "areaLabel": "Quartier ou point de repère",
+      "areaPlaceholder": "Akwa, près du Carrefour Ndokotti",
+      "areaHint": "Un point de repère aide les artisans à vous trouver. Ce que vous saisissez ici prévaut toujours sur la position détectée."
+    },
+    "worker": {
+      "title": "Configurez votre profil d'artisan",
+      "subtitle": "Plus votre profil est complet, plus les clients vous trouvent et vous font confiance. Tout s'enregistre au fur et à mesure.",
+      "completed": "Votre profil d'artisan est en ligne. Bienvenue sur TrustPro.",
+      "unlocks": {
+        "appear_in_search": "Apparaître dans les résultats de recherche",
+        "portfolio_showcase": "Mettre en avant vos réalisations",
+        "verified_badge": "Badge vérifié sur votre profil",
+        "priority_placement": "Placement prioritaire devant les artisans non vérifiés"
+      },
+      "steps": {
+        "services": {
+          "label": "Services",
+          "title": "Que proposez-vous ?",
+          "description": "Listez vos services et leur prix de départ habituel. Des tarifs clairs remportent plus de missions.",
+          "nameLabel": "Service",
+          "namePlaceholder": "Réparations de plomberie",
+          "priceLabel": "Prix de départ (XAF)",
+          "priceHint": "Le prix de départ d'une mission type. Francs entiers uniquement.",
+          "add": "Ajouter un service"
+        },
+        "availability": {
+          "label": "Disponibilité",
+          "title": "Quand pouvez-vous travailler ?",
+          "description": "Choisissez les jours où vous êtes généralement disponible et vos horaires.",
+          "startLabel": "Heure de début",
+          "endLabel": "Heure de fin"
+        },
+        "portfolio": {
+          "label": "Portfolio",
+          "title": "Montrez votre travail",
+          "description": "Les photos de missions terminées sont le signal le plus fort pour un nouveau client.",
+          "upload": "Ajouter une photo",
+          "hint": "JPEG, PNG ou WebP, jusqu'à 10 Mo chacune.",
+          "itemAlt": "Photo de portfolio {index}",
+          "stored": "Photo envoyée"
+        },
+        "identity": {
+          "label": "Identité",
+          "title": "Vérifiez qui vous êtes",
+          "description": "Une identité vérifiée débloque le badge que les clients recherchent, et des missions mieux rémunérées.",
+          "privacy": "Votre pièce d'identité et votre selfie sont chiffrés, privés, et visibles uniquement par vous et l'équipe de vérification TrustPro. Ils n'apparaissent jamais sur votre profil public.",
+          "idFront": "Envoyer la pièce d'identité (recto)",
+          "idBack": "Envoyer la pièce d'identité (verso)",
+          "selfie": "Prendre un selfie",
+          "selfieHint": "Une photo nette de votre visage, bien éclairée.",
+          "uploaded": "Envoyé"
+        },
+        "location": {
+          "label": "Localisation",
+          "title": "Où travaillez-vous ?",
+          "description": "Les clients recherchent par distance : c'est ce qui détermine qui vous trouve."
+        }
+      }
+    },
+    "client": {
+      "title": "Configurez votre compte",
+      "subtitle": "Deux étapes rapides et vous êtes prêt à recruter.",
+      "completed": "Tout est prêt. À vous de trouver la bonne personne.",
+      "unlocks": {
+        "post_jobs": "Publier des missions et recevoir des devis",
+        "nearby_workers": "Voir d'abord les artisans les plus proches"
+      },
+      "steps": {
+        "profile": {
+          "label": "Vos informations",
+          "title": "Comment les artisans doivent-ils vous appeler ?",
+          "description": "C'est le nom que voient les artisans quand vous les contactez.",
+          "nameLabel": "Votre nom",
+          "namePlaceholder": "Amina N.",
+          "nameHint": "Un prénom et une initiale suffisent."
+        },
+        "location": {
+          "label": "Localisation",
+          "title": "Où avez-vous besoin d'aide ?",
+          "description": "Nous l'utilisons pour vous montrer les artisans disponibles les plus proches."
+        }
+      }
+    },
+    "business": {
+      "title": "Enregistrez votre entreprise",
+      "subtitle": "Parlez-nous de votre société et ajoutez votre équipe. La vérification est examinée par TrustPro une fois terminé.",
+      "completed": "Votre entreprise est enregistrée. L'examen de vérification suit.",
+      "unlocks": {
+        "company_profile": "Un profil d'entreprise public",
+        "verified_business_review": "Soumettre pour l'examen Entreprise Vérifiée",
+        "team_hiring": "Recruter et gérer les missions en équipe"
+      },
+      "steps": {
+        "company": {
+          "label": "Entreprise",
+          "title": "À propos de votre entreprise",
+          "description": "C'est ce que les clients et les artisans voient sur votre profil d'entreprise.",
+          "nameLabel": "Nom de l'entreprise",
+          "namePlaceholder": "Douala Facilities SARL",
+          "descriptionLabel": "Que fait votre entreprise ?",
+          "rccmLabel": "Numéro RCCM / d'enregistrement",
+          "rccmHint": "Votre numéro au registre du commerce camerounais, si vous en avez un.",
+          "cityLabel": "Ville",
+          "addressLabel": "Adresse",
+          "emailLabel": "E-mail de contact",
+          "phoneLabel": "Téléphone de contact"
+        },
+        "documents": {
+          "label": "Documents",
+          "title": "Documents d'enregistrement",
+          "description": "Envoyez votre enregistrement pour que TrustPro examine votre entreprise en vue du badge Entreprise Vérifiée.",
+          "privacy": "Les documents d'enregistrement sont privés et chiffrés. Seule l'équipe de vérification TrustPro peut les ouvrir.",
+          "registration": "Envoyer le document d'enregistrement",
+          "registrationHint": "Certificat RCCM ou équivalent. PDF ou image, jusqu'à 15 Mo.",
+          "logo": "Envoyer le logo de l'entreprise",
+          "uploaded": "Envoyé"
+        },
+        "team": {
+          "label": "Équipe",
+          "title": "Qui travaille avec vous ?",
+          "description": "Ajoutez les personnes qui géreront les missions ou les paiements. Vous pourrez les inviter formellement plus tard.",
+          "nameLabel": "Nom",
+          "emailLabel": "E-mail",
+          "roleLabel": "Rôle",
+          "accessLabel": "Niveau d'accès",
+          "add": "Ajouter un membre",
+          "roles": {
+            "ADMIN": "Administrateur",
+            "HR_MANAGER": "Responsable RH",
+            "ACCOUNTANT": "Comptable",
+            "STAFF": "Personnel"
+          },
+          "accessLevels": {
+            "FULL": "Accès complet",
+            "MANAGE_JOBS": "Gérer les missions",
+            "PAYMENTS": "Paiements",
+            "VIEW_ONLY": "Lecture seule"
+          }
+        }
+      }
     }
   }
 }

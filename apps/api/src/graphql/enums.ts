@@ -1,5 +1,5 @@
 import { registerEnumType } from '@nestjs/graphql';
-import { Role, UserStatus, VerificationTier } from '@trustpro/database';
+import { OnboardingRole, Role, UserStatus, VerificationTier } from '@trustpro/database';
 
 /**
  * Prisma enums exposed to the GraphQL schema. Registering them ONCE here (rather
@@ -22,5 +22,10 @@ export function registerGraphQLEnums(): void {
     name: 'VerificationTier',
     description:
       'Progressive verification tier (SRS §21.4). Attached to the identity, not the role, so switching role never re-verifies.',
+  });
+
+  registerEnumType(OnboardingRole, {
+    name: 'OnboardingRole',
+    description: 'A role with its own onboarding flow (ACC-10).',
   });
 }

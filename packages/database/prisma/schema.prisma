@@ -84,6 +84,11 @@ model User {
   verificationCodes       VerificationCode[]
   refreshTokens           RefreshToken[]
   passwordResetTokens     PasswordResetToken[]
+  onboarding              OnboardingProgress[]
+  mediaAssets             MediaAsset[]
+  workerProfile           WorkerProfile?
+  clientProfile           ClientProfile?
+  businessProfile         BusinessProfile?
 
   @@index([status, createdAt])
 }
@@ -275,4 +280,301 @@ model NotificationPreference {
 
   @@unique([userId, channel, category])
   @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Onboarding & profiles (ACC-10, TRU-05, BIZ-04 intake). PROMPTS 20, 21, 22.
+//
+// Onboarding is autosaved step-by-step and resumable, so the in-progress answers
+// live in OnboardingProgress.data as JSON while the user is still filling them
+// in. Only on completion are they materialised into the typed profile models
+// below — a half-finished WorkerProfile would otherwise be indistinguishable
+// from a real one to search and the Trust Engine.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The roles that have an onboarding flow. AGENT/ADMIN are staff, onboarded by
+/// TrustPro rather than self-service.
+enum OnboardingRole {
+  WORKER
+  CLIENT
+  BUSINESS
+}
+
+/// Where a stored location came from. A human-placed pin ALWAYS wins over an
+/// auto-detected fix (CLAUDE.md SPATIAL), so the provenance has to be stored
+/// alongside the coordinates rather than inferred later.
+enum LocationSource {
+  DEVICE_GPS
+  HUMAN_INPUT
+  REVERSE_GEOCODE
+}
+
+/// Autosave + resume state for one identity's onboarding in one role (ACC-10).
+///
+/// `data` is the partially-filled form. It is deliberately schemaless: the step
+/// shapes are still moving, and a migration per field change would be friction
+/// with no safety payoff while the answers are not yet authoritative.
+///
+/// `completionPercent` is DERIVED server-side from `data` on every write, never
+/// sent by the client — it drives the unlockable-benefit messaging (TRU-05) and
+/// a client-supplied value would let anyone claim a complete profile.
+model OnboardingProgress {
+  id     String         @id @default(uuid()) @db.Uuid
+  userId String         @db.Uuid
+  role   OnboardingRole
+
+  currentStep       String
+  data              Json      @default("{}")
+  completionPercent Int       @default(0)
+  completedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// One flow per identity per role — the resume lookup.
+  @@unique([userId, role])
+  @@index([userId])
+}
+
+/// A worker's public-facing profile (ACC-10). Tier and Trust Score are NOT here:
+/// they belong to the identity on User, so a role switch never re-verifies.
+model WorkerProfile {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+
+  headline        String?
+  bio             String?
+  yearsExperience Int?
+
+  /// Coarse location for discovery. The authoritative PostGIS geography column
+  /// and its GIST index arrive with the spatial schema (PROMPT 38); these plain
+  /// columns are what onboarding captures and are safe to backfill from.
+  city           String?
+  area           String?
+  latitude       Float?
+  longitude      Float?
+  locationSource LocationSource?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services     Service[]
+  availability Availability[]
+  portfolio    PortfolioItem[]
+
+  @@index([city])
+}
+
+/// A client's profile (ACC-10) — deliberately minimal: hiring should not require
+/// the same disclosure as offering work.
+model ClientProfile {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+
+  displayName String?
+
+  city           String?
+  area           String?
+  latitude       Float?
+  longitude      Float?
+  locationSource LocationSource?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([city])
+}
+
+/// Business intake (BIZ-04). `verified` stays false here on purpose: approving a
+/// business is a Trust/Admin decision (BIZ-01), never something the intake form
+/// can grant itself.
+model BusinessProfile {
+  id      String @id @default(uuid()) @db.Uuid
+  ownerId String @unique @db.Uuid
+
+  name        String
+  description String?
+  /// Cameroon trade register number (RCCM). Verified in a later phase.
+  rccmNumber String?
+  taxId      String?
+
+  contactEmail String?
+  contactPhone String?
+
+  city           String?
+  area           String?
+  address        String?
+  latitude       Float?
+  longitude      Float?
+  locationSource LocationSource?
+
+  verified   Boolean   @default(false)
+  verifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  team  BusinessTeamMember[]
+
+  @@index([city])
+}
+
+/// Team roles and access levels per BIZ-03. Captured at intake; full team
+/// management (invitations, wallets, analytics) is a later Business phase.
+enum TeamMemberRole {
+  ADMIN
+  HR_MANAGER
+  ACCOUNTANT
+  STAFF
+}
+
+enum TeamMemberAccessLevel {
+  FULL
+  MANAGE_JOBS
+  PAYMENTS
+  VIEW_ONLY
+}
+
+enum TeamMemberStatus {
+  INVITED
+  ACTIVE
+  REMOVED
+}
+
+/// A member of a business's team. Identified by email/phone rather than a User
+/// FK: at intake the person invited usually has no TrustPro account yet.
+model BusinessTeamMember {
+  id                String @id @default(uuid()) @db.Uuid
+  businessProfileId String @db.Uuid
+
+  name        String
+  email       String?
+  phone       String?
+  role        TeamMemberRole        @default(STAFF)
+  accessLevel TeamMemberAccessLevel @default(VIEW_ONLY)
+  status      TeamMemberStatus      @default(INVITED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+
+  @@index([businessProfileId, status])
+}
+
+/// A service a worker offers, with transparent starting price (PRO-05).
+///
+/// `categoryId` is absent by design: the admin-managed taxonomy lands in PROMPT
+/// 37/43, which adds the nullable FK and backfills. Onboarding captures the
+/// worker's own words first so intake is never blocked on a taxonomy entry.
+model Service {
+  id              String @id @default(uuid()) @db.Uuid
+  workerProfileId String @db.Uuid
+
+  name        String
+  description String?
+  /// XAF has no minor unit, so prices are whole-currency integers everywhere.
+  startingPrice Int?
+  isActive      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([workerProfileId, isActive])
+}
+
+/// A weekly availability slot. Times are local "HH:MM" strings rather than
+/// DateTimes: this is a recurring weekly rule, not an instant, and storing it as
+/// a timestamp would silently bind it to a date and a timezone.
+model Availability {
+  id              String @id @default(uuid()) @db.Uuid
+  workerProfileId String @db.Uuid
+
+  /// 0 = Sunday … 6 = Saturday, matching JavaScript's getDay().
+  dayOfWeek Int
+  startTime String
+  endTime   String
+
+  createdAt DateTime @default(now())
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([workerProfileId, dayOfWeek, startTime, endTime])
+  @@index([workerProfileId, dayOfWeek])
+}
+
+enum PortfolioItemType {
+  PHOTO
+  VIDEO
+  PROJECT
+}
+
+/// Portfolio evidence (PRO-03) — a first-class trust signal, not decoration.
+model PortfolioItem {
+  id              String @id @default(uuid()) @db.Uuid
+  workerProfileId String @db.Uuid
+  mediaAssetId    String @db.Uuid
+
+  type    PortfolioItemType @default(PHOTO)
+  caption String?
+  /// Groups before/after pairs and multi-shot projects together.
+  groupKey String?
+
+  createdAt DateTime @default(now())
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  mediaAsset    MediaAsset    @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@index([workerProfileId, groupKey])
+}
+
+/// What an uploaded file is. Drives the access rules below.
+enum MediaAssetKind {
+  PORTFOLIO_IMAGE
+  NATIONAL_ID_FRONT
+  NATIONAL_ID_BACK
+  SELFIE
+  BUSINESS_REGISTRATION
+  BUSINESS_LOGO
+}
+
+/// PRIVATE media is served only through short-lived signed URLs; PUBLIC media
+/// (portfolio, logos) may be served directly.
+enum MediaVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+/// A file stored in S3 (CLAUDE.md STORAGE). Only the object key lives in the
+/// database — bytes never do, and access is decided at read time rather than
+/// baked into a URL that would then be forwardable forever.
+///
+/// KYC media (ID, selfie) defaults to PRIVATE. The verification REVIEW workflow
+/// that acts on these files — approval state, reviewer, rejection reason — is
+/// PROMPT 27/28 and layers on top rather than being duplicated here.
+model MediaAsset {
+  id      String         @id @default(uuid()) @db.Uuid
+  ownerId String         @db.Uuid
+  kind    MediaAssetKind
+
+  /// Object key in the bucket. Never a public URL.
+  s3Key      String          @unique
+  mimeType   String
+  sizeBytes  Int
+  visibility MediaVisibility @default(PRIVATE)
+
+  createdAt DateTime @default(now())
+
+  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  portfolio PortfolioItem[]
+
+  @@index([ownerId, kind, createdAt])
 }

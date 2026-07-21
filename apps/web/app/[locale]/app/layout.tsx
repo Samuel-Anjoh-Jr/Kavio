@@ -3,6 +3,9 @@ import type { ReactNode } from 'react';
 import { MotionProvider } from '@/components/motion/motion-provider';
 import { PageTransition } from '@/components/motion/page-transition';
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register';
+import { AppHeader } from '@/components/nav/app-header';
+import { AppBottomNav } from '@/components/nav/app-bottom-nav';
+import { RoleTransition } from '@/components/nav/role-transition';
 
 /**
  * App shell segment (`/{locale}/app/...`): minimal motion, no Lenis (native
@@ -11,6 +14,9 @@ import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register'
  * manifest, registers the service worker, and sets an app theme-color — the
  * marketing route group deliberately does none of this, so it is never
  * installable and never controlled by the service worker (PROMPT 18).
+ *
+ * The shell renders for GUESTS too (ACC-01): unauthenticated visitors browse
+ * the real app, and only state-changing actions are gated (ACC-02).
  */
 export async function generateMetadata({
   params,
@@ -48,7 +54,16 @@ export default async function AppLayout({
   return (
     <MotionProvider profile="app">
       <ServiceWorkerRegister locale={locale} />
-      <PageTransition>{children}</PageTransition>
+      <div className="flex min-h-dvh flex-col">
+        <AppHeader />
+        <main className="flex-1">
+          {/* Animates the whole surface when the active role changes (ACC-07). */}
+          <RoleTransition>
+            <PageTransition>{children}</PageTransition>
+          </RoleTransition>
+        </main>
+        <AppBottomNav />
+      </div>
     </MotionProvider>
   );
 }

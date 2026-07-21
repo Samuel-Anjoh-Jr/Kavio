@@ -116,12 +116,377 @@
       "PASSWORD_NOT_SET": "Use the reset link to set your first password.",
       "FORBIDDEN_FOR_ROLE": "Your current role cannot do that. Switch role and try again.",
       "ROLE_NOT_GRANTED": "You do not have that role yet.",
-      "UNKNOWN_ERROR": "Something went wrong. Please try again."
+      "UNKNOWN_ERROR": "Something went wrong. Please try again.",
+      "VALIDATION_ERROR": "Some fields need your attention.",
+      "FILE_REQUIRED": "Choose a file to upload.",
+      "FILE_EMPTY": "That file appears to be empty.",
+      "FILE_TOO_LARGE": "That file is too large. Try a smaller one.",
+      "UNSUPPORTED_FILE_TYPE": "That file type is not supported.",
+      "UPLOAD_FAILED": "The upload did not finish. Check your connection and try again.",
+      "SAVE_FAILED": "We could not save your changes. They are still on this screen.",
+      "COMPLETE_FAILED": "We could not finish your profile just yet. Try again.",
+      "ONBOARDING_INCOMPLETE": "A few required steps are still missing.",
+      "UNKNOWN_STEP": "That onboarding step does not exist.",
+      "UNKNOWN_ONBOARDING_ROLE": "Unknown onboarding flow."
     },
     "resend": {
       "available": "Resend code",
       "countdown": "Resend in {seconds}s",
       "sentTo": "We sent a code to {destination}."
+    },
+    "brandPanel": {
+      "headline": "Trust you can verify, not just claim.",
+      "body": "TrustPro verifies identity, skills and work history so you know exactly who you are hiring — or who is hiring you.",
+      "points": {
+        "verified": "Progressive verification, from phone to in-person field checks",
+        "escrow": "Payments held in escrow and released only when the job is done",
+        "portfolio": "Real portfolios and community endorsements, not just star ratings"
+      }
+    },
+    "signUp": {
+      "title": "Create your account",
+      "subtitle": "It takes a minute. You can explore TrustPro without one, but you will need an account to post, apply or pay.",
+      "intentLegend": "What brings you to TrustPro?",
+      "intent": {
+        "find_work": {
+          "title": "I want to find work",
+          "description": "Offer your skills and get hired"
+        },
+        "hire": {
+          "title": "I want to hire",
+          "description": "Find a verified worker near you"
+        }
+      },
+      "phoneLabel": "Phone number",
+      "phoneHint": "Cameroon numbers only, e.g. +237 6XX XX XX XX.",
+      "phoneInvalid": "Enter a valid Cameroon phone number.",
+      "emailLabel": "Email address",
+      "emailHint": "We send verification codes by email while SMS is being set up, so please add one.",
+      "emailInvalid": "Enter a valid email address.",
+      "passwordLabel": "Password",
+      "passwordHint": "At least 8 characters.",
+      "passwordInvalid": "Use at least 8 characters.",
+      "submit": "Create account",
+      "submitting": "Creating your account…",
+      "haveAccount": "Already have an account?"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to post jobs, send quotes and manage your work.",
+      "identifierLabel": "Phone number or email",
+      "identifierPlaceholder": "+237 6XX XX XX XX or you@example.com",
+      "identifierRequired": "Enter your phone number or email.",
+      "passwordLabel": "Password",
+      "passwordRequired": "Enter your password.",
+      "forgotPassword": "Forgot your password?",
+      "submitting": "Signing you in…",
+      "useCode": "Sign in with a code instead",
+      "noAccount": "New to TrustPro?",
+      "createAccount": "Create an account"
+    },
+    "verify": {
+      "title": "Enter your code",
+      "subtitle": "We sent you a 6-digit code. Enter it below to confirm it is really you.",
+      "identifierLabel": "Phone number or email",
+      "codeLabel": "Verification code",
+      "codeHint": "Check your email, or your messages once SMS is enabled.",
+      "sentHint": "We sent a code to {destination}.",
+      "submit": "Verify and continue",
+      "submitting": "Checking your code…",
+      "noCode": "Did not get it?"
+    },
+    "twoFactor": {
+      "title": "One more step",
+      "subtitle": "Your account has two-factor authentication on. Enter the code we just sent to finish signing in.",
+      "codeLabel": "Two-factor code",
+      "codeHint": "The code expires in a few minutes.",
+      "submit": "Finish signing in",
+      "submitting": "Checking your code…"
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "subtitle": "Tell us how to reach you and we will send a reset link.",
+      "identifierLabel": "Phone number or email",
+      "identifierPlaceholder": "+237 6XX XX XX XX or you@example.com",
+      "identifierRequired": "Enter your phone number or email.",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "sent": "If that account exists, a reset link is on its way. Check your email.",
+      "backToLogin": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "Choose a new password",
+      "subtitle": "Pick something you have not used elsewhere.",
+      "passwordLabel": "New password",
+      "passwordHint": "At least 8 characters.",
+      "passwordInvalid": "Use at least 8 characters.",
+      "confirmLabel": "Confirm new password",
+      "mismatch": "Those passwords do not match.",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "success": "Your password is updated. Taking you back to sign in…",
+      "backToLogin": "Back to sign in",
+      "missingToken": "This reset link is incomplete. Request a new one from the sign-in screen."
+    },
+    "gated": {
+      "post_job": "Sign in to post your job. We saved your draft.",
+      "apply_job": "Sign in to apply. We will bring you straight back.",
+      "contact_worker": "Sign in to contact this worker.",
+      "request_quote": "Sign in to request a quote.",
+      "pay": "Sign in to continue to payment.",
+      "save_favorite": "Sign in to save this to your favourites.",
+      "submit_review": "Sign in to leave your review."
+    }
+  },
+  "Nav": {
+    "primary": "Primary navigation",
+    "explore": "Explore",
+    "jobs": "Jobs",
+    "search": "Search",
+    "account": "Account",
+    "home": "My home",
+    "signIn": "Sign in",
+    "signOut": "Sign out"
+  },
+  "Roles": {
+    "switcherLabel": "Switch role",
+    "switched": "You are now using TrustPro as {role}.",
+    "names": {
+      "WORKER": "Worker",
+      "CLIENT": "Client",
+      "BUSINESS": "Business"
+    },
+    "descriptions": {
+      "WORKER": "Offer your services and apply for jobs",
+      "CLIENT": "Post jobs and hire verified workers",
+      "BUSINESS": "Manage your company profile and team"
+    }
+  },
+  "Explore": {
+    "title": "Find trusted help near you",
+    "subtitle": "Browse verified workers and open jobs across Douala and Yaoundé. No account needed to look around.",
+    "searchLabel": "Search for a service or worker",
+    "searchPlaceholder": "Plumber, electrician, tailor…",
+    "postJob": "Post a job",
+    "workersHeading": "Workers near you",
+    "workersEmpty": "Worker discovery arrives with search and profiles. Your location and filters will drive this feed.",
+    "jobsHeading": "Recently posted jobs",
+    "jobsEmpty": "Posted jobs will appear here once job posting goes live."
+  },
+  "Jobs": {
+    "title": "Posted jobs",
+    "subtitle": "Browse what people near you need done.",
+    "post": "Post a job",
+    "empty": "No jobs to show yet. Once posting is live, open jobs in your area will appear here."
+  },
+  "PostJob": {
+    "title": "Describe your job",
+    "subtitle": "Tell us what you need. You can write it now and sign in when you are ready to post.",
+    "titleLabel": "What do you need done?",
+    "titlePlaceholder": "Fix a leaking kitchen tap",
+    "descriptionLabel": "Describe the work",
+    "descriptionPlaceholder": "Share the details a worker would need to quote accurately.",
+    "budgetLabel": "Budget (XAF)",
+    "budgetHint": "A rough figure is fine. Whole francs only.",
+    "submit": "Post this job",
+    "resumed": "Welcome back — we restored the job you were writing.",
+    "pendingBackend": "Your draft is ready. Job posting opens once verification and posting go live."
+  },
+  "Home": {
+    "title": "Your TrustPro home",
+    "greeting": {
+      "WORKER": "Your work at a glance",
+      "CLIENT": "Find and hire with confidence",
+      "BUSINESS": "Your business on TrustPro"
+    },
+    "subtitle": {
+      "WORKER": "Build your profile, win jobs and grow your Trust Score.",
+      "CLIENT": "Post what you need and hire verified workers near you.",
+      "BUSINESS": "Manage your company profile, documents and team."
+    },
+    "onboardingHeading": "Finish setting up your profile",
+    "onboardingBody": "You are {percent}% of the way there. Each step unlocks more of TrustPro.",
+    "onboardingStart": "Get started",
+    "onboardingResume": "Continue",
+    "exploreCard": "Explore workers",
+    "exploreCardBody": "Search verified workers near you.",
+    "jobsCard": "Jobs",
+    "jobsCardBody": {
+      "WORKER": "Find open jobs that match your services.",
+      "CLIENT": "Review the jobs you have posted.",
+      "BUSINESS": "Track your company's job posts."
+    }
+  },
+  "Onboarding": {
+    "completionHeading": "Profile completion",
+    "unlocksAt": "Unlocks at {threshold}%",
+    "stepsLabel": "Onboarding steps",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "saveFailed": "We could not save your last change. It is still on this screen — check your connection and it will retry.",
+    "saveFailedShort": "Not saved",
+    "finish": "Finish setup",
+    "finished": "Setup complete",
+    "remove": "Remove",
+    "uploading": "Uploading… {percent}%",
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    },
+    "location": {
+      "useCurrent": "Use my current location",
+      "locating": "Finding you…",
+      "captured": "Location captured ({lat}, {lng}).",
+      "unsupported": "This browser cannot detect your location. Type your city instead.",
+      "denied": "Location permission was declined. Type your city instead.",
+      "failed": "We could not detect your location. Type your city instead.",
+      "cityLabel": "City",
+      "cityPlaceholder": "Douala",
+      "areaLabel": "Neighbourhood or landmark",
+      "areaPlaceholder": "Akwa, near Carrefour Ndokotti",
+      "areaHint": "A landmark helps workers find you. What you type here always overrides an auto-detected location."
+    },
+    "worker": {
+      "title": "Set up your worker profile",
+      "subtitle": "The more complete your profile, the more customers find and trust you. Everything saves as you go.",
+      "completed": "Your worker profile is live. Welcome to TrustPro.",
+      "unlocks": {
+        "appear_in_search": "Appear in search results",
+        "portfolio_showcase": "Showcase your past work",
+        "verified_badge": "Verified badge on your profile",
+        "priority_placement": "Priority placement above unverified workers"
+      },
+      "steps": {
+        "services": {
+          "label": "Services",
+          "title": "What do you offer?",
+          "description": "List the services you provide and what you typically start at. Clear pricing wins more jobs.",
+          "nameLabel": "Service",
+          "namePlaceholder": "Plumbing repairs",
+          "priceLabel": "Starting price (XAF)",
+          "priceHint": "What a typical job starts at. Whole francs only.",
+          "add": "Add a service"
+        },
+        "availability": {
+          "label": "Availability",
+          "title": "When can you work?",
+          "description": "Pick the days you are usually available and the hours you work.",
+          "startLabel": "Start time",
+          "endLabel": "End time"
+        },
+        "portfolio": {
+          "label": "Portfolio",
+          "title": "Show your work",
+          "description": "Photos of finished jobs are the strongest signal you can give a new customer.",
+          "upload": "Add a photo",
+          "hint": "JPEG, PNG or WebP, up to 10MB each.",
+          "itemAlt": "Portfolio photo {index}",
+          "stored": "Photo uploaded"
+        },
+        "identity": {
+          "label": "Identity",
+          "title": "Verify who you are",
+          "description": "Verified identity unlocks the badge customers look for, and higher-value jobs.",
+          "privacy": "Your ID and selfie are encrypted, private, and visible only to you and TrustPro's verification team. They never appear on your public profile.",
+          "idFront": "Upload ID (front)",
+          "idBack": "Upload ID (back)",
+          "selfie": "Take a selfie",
+          "selfieHint": "A clear photo of your face, in good light.",
+          "uploaded": "Uploaded"
+        },
+        "location": {
+          "label": "Location",
+          "title": "Where do you work?",
+          "description": "Customers search by distance, so this decides who finds you."
+        }
+      }
+    },
+    "client": {
+      "title": "Set up your account",
+      "subtitle": "Two quick steps and you are ready to hire.",
+      "completed": "You are all set. Time to find someone great.",
+      "unlocks": {
+        "post_jobs": "Post jobs and receive quotes",
+        "nearby_workers": "See the closest workers first"
+      },
+      "steps": {
+        "profile": {
+          "label": "Your details",
+          "title": "What should workers call you?",
+          "description": "This is the name workers see when you contact them.",
+          "nameLabel": "Your name",
+          "namePlaceholder": "Amina N.",
+          "nameHint": "A first name and initial is enough."
+        },
+        "location": {
+          "label": "Location",
+          "title": "Where do you need help?",
+          "description": "We use this to show you the closest available workers."
+        }
+      }
+    },
+    "business": {
+      "title": "Register your business",
+      "subtitle": "Tell us about your company and add your team. Verification is reviewed by TrustPro after you finish.",
+      "completed": "Your business is registered. Verification review comes next.",
+      "unlocks": {
+        "company_profile": "A public company profile",
+        "verified_business_review": "Submit for Verified Business review",
+        "team_hiring": "Hire and manage jobs as a team"
+      },
+      "steps": {
+        "company": {
+          "label": "Company",
+          "title": "About your company",
+          "description": "This is what clients and workers see on your business profile.",
+          "nameLabel": "Company name",
+          "namePlaceholder": "Douala Facilities Ltd",
+          "descriptionLabel": "What does your company do?",
+          "rccmLabel": "RCCM / registration number",
+          "rccmHint": "Your Cameroon trade register number, if you have one.",
+          "cityLabel": "City",
+          "addressLabel": "Address",
+          "emailLabel": "Contact email",
+          "phoneLabel": "Contact phone"
+        },
+        "documents": {
+          "label": "Documents",
+          "title": "Registration documents",
+          "description": "Upload your registration so TrustPro can review your business for the Verified Business badge.",
+          "privacy": "Registration documents are private and encrypted. Only TrustPro's verification team can open them.",
+          "registration": "Upload registration document",
+          "registrationHint": "RCCM certificate or equivalent. PDF or image, up to 15MB.",
+          "logo": "Upload company logo",
+          "uploaded": "Uploaded"
+        },
+        "team": {
+          "label": "Team",
+          "title": "Who else works with you?",
+          "description": "Add the people who will manage jobs or payments. You can invite them properly later.",
+          "nameLabel": "Name",
+          "emailLabel": "Email",
+          "roleLabel": "Role",
+          "accessLabel": "Access level",
+          "add": "Add a team member",
+          "roles": {
+            "ADMIN": "Admin",
+            "HR_MANAGER": "HR manager",
+            "ACCOUNTANT": "Accountant",
+            "STAFF": "Staff"
+          },
+          "accessLevels": {
+            "FULL": "Full access",
+            "MANAGE_JOBS": "Manage jobs",
+            "PAYMENTS": "Payments",
+            "VIEW_ONLY": "View only"
+          }
+        }
+      }
     }
   }
 }
