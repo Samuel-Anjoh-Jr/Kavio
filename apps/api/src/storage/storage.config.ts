@@ -78,6 +78,15 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     visibility: MediaVisibility.PUBLIC,
     prefix: 'business',
   },
+  [MediaAssetKind.WORKER_COVER]: {
+    // Its own kind rather than reusing PORTFOLIO_IMAGE: the Trust Engine scores
+    // portfolio uploads as evidence of work performed, and a decorative banner
+    // must not earn trust points.
+    mimeTypes: IMAGE_TYPES,
+    maxBytes: 8 * MB,
+    visibility: MediaVisibility.PUBLIC,
+    prefix: 'portfolio',
+  },
 };
 
 /**

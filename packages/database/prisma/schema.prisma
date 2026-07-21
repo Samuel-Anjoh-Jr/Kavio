@@ -814,6 +814,11 @@ model WorkerProfile {
   /// than a polygon containment check on every discovery query.
   geoRegionId String? @db.Uuid
 
+  /// Profile cover image (PRO-01). The avatar lives on User, because it is the
+  /// identity's face across every role; the cover is Worker-profile decoration
+  /// and belongs here.
+  coverAssetId String? @db.Uuid
+
   /// Authoritative spatial position (PROMPT 38, SRS §12). Maintained from
   /// latitude/longitude by the `trustpro_sync_location` trigger and indexed
   /// GIST — all distance and containment math runs against THIS column, never
@@ -829,6 +834,7 @@ model WorkerProfile {
 
   user         User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   geoRegion    GeoRegion?              @relation("WorkerProfileRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
+  cover        MediaAsset?             @relation("WorkerProfileCover", fields: [coverAssetId], references: [id], onDelete: SetNull)
   services     Service[]
   availability Availability[]
   exceptions   AvailabilityException[]
@@ -895,6 +901,12 @@ model BusinessProfile {
   verified   Boolean   @default(false)
   verifiedAt DateTime?
 
+  /// Company logo (PRO-06). A MediaAsset FK rather than a URL column: the logo
+  /// goes through the same upload validation, ownership and signed-access rules
+  /// as every other file, and a raw URL column would be the one way to bypass
+  /// them.
+  logoAssetId String? @db.Uuid
+
   landmark          String?
   locationUpdatedAt DateTime?
   geoRegionId       String?   @db.Uuid
@@ -907,6 +919,7 @@ model BusinessProfile {
 
   owner     User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   geoRegion GeoRegion?           @relation("BusinessProfileRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
+  logo      MediaAsset?          @relation("BusinessProfileLogo", fields: [logoAssetId], references: [id], onDelete: SetNull)
   team      BusinessTeamMember[]
 
   @@index([city])
@@ -1095,7 +1108,18 @@ enum PortfolioItemType {
   PROJECT
 }
 
-/// Portfolio evidence (PRO-03) — a first-class trust signal, not decoration.
+/// Which half of a before/after pair an item is (PRO-02).
+///
+/// Nullable on the item, because most portfolio photos are neither: a single
+/// finished-work shot is the common case, and forcing every upload to declare a
+/// side would make the pairing meaningless.
+enum PortfolioSlot {
+  BEFORE
+  AFTER
+}
+
+/// Portfolio evidence (PRO-02, PRO-03) — a first-class trust signal, not
+/// decoration: it is the top survey-validated driver of who gets hired.
 model PortfolioItem {
   id              String @id @default(uuid()) @db.Uuid
   workerProfileId String @db.Uuid
@@ -1105,6 +1129,21 @@ model PortfolioItem {
   caption  String?
   /// Groups before/after pairs and multi-shot projects together.
   groupKey String?
+  /// The project's name, repeated on every item in the group.
+  ///
+  /// Denormalised rather than normalised into a PortfolioGroup table, because a
+  /// group is otherwise nothing but a title — a whole table and a join for one
+  /// string. Drift is prevented at the only place that can cause it: the
+  /// portfolio service rewrites the title across the WHOLE group in one
+  /// transaction, so no call site can set it on a single item.
+  projectTitle String?
+
+  /// Before/after position within the group (PRO-02). Null for ordinary items.
+  slot PortfolioSlot?
+
+  /// Display order within the profile, then within a group. Client-visible
+  /// ordering is an owner decision, not an accident of upload time.
+  sortOrder Int @default(0)
 
   createdAt DateTime @default(now())
 
@@ -1112,6 +1151,8 @@ model PortfolioItem {
   mediaAsset    MediaAsset    @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
 
   @@index([workerProfileId, groupKey])
+  /// The gallery read path: one worker's portfolio in display order (PRO-02).
+  @@index([workerProfileId, sortOrder])
 }
 
 /// What an uploaded file is. Drives the access rules below.
@@ -1128,6 +1169,10 @@ enum MediaAssetKind {
   BUSINESS_LOGO
   PROOF_OF_ADDRESS
   CERTIFICATE
+  /// Worker profile cover image (PRO-01). Its own kind rather than reusing
+  /// PORTFOLIO_IMAGE: portfolio media is evidence of work done and is counted
+  /// as such by the Trust Engine, and a decorative banner must not inflate it.
+  WORKER_COVER
 }
 
 /// PRIVATE media is served only through short-lived signed URLs; PUBLIC media
@@ -1174,6 +1219,8 @@ model MediaAsset {
   owner         User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   portfolio     PortfolioItem[]
   verifications VerificationDocument[]
+  workerCovers  WorkerProfile[]        @relation("WorkerProfileCover")
+  businessLogos BusinessProfile[]      @relation("BusinessProfileLogo")
 
   @@index([ownerId, kind, createdAt])
   /// The Documents area lists live files only (TRU-08).

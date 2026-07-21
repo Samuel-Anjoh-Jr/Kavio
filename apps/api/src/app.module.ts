@@ -26,6 +26,9 @@ import { DocumentsModule } from './documents/documents.module';
 import { VerificationModule } from './verification/verification.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { GeoModule } from './geo/geo.module';
+import { CatalogModule } from './catalog/catalog.module';
+import { SearchModule } from './search/search.module';
+import { ProfilesModule } from './profiles/profiles.module';
 
 @Module({
   imports: [
@@ -62,6 +65,15 @@ import { GeoModule } from './geo/geo.module';
     // MVT tiles. Registered after OnboardingModule, whose profiles carry the
     // coordinates it indexes.
     GeoModule,
+    // The admin-managed service taxonomy (ADM-02). Registered before Search and
+    // Profiles: both are scoped to it — search matches within it, and a worker
+    // files their services under it.
+    CatalogModule,
+    // Discovery (DIS-04…DIS-08). After CatalogModule and GeoModule, whose
+    // taxonomy and PostGIS geometry it queries through the `search` schema.
+    SearchModule,
+    // Worker and business profiles, read and owner-edited (PRO-01…PRO-07).
+    ProfilesModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({

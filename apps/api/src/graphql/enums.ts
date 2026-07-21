@@ -1,4 +1,5 @@
 import { registerEnumType } from '@nestjs/graphql';
+import { NoProviderReason } from '../search/no-provider.util';
 import {
   BadgeType,
   EndorsementRelationship,
@@ -7,7 +8,10 @@ import {
   MediaAssetKind,
   MediaVisibility,
   OnboardingRole,
+  PortfolioItemType,
+  PortfolioSlot,
   Role,
+  TeamMemberRole,
   TrustEventType,
   TrustPillar,
   UserStatus,
@@ -110,5 +114,30 @@ export function registerGraphQLEnums(): void {
     name: 'LocationSource',
     description:
       'Where a stored position came from. HUMAN_INPUT always outranks an automatic fix (DIS-09).',
+  });
+
+  registerEnumType(PortfolioItemType, {
+    name: 'PortfolioItemType',
+    description: 'What a portfolio entry is: a photo, a video or a multi-shot project (PRO-02).',
+  });
+
+  registerEnumType(PortfolioSlot, {
+    name: 'PortfolioSlot',
+    description:
+      'Which half of a before/after pair an item is (PRO-02). Null on an ordinary portfolio photo.',
+  });
+
+  registerEnumType(TeamMemberRole, {
+    name: 'TeamMemberRole',
+    description: 'A member’s role within a business team (BIZ-03).',
+  });
+
+  // Not a Prisma enum: the reason a search came back empty is derived at read
+  // time from the provider probe, never stored. It lives here anyway so the
+  // whole GraphQL enum surface is registered in one place.
+  registerEnumType(NoProviderReason, {
+    name: 'NoProviderReason',
+    description:
+      'Why a search returned nothing (DIS-06). A code, so the friendly EN/FR copy stays in the web message catalogue.',
   });
 }
