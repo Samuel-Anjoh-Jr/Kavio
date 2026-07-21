@@ -25,6 +25,7 @@ import { StorageModule } from './storage/storage.module';
 import { DocumentsModule } from './documents/documents.module';
 import { VerificationModule } from './verification/verification.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
+import { GeoModule } from './geo/geo.module';
 
 @Module({
   imports: [
@@ -57,6 +58,10 @@ import { OnboardingModule } from './onboarding/onboarding.module';
     // after TrustModule, whose ledger it reports outcomes into.
     VerificationModule,
     OnboardingModule,
+    // The spatial stack (SRS §12): PostGIS proximity, reverse geocoding, and
+    // MVT tiles. Registered after OnboardingModule, whose profiles carry the
+    // coordinates it indexes.
+    GeoModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({

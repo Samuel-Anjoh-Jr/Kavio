@@ -24,7 +24,8 @@
     "migrate:deploy": "prisma migrate deploy",
     "migrate:reset": "prisma migrate reset",
     "migrate:diff": "prisma migrate diff --from-url \"$DIRECT_URL\" --to-schema-datamodel prisma/schema.prisma --exit-code",
-    "seed": "node ./prisma/seed.mjs"
+    "seed": "node ./prisma/seed.mjs",
+    "osm:ingest": "node ./scripts/ingest-osm.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1"

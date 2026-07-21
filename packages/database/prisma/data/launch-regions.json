@@ -1,0 +1,394 @@
+{
+  "$comment": [
+    "Launch geography for TrustPro (Douala and Yaoundé first), PROMPT 38.",
+    "",
+    "Each entry carries a CENTRE and an approximate RADIUS, not a real polygon.",
+    "The seed turns those into a bounding box so every spatial query works on a",
+    "laptop with no network and no OSM extract. They are deliberately coarse.",
+    "",
+    "`pnpm db:osm:ingest` replaces each of these boundaries with the real OSM",
+    "polygon and stamps `osmId` on the row. The seed never overwrites a row that",
+    "already carries an `osmId`, so re-seeding after an ingest cannot downgrade",
+    "real boundaries back to boxes.",
+    "",
+    "Coordinates are [latitude, longitude] in WGS84."
+  ],
+  "regions": [
+    {
+      "slug": "cameroon",
+      "nameEn": "Cameroon",
+      "nameFr": "Cameroun",
+      "level": "COUNTRY",
+      "parent": null,
+      "center": [5.6919, 12.7402],
+      "radiusKm": 700,
+      "osmName": "Cameroun"
+    },
+
+    {
+      "slug": "littoral",
+      "nameEn": "Littoral",
+      "nameFr": "Littoral",
+      "level": "REGION",
+      "parent": "cameroon",
+      "center": [4.15, 9.95],
+      "radiusKm": 120,
+      "osmName": "Littoral"
+    },
+    {
+      "slug": "centre",
+      "nameEn": "Centre",
+      "nameFr": "Centre",
+      "level": "REGION",
+      "parent": "cameroon",
+      "center": [4.6, 11.85],
+      "radiusKm": 180,
+      "osmName": "Centre"
+    },
+
+    {
+      "slug": "douala",
+      "nameEn": "Douala",
+      "nameFr": "Douala",
+      "level": "CITY",
+      "parent": "littoral",
+      "center": [4.0511, 9.7679],
+      "radiusKm": 16,
+      "osmName": "Douala"
+    },
+    {
+      "slug": "yaounde",
+      "nameEn": "Yaoundé",
+      "nameFr": "Yaoundé",
+      "level": "CITY",
+      "parent": "centre",
+      "center": [3.848, 11.5021],
+      "radiusKm": 16,
+      "osmName": "Yaoundé"
+    },
+
+    {
+      "slug": "douala-i",
+      "nameEn": "Douala I",
+      "nameFr": "Douala I",
+      "level": "DISTRICT",
+      "parent": "douala",
+      "center": [4.053, 9.7],
+      "radiusKm": 4,
+      "osmName": "Douala I"
+    },
+    {
+      "slug": "douala-ii",
+      "nameEn": "Douala II",
+      "nameFr": "Douala II",
+      "level": "DISTRICT",
+      "parent": "douala",
+      "center": [4.04, 9.72],
+      "radiusKm": 4,
+      "osmName": "Douala II"
+    },
+    {
+      "slug": "douala-iii",
+      "nameEn": "Douala III",
+      "nameFr": "Douala III",
+      "level": "DISTRICT",
+      "parent": "douala",
+      "center": [4.02, 9.76],
+      "radiusKm": 6,
+      "osmName": "Douala III"
+    },
+    {
+      "slug": "douala-iv",
+      "nameEn": "Douala IV",
+      "nameFr": "Douala IV",
+      "level": "DISTRICT",
+      "parent": "douala",
+      "center": [4.08, 9.67],
+      "radiusKm": 5,
+      "osmName": "Douala IV"
+    },
+    {
+      "slug": "douala-v",
+      "nameEn": "Douala V",
+      "nameFr": "Douala V",
+      "level": "DISTRICT",
+      "parent": "douala",
+      "center": [4.09, 9.74],
+      "radiusKm": 5,
+      "osmName": "Douala V"
+    },
+
+    {
+      "slug": "yaounde-i",
+      "nameEn": "Yaoundé I",
+      "nameFr": "Yaoundé I",
+      "level": "DISTRICT",
+      "parent": "yaounde",
+      "center": [3.89, 11.52],
+      "radiusKm": 4,
+      "osmName": "Yaoundé I"
+    },
+    {
+      "slug": "yaounde-ii",
+      "nameEn": "Yaoundé II",
+      "nameFr": "Yaoundé II",
+      "level": "DISTRICT",
+      "parent": "yaounde",
+      "center": [3.885, 11.5],
+      "radiusKm": 3,
+      "osmName": "Yaoundé II"
+    },
+    {
+      "slug": "yaounde-iii",
+      "nameEn": "Yaoundé III",
+      "nameFr": "Yaoundé III",
+      "level": "DISTRICT",
+      "parent": "yaounde",
+      "center": [3.83, 11.5],
+      "radiusKm": 5,
+      "osmName": "Yaoundé III"
+    },
+    {
+      "slug": "yaounde-iv",
+      "nameEn": "Yaoundé IV",
+      "nameFr": "Yaoundé IV",
+      "level": "DISTRICT",
+      "parent": "yaounde",
+      "center": [3.85, 11.54],
+      "radiusKm": 5,
+      "osmName": "Yaoundé IV"
+    },
+    {
+      "slug": "yaounde-v",
+      "nameEn": "Yaoundé V",
+      "nameFr": "Yaoundé V",
+      "level": "DISTRICT",
+      "parent": "yaounde",
+      "center": [3.88, 11.54],
+      "radiusKm": 4,
+      "osmName": "Yaoundé V"
+    },
+    {
+      "slug": "yaounde-vi",
+      "nameEn": "Yaoundé VI",
+      "nameFr": "Yaoundé VI",
+      "level": "DISTRICT",
+      "parent": "yaounde",
+      "center": [3.83, 11.47],
+      "radiusKm": 4,
+      "osmName": "Yaoundé VI"
+    },
+    {
+      "slug": "yaounde-vii",
+      "nameEn": "Yaoundé VII",
+      "nameFr": "Yaoundé VII",
+      "level": "DISTRICT",
+      "parent": "yaounde",
+      "center": [3.87, 11.42],
+      "radiusKm": 5,
+      "osmName": "Yaoundé VII"
+    },
+
+    {
+      "slug": "douala-akwa",
+      "nameEn": "Akwa",
+      "nameFr": "Akwa",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-i",
+      "center": [4.0503, 9.7],
+      "radiusKm": 1.2,
+      "osmName": "Akwa"
+    },
+    {
+      "slug": "douala-bonanjo",
+      "nameEn": "Bonanjo",
+      "nameFr": "Bonanjo",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-i",
+      "center": [4.043, 9.688],
+      "radiusKm": 1,
+      "osmName": "Bonanjo"
+    },
+    {
+      "slug": "douala-bonapriso",
+      "nameEn": "Bonapriso",
+      "nameFr": "Bonapriso",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-i",
+      "center": [4.032, 9.702],
+      "radiusKm": 1.2,
+      "osmName": "Bonapriso"
+    },
+    {
+      "slug": "douala-deido",
+      "nameEn": "Deido",
+      "nameFr": "Deido",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-i",
+      "center": [4.068, 9.705],
+      "radiusKm": 1.4,
+      "osmName": "Deido"
+    },
+    {
+      "slug": "douala-new-bell",
+      "nameEn": "New Bell",
+      "nameFr": "New Bell",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-ii",
+      "center": [4.037, 9.722],
+      "radiusKm": 1.6,
+      "osmName": "New Bell"
+    },
+    {
+      "slug": "douala-ndokotti",
+      "nameEn": "Ndokotti",
+      "nameFr": "Ndokotti",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-ii",
+      "center": [4.049, 9.737],
+      "radiusKm": 1.2,
+      "osmName": "Ndokotti"
+    },
+    {
+      "slug": "douala-logbaba",
+      "nameEn": "Logbaba",
+      "nameFr": "Logbaba",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-iii",
+      "center": [4.019, 9.767],
+      "radiusKm": 2,
+      "osmName": "Logbaba"
+    },
+    {
+      "slug": "douala-bonaberi",
+      "nameEn": "Bonabéri",
+      "nameFr": "Bonabéri",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-iv",
+      "center": [4.08, 9.667],
+      "radiusKm": 2.5,
+      "osmName": "Bonabéri"
+    },
+    {
+      "slug": "douala-makepe",
+      "nameEn": "Makepe",
+      "nameFr": "Makepe",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-v",
+      "center": [4.078, 9.743],
+      "radiusKm": 1.8,
+      "osmName": "Makepe"
+    },
+    {
+      "slug": "douala-bonamoussadi",
+      "nameEn": "Bonamoussadi",
+      "nameFr": "Bonamoussadi",
+      "level": "NEIGHBOURHOOD",
+      "parent": "douala-v",
+      "center": [4.096, 9.741],
+      "radiusKm": 1.8,
+      "osmName": "Bonamoussadi"
+    },
+
+    {
+      "slug": "yaounde-bastos",
+      "nameEn": "Bastos",
+      "nameFr": "Bastos",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-i",
+      "center": [3.892, 11.512],
+      "radiusKm": 1.4,
+      "osmName": "Bastos"
+    },
+    {
+      "slug": "yaounde-nlongkak",
+      "nameEn": "Nlongkak",
+      "nameFr": "Nlongkak",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-i",
+      "center": [3.884, 11.518],
+      "radiusKm": 1,
+      "osmName": "Nlongkak"
+    },
+    {
+      "slug": "yaounde-mokolo",
+      "nameEn": "Mokolo",
+      "nameFr": "Mokolo",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-ii",
+      "center": [3.877, 11.507],
+      "radiusKm": 1,
+      "osmName": "Mokolo"
+    },
+    {
+      "slug": "yaounde-mvog-mbi",
+      "nameEn": "Mvog-Mbi",
+      "nameFr": "Mvog-Mbi",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-iii",
+      "center": [3.856, 11.525],
+      "radiusKm": 1.2,
+      "osmName": "Mvog-Mbi"
+    },
+    {
+      "slug": "yaounde-mvan",
+      "nameEn": "Mvan",
+      "nameFr": "Mvan",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-iii",
+      "center": [3.815, 11.512],
+      "radiusKm": 1.8,
+      "osmName": "Mvan"
+    },
+    {
+      "slug": "yaounde-odza",
+      "nameEn": "Odza",
+      "nameFr": "Odza",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-iv",
+      "center": [3.807, 11.548],
+      "radiusKm": 2,
+      "osmName": "Odza"
+    },
+    {
+      "slug": "yaounde-essos",
+      "nameEn": "Essos",
+      "nameFr": "Essos",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-v",
+      "center": [3.879, 11.539],
+      "radiusKm": 1.4,
+      "osmName": "Essos"
+    },
+    {
+      "slug": "yaounde-ngousso",
+      "nameEn": "Ngousso",
+      "nameFr": "Ngousso",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-v",
+      "center": [3.895, 11.545],
+      "radiusKm": 1.4,
+      "osmName": "Ngousso"
+    },
+    {
+      "slug": "yaounde-biyem-assi",
+      "nameEn": "Biyem-Assi",
+      "nameFr": "Biyem-Assi",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-vi",
+      "center": [3.836, 11.474],
+      "radiusKm": 1.8,
+      "osmName": "Biyem-Assi"
+    },
+    {
+      "slug": "yaounde-nkolbisson",
+      "nameEn": "Nkolbisson",
+      "nameFr": "Nkolbisson",
+      "level": "NEIGHBOURHOOD",
+      "parent": "yaounde-vii",
+      "center": [3.869, 11.428],
+      "radiusKm": 2,
+      "osmName": "Nkolbisson"
+    }
+  ]
+}

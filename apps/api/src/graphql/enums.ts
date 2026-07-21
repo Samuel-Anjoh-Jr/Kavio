@@ -2,6 +2,8 @@ import { registerEnumType } from '@nestjs/graphql';
 import {
   BadgeType,
   EndorsementRelationship,
+  GeoRegionLevel,
+  LocationSource,
   MediaAssetKind,
   MediaVisibility,
   OnboardingRole,
@@ -96,5 +98,17 @@ export function registerGraphQLEnums(): void {
   registerEnumType(BadgeType, {
     name: 'BadgeType',
     description: 'A milestone badge (TRU-11). Derived from trust events, never granted by hand.',
+  });
+
+  registerEnumType(GeoRegionLevel, {
+    name: 'GeoRegionLevel',
+    description:
+      'Administrative depth of a region (SRS §12): Country → Region → City → District → Neighbourhood.',
+  });
+
+  registerEnumType(LocationSource, {
+    name: 'LocationSource',
+    description:
+      'Where a stored position came from. HUMAN_INPUT always outranks an automatic fix (DIS-09).',
   });
 }

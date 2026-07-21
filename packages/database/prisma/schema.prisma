@@ -803,15 +803,39 @@ model WorkerProfile {
   longitude      Float?
   locationSource LocationSource?
 
+  /// Free-text landmark the worker typed ("behind Total Bonapriso"). Human input
+  /// is the most reliable address format in Douala and Yaoundé, so it is stored
+  /// verbatim next to the coordinates rather than being parsed into them.
+  landmark          String?
+  locationUpdatedAt DateTime?
+
+  /// The administrative area the coordinates fall in, resolved server-side
+  /// (PROMPT 39). Denormalised so a region filter is an equality test rather
+  /// than a polygon containment check on every discovery query.
+  geoRegionId String? @db.Uuid
+
+  /// Authoritative spatial position (PROMPT 38, SRS §12). Maintained from
+  /// latitude/longitude by the `trustpro_sync_location` trigger and indexed
+  /// GIST — all distance and containment math runs against THIS column, never
+  /// against the plain floats above, which exist only for display and capture.
+  ///
+  /// Deliberately `Unsupported`: Prisma has no geography type, and exposing it
+  /// as a scalar would invite client-side spatial math the SRS forbids. Reads go
+  /// through the reviewed `geo.*` views (PROMPT 40).
+  location Unsupported("geography(Point, 4326)")?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  geoRegion    GeoRegion?              @relation("WorkerProfileRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
   services     Service[]
   availability Availability[]
+  exceptions   AvailabilityException[]
   portfolio    PortfolioItem[]
 
   @@index([city])
+  @@index([geoRegionId])
 }
 
 /// A client's profile (ACC-10) — deliberately minimal: hiring should not require
@@ -828,12 +852,21 @@ model ClientProfile {
   longitude      Float?
   locationSource LocationSource?
 
+  landmark          String?
+  locationUpdatedAt DateTime?
+  geoRegionId       String?   @db.Uuid
+
+  /// See WorkerProfile.location — same trigger, same GIST index, same rule.
+  location Unsupported("geography(Point, 4326)")?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  geoRegion GeoRegion? @relation("ClientProfileRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
 
   @@index([city])
+  @@index([geoRegionId])
 }
 
 /// Business intake (BIZ-04). `verified` stays false here on purpose: approving a
@@ -862,13 +895,22 @@ model BusinessProfile {
   verified   Boolean   @default(false)
   verifiedAt DateTime?
 
+  landmark          String?
+  locationUpdatedAt DateTime?
+  geoRegionId       String?   @db.Uuid
+
+  /// See WorkerProfile.location — same trigger, same GIST index, same rule.
+  location Unsupported("geography(Point, 4326)")?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  team  BusinessTeamMember[]
+  owner     User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  geoRegion GeoRegion?           @relation("BusinessProfileRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
+  team      BusinessTeamMember[]
 
   @@index([city])
+  @@index([geoRegionId])
 }
 
 /// Team roles and access levels per BIZ-03. Captured at intake; full team
@@ -916,12 +958,16 @@ model BusinessTeamMember {
 
 /// A service a worker offers, with transparent starting price (PRO-05).
 ///
-/// `categoryId` is absent by design: the admin-managed taxonomy lands in PROMPT
-/// 37/43, which adds the nullable FK and backfills. Onboarding captures the
-/// worker's own words first so intake is never blocked on a taxonomy entry.
+/// `categoryId` stays NULLABLE (PROMPT 37). Onboarding captures the worker's own
+/// words first — intake is never blocked on a taxonomy entry that an admin has
+/// not created yet — and the category is attached afterwards, by the worker or
+/// by moderation. Search is scoped to the taxonomy (DIS-05), so an uncategorised
+/// service is reachable by name but not by category browse, which is the correct
+/// incentive: it costs the worker visibility without costing them the listing.
 model Service {
-  id              String @id @default(uuid()) @db.Uuid
-  workerProfileId String @db.Uuid
+  id              String  @id @default(uuid()) @db.Uuid
+  workerProfileId String  @db.Uuid
+  categoryId      String? @db.Uuid
 
   name          String
   description   String?
@@ -932,9 +978,61 @@ model Service {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  workerProfile WorkerProfile    @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  category      ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   @@index([workerProfileId, isActive])
+  /// Discovery by category (SRS §11.1) — the browse-a-category read path.
+  @@index([categoryId, isActive])
+}
+
+/// The admin-managed service taxonomy search and job posting are scoped to
+/// (ADM-02, DIS-05). CRUD arrives in PROMPT 43; the shape lands here.
+///
+/// Names are STORED bilingually rather than resolved through the web message
+/// catalogue like the rest of the UI copy: this is admin-authored content that
+/// changes without a deploy, so an EN/FR pair in the row is the only way both
+/// locales can stay correct. Everything that is developer-authored copy stays in
+/// next-intl.
+model ServiceCategory {
+  id   String @id @default(uuid()) @db.Uuid
+  /// Stable, URL-safe key. Search filters and job posts reference the slug, so
+  /// renaming a category in either language never breaks a saved filter.
+  slug String @unique
+
+  nameEn        String
+  nameFr        String
+  descriptionEn String?
+  descriptionFr String?
+  /// Icon identifier from the web icon set (e.g. "wrench"), never a URL.
+  icon          String?
+
+  /// Two-level taxonomy: a top-level trade with optional specialisations.
+  parentId String? @db.Uuid
+
+  sortOrder Int     @default(0)
+  /// Retired rather than deleted (PROMPT 43): a category that has ever scoped a
+  /// job or a service must keep resolving for that history to stay readable.
+  isActive  Boolean @default(true)
+
+  /// Denormalised count of workers offering at least one active service here.
+  /// Recomputed by the taxonomy module, never incremented ad hoc — it drives
+  /// "trending categories" (DIS-03) and the no-provider fallback copy (DIS-06),
+  /// both of which are wrong in a way users notice if the number drifts.
+  workerCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   ServiceCategory?  @relation("ServiceCategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children ServiceCategory[] @relation("ServiceCategoryTree")
+  services Service[]
+
+  /// The browse list: live categories in their admin-chosen order.
+  @@index([isActive, sortOrder])
+  @@index([parentId, sortOrder])
+  /// Trending categories (DIS-03).
+  @@index([workerCount])
 }
 
 /// A weekly availability slot. Times are local "HH:MM" strings rather than
@@ -955,6 +1053,40 @@ model Availability {
 
   @@unique([workerProfileId, dayOfWeek, startTime, endTime])
   @@index([workerProfileId, dayOfWeek])
+}
+
+/// A one-off override of the weekly rule (PRO-05 "exceptions"): a public holiday
+/// off, or a Sunday worked specially.
+///
+/// A separate model rather than a JSON column on Availability, because an
+/// exception overrides the WHOLE DAY, not one slot — attaching it to a single
+/// slot would leave the other slots on that day still claiming to be open.
+model AvailabilityException {
+  id              String @id @default(uuid()) @db.Uuid
+  workerProfileId String @db.Uuid
+
+  /// The calendar day being overridden, in the worker's local date. Stored as
+  /// DATE, not a timestamp: "closed on 20 May" is not an instant, and giving it
+  /// a time would bind a public holiday to whatever timezone wrote the row.
+  date DateTime @db.Date
+
+  /// False = unavailable all day (the common case). True = available on a day
+  /// the weekly rule says is closed, in which case the times below apply.
+  isAvailable Boolean @default(false)
+  startTime   String?
+  endTime     String?
+
+  /// Worker's own words, shown to clients ("Fête du Travail").
+  note String?
+
+  createdAt DateTime @default(now())
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  /// One override per worker per day — a second one would be ambiguous.
+  @@unique([workerProfileId, date])
+  /// The availability filter's read path: upcoming exceptions for one worker.
+  @@index([workerProfileId, date])
 }
 
 enum PortfolioItemType {
@@ -1048,4 +1180,85 @@ model MediaAsset {
   @@index([ownerId, deletedAt])
   /// Duplicate-document detection across accounts.
   @@index([checksum])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Spatial (SRS §12, PROMPT 38). Location is layered and each layer has one job:
+//
+//   OSM          structural reality, ingested into the `osm` schema
+//   PostGIS      the warehouse AND the authoritative maths (this file's columns)
+//   CARTO        dynamic spatial SQL + MVT tiles (PROMPT 41)
+//   BigDataCloud fast administrative reverse-geocoding (PROMPT 39)
+//   Mapbox       paint only — NEVER authoritative for a calculation
+//   Human input  a dropped pin or a landmark ALWAYS overrides a machine fix
+//
+// Only what the application owns is modelled here. The OSM warehouse (`osm.*`)
+// and the reviewed read views (`geo.*`) live in their own Postgres schemas,
+// created by raw SQL migrations: they are not Prisma's to manage, and keeping
+// them out of `public` is what stops Prisma drift detection from proposing to
+// drop a table it has no way to describe.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Administrative depth of a region. Cameroon's hierarchy in the two launch
+/// cities is Country → Region → City (commune) → District (arrondissement) →
+/// Neighbourhood (quartier); the last is the level people actually use to say
+/// where they are, which is why it is modelled rather than approximated.
+enum GeoRegionLevel {
+  COUNTRY
+  REGION
+  CITY
+  DISTRICT
+  NEIGHBOURHOOD
+}
+
+/// A named administrative area with a real boundary (SRS §12).
+///
+/// Seeded with the launch geography and then UPGRADED in place by the OSM
+/// ingest: the seed carries approximate boundaries so the platform works on a
+/// laptop with no network, and `osmId` is how the ingest finds the same row
+/// again to replace that approximation with the real polygon. Seeding fake
+/// precision and never correcting it is the failure mode this avoids.
+model GeoRegion {
+  id   String @id @default(uuid()) @db.Uuid
+  /// Stable key ("douala-akwa"). Saved searches and shared links use this, so a
+  /// renamed quarter does not break a URL someone sent on WhatsApp.
+  slug String @unique
+
+  nameEn String
+  nameFr String
+  level  GeoRegionLevel
+
+  parentId String? @db.Uuid
+
+  /// The OSM relation/way this boundary came from. Null while the row still
+  /// holds its seeded approximation — which is exactly the "not yet ingested"
+  /// signal the ingest script filters on.
+  osmId BigInt?
+
+  /// Authoritative boundary and centroid, GIST-indexed in the raw SQL migration.
+  /// `Unsupported` on purpose: see WorkerProfile.location.
+  boundary Unsupported("geography(MultiPolygon, 4326)")?
+  center   Unsupported("geography(Point, 4326)")?
+
+  /// Cached ST_Area of the boundary. Ranking a "within region" result set by
+  /// specificity should not re-measure a polygon on every request.
+  areaSqKm Float?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   GeoRegion?  @relation("GeoRegionTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children GeoRegion[] @relation("GeoRegionTree")
+
+  workerProfiles   WorkerProfile[]   @relation("WorkerProfileRegion")
+  clientProfiles   ClientProfile[]   @relation("ClientProfileRegion")
+  businessProfiles BusinessProfile[] @relation("BusinessProfileRegion")
+
+  /// The region picker: live regions at one level.
+  @@index([level, isActive])
+  @@index([parentId])
+  /// The ingest's "find the row this OSM relation already seeded" lookup.
+  @@index([osmId])
 }

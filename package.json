@@ -32,6 +32,7 @@
     "db:migrate:reset": "pnpm --filter @trustpro/database migrate:reset",
     "db:migrate:diff": "pnpm --filter @trustpro/database migrate:diff",
     "db:seed": "pnpm --filter @trustpro/database seed",
+    "db:osm:ingest": "pnpm --filter @trustpro/database osm:ingest",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d && pnpm db:migrate:deploy && pnpm db:generate",
