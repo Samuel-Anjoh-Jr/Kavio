@@ -90,6 +90,16 @@ model User {
   clientProfile           ClientProfile?
   businessProfile         BusinessProfile?
 
+  trustScoreRecord      TrustScore?
+  trustEvents           TrustEvent[]         @relation("TrustEventSubject")
+  actedTrustEvents      TrustEvent[]         @relation("TrustEventActor")
+  verifications         VerificationRecord[] @relation("VerificationSubject")
+  reviewedVerifications VerificationRecord[] @relation("VerificationReviewer")
+  documents             Document[]           @relation("DocumentOwner")
+  reviewedDocuments     Document[]           @relation("DocumentReviewer")
+  endorsements          Endorsement[]        @relation("EndorsementSubject")
+  authoredEndorsements  Endorsement[]        @relation("EndorsementAuthor")
+
   @@index([status, createdAt])
 }
 
@@ -127,18 +137,18 @@ enum VerificationPurpose {
 /// A 6-digit one-time code. Delivered through the NotificationDispatcher only —
 /// email/console at launch, SMS when the flag flips, with no change here.
 model VerificationCode {
-  id      String              @id @default(uuid()) @db.Uuid
-  userId  String              @db.Uuid
-  purpose VerificationPurpose
+  id          String              @id @default(uuid()) @db.Uuid
+  userId      String              @db.Uuid
+  purpose     VerificationPurpose
   /// The address the code was sent to (E.164 phone or email), kept so a code
   /// stops working if the user changes the destination mid-flow.
   destination String
   codeHash    String
   expiresAt   DateTime
   /// Wrong-guess counter; the row is dead once it reaches the configured max.
-  attempts   Int       @default(0)
-  consumedAt DateTime?
-  createdAt  DateTime  @default(now())
+  attempts    Int                 @default(0)
+  consumedAt  DateTime?
+  createdAt   DateTime            @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -280,6 +290,312 @@ model NotificationPreference {
 
   @@unique([userId, channel, category])
   @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Trust Engine (SRS §6 TRU-*, §21.4 tiers, §21.5 point model, §21.6 pillars).
+//
+// The moat. Everything here hangs off the IDENTITY (User), never off a role, so
+// a Worker who starts hiring keeps every check they have already passed.
+//
+// Shape of the system:
+//   TrustEvent          append-only log — the only source of truth for the score
+//   TrustScore          a derived SNAPSHOT of that log, safe to delete and rebuild
+//   VerificationRecord  the state of each progressive check (TRU-06)
+//   Document            the KYC/portfolio artefacts a check is decided on (TRU-08)
+//   Endorsement         community credibility, capped + tapering (§21.6, FR-35)
+//   TierConfig          the admin-tunable gates tier derivation reads (§21.4)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The four trust pillars (SRS §21.6). Every scoring rule belongs to exactly one,
+/// which is what makes the TRU-04 breakdown screen explainable rather than a
+/// single opaque number.
+enum TrustPillar {
+  IDENTITY
+  PROFESSIONAL
+  MARKETPLACE
+  FINANCIAL
+}
+
+/// Every scorable thing that can happen to an identity (SRS §21.5).
+///
+/// This enum is deliberately closed: a new way to earn or lose trust is a schema
+/// change plus a rule in the point model, reviewed together — never an ad-hoc
+/// delta written by whichever module happened to be running.
+enum TrustEventType {
+  /// Baseline granted once at sign-up (§21.5 "Starting score", +15).
+  ACCOUNT_CREATED
+  PHONE_VERIFIED
+  ID_VERIFIED
+  FIELD_VERIFIED
+  PORTFOLIO_ADDED
+  JOB_COMPLETED
+  REPEAT_CUSTOMER
+  EXCELLENT_REVIEW
+  DISPUTE_UPHELD
+  JOB_CANCELLED
+  /// Confirmed fraudulent documents. Permanent suspension, overriding whatever
+  /// score was accumulated (TRU-08, §21.5 last row).
+  FAKE_DOCUMENTS_CONFIRMED
+  /// Community endorsement (§21.6, FR-35): a small capped contribution that
+  /// tapers away as verified job history accumulates.
+  ENDORSEMENT_RECEIVED
+}
+
+/// An append-only entry in the trust ledger. Rows are NEVER updated or deleted —
+/// a correction is a new compensating event, so the history stays auditable.
+///
+/// `delta` is the NOMINAL per-occurrence impact recorded at emit time, kept for
+/// the audit trail and the "what changed" UI. It is not what the score is
+/// computed from: recomputation replays this log through the point model so caps,
+/// tapers and clamping are applied consistently (see trust-score.model.ts).
+model TrustEvent {
+  id         String         @id @default(uuid()) @db.Uuid
+  subjectId  String         @db.Uuid
+  type       TrustEventType
+  pillar     TrustPillar
+  delta      Int
+  /// Who caused it (admin approving an ID, a client completing a job). Null for
+  /// system-generated events such as ACCOUNT_CREATED.
+  actorId    String?        @db.Uuid
+  /// What the event points back at — "Job", "Review", "VerificationRecord" — so
+  /// the breakdown can link a point change to the thing that caused it.
+  sourceType String?
+  sourceId   String?
+  metadata   Json?
+  occurredAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+
+  subject User  @relation("TrustEventSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  actor   User? @relation("TrustEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  /// The replay path: every recompute reads one subject's log in order.
+  @@index([subjectId, occurredAt])
+  /// Milestone lookups ("has this identity ever been ID_VERIFIED?").
+  @@index([subjectId, type])
+  @@index([actorId, createdAt])
+}
+
+/// A derived snapshot of the trust ledger: the four sub-scores plus the total.
+///
+/// Purely a read cache — dropping this table and replaying TrustEvent rebuilds it
+/// exactly. That is why the score can be re-derived after a scoring-rule change
+/// without any data migration.
+model TrustScore {
+  id        String @id @default(uuid()) @db.Uuid
+  subjectId String @unique @db.Uuid
+
+  identityScore     Int @default(0)
+  professionalScore Int @default(0)
+  marketplaceScore  Int @default(0)
+  financialScore    Int @default(0)
+  /// Clamped to [0, 100]. Zero and meaningless while `suspended` is true.
+  total             Int @default(0)
+
+  /// Confirmed fraudulent documents override the numeric score entirely
+  /// (TRU-08). Kept here so the override travels with the score it replaces.
+  suspended        Boolean   @default(false)
+  suspendedAt      DateTime?
+  suspensionReason String?
+
+  /// Denormalised tier-gate inputs (§21.4). `completedJobs` is derived from the
+  /// ledger on every recompute; `averageRating` is fed by the reviews module and
+  /// stays null until an identity has been rated, which leaves the Tier 3 rating
+  /// gate correctly unmet rather than accidentally satisfied by a zero.
+  completedJobs Int      @default(0)
+  averageRating Decimal? @db.Decimal(3, 2)
+
+  /// How many ledger rows this snapshot covers — makes a stale snapshot obvious.
+  eventCount Int      @default(0)
+  computedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  subject User @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  /// Default search ranking orders on the total (DIS-08, TRU-04); descending
+  /// scans of this index are what Phase 3 discovery sorts on.
+  @@index([total])
+  @@index([suspended])
+}
+
+/// The progressive checks behind the tiers (TRU-06, §21.4).
+enum VerificationCheckType {
+  PHONE
+  ID_SUBMITTED
+  ID_APPROVED
+  SELFIE_LIVENESS
+  ADDRESS
+  PORTFOLIO
+  FIELD_VERIFICATION
+  BUSINESS_REGISTRATION
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+/// One attempt at one check. Rows are NOT unique per (subject, checkType): a
+/// rejection must be re-submittable (TRU-06 "re-upload on rejection"), so each
+/// attempt is its own row and the LATEST row per check type is the live state.
+model VerificationRecord {
+  id        String                @id @default(uuid()) @db.Uuid
+  subjectId String                @db.Uuid
+  checkType VerificationCheckType
+  status    VerificationStatus    @default(PENDING)
+
+  /// Admin or Field Agent who decided it (ADM-03, TRU-09).
+  reviewerId String? @db.Uuid
+  /// Rejection reason, surfaced verbatim in the friendly-retry UX (TRU-07).
+  reason     String?
+  /// Free-form check evidence (OCR confidence, GPS fix of a field visit).
+  metadata   Json?
+
+  submittedAt DateTime  @default(now())
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  subject  User  @relation("VerificationSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("VerificationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  /// "Latest attempt per check type for this subject" — the tier-gate read path.
+  @@index([subjectId, checkType, createdAt])
+  /// The admin review queue.
+  @@index([status, createdAt])
+}
+
+/// What a stored file is. Drives both the review queue and the access rules.
+enum DocumentKind {
+  NATIONAL_ID_FRONT
+  NATIONAL_ID_BACK
+  SELFIE
+  PROOF_OF_ADDRESS
+  CERTIFICATE
+  PORTFOLIO_IMAGE
+  BUSINESS_REGISTRATION
+}
+
+enum DocumentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+/// Who may read a document. KYC media defaults to PRIVATE and is served only
+/// through signed, expiring URLs (P27); portfolio images are PUBLIC.
+enum DocumentVisibility {
+  PRIVATE
+  STAFF_ONLY
+  PUBLIC
+}
+
+/// A stored artefact (TRU-08). Only the S3 key lives here — bytes never touch the
+/// database, and access is decided at read time, not baked into a URL.
+///
+/// KNOWN DUPLICATION, to be reconciled in PROMPT 27. The profiles/onboarding work
+/// introduces `MediaAsset`, which covers the same storage ground (owner, kind,
+/// s3Key, mime, size, visibility); this model adds the review workflow on top
+/// (status, reviewer, rejectionReason). Both were kept self-contained on purpose
+/// so that neither feature's commit referenced a model absent from the other's.
+/// P27 (document upload + secure storage) is where they should become one:
+/// MediaAsset as the storage record, review state hanging off it.
+model Document {
+  id         String             @id @default(uuid()) @db.Uuid
+  ownerId    String             @db.Uuid
+  kind       DocumentKind
+  /// Object key in the private bucket. Never a public URL.
+  s3Key      String             @unique
+  mimeType   String?
+  sizeBytes  Int?
+  status     DocumentStatus     @default(PENDING)
+  visibility DocumentVisibility @default(PRIVATE)
+
+  reviewerId      String? @db.Uuid
+  rejectionReason String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  reviewedAt DateTime?
+
+  owner    User  @relation("DocumentOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("DocumentReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId, kind, createdAt])
+  @@index([status, createdAt])
+}
+
+/// How the endorser knows the person (§21.6). A closed list keeps the weighting
+/// reviewable and stops "endorsed by a friend" from reading like a credential.
+enum EndorsementRelationship {
+  PREVIOUS_CUSTOMER
+  WORKSHOP_OWNER
+  QUARTER_CHIEF
+  LANDLORD
+  COMMUNITY_LEADER
+  COLLEAGUE
+}
+
+enum EndorsementStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// A community endorsement (FR-35). Only APPROVED rows emit a trust event, and
+/// their combined contribution is capped and tapers as real job history lands —
+/// early credibility without diluting earned reputation.
+model Endorsement {
+  id        String @id @default(uuid()) @db.Uuid
+  subjectId String @db.Uuid
+
+  /// Set when the endorser has an account; otherwise `authorName` carries an
+  /// off-platform endorser captured by a Field Agent.
+  authorId     String?                 @db.Uuid
+  authorName   String?
+  relationship EndorsementRelationship
+  quote        String
+  /// 1–5 stars, validated in the DTO before it reaches here.
+  rating       Int
+  status       EndorsementStatus       @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subject User  @relation("EndorsementSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  author  User? @relation("EndorsementAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([subjectId, status, createdAt])
+  @@index([authorId])
+}
+
+/// The tier gates (§21.4), as DATA rather than literals in code.
+///
+/// "Thresholds are Admin-configurable" is a hard requirement, so the derivation
+/// service reads every number from this table. One row per tier; the seeded rows
+/// reproduce the SRS table exactly, and moving a number here moves the boundary
+/// for everyone on the next recompute.
+model TierConfig {
+  id   String           @id @default(uuid()) @db.Uuid
+  tier VerificationTier @unique
+
+  /// Minimum Trust Score for the tier. Gates are AND-ed with the checks below.
+  minScore         Int                     @default(0)
+  /// Checks that must be VERIFIED. Cumulative in effect: derivation walks the
+  /// tiers in order and stops at the first unmet gate, so a tier can never be
+  /// skipped even if a later tier's own list happens to be satisfied.
+  requiredChecks   VerificationCheckType[]
+  /// Tier 3 volume/quality gates. Null means "not gated on this".
+  minCompletedJobs Int?
+  minAverageRating Decimal?                @db.Decimal(3, 2)
+
+  /// Stable key for the EN/FR label + unlock copy in the web message catalogue.
+  labelKey String
+
+  updatedById String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

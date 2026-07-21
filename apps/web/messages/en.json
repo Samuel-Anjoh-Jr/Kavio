@@ -238,6 +238,62 @@
       "submit_review": "Sign in to leave your review."
     }
   },
+  "Trust": {
+    "scoreLabel": "Trust Score",
+    "outOf": "{score} out of 100",
+    "breakdownHeading": "How your Trust Score is built",
+    "suspended": "This account is suspended pending a document review.",
+    "tier": {
+      "TIER_0": "Basic Profile",
+      "TIER_1": "ID Submitted",
+      "TIER_2": "Verified Professional",
+      "TIER_3": "Field Verified"
+    },
+    "unlock": {
+      "TIER_1": "Post unlimited job requests.",
+      "TIER_2": "Verified Professional badge, higher search ranking, and you can post jobs as a client.",
+      "TIER_3": "Premium search placement and access to high-value and corporate contracts."
+    },
+    "pillar": {
+      "IDENTITY": "Identity",
+      "PROFESSIONAL": "Professional",
+      "MARKETPLACE": "Marketplace",
+      "FINANCIAL": "Financial"
+    },
+    "pillarQuestion": {
+      "IDENTITY": "Are you who you say you are?",
+      "PROFESSIONAL": "Can you do the work?",
+      "MARKETPLACE": "Do clients have good experiences with you?",
+      "FINANCIAL": "Can money move safely?"
+    },
+    "pillarUnscored": "Starts counting once payments go live.",
+    "improve": {
+      "ACCOUNT_CREATED": "Create your account.",
+      "PHONE_VERIFIED": "Verify your phone number.",
+      "ID_VERIFIED": "Upload your national ID for approval.",
+      "FIELD_VERIFIED": "Book an in-person verification visit.",
+      "PORTFOLIO_ADDED": "Add photos of work you have done.",
+      "JOB_COMPLETED": "Complete jobs through TrustPro.",
+      "REPEAT_CUSTOMER": "Win repeat business from clients you have served.",
+      "EXCELLENT_REVIEW": "Earn excellent reviews from your clients.",
+      "ENDORSEMENT_RECEIVED": "Ask a past customer or community leader to endorse you."
+    },
+    "requirement": {
+      "SCORE": "Reach a Trust Score of {required}.",
+      "COMPLETED_JOBS": "Complete {required} jobs. You have {current}.",
+      "AVERAGE_RATING": "Keep an average rating of {required}★.",
+      "CHECK": {
+        "PHONE": "Verify your phone number.",
+        "ID_SUBMITTED": "Upload your national ID.",
+        "ID_APPROVED": "Wait for your ID to be approved.",
+        "SELFIE_LIVENESS": "Take a verification selfie.",
+        "ADDRESS": "Confirm your address.",
+        "PORTFOLIO": "Add your portfolio.",
+        "FIELD_VERIFICATION": "Complete an in-person verification.",
+        "BUSINESS_REGISTRATION": "Upload your business registration."
+      }
+    }
+  },
   "Nav": {
     "primary": "Primary navigation",
     "explore": "Explore",

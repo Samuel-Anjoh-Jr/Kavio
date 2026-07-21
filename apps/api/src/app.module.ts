@@ -20,6 +20,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { GraphQLModule } from './graphql/graphql.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UsersModule } from './users/users.module';
+import { TrustModule } from './trust/trust.module';
 import { StorageModule } from './storage/storage.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 
@@ -40,6 +41,10 @@ import { OnboardingModule } from './onboarding/onboarding.module';
     // @OnEvent listeners are bound at bootstrap.
     EventEmitterModule.forRoot({ global: true }),
     NotificationsModule,
+    // The Trust Engine subscribes to nothing at bootstrap but emits tier/score
+    // events that NotificationsModule's dispatcher consumes, so it is registered
+    // after the emitter and after the dispatcher's own listeners are bound.
+    TrustModule,
     // Object storage for portfolio media, KYC documents and business papers.
     // Registered before OnboardingModule, which resolves signed URLs through it.
     StorageModule,

@@ -238,6 +238,62 @@
       "submit_review": "Connectez-vous pour laisser votre avis."
     }
   },
+  "Trust": {
+    "scoreLabel": "Score de Confiance",
+    "outOf": "{score} sur 100",
+    "breakdownHeading": "Comment votre Score de Confiance est calculé",
+    "suspended": "Ce compte est suspendu en attendant la vérification des documents.",
+    "tier": {
+      "TIER_0": "Profil de base",
+      "TIER_1": "Pièce d’identité soumise",
+      "TIER_2": "Professionnel vérifié",
+      "TIER_3": "Vérifié sur le terrain"
+    },
+    "unlock": {
+      "TIER_1": "Publiez un nombre illimité de demandes.",
+      "TIER_2": "Badge Professionnel vérifié, meilleur classement dans la recherche, et publication d’offres en tant que client.",
+      "TIER_3": "Placement premium et accès aux contrats à forte valeur et aux contrats d’entreprise."
+    },
+    "pillar": {
+      "IDENTITY": "Identité",
+      "PROFESSIONAL": "Professionnel",
+      "MARKETPLACE": "Marché",
+      "FINANCIAL": "Financier"
+    },
+    "pillarQuestion": {
+      "IDENTITY": "Êtes-vous bien celui que vous prétendez être ?",
+      "PROFESSIONAL": "Savez-vous faire le travail ?",
+      "MARKETPLACE": "Les clients sont-ils satisfaits de vous ?",
+      "FINANCIAL": "L’argent peut-il circuler en toute sécurité ?"
+    },
+    "pillarUnscored": "Sera pris en compte dès l’activation des paiements.",
+    "improve": {
+      "ACCOUNT_CREATED": "Créez votre compte.",
+      "PHONE_VERIFIED": "Vérifiez votre numéro de téléphone.",
+      "ID_VERIFIED": "Téléversez votre carte nationale d’identité pour approbation.",
+      "FIELD_VERIFIED": "Planifiez une vérification en personne.",
+      "PORTFOLIO_ADDED": "Ajoutez des photos de vos réalisations.",
+      "JOB_COMPLETED": "Réalisez des missions via TrustPro.",
+      "REPEAT_CUSTOMER": "Fidélisez les clients que vous avez déjà servis.",
+      "EXCELLENT_REVIEW": "Obtenez d’excellents avis de vos clients.",
+      "ENDORSEMENT_RECEIVED": "Demandez à un ancien client ou à un leader communautaire de vous recommander."
+    },
+    "requirement": {
+      "SCORE": "Atteignez un Score de Confiance de {required}.",
+      "COMPLETED_JOBS": "Réalisez {required} missions. Vous en avez {current}.",
+      "AVERAGE_RATING": "Maintenez une note moyenne de {required}★.",
+      "CHECK": {
+        "PHONE": "Vérifiez votre numéro de téléphone.",
+        "ID_SUBMITTED": "Téléversez votre carte nationale d’identité.",
+        "ID_APPROVED": "Attendez l’approbation de votre pièce d’identité.",
+        "SELFIE_LIVENESS": "Prenez un selfie de vérification.",
+        "ADDRESS": "Confirmez votre adresse.",
+        "PORTFOLIO": "Ajoutez votre portfolio.",
+        "FIELD_VERIFICATION": "Effectuez une vérification en personne.",
+        "BUSINESS_REGISTRATION": "Téléversez votre registre de commerce."
+      }
+    }
+  },
   "Nav": {
     "primary": "Navigation principale",
     "explore": "Explorer",

@@ -119,6 +119,14 @@ function sampleVariables(key: string): Record<string, unknown> {
       return { occurredAt: '21 July 2026, 09:14' };
     case 'auth.two_factor_changed':
       return { enabled: true };
+    case 'trust.tier_promoted':
+      return {
+        tier: 'TIER_2',
+        tierLabelKey: 'Trust.tier.TIER_2',
+        unlockKey: 'Trust.unlock.TIER_2',
+      };
+    case 'trust.score_milestone':
+      return { score: 55, threshold: 50 };
     default:
       return {};
   }

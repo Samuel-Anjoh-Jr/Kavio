@@ -30,6 +30,9 @@ export interface TemplateVariablesMap {
   'auth.new_device_login': { deviceName: string; occurredAt: string; secureAccountUrl: string };
   'auth.password_changed': { occurredAt: string };
   'auth.two_factor_changed': { enabled: boolean };
+  /** Tier promotion (TRU-02). `tierLabelKey`/`unlockKey` are for in-app surfaces. */
+  'trust.tier_promoted': { tier: string; tierLabelKey: string; unlockKey: string };
+  'trust.score_milestone': { score: number; threshold: number };
 }
 
 export type TemplateKey = keyof TemplateVariablesMap;
@@ -356,6 +359,133 @@ const authTwoFactorChanged: TemplateDefinition<'auth.two_factor_changed'> = {
   },
 };
 
+/**
+ * Tier names, per locale. The tier ENUM is a machine value; what a worker reads
+ * on a badge is copy, and copy lives here with the rest of it — never inlined at
+ * an emit site, which is what keeps EN/FR parity checkable in one place.
+ */
+const TIER_NAMES: Record<Locale, Record<string, string>> = {
+  en: {
+    TIER_0: 'Basic Profile',
+    TIER_1: 'ID Submitted',
+    TIER_2: 'Verified Professional',
+    TIER_3: 'Field Verified',
+  },
+  fr: {
+    TIER_0: 'Profil de base',
+    TIER_1: 'Pièce d’identité soumise',
+    TIER_2: 'Professionnel vérifié',
+    TIER_3: 'Vérifié sur le terrain',
+  },
+};
+
+/** What the tier unlocks (§21.4), which is how TRU-05 frames every step. */
+const TIER_UNLOCKS: Record<Locale, Record<string, string>> = {
+  en: {
+    TIER_1: 'You can now post unlimited job requests.',
+    TIER_2:
+      'You now carry the Verified Professional badge, rank higher in search, and can post jobs as a client.',
+    TIER_3:
+      'You now get premium search placement and access to high-value and corporate contracts.',
+  },
+  fr: {
+    TIER_1: 'Vous pouvez désormais publier un nombre illimité de demandes.',
+    TIER_2:
+      'Vous portez désormais le badge Professionnel vérifié, vous êtes mieux classé dans la recherche et vous pouvez publier des offres en tant que client.',
+    TIER_3:
+      'Vous bénéficiez désormais d’un placement premium et de l’accès aux contrats à forte valeur et aux contrats d’entreprise.',
+  },
+};
+
+const trustTierPromoted: TemplateDefinition<'trust.tier_promoted'> = {
+  key: 'trust.tier_promoted',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: `You reached ${TIER_NAMES.en[v.tier] ?? v.tier} on TrustPro`,
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Your verification level went up.',
+          heading: `You reached ${escapeHtml(TIER_NAMES.en[v.tier] ?? v.tier)}`,
+          bodyHtml: paragraphs(
+            'Your verification level on TrustPro just went up.',
+            escapeHtml(TIER_UNLOCKS.en[v.tier] ?? 'More of the platform is now open to you.'),
+          ),
+        }),
+        text: `You reached ${TIER_NAMES.en[v.tier] ?? v.tier} on TrustPro. ${TIER_UNLOCKS.en[v.tier] ?? ''}`,
+      }),
+      fr: (v) => ({
+        subject: `Vous avez atteint le niveau ${TIER_NAMES.fr[v.tier] ?? v.tier} sur TrustPro`,
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Votre niveau de vérification a augmenté.',
+          heading: `Vous avez atteint : ${escapeHtml(TIER_NAMES.fr[v.tier] ?? v.tier)}`,
+          bodyHtml: paragraphs(
+            'Votre niveau de vérification sur TrustPro vient d’augmenter.',
+            escapeHtml(
+              TIER_UNLOCKS.fr[v.tier] ?? 'De nouvelles fonctionnalités vous sont ouvertes.',
+            ),
+          ),
+        }),
+        text: `Vous avez atteint le niveau ${TIER_NAMES.fr[v.tier] ?? v.tier} sur TrustPro. ${TIER_UNLOCKS.fr[v.tier] ?? ''}`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'Your verification level went up',
+        body: `You reached ${TIER_NAMES.en[v.tier] ?? v.tier}.`,
+      }),
+      fr: (v) => ({
+        title: 'Votre niveau de vérification a augmenté',
+        body: `Vous avez atteint : ${TIER_NAMES.fr[v.tier] ?? v.tier}.`,
+      }),
+    },
+  },
+};
+
+const trustScoreMilestone: TemplateDefinition<'trust.score_milestone'> = {
+  key: 'trust.score_milestone',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: `Your Trust Score passed ${v.threshold}`,
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Your Trust Score went up.',
+          heading: `Your Trust Score is ${v.score}`,
+          bodyHtml: paragraphs(
+            `You just passed ${v.threshold} points. A higher Trust Score puts you in front of more clients near you.`,
+            'Open your Trust Score breakdown to see what would raise it further.',
+          ),
+        }),
+        text: `Your TrustPro Trust Score passed ${v.threshold} and is now ${v.score}.`,
+      }),
+      fr: (v) => ({
+        subject: `Votre Score de Confiance a dépassé ${v.threshold}`,
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Votre Score de Confiance a augmenté.',
+          heading: `Votre Score de Confiance est de ${v.score}`,
+          bodyHtml: paragraphs(
+            `Vous venez de dépasser ${v.threshold} points. Un Score de Confiance plus élevé vous met en avant auprès de davantage de clients près de chez vous.`,
+            'Consultez le détail de votre Score de Confiance pour voir comment l’augmenter encore.',
+          ),
+        }),
+        text: `Votre Score de Confiance TrustPro a dépassé ${v.threshold} et atteint ${v.score}.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Your Trust Score went up', body: `You passed ${v.threshold} points.` }),
+      fr: (v) => ({
+        title: 'Votre Score de Confiance a augmenté',
+        body: `Vous avez dépassé ${v.threshold} points.`,
+      }),
+    },
+  },
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Registry + lookup
 // ─────────────────────────────────────────────────────────────────────────────
@@ -371,6 +501,8 @@ const TEMPLATES: TemplateMap = {
   'auth.new_device_login': authNewDeviceLogin,
   'auth.password_changed': authPasswordChanged,
   'auth.two_factor_changed': authTwoFactorChanged,
+  'trust.tier_promoted': trustTierPromoted,
+  'trust.score_milestone': trustScoreMilestone,
 };
 
 export const TEMPLATE_KEYS = Object.keys(TEMPLATES) as TemplateKey[];
