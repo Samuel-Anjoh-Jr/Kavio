@@ -37,7 +37,10 @@ export class TrustContributionView {
   @Field({ description: 'True once this signal is contributing everything it can.' })
   maxed!: boolean;
 
-  @Field({
+  // Explicit `() => String`: TypeScript erases the `string | null` union to
+  // Object in the decorator metadata, so the schema builder cannot infer a type
+  // and refuses to build. Every nullable union field needs the thunk.
+  @Field(() => String, {
     description:
       'i18n key for the "how to improve" line, e.g. "Trust.improve.ID_VERIFIED". Null once maxed.',
     nullable: true,

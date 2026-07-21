@@ -2,6 +2,10 @@ import { TrustEventType, TrustPillar } from '@trustpro/database';
 import {
   computeTrustScore,
   crossedThresholds,
+  ENDORSEMENT_CAP,
+  ENDORSEMENT_POINTS_EACH,
+  ENDORSEMENT_TAPERED_OUT_AT,
+  endorsementTaper,
   pillarMax,
   subScoreFor,
   TRUST_POINT_MODEL,
@@ -304,6 +308,99 @@ describe('trust score point model (SRS §21.5)', () => {
       );
       const professional = subScoreFor(computeTrustScore(withJobs), TrustPillar.PROFESSIONAL);
       expect(professional.points).toBe(0);
+    });
+  });
+
+  describe('endorsements can be withdrawn without editing history (TRU-10)', () => {
+    it('cancels one grant per revocation', () => {
+      const log = events(
+        TrustEventType.ENDORSEMENT_RECEIVED,
+        TrustEventType.ENDORSEMENT_RECEIVED,
+        TrustEventType.ENDORSEMENT_RECEIVED,
+        TrustEventType.ENDORSEMENT_REVOKED,
+      );
+
+      // Three given, one withdrawn — two still standing, one point each.
+      expect(subScoreFor(computeTrustScore(log), TrustPillar.PROFESSIONAL).points).toBe(2);
+    });
+
+    it('returns the identity to where it started when all are withdrawn', () => {
+      const before = computeTrustScore(events(TrustEventType.ACCOUNT_CREATED));
+      const after = computeTrustScore(
+        events(
+          TrustEventType.ACCOUNT_CREATED,
+          TrustEventType.ENDORSEMENT_RECEIVED,
+          TrustEventType.ENDORSEMENT_REVOKED,
+        ),
+      );
+
+      expect(after.total).toBe(before.total);
+    });
+
+    it('never goes negative when revocations outnumber grants', () => {
+      // Withdrawing an endorsement should undo it, not punish the subject for
+      // having been endorsed at all.
+      const log = events(
+        TrustEventType.ENDORSEMENT_RECEIVED,
+        TrustEventType.ENDORSEMENT_REVOKED,
+        TrustEventType.ENDORSEMENT_REVOKED,
+        TrustEventType.ENDORSEMENT_REVOKED,
+      );
+
+      expect(subScoreFor(computeTrustScore(log), TrustPillar.PROFESSIONAL).points).toBe(0);
+    });
+
+    it('reports the effective occurrence count in the breakdown', () => {
+      const log = events(
+        TrustEventType.ENDORSEMENT_RECEIVED,
+        TrustEventType.ENDORSEMENT_RECEIVED,
+        TrustEventType.ENDORSEMENT_REVOKED,
+      );
+
+      const professional = subScoreFor(computeTrustScore(log), TrustPillar.PROFESSIONAL);
+      const endorsements = professional.contributions.find(
+        (contribution) => contribution.type === TrustEventType.ENDORSEMENT_RECEIVED,
+      );
+
+      // The breakdown screen must show what currently counts, not the raw
+      // number of rows in the ledger.
+      expect(endorsements?.occurrences).toBe(1);
+    });
+
+    it('leaves the revocation itself scoring nothing of its own', () => {
+      const log = computeTrustScore(events(TrustEventType.ENDORSEMENT_REVOKED));
+
+      expect(log.total).toBe(0);
+      for (const sub of log.subScores) {
+        expect(
+          sub.contributions.some(
+            (contribution) => contribution.type === TrustEventType.ENDORSEMENT_REVOKED,
+          ),
+        ).toBe(false);
+      }
+    });
+  });
+
+  describe('endorsement weighting is stated, not buried (TRU-10)', () => {
+    it('keeps endorsements worth far less than a verified identity', () => {
+      // The ratio IS the requirement: community credibility opens a door, it
+      // never substitutes for identity verification or delivered work.
+      expect(ENDORSEMENT_CAP).toBeLessThan(20);
+      expect(ENDORSEMENT_POINTS_EACH).toBe(1);
+    });
+
+    it('tapers on a straight line from full weight to nothing', () => {
+      expect(endorsementTaper(0)).toBe(1);
+      expect(endorsementTaper(ENDORSEMENT_TAPERED_OUT_AT / 2)).toBe(0.5);
+      expect(endorsementTaper(ENDORSEMENT_TAPERED_OUT_AT)).toBe(0);
+    });
+
+    it('never goes negative past the taper point', () => {
+      expect(endorsementTaper(ENDORSEMENT_TAPERED_OUT_AT * 5)).toBe(0);
+    });
+
+    it('taper ends at half the Tier 3 job gate, as documented', () => {
+      expect(ENDORSEMENT_TAPERED_OUT_AT).toBe(10);
     });
   });
 

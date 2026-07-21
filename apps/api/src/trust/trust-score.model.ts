@@ -51,8 +51,66 @@ export type TrustRule =
       /** Completed jobs at which the contribution has tapered to zero. */
       readonly taperedOutAt: number;
     }
+  /**
+   * Cancels occurrences of another event type, one for one.
+   *
+   * The ledger is append-only, so influence is withdrawn by appending its
+   * negation. Modelled as a first-class rule rather than special-cased inside
+   * the endorsement arithmetic, because "this event undoes that one" is a shape
+   * disputes and reversed reviews will need too.
+   */
+  | { readonly kind: 'REVOCATION'; readonly revokes: TrustEventType }
   /** Overrides the numeric score entirely (TRU-08). */
   | { readonly kind: 'SUSPENSION' };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Endorsement weighting (TRU-10, §21.6, FR-35)
+//
+// Named constants rather than literals inside the rule, because these three
+// numbers ARE the requirement — "a modest, capped amount that tapers as verified
+// job history accumulates" — and a reviewer should be able to read them without
+// reading the arithmetic that applies them.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Points per approved endorsement. Deliberately small: one point against a
+ * 0–100 scale, so a wall of endorsements never reads like a verified ID.
+ */
+export const ENDORSEMENT_POINTS_EACH = 1;
+
+/**
+ * The most endorsements can EVER contribute, before the taper.
+ *
+ * Five points, against 20 for an approved ID and 15 for completed jobs. That
+ * ratio is the whole design: community credibility opens the door for a worker
+ * nobody has hired yet, and it cannot be stacked into a substitute for either
+ * identity verification or actual work.
+ */
+export const ENDORSEMENT_CAP = 5;
+
+/**
+ * Completed jobs at which endorsements contribute nothing at all.
+ *
+ * Ten was chosen because it is half the Tier 3 job gate (§21.4): by the time a
+ * worker is halfway to the top tier, their own delivery history is a far better
+ * signal than anyone's word, and continuing to pay for vouching would dilute
+ * exactly the reputation the platform exists to make legible.
+ */
+export const ENDORSEMENT_TAPERED_OUT_AT = 10;
+
+/**
+ * The multiplier applied to the endorsement contribution at a given job count.
+ *
+ * Straight-line from 1 (no history, full weight) to 0 (at `taperedOutAt`).
+ * Exported so the API can SHOW a worker their current taper instead of leaving
+ * them to wonder why a number went down when nothing bad happened.
+ */
+export function endorsementTaper(
+  completedJobs: number,
+  taperedOutAt: number = ENDORSEMENT_TAPERED_OUT_AT,
+): number {
+  return clamp(1 - completedJobs / taperedOutAt, 0, 1);
+}
 
 /**
  * The point model, one entry per event type. The `points`/`cap` values are the
@@ -97,9 +155,13 @@ export const TRUST_POINT_MODEL: Readonly<Record<TrustEventType, TrustRule>> = {
   [TrustEventType.ENDORSEMENT_RECEIVED]: {
     kind: 'TAPERED_ACCRUAL',
     pillar: TrustPillar.PROFESSIONAL,
-    pointsPer: 1,
-    cap: 5,
-    taperedOutAt: 10,
+    pointsPer: ENDORSEMENT_POINTS_EACH,
+    cap: ENDORSEMENT_CAP,
+    taperedOutAt: ENDORSEMENT_TAPERED_OUT_AT,
+  },
+  [TrustEventType.ENDORSEMENT_REVOKED]: {
+    kind: 'REVOCATION',
+    revokes: TrustEventType.ENDORSEMENT_RECEIVED,
   },
 
   // Marketplace — "do clients have good experiences with you?" (§21.6)
@@ -225,16 +287,47 @@ export function ruleMax(rule: TrustRule): number {
     case 'TAPERED_ACCRUAL':
       return rule.cap;
     case 'PENALTY':
+    case 'REVOCATION':
     case 'SUSPENSION':
       return 0;
   }
 }
 
+/**
+ * Occurrences of `type` that still stand, after subtracting anything that
+ * revokes it. Never negative: more revocations than grants means zero, not a
+ * debt — withdrawing an endorsement should return a worker to where they were,
+ * not punish them for having been endorsed.
+ */
+export function effectiveOccurrences(
+  type: TrustEventType,
+  occurrences: ReadonlyMap<TrustEventType, number>,
+): number {
+  const granted = occurrences.get(type) ?? 0;
+
+  const revoked = (Object.entries(TRUST_POINT_MODEL) as [TrustEventType, TrustRule][])
+    .filter(([, rule]) => rule.kind === 'REVOCATION' && rule.revokes === type)
+    .reduce((sum, [revokerType]) => sum + (occurrences.get(revokerType) ?? 0), 0);
+
+  return Math.max(granted - revoked, 0);
+}
+
 /** The ceiling a pillar can reach: the sum of its rules' ceilings. */
 export function pillarMax(pillar: TrustPillar): number {
   return Object.values(TRUST_POINT_MODEL)
-    .filter((rule) => rule.kind !== 'SUSPENSION' && rule.pillar === pillar)
+    .filter((rule) => scoringPillarOf(rule) === pillar)
     .reduce((sum, rule) => sum + ruleMax(rule), 0);
+}
+
+/**
+ * The pillar a rule scores into, or null for rules that score into none.
+ *
+ * Suspension is a verdict and revocation is a negation of something else; both
+ * are pillar-less by nature, and giving either an arbitrary pillar would put a
+ * meaningless row in the TRU-04 breakdown.
+ */
+export function scoringPillarOf(rule: TrustRule): TrustPillar | null {
+  return rule.kind === 'SUSPENSION' || rule.kind === 'REVOCATION' ? null : rule.pillar;
 }
 
 /**
@@ -262,11 +355,14 @@ export function computeTrustScore(events: readonly TrustEventInput[]): TrustScor
   );
 
   for (const [type, rule] of Object.entries(TRUST_POINT_MODEL) as [TrustEventType, TrustRule][]) {
-    if (rule.kind === 'SUSPENSION') {
+    // Suspension is a verdict, and a revocation scores nothing of its own — it
+    // only reduces the count of what it cancels, which `effectiveOccurrences`
+    // has already applied to that rule.
+    if (rule.kind === 'SUSPENSION' || rule.kind === 'REVOCATION') {
       continue;
     }
 
-    const count = occurrences.get(type) ?? 0;
+    const count = effectiveOccurrences(type, occurrences);
     let points = 0;
 
     switch (rule.kind) {
@@ -282,8 +378,9 @@ export function computeTrustScore(events: readonly TrustEventInput[]): TrustScor
       case 'TAPERED_ACCRUAL': {
         // Full weight while there is no platform history, straight-line to zero
         // by `taperedOutAt` completed jobs — earned reputation displaces vouching.
-        const taper = clamp(1 - completedJobs / rule.taperedOutAt, 0, 1);
-        points = Math.min(count * rule.pointsPer, rule.cap) * taper;
+        points =
+          Math.min(count * rule.pointsPer, rule.cap) *
+          endorsementTaper(completedJobs, rule.taperedOutAt);
         break;
       }
     }

@@ -6,6 +6,7 @@ import { nominalDeltaFor, TrustScoreService } from './trust-score.service';
 import {
   TrustScoreThresholdCrossedEvent,
   TrustSuspendedEvent,
+  TRUST_RECOMPUTED,
   TRUST_SCORE_THRESHOLD_CROSSED,
   TRUST_SUSPENDED,
 } from './trust.events';
@@ -217,14 +218,33 @@ describe('TrustScoreService', () => {
       ).toHaveLength(0);
     });
 
-    it('emits nothing on a repeat recompute with no new events', async () => {
+    it('emits no CHANGE events on a repeat recompute with no new events', async () => {
       const { service, emit } = makeHarness({
         events: log(TrustEventType.ACCOUNT_CREATED, TrustEventType.PHONE_VERIFIED),
         previous: { total: 25, suspended: false },
       });
 
       await service.recompute('user-1');
-      expect(emit).not.toHaveBeenCalled();
+
+      // TRUST_RECOMPUTED is deliberately excluded: it announces that the numbers
+      // were re-derived, not that anything moved, because a milestone can become
+      // true without the score changing (a completed job at a capped sub-score).
+      // Its consumers are idempotent. The events that mean "something CHANGED"
+      // must still stay silent.
+      const changeEvents = emit.mock.calls.filter(([name]) => name !== TRUST_RECOMPUTED);
+
+      expect(changeEvents).toHaveLength(0);
+    });
+
+    it('announces every recompute, so badge rules can re-evaluate', async () => {
+      const { service, emit } = makeHarness({
+        events: log(TrustEventType.ACCOUNT_CREATED, TrustEventType.PHONE_VERIFIED),
+        previous: { total: 25, suspended: false },
+      });
+
+      await service.recompute('user-1');
+
+      expect(emit.mock.calls.filter(([name]) => name === TRUST_RECOMPUTED)).toHaveLength(1);
     });
   });
 

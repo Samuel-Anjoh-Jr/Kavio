@@ -18,6 +18,12 @@ import {
 } from '../notifications/events/notification.events';
 import { buildDefaultPreferences } from '../notifications/notification.config';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  IDENTITY_CREATED,
+  IDENTITY_PHONE_VERIFIED,
+  IdentityCreatedEvent,
+  IdentityPhoneVerifiedEvent,
+} from './auth.events';
 import type { SessionTokens } from './auth.types';
 import type {
   LoginDto,
@@ -113,6 +119,13 @@ export class AuthService {
         return created;
       });
 
+      // Announced, not acted on: the Trust Engine subscribes to grant the SRS
+      // §21.5 starting score. Auth stays unaware that trust scoring exists.
+      this.events.emit(
+        IDENTITY_CREATED,
+        new IdentityCreatedEvent({ userId: user.id, role, requestId: getRequestId() }),
+      );
+
       // Never log the phone number itself (PII); the role + timing are enough.
       logger.info('Sign-up succeeded', {
         durationMs: Date.now() - start,
@@ -200,6 +213,13 @@ export class AuthService {
           ...(user.status === UserStatus.PENDING ? { status: UserStatus.ACTIVE } : {}),
         },
       });
+
+      // The first progressive check (TRU-06). The Trust Engine settles it and
+      // records the +10; auth only reports that the code was proved.
+      this.events.emit(
+        IDENTITY_PHONE_VERIFIED,
+        new IdentityPhoneVerifiedEvent({ userId: user.id, requestId: getRequestId() }),
+      );
     }
 
     return this.sessions.createSession(user.id, userAgent);

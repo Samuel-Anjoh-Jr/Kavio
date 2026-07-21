@@ -12,6 +12,7 @@ import type { VerificationTier } from '@trustpro/database';
 export const TRUST_TIER_CHANGED = 'trust.tier.changed';
 export const TRUST_SCORE_THRESHOLD_CROSSED = 'trust.score.threshold_crossed';
 export const TRUST_SUSPENDED = 'trust.suspended';
+export const TRUST_RECOMPUTED = 'trust.recomputed';
 
 export type TierDirection = 'PROMOTED' | 'DEMOTED';
 
@@ -71,6 +72,44 @@ export class TrustScoreThresholdCrossedEvent {
     this.score = init.score;
     this.threshold = init.threshold;
     this.direction = init.score >= init.previousScore ? 'UP' : 'DOWN';
+    this.occurredAt = init.occurredAt ?? new Date();
+    this.requestId = init.requestId;
+  }
+}
+
+/**
+ * Fired after EVERY recompute, changed or not.
+ *
+ * Threshold and tier events announce that something moved; this one announces
+ * that the numbers were re-derived at all. Badge evaluation needs the latter,
+ * because a milestone can become true without the score changing — completing a
+ * job at an already-capped Marketplace sub-score moves `completedJobs` and not a
+ * single point. Consumers must therefore be idempotent; the badge unique
+ * constraint is what makes that cheap.
+ */
+export class TrustRecomputedEvent {
+  readonly subjectId: string;
+  readonly total: number;
+  readonly previousTotal: number;
+  readonly completedJobs: number;
+  readonly suspended: boolean;
+  readonly occurredAt: Date;
+  readonly requestId?: string;
+
+  constructor(init: {
+    subjectId: string;
+    total: number;
+    previousTotal: number;
+    completedJobs: number;
+    suspended: boolean;
+    occurredAt?: Date;
+    requestId?: string;
+  }) {
+    this.subjectId = init.subjectId;
+    this.total = init.total;
+    this.previousTotal = init.previousTotal;
+    this.completedJobs = init.completedJobs;
+    this.suspended = init.suspended;
     this.occurredAt = init.occurredAt ?? new Date();
     this.requestId = init.requestId;
   }

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
@@ -38,7 +38,10 @@ export class PasswordService {
     private readonly dispatcher: NotificationDispatcher,
     private readonly sessions: SessionService,
     private readonly events: EventEmitter2,
-    config?: PasswordResetConfig,
+    // See OtpService: an interface parameter erases to `Object`, which Nest
+    // then tries (and fails) to resolve at bootstrap. @Optional() keeps the
+    // test-injectable config without breaking the container.
+    @Optional() config?: PasswordResetConfig,
   ) {
     this.config = config ?? getPasswordResetConfig();
   }

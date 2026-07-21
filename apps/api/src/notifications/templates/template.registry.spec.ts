@@ -127,7 +127,34 @@ function sampleVariables(key: string): Record<string, unknown> {
       };
     case 'trust.score_milestone':
       return { score: 55, threshold: 50 };
+    case 'trust.badge_unlocked':
+      return {
+        badge: 'VERIFIED_PROFESSIONAL',
+        badgeLabelKey: 'Badge.VERIFIED_PROFESSIONAL.name',
+        badgeDescriptionKey: 'Badge.VERIFIED_PROFESSIONAL.description',
+      };
+    case 'verification.approved':
+      return {
+        checkType: 'ID_APPROVED',
+        checkLabelKey: 'Verification.check.ID_APPROVED',
+      };
+    case 'verification.rejected':
+      return {
+        checkType: 'ID_APPROVED',
+        checkLabelKey: 'Verification.check.ID_APPROVED',
+        reason: 'OCR_UNREADABLE',
+        reasonKey: 'Verification.rejection.OCR_UNREADABLE',
+        retryable: true,
+      };
+    case 'verification.info_requested':
+      return {
+        checkLabelKey: 'Verification.check.ADDRESS',
+        infoRequest: 'Please send a utility bill from the last three months.',
+      };
     default:
-      return {};
+      // Loud rather than `{}`: an empty object renders "undefined" into real
+      // copy, and the parity test above would pass while the email was broken.
+      // A new template must add its sample here.
+      throw new Error(`No sample variables defined for template "${key}"`);
   }
 }

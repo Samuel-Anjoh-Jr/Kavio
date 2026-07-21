@@ -12,12 +12,15 @@ import { MediaAssetKind } from '@trustpro/database';
 import { z } from 'zod';
 import { Body } from '@nestjs/common';
 import { AppException } from '../lib/app-exception';
+import { createLogger, getRequestId } from '../lib/logger';
 import { ZodValidationPipe } from '../lib/zod-validation.pipe';
 import { CurrentUser } from '../auth/decorators/auth.decorators';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
-import { MAX_UPLOAD_BYTES } from './storage.config';
+import { isKycKind, MAX_UPLOAD_BYTES } from './storage.config';
 import { StorageService } from './storage.service';
+
+const logger = createLogger('uploads');
 
 /** Multer's file shape, declared locally to avoid depending on @types/multer. */
 interface UploadedFileLike {
@@ -74,6 +77,33 @@ export class UploadsController {
 
     const stored = await this.storage.store(user.id, dto.kind, file);
 
+    if (isKycKind(dto.kind)) {
+      // The same identity document uploaded under a second account is the
+      // cheapest fraud signal there is. It is NOT grounds to reject the upload —
+      // families share addresses, and a false accusation at upload time would be
+      // a terrible first experience — so it is flagged for a reviewer instead.
+      const duplicate = await this.prisma.client.mediaAsset.findFirst({
+        where: { checksum: stored.checksum, ownerId: { not: user.id } },
+        select: { ownerId: true },
+      });
+
+      if (duplicate) {
+        logger.warn('Duplicate KYC document uploaded across accounts', {
+          payload: { kind: dto.kind, ownerId: user.id, matchedOwnerId: duplicate.ownerId },
+        });
+
+        await this.prisma.client.auditLog.create({
+          data: {
+            actorId: user.id,
+            action: 'document.duplicate_detected',
+            target: `User:${user.id}`,
+            requestId: getRequestId(),
+            meta: { kind: dto.kind, matchedOwnerId: duplicate.ownerId },
+          },
+        });
+      }
+    }
+
     const asset = await this.prisma.client.mediaAsset.create({
       data: {
         ownerId: user.id,
@@ -82,6 +112,7 @@ export class UploadsController {
         mimeType: stored.mimeType,
         sizeBytes: stored.sizeBytes,
         visibility: stored.visibility,
+        checksum: stored.checksum,
       },
       select: {
         id: true,

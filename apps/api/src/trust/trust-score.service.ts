@@ -8,13 +8,16 @@ import {
   computeTrustScore,
   crossedThresholds,
   ruleMax,
+  scoringPillarOf,
   subScoreFor,
   TRUST_POINT_MODEL,
   type TrustScoreResult,
 } from './trust-score.model';
 import {
+  TRUST_RECOMPUTED,
   TRUST_SCORE_THRESHOLD_CROSSED,
   TRUST_SUSPENDED,
+  TrustRecomputedEvent,
   TrustScoreThresholdCrossedEvent,
   TrustSuspendedEvent,
 } from './trust.events';
@@ -62,7 +65,10 @@ export class TrustScoreService {
    */
   async record(input: RecordTrustEventInput): Promise<TrustScoreResult> {
     const rule = TRUST_POINT_MODEL[input.type];
-    const pillar = rule.kind === 'SUSPENSION' ? TrustPillar.IDENTITY : rule.pillar;
+    // Suspension and revocation score into no pillar. They still need a column
+    // value, and IDENTITY is the honest place to file "something happened to who
+    // this person is" — the ledger row is a record, not a score contribution.
+    const pillar = scoringPillarOf(rule) ?? TrustPillar.IDENTITY;
     const nominalDelta = nominalDeltaFor(input.type);
 
     await this.prisma.client.trustEvent.create({
@@ -217,6 +223,23 @@ export class TrustScoreService {
     // after the snapshot lands — never against the numbers it is replacing.
     await this.tiers.applyDerivedTier(subjectId);
 
+    // Announced LAST, once the score and the tier are both settled, so a badge
+    // consumer reading either of them sees the finished state rather than a
+    // half-applied one. Fired on every recompute, not only on a change: a
+    // milestone can become true without the score moving (a completed job at an
+    // already-capped sub-score), so consumers must be idempotent.
+    this.events.emit(
+      TRUST_RECOMPUTED,
+      new TrustRecomputedEvent({
+        subjectId,
+        total: result.total,
+        previousTotal,
+        completedJobs: result.completedJobs,
+        suspended: result.suspended,
+        requestId: getRequestId(),
+      }),
+    );
+
     return result;
   }
 
@@ -249,6 +272,13 @@ export function nominalDeltaFor(type: TrustEventType): number {
       return Math.round(rule.pointsPer);
     case 'PENALTY':
       return rule.pointsPer;
+    case 'REVOCATION':
+      // A revocation's real impact depends on what the cancelled event was worth
+      // after caps and tapering, which only a replay knows. Reporting the
+      // nominal negation of the rule it revokes would be a number that is almost
+      // never true, so the audit column stays honest at zero and the ledger's
+      // recompute shows what actually changed.
+      return 0;
     case 'SUSPENSION':
       return 0;
   }

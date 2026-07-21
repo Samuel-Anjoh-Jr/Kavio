@@ -22,6 +22,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { UsersModule } from './users/users.module';
 import { TrustModule } from './trust/trust.module';
 import { StorageModule } from './storage/storage.module';
+import { DocumentsModule } from './documents/documents.module';
+import { VerificationModule } from './verification/verification.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 
 @Module({
@@ -48,6 +50,12 @@ import { OnboardingModule } from './onboarding/onboarding.module';
     // Object storage for portfolio media, KYC documents and business papers.
     // Registered before OnboardingModule, which resolves signed URLs through it.
     StorageModule,
+    // Who may READ a stored document (TRU-08, NFR-SEC-04). Separate from
+    // StorageModule, which owns the bytes.
+    DocumentsModule,
+    // Progressive verification and the agent/admin review pipeline. Registered
+    // after TrustModule, whose ledger it reports outcomes into.
+    VerificationModule,
     OnboardingModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).

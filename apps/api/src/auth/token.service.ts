@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { Role, UserStatus, VerificationTier } from '@trustpro/database';
 import { getJwtConfig, type JwtConfig } from './auth.config';
@@ -67,7 +67,9 @@ export class TokenService {
 
   constructor(
     private readonly jwt: JwtService,
-    config?: JwtConfig,
+    // See OtpService: an interface parameter erases to `Object`, which Nest
+    // then tries (and fails) to resolve at bootstrap.
+    @Optional() config?: JwtConfig,
   ) {
     this.config = config ?? getJwtConfig();
   }

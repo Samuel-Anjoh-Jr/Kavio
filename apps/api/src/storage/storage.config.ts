@@ -50,6 +50,22 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     visibility: MediaVisibility.PRIVATE,
     prefix: 'kyc',
   },
+  [MediaAssetKind.PROOF_OF_ADDRESS]: {
+    mimeTypes: DOCUMENT_TYPES,
+    maxBytes: 10 * MB,
+    visibility: MediaVisibility.PRIVATE,
+    prefix: 'kyc',
+  },
+  [MediaAssetKind.CERTIFICATE]: {
+    // A trade certificate is evidence a worker chooses to show, but it carries
+    // their full legal name and an issuing body — PRIVATE until a check has
+    // looked at it, and surfaced on the profile as a verified claim rather than
+    // as the scan itself.
+    mimeTypes: DOCUMENT_TYPES,
+    maxBytes: 10 * MB,
+    visibility: MediaVisibility.PRIVATE,
+    prefix: 'kyc',
+  },
   [MediaAssetKind.BUSINESS_REGISTRATION]: {
     mimeTypes: DOCUMENT_TYPES,
     maxBytes: 15 * MB,
@@ -63,6 +79,21 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     prefix: 'business',
   },
 };
+
+/**
+ * Kinds that are identity documents (NFR-SEC-04).
+ *
+ * Being on this list is what earns a file the stricter treatment: KMS envelope
+ * encryption where configured, staff access that is audit-logged on every view,
+ * and a refusal to hard-delete while a verification still points at it. Derived
+ * from the upload prefix rather than restated, so adding a KYC kind above cannot
+ * forget to add it here.
+ */
+export const KYC_PREFIX = 'kyc';
+
+export function isKycKind(kind: MediaAssetKind): boolean {
+  return UPLOAD_POLICIES[kind].prefix === KYC_PREFIX;
+}
 
 /** Largest limit across all kinds — the ceiling multer enforces before buffering. */
 export const MAX_UPLOAD_BYTES = Math.max(
@@ -79,6 +110,13 @@ export interface S3Config {
   publicUrl?: string;
   /** How long a signed URL for PRIVATE media stays valid. */
   signedUrlTtlSeconds: number;
+  /**
+   * Optional KMS key for KYC objects (NFR-SEC-04). When set, identity documents
+   * are encrypted with a customer-managed key instead of S3-managed AES256 —
+   * which is what makes "revoke access to every ID we hold" a single key action
+   * rather than an object-by-object sweep. Everything still works without it.
+   */
+  kmsKeyId?: string;
 }
 
 export function getS3Config(): S3Config {
@@ -91,6 +129,7 @@ export function getS3Config(): S3Config {
     publicUrl: process.env.S3_PUBLIC_URL || undefined,
     // Short by design: a leaked KYC link should stop working in minutes, not days.
     signedUrlTtlSeconds: Number(process.env.S3_SIGNED_URL_TTL_SECONDS ?? 300),
+    kmsKeyId: process.env.S3_KYC_KMS_KEY_ID || undefined,
   };
 }
 

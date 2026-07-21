@@ -1,11 +1,18 @@
 import { registerEnumType } from '@nestjs/graphql';
 import {
+  BadgeType,
+  EndorsementRelationship,
+  MediaAssetKind,
+  MediaVisibility,
   OnboardingRole,
   Role,
   TrustEventType,
   TrustPillar,
   UserStatus,
   VerificationCheckType,
+  VerificationRejectionReason,
+  VerificationStage,
+  VerificationStatus,
   VerificationTier,
 } from '@trustpro/database';
 
@@ -51,5 +58,43 @@ export function registerGraphQLEnums(): void {
   registerEnumType(OnboardingRole, {
     name: 'OnboardingRole',
     description: 'A role with its own onboarding flow (ACC-10).',
+  });
+
+  registerEnumType(VerificationStatus, {
+    name: 'VerificationStatus',
+    description: 'The outcome of a progressive check: pending, verified or rejected (TRU-06).',
+  });
+
+  registerEnumType(VerificationStage, {
+    name: 'VerificationStage',
+    description:
+      'Position in the agent/admin review pipeline (AGT-03). Distinct from the outcome: stage is where the work is, status is what was decided.',
+  });
+
+  registerEnumType(VerificationRejectionReason, {
+    name: 'VerificationRejectionReason',
+    description:
+      'Coded reason a submission was refused (TRU-07). A code rather than a sentence, so the retry copy stays localized EN/FR.',
+  });
+
+  registerEnumType(MediaAssetKind, {
+    name: 'MediaAssetKind',
+    description: 'What an uploaded file is (TRU-08).',
+  });
+
+  registerEnumType(MediaVisibility, {
+    name: 'MediaVisibility',
+    description:
+      'PRIVATE media is served only through short-lived signed URLs; PUBLIC media may be served directly (NFR-SEC-04).',
+  });
+
+  registerEnumType(EndorsementRelationship, {
+    name: 'EndorsementRelationship',
+    description: 'How a community endorser knows the person they vouch for (TRU-10).',
+  });
+
+  registerEnumType(BadgeType, {
+    name: 'BadgeType',
+    description: 'A milestone badge (TRU-11). Derived from trust events, never granted by hand.',
   });
 }

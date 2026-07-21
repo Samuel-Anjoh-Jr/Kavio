@@ -562,5 +562,238 @@
         }
       }
     }
+  },
+  "Verification": {
+    "check": {
+      "PHONE": "Numéro de téléphone",
+      "ID_SUBMITTED": "Pièce d'identité envoyée",
+      "ID_APPROVED": "Carte nationale d'identité approuvée",
+      "SELFIE_LIVENESS": "Vérification par photo",
+      "ADDRESS": "Justificatif de domicile",
+      "PORTFOLIO": "Portfolio",
+      "FIELD_VERIFICATION": "Vérification en personne",
+      "BUSINESS_REGISTRATION": "Registre de commerce"
+    },
+    "stage": {
+      "SUBMITTED": "Envoyé",
+      "UNDER_REVIEW": "En cours d'examen",
+      "FIELD_CHECK": "Vérification terrain",
+      "PENDING_APPROVAL": "En attente d'approbation",
+      "APPROVED": "Approuvé",
+      "REJECTED": "Non approuvé"
+    },
+    "status": {
+      "PENDING": "En cours d'examen",
+      "VERIFIED": "Vérifié",
+      "REJECTED": "À renvoyer"
+    },
+    "rejection": {
+      "OCR_UNREADABLE": "Nous n'avons pas pu lire votre pièce d'identité clairement. Réessayez avec un meilleur éclairage et la carte entière dans le cadre.",
+      "DOCUMENT_EXPIRED": "Ce document a expiré. Envoyez-en un valide et nous le vérifierons à nouveau.",
+      "DETAILS_MISMATCH": "Les informations du document ne correspondent pas encore à votre compte. Vérifiez l'orthographe de votre nom et votre date de naissance, puis réessayez.",
+      "INCOMPLETE_SUBMISSION": "Il manquait quelque chose. Ajoutez les fichiers manquants et renvoyez le tout.",
+      "WRONG_DOCUMENT_TYPE": "Il semble s'agir d'un autre document. Envoyez celui qui a été demandé.",
+      "FIELD_CHECK_FAILED": "Notre agent n'a pas pu terminer la visite. Contactez-nous pour en organiser une autre.",
+      "SUSPECTED_FRAUD": "Nous devons examiner ce dossier de plus près avant de continuer.",
+      "CONFIRMED_FRAUDULENT": "Nous ne pouvons pas vérifier ce compte.",
+      "OTHER": "Nous n'avons pas pu valider cet envoi. Renvoyez-le et nous le reverrons."
+    },
+    "retry": "Réessayer",
+    "pending": "Nous examinons votre envoi. Nous vous préviendrons dès que ce sera terminé.",
+    "infoRequested": "Il nous manque un élément pour terminer."
+  },
+  "Endorsement": {
+    "relationship": {
+      "PREVIOUS_CUSTOMER": "Ancien client",
+      "WORKSHOP_OWNER": "Propriétaire d'atelier",
+      "QUARTER_CHIEF": "Chef de quartier",
+      "LANDLORD": "Propriétaire du logement",
+      "COMMUNITY_LEADER": "Responsable communautaire",
+      "COLLEAGUE": "Collègue"
+    },
+    "heading": "Recommandations de la communauté",
+    "capturedByAgent": "Recueillie en personne par un agent TrustPro",
+    "taperExplainer": "Les recommandations comptent surtout à vos débuts. À mesure que vous réalisez des travaux, votre propre parcours compte davantage et les recommandations comptent moins.",
+    "influence": "Apporte {points} points sur {cap}",
+    "taperedOut": "Vos travaux terminés parlent désormais pour vous : les recommandations n'ajoutent plus de points."
+  },
+  "Badge": {
+    "FOUNDING_PROFESSIONAL": {
+      "name": "Professionnel vérifié fondateur",
+      "description": "Vérifié en personne par un agent de terrain TrustPro."
+    },
+    "IDENTITY_VERIFIED": {
+      "name": "Identité vérifiée",
+      "description": "Carte nationale d'identité vérifiée et approuvée."
+    },
+    "VERIFIED_PROFESSIONAL": {
+      "name": "Professionnel vérifié",
+      "description": "Niveau 2 atteint : pièce d'identité approuvée et portfolio envoyé."
+    },
+    "FIELD_VERIFIED_PROFESSIONAL": {
+      "name": "Professionnel vérifié sur le terrain",
+      "description": "Niveau 3 atteint : vérifié en personne, avec un parcours confirmé."
+    },
+    "TRUST_SCORE_25": {
+      "name": "Confiance en construction",
+      "description": "Score de Confiance supérieur à 25."
+    },
+    "TRUST_SCORE_50": {
+      "name": "Digne de confiance",
+      "description": "Score de Confiance supérieur à 50."
+    },
+    "TRUST_SCORE_75": {
+      "name": "Très digne de confiance",
+      "description": "Score de Confiance supérieur à 75."
+    },
+    "TRUST_SCORE_90": {
+      "name": "Confiance exceptionnelle",
+      "description": "Score de Confiance supérieur à 90."
+    },
+    "FIRST_JOB": {
+      "name": "Premier travail terminé",
+      "description": "Premier travail réalisé via TrustPro."
+    },
+    "JOBS_10": {
+      "name": "10 travaux",
+      "description": "10 travaux terminés."
+    },
+    "JOBS_25": {
+      "name": "25 travaux",
+      "description": "25 travaux terminés."
+    },
+    "JOBS_50": {
+      "name": "50 travaux",
+      "description": "50 travaux terminés."
+    },
+    "JOBS_100": {
+      "name": "100 travaux",
+      "description": "100 travaux terminés."
+    },
+    "COMMUNITY_ENDORSED": {
+      "name": "Recommandé par la communauté",
+      "description": "Recommandé par cinq personnes de la communauté."
+    },
+    "permanent": "Les badges sont permanents : une fois obtenus, ils vous restent acquis."
+  },
+  "TrustHistory": {
+    "heading": "Votre historique de confiance",
+    "empty": "Votre historique de confiance apparaîtra ici au fur et à mesure de vos vérifications et de vos travaux.",
+    "event": {
+      "ACCOUNT_CREATED": "Inscription sur TrustPro",
+      "PHONE_VERIFIED": "Numéro de téléphone vérifié",
+      "ID_VERIFIED": "Carte nationale d'identité approuvée",
+      "FIELD_VERIFIED": "Vérifié en personne par un agent",
+      "PORTFOLIO_ADDED": "Portfolio ajouté",
+      "JOB_COMPLETED": "Travail terminé",
+      "REPEAT_CUSTOMER": "Un client a fait appel à vous de nouveau",
+      "EXCELLENT_REVIEW": "Excellent avis reçu",
+      "DISPUTE_UPHELD": "Un litige a été tranché en votre défaveur",
+      "JOB_CANCELLED": "Un travail a été annulé",
+      "FAKE_DOCUMENTS_CONFIRMED": "Compte suspendu après examen des documents",
+      "ENDORSEMENT_RECEIVED": "Recommandation reçue de la communauté",
+      "ENDORSEMENT_REVOKED": "Une recommandation a été retirée"
+    },
+    "badge": {
+      "unlocked": "Badge débloqué"
+    },
+    "tier": {
+      "PROMOTED": "Niveau de vérification augmenté",
+      "DEMOTED": "Niveau de vérification modifié"
+    }
+  },
+  "VerificationScreen": {
+    "heading": "Votre vérification",
+    "subtitle": "Chaque étape terminée rend votre profil plus fiable — et vous ouvre plus de travail.",
+    "progressHeading": "Profil complété",
+    "stepsDone": "{done} étapes sur {total} terminées",
+    "actionNeeded": "{count, plural, =1 {Une étape vous attend} other {# étapes vous attendent}} — voir ci-dessous.",
+    "awaitingReview": "{count, plural, =1 {Une étape est chez notre équipe} other {# étapes sont chez notre équipe}}. Nous vous préviendrons dès que ce sera fait.",
+    "unlocksHeading": "Ce que vous débloquez",
+    "unlocksBody": "Terminez vos vérifications pour y accéder.",
+    "locked": "Verrouillé",
+    "stepsHeading": "Vos étapes",
+    "start": "Commencer",
+    "attempt": "Tentative {attempt}",
+    "byInvitation": "Nous venons à vous",
+    "seeScore": "Voir votre Score de Confiance",
+    "loadError": "Nous n'avons pas pu charger votre vérification pour le moment. Veuillez rafraîchir dans un instant.",
+    "hint": {
+      "PHONE": "Confirmez le numéro auquel nous pouvons vous joindre.",
+      "ID_SUBMITTED": "Téléversez le recto et le verso de votre carte nationale d'identité.",
+      "ID_APPROVED": "Une fois votre pièce téléversée, notre équipe la vérifie.",
+      "SELFIE_LIVENESS": "Prenez un selfie rapide pour confirmer que c'est bien vous.",
+      "ADDRESS": "Montrez-nous où vous habitez — une facture ou un courrier suffit.",
+      "PORTFOLIO": "Ajoutez des photos de vos réalisations.",
+      "FIELD_VERIFICATION": "L'un de nos agents vous rencontre en personne.",
+      "BUSINESS_REGISTRATION": "Téléversez votre document d'enregistrement d'entreprise."
+    }
+  },
+  "ReviewBoard": {
+    "heading": "File de vérification",
+    "subtitle": "Traitez les colonnes de gauche à droite. Réservez un dossier avant de le décider.",
+    "metricPending": "En attente de décision",
+    "metricAvgReview": "Examen moyen",
+    "metricApprovalRate": "Taux d'approbation",
+    "minutes": "{minutes} min",
+    "columnEmpty": "Rien ici",
+    "columnError": "Cette colonne n'a pas pu se charger.",
+    "retry": "Réessayer",
+    "unnamedSubject": "Profil sans nom",
+    "attempt": "Tentative {attempt}",
+    "waitingToday": "Aujourd'hui",
+    "waitingDays": "{days, plural, =1 {1 jour} other {# jours}}",
+    "claimed": "Réservé",
+    "claim": "Réserver",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "requestInfo": "Demander plus",
+    "confirmReject": "Confirmer le refus",
+    "confirmSuspend": "Suspendre ce compte",
+    "cancel": "Annuler",
+    "sendRequest": "Envoyer la demande",
+    "reasonLabel": "Motif",
+    "reasonPlaceholder": "Choisissez un motif",
+    "reasonHint": "Le motif choisit le message que nous lui envoyons, dans sa langue.",
+    "noteLabel": "Note interne (facultatif)",
+    "noteHint": "Réservé au personnel. La personne examinée ne la voit jamais.",
+    "infoLabel": "De quoi avez-vous besoin de sa part ?",
+    "infoHint": "Elle le verra exactement tel que vous l'écrivez : soyez précis.",
+    "suspensionWarning": "Ceci suspend définitivement le compte et annule son Score de Confiance. À n'utiliser que pour un document dont vous avez confirmé la falsification.",
+    "approved": "Approuvé.",
+    "rejected": "Refusé. Nous lui avons indiqué quoi corriger.",
+    "infoRequested": "Demande envoyée.",
+    "actionFailed": "Cette action n'a pas abouti. Réessayez.",
+    "viewDocument": "Document {index}",
+    "documentTitle": "Document soumis",
+    "documentSubject": "Soumis par {name}",
+    "documentLoading": "Ouverture sécurisée…",
+    "documentError": "Ce document n'a pas pu être ouvert. Le lien a peut-être expiré — fermez et réessayez.",
+    "documentOpen": "Ouvrir le document",
+    "documentNoUrl": "Ce pilote de stockage n'a pas d'adresse web. Utilisez le stockage local pour prévisualiser les documents.",
+    "documentAlt": "{kind} soumis",
+    "documentKindLabel": "Type",
+    "documentTypeLabel": "Format",
+    "documentKind": {
+      "PORTFOLIO_IMAGE": "Photo de portfolio",
+      "NATIONAL_ID_FRONT": "Carte d'identité, recto",
+      "NATIONAL_ID_BACK": "Carte d'identité, verso",
+      "SELFIE": "Selfie",
+      "BUSINESS_REGISTRATION": "Enregistrement d'entreprise",
+      "BUSINESS_LOGO": "Logo d'entreprise",
+      "PROOF_OF_ADDRESS": "Justificatif de domicile",
+      "CERTIFICATE": "Certificat"
+    },
+    "reason": {
+      "OCR_UNREADABLE": "Document illisible",
+      "DOCUMENT_EXPIRED": "Document expiré",
+      "DETAILS_MISMATCH": "Les informations ne correspondent pas au compte",
+      "INCOMPLETE_SUBMISSION": "Il manquait quelque chose",
+      "WRONG_DOCUMENT_TYPE": "Mauvais type de document",
+      "FIELD_CHECK_FAILED": "Visite sur le terrain non réalisée",
+      "OTHER": "Autre",
+      "SUSPECTED_FRAUD": "Fraude suspectée — escalader",
+      "CONFIRMED_FRAUDULENT": "Falsification confirmée — suspendre"
+    }
   }
 }

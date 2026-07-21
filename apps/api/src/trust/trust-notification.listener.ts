@@ -6,6 +6,8 @@ import {
   NOTIFICATION_REQUESTED,
   NotificationRequestedEvent,
 } from '../notifications/events/notification.events';
+import { BADGE_UNLOCKED, BadgeUnlockedEvent } from './badges/badge.events';
+import { badgeDescriptionKey, badgeLabelKey } from './badges/badge.model';
 import {
   TierChangedEvent,
   TrustScoreThresholdCrossedEvent,
@@ -51,6 +53,24 @@ export class TrustNotificationListener {
           tierLabelKey: `Trust.tier.${event.tier}`,
           // TRU-05 frames verification as unlocks rather than a checklist.
           unlockKey: `Trust.unlock.${event.tier}`,
+        },
+        requestId: event.requestId,
+      }),
+    );
+  }
+
+  /** A milestone unlocked (TRU-11). Celebrated — this is the good news path. */
+  @OnEvent(BADGE_UNLOCKED)
+  onBadgeUnlocked(event: BadgeUnlockedEvent): void {
+    this.events.emit(
+      NOTIFICATION_REQUESTED,
+      new NotificationRequestedEvent({
+        userId: event.subjectId,
+        templateKey: 'trust.badge_unlocked',
+        variables: {
+          badge: event.badge,
+          badgeLabelKey: badgeLabelKey(event.badge),
+          badgeDescriptionKey: badgeDescriptionKey(event.badge),
         },
         requestId: event.requestId,
       }),

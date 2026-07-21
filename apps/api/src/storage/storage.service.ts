@@ -1,14 +1,25 @@
 import { HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { MediaVisibility, type MediaAssetKind } from '@trustpro/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { detectMimeType } from './file-signature.util';
-import { getS3Config, isS3Configured, UPLOAD_POLICIES, type S3Config } from './storage.config';
+import {
+  getS3Config,
+  isKycKind,
+  isS3Configured,
+  UPLOAD_POLICIES,
+  type S3Config,
+} from './storage.config';
 
 const logger = createLogger('storage');
 
@@ -17,6 +28,8 @@ export interface StoredObject {
   mimeType: string;
   sizeBytes: number;
   visibility: MediaVisibility;
+  /** SHA-256 of the stored bytes, hex. Integrity + duplicate detection (TRU-08). */
+  checksum: string;
 }
 
 /**
@@ -112,8 +125,15 @@ export class StorageService implements OnModuleInit {
     // Random key, never the user's filename: filenames carry PII, collide, and
     // are a path-traversal vector the moment anything joins them to a path.
     const s3Key = `${policy.prefix}/${ownerId}/${randomUUID()}${extensionFor(detected)}`;
+    const checksum = createHash('sha256').update(file.buffer).digest('hex');
 
     if (this.useS3 && this.client) {
+      // Customer-managed keys for identity documents where one is configured, so
+      // access to every ID we hold can be revoked with a single key action
+      // (NFR-SEC-04). S3-managed AES256 everywhere else — and for KYC too when
+      // no key is set, because unencrypted is never the fallback.
+      const useKms = isKycKind(kind) && Boolean(this.config.kmsKeyId);
+
       await this.client.send(
         new PutObjectCommand({
           Bucket: this.config.bucket,
@@ -123,7 +143,9 @@ export class StorageService implements OnModuleInit {
           // Encryption at rest for KYC media is a hard requirement (NFR-SEC).
           // Applied to every object rather than only private ones — there is no
           // benefit to leaving portfolio images unencrypted.
-          ServerSideEncryption: 'AES256',
+          ...(useKms
+            ? { ServerSideEncryption: 'aws:kms' as const, SSEKMSKeyId: this.config.kmsKeyId }
+            : { ServerSideEncryption: 'AES256' as const }),
         }),
       );
     } else {
@@ -141,7 +163,26 @@ export class StorageService implements OnModuleInit {
       mimeType: detected,
       sizeBytes: file.size,
       visibility: policy.visibility,
+      checksum,
     };
+  }
+
+  /**
+   * Removes the bytes behind a key.
+   *
+   * Callers must have established that nothing still needs them — a document
+   * attached to a verification is soft-deleted in the database and keeps its
+   * object, because the audit trail behind a granted tier has to outlive the
+   * user's tidying up.
+   */
+  async remove(s3Key: string): Promise<void> {
+    if (this.useS3 && this.client) {
+      await this.client.send(new DeleteObjectCommand({ Bucket: this.config.bucket, Key: s3Key }));
+    } else {
+      await rm(join(this.localRoot, s3Key), { force: true });
+    }
+
+    logger.info('Object removed', { result: { driver: this.useS3 ? 's3' : 'local' } });
   }
 
   /**

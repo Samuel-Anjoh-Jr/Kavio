@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Optional } from '@nestjs/common';
 import { VerificationPurpose } from '@trustpro/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
@@ -57,7 +57,12 @@ export class OtpService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly dispatcher: NotificationDispatcher,
-    config?: OtpConfig,
+    // @Optional() is load-bearing, not decoration. `OtpConfig` is an interface,
+    // so `emitDecoratorMetadata` erases it to `Object` and Nest tries to resolve
+    // a provider for it — which fails at bootstrap and takes the whole API down.
+    // The parameter exists so tests can inject a config; @Optional() is what
+    // lets the container skip it in production.
+    @Optional() config?: OtpConfig,
   ) {
     this.config = config ?? getOtpConfig();
   }

@@ -33,6 +33,23 @@ export interface TemplateVariablesMap {
   /** Tier promotion (TRU-02). `tierLabelKey`/`unlockKey` are for in-app surfaces. */
   'trust.tier_promoted': { tier: string; tierLabelKey: string; unlockKey: string };
   'trust.score_milestone': { score: number; threshold: number };
+  /** A milestone badge unlocked (TRU-11). */
+  'trust.badge_unlocked': { badge: string; badgeLabelKey: string; badgeDescriptionKey: string };
+  /** A verification check passed review (TRU-06). */
+  'verification.approved': { checkType: string; checkLabelKey: string };
+  /**
+   * A verification check was refused (TRU-07). The reason arrives as a CODE and
+   * the copy is chosen here per locale, which is the only way the friendly retry
+   * line exists in both languages without being written at the call site.
+   */
+  'verification.rejected': {
+    checkType: string;
+    checkLabelKey: string;
+    reason: string;
+    reasonKey: string;
+    retryable: boolean;
+  };
+  'verification.info_requested': { checkLabelKey: string; infoRequest: string };
 }
 
 export type TemplateKey = keyof TemplateVariablesMap;
@@ -487,6 +504,302 @@ const trustScoreMilestone: TemplateDefinition<'trust.score_milestone'> = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Verification + badges (TRU-06, TRU-07, TRU-11)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Badge names, EN/FR. Keyed by BadgeType so a new badge is a compile-time gap. */
+const BADGE_NAMES: Record<Locale, Record<string, string>> = {
+  en: {
+    FOUNDING_PROFESSIONAL: 'Founding Verified Professional',
+    IDENTITY_VERIFIED: 'Identity Verified',
+    VERIFIED_PROFESSIONAL: 'Verified Professional',
+    FIELD_VERIFIED_PROFESSIONAL: 'Field Verified Professional',
+    TRUST_SCORE_25: 'Building Trust',
+    TRUST_SCORE_50: 'Trusted',
+    TRUST_SCORE_75: 'Highly Trusted',
+    TRUST_SCORE_90: 'Exceptional Trust',
+    FIRST_JOB: 'First Job Completed',
+    JOBS_10: '10 Jobs Completed',
+    JOBS_25: '25 Jobs Completed',
+    JOBS_50: '50 Jobs Completed',
+    JOBS_100: '100 Jobs Completed',
+    COMMUNITY_ENDORSED: 'Community Endorsed',
+  },
+  fr: {
+    FOUNDING_PROFESSIONAL: 'Professionnel vérifié fondateur',
+    IDENTITY_VERIFIED: 'Identité vérifiée',
+    VERIFIED_PROFESSIONAL: 'Professionnel vérifié',
+    FIELD_VERIFIED_PROFESSIONAL: 'Professionnel vérifié sur le terrain',
+    TRUST_SCORE_25: 'Confiance en construction',
+    TRUST_SCORE_50: 'Digne de confiance',
+    TRUST_SCORE_75: 'Très digne de confiance',
+    TRUST_SCORE_90: 'Confiance exceptionnelle',
+    FIRST_JOB: 'Premier travail terminé',
+    JOBS_10: '10 travaux terminés',
+    JOBS_25: '25 travaux terminés',
+    JOBS_50: '50 travaux terminés',
+    JOBS_100: '100 travaux terminés',
+    COMMUNITY_ENDORSED: 'Recommandé par la communauté',
+  },
+};
+
+/** Check names, EN/FR, for the approval and rejection notices. */
+const CHECK_NAMES: Record<Locale, Record<string, string>> = {
+  en: {
+    PHONE: 'phone number',
+    ID_SUBMITTED: 'ID document',
+    ID_APPROVED: 'national ID',
+    SELFIE_LIVENESS: 'selfie',
+    ADDRESS: 'proof of address',
+    PORTFOLIO: 'portfolio',
+    FIELD_VERIFICATION: 'in-person verification',
+    BUSINESS_REGISTRATION: 'business registration',
+  },
+  fr: {
+    PHONE: 'numéro de téléphone',
+    ID_SUBMITTED: 'pièce d’identité',
+    ID_APPROVED: 'carte nationale d’identité',
+    SELFIE_LIVENESS: 'photo de visage',
+    ADDRESS: 'justificatif de domicile',
+    PORTFOLIO: 'portfolio',
+    FIELD_VERIFICATION: 'vérification en personne',
+    BUSINESS_REGISTRATION: 'registre de commerce',
+  },
+};
+
+/**
+ * The friendly retry lines (TRU-07).
+ *
+ * Every one of these is written to be ACTIONABLE and NON-JUDGEMENTAL: it says
+ * what to do next, and it never implies the person did something wrong. "We
+ * couldn't read your ID clearly" — not "your document was unacceptable".
+ */
+const REJECTION_LINES: Record<Locale, Record<string, string>> = {
+  en: {
+    OCR_UNREADABLE:
+      'We couldn’t read your ID clearly. Try again in better lighting, with the whole card in the frame.',
+    DOCUMENT_EXPIRED:
+      'That document has expired. Upload a current one and we’ll take another look.',
+    DETAILS_MISMATCH:
+      'The details on the document don’t match your account yet. Check the spelling of your name and date of birth, then try again.',
+    INCOMPLETE_SUBMISSION: 'Something was missing. Add the remaining files and send it again.',
+    WRONG_DOCUMENT_TYPE: 'That looks like a different document. Upload the one we asked for.',
+    FIELD_CHECK_FAILED:
+      'Our agent couldn’t complete the visit. Get in touch and we’ll arrange another one.',
+    SUSPECTED_FRAUD: 'We need to look at this more closely before we can continue.',
+    CONFIRMED_FRAUDULENT: 'We cannot verify this account.',
+    OTHER: 'We couldn’t approve this one. Send it again and we’ll take another look.',
+  },
+  fr: {
+    OCR_UNREADABLE:
+      'Nous n’avons pas pu lire votre pièce d’identité clairement. Réessayez avec un meilleur éclairage et la carte entière dans le cadre.',
+    DOCUMENT_EXPIRED:
+      'Ce document a expiré. Envoyez-en un valide et nous le vérifierons à nouveau.',
+    DETAILS_MISMATCH:
+      'Les informations du document ne correspondent pas encore à votre compte. Vérifiez l’orthographe de votre nom et votre date de naissance, puis réessayez.',
+    INCOMPLETE_SUBMISSION:
+      'Il manquait quelque chose. Ajoutez les fichiers manquants et renvoyez le tout.',
+    WRONG_DOCUMENT_TYPE: 'Il semble s’agir d’un autre document. Envoyez celui qui a été demandé.',
+    FIELD_CHECK_FAILED:
+      'Notre agent n’a pas pu terminer la visite. Contactez-nous pour en organiser une autre.',
+    SUSPECTED_FRAUD: 'Nous devons examiner ce dossier de plus près avant de continuer.',
+    CONFIRMED_FRAUDULENT: 'Nous ne pouvons pas vérifier ce compte.',
+    OTHER: 'Nous n’avons pas pu valider cet envoi. Renvoyez-le et nous le reverrons.',
+  },
+};
+
+/**
+ * Looks a name up, falling back to the raw code.
+ *
+ * A missing translation must never render as "undefined" in someone's inbox —
+ * the enum value is ugly but true, and it is also a loud signal that a table
+ * above is missing a row.
+ */
+function localized(table: Record<string, string>, key: string, fallback?: string): string {
+  return table[key] ?? fallback ?? key;
+}
+
+const trustBadgeUnlocked: TemplateDefinition<'trust.badge_unlocked'> = {
+  key: 'trust.badge_unlocked',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: `You unlocked ${localized(BADGE_NAMES.en, v.badge)}`,
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'A new badge on your TrustPro profile.',
+          heading: `You unlocked ${escapeHtml(localized(BADGE_NAMES.en, v.badge))}`,
+          bodyHtml: paragraphs(
+            'This badge now shows on your profile, where every client who finds you can see it.',
+            'Badges are permanent — once you have earned one, it stays.',
+          ),
+        }),
+        text: `You unlocked the ${localized(BADGE_NAMES.en, v.badge)} badge on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: `Vous avez débloqué : ${localized(BADGE_NAMES.fr, v.badge)}`,
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un nouveau badge sur votre profil TrustPro.',
+          heading: `Vous avez débloqué : ${escapeHtml(localized(BADGE_NAMES.fr, v.badge))}`,
+          bodyHtml: paragraphs(
+            'Ce badge apparaît désormais sur votre profil, visible par tous les clients qui vous trouvent.',
+            'Les badges sont permanents : une fois obtenu, il vous reste acquis.',
+          ),
+        }),
+        text: `Vous avez débloqué le badge ${localized(BADGE_NAMES.fr, v.badge)} sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'New badge unlocked',
+        body: localized(BADGE_NAMES.en, v.badge),
+      }),
+      fr: (v) => ({
+        title: 'Nouveau badge débloqué',
+        body: localized(BADGE_NAMES.fr, v.badge),
+      }),
+    },
+  },
+};
+
+const verificationApproved: TemplateDefinition<'verification.approved'> = {
+  key: 'verification.approved',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your verification was approved',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'One more step complete.',
+          heading: 'Verification approved',
+          bodyHtml: paragraphs(
+            `We have checked your ${escapeHtml(localized(CHECK_NAMES.en, v.checkType, 'document'))} and everything is in order.`,
+            'Open your Trust Score to see what this unlocked and what comes next.',
+          ),
+        }),
+        text: `Your ${localized(CHECK_NAMES.en, v.checkType, 'document')} was verified on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre vérification a été approuvée',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Une étape de plus est terminée.',
+          heading: 'Vérification approuvée',
+          bodyHtml: paragraphs(
+            `Nous avons vérifié votre ${escapeHtml(localized(CHECK_NAMES.fr, v.checkType, 'document'))} : tout est en ordre.`,
+            'Consultez votre Score de Confiance pour voir ce que cela débloque et la suite.',
+          ),
+        }),
+        text: `Votre ${localized(CHECK_NAMES.fr, v.checkType, 'document')} a été vérifié sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'Verification approved',
+        body: `Your ${localized(CHECK_NAMES.en, v.checkType, 'document')} has been verified.`,
+      }),
+      fr: (v) => ({
+        title: 'Vérification approuvée',
+        body: `Votre ${localized(CHECK_NAMES.fr, v.checkType, 'document')} a été vérifié.`,
+      }),
+    },
+  },
+};
+
+const verificationRejected: TemplateDefinition<'verification.rejected'> = {
+  key: 'verification.rejected',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        // Not "rejected" in the subject line. The user needs to know there is
+        // something to do, not to be told off in their inbox.
+        subject: v.retryable ? 'One more try on your verification' : 'About your verification',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Here is what to do next.',
+          heading: v.retryable ? 'Almost there' : 'About your verification',
+          bodyHtml: paragraphs(
+            escapeHtml(localized(REJECTION_LINES.en, v.reason, REJECTION_LINES.en.OTHER)),
+            ...(v.retryable ? ['You can send it again from your verification screen.'] : []),
+          ),
+        }),
+        text: localized(REJECTION_LINES.en, v.reason, REJECTION_LINES.en.OTHER),
+      }),
+      fr: (v) => ({
+        subject: v.retryable
+          ? 'Un dernier essai pour votre vérification'
+          : 'À propos de votre vérification',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Voici ce qu’il reste à faire.',
+          heading: v.retryable ? 'Presque terminé' : 'À propos de votre vérification',
+          bodyHtml: paragraphs(
+            escapeHtml(localized(REJECTION_LINES.fr, v.reason, REJECTION_LINES.fr.OTHER)),
+            ...(v.retryable ? ['Vous pouvez le renvoyer depuis votre écran de vérification.'] : []),
+          ),
+        }),
+        text: localized(REJECTION_LINES.fr, v.reason, REJECTION_LINES.fr.OTHER),
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: v.retryable ? 'Almost there' : 'About your verification',
+        body: localized(REJECTION_LINES.en, v.reason, REJECTION_LINES.en.OTHER),
+      }),
+      fr: (v) => ({
+        title: v.retryable ? 'Presque terminé' : 'À propos de votre vérification',
+        body: localized(REJECTION_LINES.fr, v.reason, REJECTION_LINES.fr.OTHER),
+      }),
+    },
+  },
+};
+
+const verificationInfoRequested: TemplateDefinition<'verification.info_requested'> = {
+  key: 'verification.info_requested',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'We need one more thing',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'A quick addition to your verification.',
+          heading: 'We need one more thing',
+          bodyHtml: paragraphs(
+            'Our reviewer asked for this:',
+            escapeHtml(v.infoRequest),
+            'Add it from your verification screen and we will pick it straight back up — you keep your place in the queue.',
+          ),
+        }),
+        text: `We need one more thing for your TrustPro verification: ${v.infoRequest}`,
+      }),
+      fr: (v) => ({
+        subject: 'Il nous manque un élément',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un petit complément pour votre vérification.',
+          heading: 'Il nous manque un élément',
+          bodyHtml: paragraphs(
+            'Notre équipe a demandé ceci :',
+            escapeHtml(v.infoRequest),
+            'Ajoutez-le depuis votre écran de vérification et nous reprendrons aussitôt — vous gardez votre place dans la file.',
+          ),
+        }),
+        text: `Il nous manque un élément pour votre vérification TrustPro : ${v.infoRequest}`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'We need one more thing', body: v.infoRequest }),
+      fr: (v) => ({ title: 'Il nous manque un élément', body: v.infoRequest }),
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Registry + lookup
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -503,6 +816,10 @@ const TEMPLATES: TemplateMap = {
   'auth.two_factor_changed': authTwoFactorChanged,
   'trust.tier_promoted': trustTierPromoted,
   'trust.score_milestone': trustScoreMilestone,
+  'trust.badge_unlocked': trustBadgeUnlocked,
+  'verification.approved': verificationApproved,
+  'verification.rejected': verificationRejected,
+  'verification.info_requested': verificationInfoRequested,
 };
 
 export const TEMPLATE_KEYS = Object.keys(TEMPLATES) as TemplateKey[];

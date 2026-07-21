@@ -91,14 +91,16 @@ model User {
   businessProfile         BusinessProfile?
 
   trustScoreRecord      TrustScore?
-  trustEvents           TrustEvent[]         @relation("TrustEventSubject")
-  actedTrustEvents      TrustEvent[]         @relation("TrustEventActor")
-  verifications         VerificationRecord[] @relation("VerificationSubject")
-  reviewedVerifications VerificationRecord[] @relation("VerificationReviewer")
-  documents             Document[]           @relation("DocumentOwner")
-  reviewedDocuments     Document[]           @relation("DocumentReviewer")
-  endorsements          Endorsement[]        @relation("EndorsementSubject")
-  authoredEndorsements  Endorsement[]        @relation("EndorsementAuthor")
+  trustEvents           TrustEvent[]             @relation("TrustEventSubject")
+  actedTrustEvents      TrustEvent[]             @relation("TrustEventActor")
+  verifications         VerificationRecord[]     @relation("VerificationSubject")
+  reviewedVerifications VerificationRecord[]     @relation("VerificationReviewer")
+  assignedVerifications VerificationRecord[]     @relation("VerificationAssignee")
+  verificationStageActs VerificationStageEvent[] @relation("VerificationStageActor")
+  endorsements          Endorsement[]            @relation("EndorsementSubject")
+  authoredEndorsements  Endorsement[]            @relation("EndorsementAuthor")
+  reviewedEndorsements  Endorsement[]            @relation("EndorsementReviewer")
+  badges                UserBadge[]
 
   @@index([status, createdAt])
 }
@@ -340,6 +342,12 @@ enum TrustEventType {
   /// Community endorsement (§21.6, FR-35): a small capped contribution that
   /// tapers away as verified job history accumulates.
   ENDORSEMENT_RECEIVED
+  /// Cancels one ENDORSEMENT_RECEIVED (author retracted, moderation reversed).
+  ///
+  /// The ledger is append-only, so influence is withdrawn by appending its
+  /// negation rather than deleting the original — the history still shows that
+  /// the endorsement was given and then taken back, which is the honest record.
+  ENDORSEMENT_REVOKED
 }
 
 /// An append-only entry in the trust ledger. Rows are NEVER updated or deleted —
@@ -436,6 +444,44 @@ enum VerificationStatus {
   REJECTED
 }
 
+/// The review pipeline a submission walks (AGT-03, ADM-03).
+///
+/// Separate from `status` on purpose: `status` is the OUTCOME the Trust Engine
+/// and the tier gates read (three values, stable forever), while `stage` is the
+/// operational position in the queue that agents and admins work. Collapsing
+/// them would either hide the queue from operations or leak workflow churn into
+/// the scoring contract.
+enum VerificationStage {
+  SUBMITTED
+  UNDER_REVIEW
+  FIELD_CHECK
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+/// Why a submission was turned down. A CODE rather than free text because the
+/// friendly-retry copy (TRU-07) is localized EN/FR in the web catalogue and must
+/// never be an English sentence typed by a reviewer into a database column.
+///
+/// Reviewers can still add specifics in `reason`; the code decides the tone, the
+/// retry affordance, and — for CONFIRMED_FRAUDULENT — the suspension.
+enum VerificationRejectionReason {
+  /// Automated OCR could not read the document. "Try again in better lighting."
+  OCR_UNREADABLE
+  DOCUMENT_EXPIRED
+  /// Name/date of birth on the document disagrees with the account.
+  DETAILS_MISMATCH
+  INCOMPLETE_SUBMISSION
+  WRONG_DOCUMENT_TYPE
+  FIELD_CHECK_FAILED
+  /// Escalated for investigation. Rejects the attempt; does NOT suspend.
+  SUSPECTED_FRAUD
+  /// Confirmed forgery. Permanent suspension, overriding the score (TRU-08).
+  CONFIRMED_FRAUDULENT
+  OTHER
+}
+
 /// One attempt at one check. Rows are NOT unique per (subject, checkType): a
 /// rejection must be re-submittable (TRU-06 "re-upload on rejection"), so each
 /// attempt is its own row and the LATEST row per check type is the live state.
@@ -444,86 +490,100 @@ model VerificationRecord {
   subjectId String                @db.Uuid
   checkType VerificationCheckType
   status    VerificationStatus    @default(PENDING)
+  stage     VerificationStage     @default(SUBMITTED)
 
+  /// Which re-submission this is, 1-based. Kept denormalised so the friendly
+  /// retry can soften ("still not quite readable") without counting rows.
+  attempt Int @default(1)
+
+  /// Agent/admin currently holding the item, so two reviewers do not both work
+  /// the same submission. Cleared when the item leaves their hands.
+  assignedToId String? @db.Uuid
   /// Admin or Field Agent who decided it (ADM-03, TRU-09).
-  reviewerId String? @db.Uuid
-  /// Rejection reason, surfaced verbatim in the friendly-retry UX (TRU-07).
-  reason     String?
+  reviewerId   String? @db.Uuid
+
+  /// The coded outcome the localized retry copy is keyed on (TRU-07).
+  rejectionReason VerificationRejectionReason?
+  /// Reviewer's free-text detail. Shown to staff; NEVER rendered to the subject
+  /// as-is — it is neither localized nor guaranteed to be kind.
+  reason          String?
+  /// What was asked for when a reviewer chose "request more info" (AGT-03).
+  infoRequest     String?
+  infoRequestedAt DateTime?
+
   /// Free-form check evidence (OCR confidence, GPS fix of a field visit).
-  metadata   Json?
+  metadata Json?
 
-  submittedAt DateTime  @default(now())
-  reviewedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  submittedAt    DateTime  @default(now())
+  stageUpdatedAt DateTime  @default(now())
+  reviewedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  subject  User  @relation("VerificationSubject", fields: [subjectId], references: [id], onDelete: Cascade)
-  reviewer User? @relation("VerificationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  subject    User  @relation("VerificationSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  reviewer   User? @relation("VerificationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  assignedTo User? @relation("VerificationAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  documents   VerificationDocument[]
+  stageEvents VerificationStageEvent[]
 
   /// "Latest attempt per check type for this subject" — the tier-gate read path.
   @@index([subjectId, checkType, createdAt])
   /// The admin review queue.
   @@index([status, createdAt])
+  /// The pipeline board, one column per stage (AGT-03).
+  @@index([stage, submittedAt])
+  /// "What is on my desk right now" for one agent.
+  @@index([assignedToId, stage])
 }
 
-/// What a stored file is. Drives both the review queue and the access rules.
-enum DocumentKind {
-  NATIONAL_ID_FRONT
-  NATIONAL_ID_BACK
-  SELFIE
-  PROOF_OF_ADDRESS
-  CERTIFICATE
-  PORTFOLIO_IMAGE
-  BUSINESS_REGISTRATION
-}
-
-enum DocumentStatus {
-  PENDING
-  VERIFIED
-  REJECTED
-}
-
-/// Who may read a document. KYC media defaults to PRIVATE and is served only
-/// through signed, expiring URLs (P27); portfolio images are PUBLIC.
-enum DocumentVisibility {
-  PRIVATE
-  STAFF_ONLY
-  PUBLIC
-}
-
-/// A stored artefact (TRU-08). Only the S3 key lives here — bytes never touch the
-/// database, and access is decided at read time, not baked into a URL.
+/// The evidence a check was decided on (TRU-06, TRU-08).
 ///
-/// KNOWN DUPLICATION, to be reconciled in PROMPT 27. The profiles/onboarding work
-/// introduces `MediaAsset`, which covers the same storage ground (owner, kind,
-/// s3Key, mime, size, visibility); this model adds the review workflow on top
-/// (status, reviewer, rejectionReason). Both were kept self-contained on purpose
-/// so that neither feature's commit referenced a model absent from the other's.
-/// P27 (document upload + secure storage) is where they should become one:
-/// MediaAsset as the storage record, review state hanging off it.
-model Document {
-  id         String             @id @default(uuid()) @db.Uuid
-  ownerId    String             @db.Uuid
-  kind       DocumentKind
-  /// Object key in the private bucket. Never a public URL.
-  s3Key      String             @unique
-  mimeType   String?
-  sizeBytes  Int?
-  status     DocumentStatus     @default(PENDING)
-  visibility DocumentVisibility @default(PRIVATE)
+/// A join rather than a foreign key on either side, because the relationship is
+/// genuinely many-to-many in both directions: an ID check needs front AND back,
+/// and one selfie can back both a liveness check and a field visit.
+model VerificationDocument {
+  id                   String @id @default(uuid()) @db.Uuid
+  verificationRecordId String @db.Uuid
+  mediaAssetId         String @db.Uuid
 
-  reviewerId      String? @db.Uuid
-  rejectionReason String?
+  createdAt DateTime @default(now())
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  reviewedAt DateTime?
+  verificationRecord VerificationRecord @relation(fields: [verificationRecordId], references: [id], onDelete: Cascade)
+  mediaAsset         MediaAsset         @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
 
-  owner    User  @relation("DocumentOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  reviewer User? @relation("DocumentReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  @@unique([verificationRecordId, mediaAssetId])
+  /// "What is the review status of this document?" — the Documents area (TRU-08).
+  @@index([mediaAssetId])
+}
 
-  @@index([ownerId, kind, createdAt])
-  @@index([status, createdAt])
+/// Every move a submission makes through the pipeline (AGT-03, NFR-SEC-05).
+///
+/// Append-only. This is what the per-stage counts, the average review time and
+/// the approval rate are computed from — deriving them from the record's current
+/// stage alone would make "how long does review take" unanswerable the moment an
+/// item moves twice.
+model VerificationStageEvent {
+  id                   String             @id @default(uuid()) @db.Uuid
+  verificationRecordId String             @db.Uuid
+  /// Null for the row written when the submission first enters the pipeline.
+  fromStage            VerificationStage?
+  toStage              VerificationStage
+
+  /// Null for system transitions (automated OCR moving an item on).
+  actorId   String? @db.Uuid
+  note      String?
+  /// Ties the transition to the request that caused it, per the error contract.
+  requestId String?
+
+  createdAt DateTime @default(now())
+
+  verificationRecord VerificationRecord @relation(fields: [verificationRecordId], references: [id], onDelete: Cascade)
+  actor              User?              @relation("VerificationStageActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([verificationRecordId, createdAt])
+  /// Throughput metrics per stage over a date window.
+  @@index([toStage, createdAt])
 }
 
 /// How the endorser knows the person (§21.6). A closed list keeps the weighting
@@ -560,14 +620,84 @@ model Endorsement {
   rating       Int
   status       EndorsementStatus       @default(PENDING)
 
+  /// Staff who approved, rejected or captured it. An off-platform endorsement
+  /// has no accountable author, so the agent who collected it stands behind it.
+  reviewedById String?   @db.Uuid
+  reviewedAt   DateTime?
+  /// Why it was turned down. Staff-facing; never rendered to the endorser.
+  reviewNote   String?
+  /// Withdrawn after approval (author retracted, moderation reversed). The trust
+  /// ledger is append-only, so revocation is a compensating ENDORSEMENT_REVOKED
+  /// event rather than a deletion — this column is just the current fact.
+  revokedAt    DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  subject User  @relation("EndorsementSubject", fields: [subjectId], references: [id], onDelete: Cascade)
-  author  User? @relation("EndorsementAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  subject    User  @relation("EndorsementSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  author     User? @relation("EndorsementAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  reviewedBy User? @relation("EndorsementReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 
+  /// One endorsement per author per subject. NULL author ids repeat freely under
+  /// Postgres NULL semantics, which is exactly right: off-platform endorsements
+  /// are vouched for by the capturing agent, not deduplicated by identity.
+  @@unique([subjectId, authorId])
   @@index([subjectId, status, createdAt])
   @@index([authorId])
+  /// The staff moderation queue.
+  @@index([status, createdAt])
+}
+
+/// Milestone badges (TRU-11). Awarded by rule from trust events, never granted
+/// by hand — the same discipline as tiers, for the same reason: a badge that can
+/// be given as a favour is not evidence of anything.
+enum BadgeType {
+  /// Recruited and verified in person by a Field Agent (TRU-09, AGT-01).
+  FOUNDING_PROFESSIONAL
+  /// National ID approved by staff.
+  IDENTITY_VERIFIED
+  /// Reached Tier 2.
+  VERIFIED_PROFESSIONAL
+  /// Reached Tier 3.
+  FIELD_VERIFIED_PROFESSIONAL
+  /// Trust Score thresholds, mirroring TRUST_SCORE_THRESHOLDS in the point model.
+  TRUST_SCORE_25
+  TRUST_SCORE_50
+  TRUST_SCORE_75
+  TRUST_SCORE_90
+  /// Completed-job milestones.
+  FIRST_JOB
+  JOBS_10
+  JOBS_25
+  JOBS_50
+  JOBS_100
+  /// Five approved community endorsements (TRU-10).
+  COMMUNITY_ENDORSED
+}
+
+/// One unlocked badge (TRU-11). Milestones are PERMANENT: a Trust Score that
+/// later dips does not un-ring the bell, because the badge records that the
+/// thing happened, not that it is still true. Tier badges and the tier itself
+/// are separate for exactly this reason — the tier demotes, the badge remembers.
+model UserBadge {
+  id        String    @id @default(uuid()) @db.Uuid
+  subjectId String    @db.Uuid
+  type      BadgeType
+
+  /// What unlocked it — "TierChange", "TrustEvent", "FoundingIntake".
+  sourceType String?
+  sourceId   String?
+  metadata   Json?
+
+  awardedAt DateTime @default(now())
+
+  subject User @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  /// A badge unlocks once. The unique constraint is the idempotency guarantee:
+  /// a replayed event cannot double-award or re-notify.
+  @@unique([subjectId, type])
+  /// The trust-history timeline, newest first.
+  @@index([subjectId, awardedAt])
 }
 
 /// The tier gates (§21.4), as DATA rather than literals in code.
@@ -716,8 +846,8 @@ model BusinessProfile {
   name        String
   description String?
   /// Cameroon trade register number (RCCM). Verified in a later phase.
-  rccmNumber String?
-  taxId      String?
+  rccmNumber  String?
+  taxId       String?
 
   contactEmail String?
   contactPhone String?
@@ -793,8 +923,8 @@ model Service {
   id              String @id @default(uuid()) @db.Uuid
   workerProfileId String @db.Uuid
 
-  name        String
-  description String?
+  name          String
+  description   String?
   /// XAF has no minor unit, so prices are whole-currency integers everywhere.
   startingPrice Int?
   isActive      Boolean @default(true)
@@ -839,8 +969,8 @@ model PortfolioItem {
   workerProfileId String @db.Uuid
   mediaAssetId    String @db.Uuid
 
-  type    PortfolioItemType @default(PHOTO)
-  caption String?
+  type     PortfolioItemType @default(PHOTO)
+  caption  String?
   /// Groups before/after pairs and multi-shot projects together.
   groupKey String?
 
@@ -853,6 +983,10 @@ model PortfolioItem {
 }
 
 /// What an uploaded file is. Drives the access rules below.
+///
+/// New values are APPENDED, never reordered: Postgres `ALTER TYPE ... ADD VALUE`
+/// only appends, so keeping this list in migration order is what stops the
+/// schema and the database from drifting apart on the next deploy.
 enum MediaAssetKind {
   PORTFOLIO_IMAGE
   NATIONAL_ID_FRONT
@@ -860,6 +994,8 @@ enum MediaAssetKind {
   SELFIE
   BUSINESS_REGISTRATION
   BUSINESS_LOGO
+  PROOF_OF_ADDRESS
+  CERTIFICATE
 }
 
 /// PRIVATE media is served only through short-lived signed URLs; PUBLIC media
@@ -869,13 +1005,16 @@ enum MediaVisibility {
   PUBLIC
 }
 
-/// A file stored in S3 (CLAUDE.md STORAGE). Only the object key lives in the
-/// database — bytes never do, and access is decided at read time rather than
+/// A file stored in S3 (CLAUDE.md STORAGE, TRU-08). Only the object key lives in
+/// the database — bytes never do, and access is decided at read time rather than
 /// baked into a URL that would then be forwardable forever.
 ///
-/// KYC media (ID, selfie) defaults to PRIVATE. The verification REVIEW workflow
-/// that acts on these files — approval state, reviewer, rejection reason — is
-/// PROMPT 27/28 and layers on top rather than being duplicated here.
+/// THE single storage record. PROMPT 27 folded the parallel `Document` model
+/// into this one: review state (status, reviewer, rejection reason) belongs to
+/// the CHECK a file was submitted for, not to the file, so it lives on
+/// VerificationRecord and reaches a document through VerificationDocument. One
+/// upload can therefore back several checks and carry a different outcome in
+/// each, which two duplicated storage tables could never express.
 model MediaAsset {
   id      String         @id @default(uuid()) @db.Uuid
   ownerId String         @db.Uuid
@@ -887,10 +1026,26 @@ model MediaAsset {
   sizeBytes  Int
   visibility MediaVisibility @default(PRIVATE)
 
+  /// SHA-256 of the bytes as stored. Two jobs: it proves the object under review
+  /// is the object that was uploaded, and it catches the same ID being submitted
+  /// under two accounts — the cheapest fraud signal available at upload time.
+  checksum String?
+
+  /// Soft delete. A user may retire a document from their Documents area, but
+  /// the bytes behind a check that is under review (or that has already granted
+  /// a tier) must survive for the audit trail — so nothing here is ever hard
+  /// deleted while a verification points at it.
+  deletedAt DateTime?
+
   createdAt DateTime @default(now())
 
-  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  portfolio PortfolioItem[]
+  owner         User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  portfolio     PortfolioItem[]
+  verifications VerificationDocument[]
 
   @@index([ownerId, kind, createdAt])
+  /// The Documents area lists live files only (TRU-08).
+  @@index([ownerId, deletedAt])
+  /// Duplicate-document detection across accounts.
+  @@index([checksum])
 }
