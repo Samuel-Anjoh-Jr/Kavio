@@ -115,6 +115,22 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     visibility: MediaVisibility.PRIVATE,
     prefix: 'disputes',
   },
+  [MediaAssetKind.MESSAGE_IMAGE]: {
+    // A photo shared in a conversation (MSG-01). PRIVATE — a chat between two
+    // people is not public — and its own prefix, served through signed URLs.
+    mimeTypes: IMAGE_TYPES,
+    maxBytes: 10 * MB,
+    visibility: MediaVisibility.PRIVATE,
+    prefix: 'messages',
+  },
+  [MediaAssetKind.MESSAGE_VOICE]: {
+    // A voice note shared in a conversation (MSG-01). PRIVATE, same rule; audio
+    // formats phone browsers record in (webm/ogg/mp4/mpeg).
+    mimeTypes: ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg'],
+    maxBytes: 15 * MB,
+    visibility: MediaVisibility.PRIVATE,
+    prefix: 'messages',
+  },
 };
 
 /**

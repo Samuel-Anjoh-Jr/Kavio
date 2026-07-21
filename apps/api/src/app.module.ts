@@ -32,6 +32,9 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { JobsModule } from './jobs/jobs.module';
 import { QuotesModule } from './quotes/quotes.module';
 import { PaymentsModule } from './payments/payments.module';
+import { MessagingModule } from './messaging/messaging.module';
+import { SafetyModule } from './safety/safety.module';
+import { TrackingModule } from './tracking/tracking.module';
 
 @Module({
   imports: [
@@ -89,6 +92,14 @@ import { PaymentsModule } from './payments/payments.module';
     // QuotesModule, whose ESCROW_INITIATION_REQUESTED seam it consumes, and
     // JobsModule, whose job lifecycle the escrow machine drives.
     PaymentsModule,
+    // Messaging (SRS §13, MSG-*). Its WS gateway lives in RealtimeModule, which
+    // imports this module — so it is registered here for its REST/GraphQL surface.
+    MessagingModule,
+    // Safety & SOS (SOS-*). Shares alerts through the NotificationDispatcher.
+    SafetyModule,
+    // Live tracking (SOS-03). Foreground, consented, revocable position streaming
+    // over its own WS gateway, persisted to PostGIS.
+    TrackingModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({

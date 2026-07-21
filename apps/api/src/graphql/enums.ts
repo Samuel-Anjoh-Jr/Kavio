@@ -15,6 +15,8 @@ import {
   LocationSource,
   MediaAssetKind,
   MediaVisibility,
+  MessageKind,
+  MessageStatus,
   OnboardingRole,
   PaymentMethodType,
   PortfolioItemType,
@@ -22,7 +24,9 @@ import {
   QuoteDurationUnit,
   QuoteStatus,
   Role,
+  SOSStatus,
   TeamMemberRole,
+  TrackingSessionStatus,
   TransactionDirection,
   TransactionStatus,
   TransactionType,
@@ -215,6 +219,26 @@ export function registerGraphQLEnums(): void {
   registerEnumType(DisputeResolution, {
     name: 'DisputeResolution',
     description: 'How an admin resolved a dispute (ADM-05).',
+  });
+
+  registerEnumType(MessageKind, {
+    name: 'MessageKind',
+    description: 'What a message is, which is how the client renders it (MSG-01).',
+  });
+
+  registerEnumType(MessageStatus, {
+    name: 'MessageStatus',
+    description: 'The sender-facing delivery tick (MSG-02): sent, delivered, read.',
+  });
+
+  registerEnumType(SOSStatus, {
+    name: 'SOSStatus',
+    description: 'A safety alert’s state (SOS-03): active, resolved, false alarm.',
+  });
+
+  registerEnumType(TrackingSessionStatus, {
+    name: 'TrackingSessionStatus',
+    description: 'A live-tracking session’s state (SOS-03): active or ended.',
   });
 
   // Not a Prisma enum: the reason a search came back empty is derived at read

@@ -122,6 +122,30 @@ model User {
   reviewedEndorsements  Endorsement[]            @relation("EndorsementReviewer")
   badges                UserBadge[]
 
+  // Messaging (PROMPT 70). A conversation's members are a join, not two columns
+  // on the identity — so a safety observer can be added to an existing thread.
+  conversationParts ConversationParticipant[] @relation("ConversationParticipantUser")
+  sentMessages      Message[]                 @relation("MessageSender")
+  blocksMade        Block[]                   @relation("BlockBlocker")
+  blocksReceived    Block[]                   @relation("BlockBlocked")
+  reportsMade       AbuseReport[]             @relation("AbuseReportReporter")
+  reportsAbout      AbuseReport[]             @relation("AbuseReportReported")
+  reviewedReports   AbuseReport[]             @relation("AbuseReportReviewer")
+
+  // Safety & SOS (PROMPT 73).
+  emergencyContacts EmergencyContact[]
+  sosAlerts         SOSAlert[]         @relation("SOSAlertUser")
+  resolvedSosAlerts SOSAlert[]         @relation("SOSAlertResolver")
+
+  // Live tracking (PROMPT 74). One identity is the tracked subject in some
+  // sessions and the consented viewer in others.
+  trackedSessions TrackingSession[] @relation("TrackingSubject")
+  viewerSessions  TrackingSession[] @relation("TrackingViewer")
+  locationPings   LocationPing[]    @relation("LocationPingUser")
+
+  // Web-push device registry (PROMPT 76).
+  deviceRegistrations DeviceRegistration[]
+
   @@index([status, createdAt])
 }
 
@@ -1204,6 +1228,13 @@ enum MediaAssetKind {
   /// finished work, a receipt. PRIVATE — seen only by the two parties and the
   /// admin resolving the case, never public the way a job photo is.
   DISPUTE_EVIDENCE
+  /// An image shared inside a conversation (MSG-01, PROMPT 70). PRIVATE: a chat
+  /// between two people is not public, and its media is served only to the
+  /// participants through signed URLs.
+  MESSAGE_IMAGE
+  /// A voice note shared inside a conversation (MSG-01). PRIVATE, same rule as
+  /// MESSAGE_IMAGE — audio evidence of a negotiation is between the parties.
+  MESSAGE_VOICE
 }
 
 /// PRIVATE media is served only through short-lived signed URLs; PUBLIC media
@@ -1247,14 +1278,15 @@ model MediaAsset {
 
   createdAt DateTime @default(now())
 
-  owner            User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  portfolio        PortfolioItem[]
-  verifications    VerificationDocument[]
-  workerCovers     WorkerProfile[]        @relation("WorkerProfileCover")
-  businessLogos    BusinessProfile[]      @relation("BusinessProfileLogo")
-  jobPhotos        JobPhoto[]
-  quoteAttachments QuoteAttachment[]
-  disputeEvidence  DisputeAttachment[]
+  owner              User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  portfolio          PortfolioItem[]
+  verifications      VerificationDocument[]
+  workerCovers       WorkerProfile[]        @relation("WorkerProfileCover")
+  businessLogos      BusinessProfile[]      @relation("BusinessProfileLogo")
+  jobPhotos          JobPhoto[]
+  quoteAttachments   QuoteAttachment[]
+  disputeEvidence    DisputeAttachment[]
+  messageAttachments MessageAttachment[]
 
   @@index([ownerId, kind, createdAt])
   /// The Documents area lists live files only (TRU-08).
@@ -1485,13 +1517,15 @@ model Job {
   category  ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   geoRegion GeoRegion?       @relation("JobRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
 
-  photos       JobPhoto[]
-  statusEvents JobStatusEvent[]
-  applications JobApplication[]
-  invitations  JobInvitation[]
-  quotes       Quote[]
-  bookings     Booking[]
-  disputes     Dispute[]
+  photos        JobPhoto[]
+  statusEvents  JobStatusEvent[]
+  applications  JobApplication[]
+  invitations   JobInvitation[]
+  quotes        Quote[]
+  bookings      Booking[]
+  disputes      Dispute[]
+  conversations Conversation[]
+  sosAlerts     SOSAlert[]
 
   /// The public job board: open jobs, newest published first.
   @@index([status, publishedAt])
@@ -1838,10 +1872,12 @@ model Booking {
   worker User  @relation("BookingWorker", fields: [workerId], references: [id], onDelete: Restrict)
   client User  @relation("BookingClient", fields: [clientId], references: [id], onDelete: Restrict)
 
-  statusEvents BookingStatusEvent[]
-  escrowHold   EscrowHold?
-  transactions Transaction[]
-  disputes     Dispute[]
+  statusEvents     BookingStatusEvent[]
+  escrowHold       EscrowHold?
+  transactions     Transaction[]
+  disputes         Dispute[]
+  sosAlerts        SOSAlert[]
+  trackingSessions TrackingSession[]
 
   @@unique([quoteId])
   /// Both parties' booking lists.
@@ -2264,4 +2300,521 @@ model Wallet {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Messaging (PROMPT 70; SRS §13, MSG-01, MSG-02, MSG-04).
+//
+// A conversation is a private thread between two identities, usually anchored to
+// a job. Three decisions carry this area:
+//
+//   1. PARTICIPANTS ARE A JOIN, NOT TWO COLUMNS. A ConversationParticipant row
+//      per member means a safety/oversight OBSERVER can be added to an existing
+//      thread later (MSG oversight) without reshaping the conversation — the
+//      "nullable participants for later oversight" the prompt asks for.
+//
+//   2. EVERY MESSAGE CARRIES A KIND. Text, image, voice, a shared location, or a
+//      card that embeds a quote/job/payment. The kind decides how the client
+//      renders it; `body` holds text, an Attachment holds media, and `metadata`
+//      holds the referenced id for the card kinds — never a second copy of the
+//      quote/job/payment itself, which would drift from the source of truth.
+//
+//   3. DELIVERY AND READ ARE PER MESSAGE AND PER PARTICIPANT. `Message.status`
+//      is the sender-visible tick (SENT → DELIVERED → READ); a participant's
+//      `lastReadAt` is what a "3 unread" badge is computed from. Both, because
+//      one cannot answer the other's question.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// What a message is, which is how the client renders it (MSG-01). A closed list
+/// rather than a free-text type, so a new bubble shape is a reviewed schema change.
+enum MessageKind {
+  TEXT
+  IMAGE
+  VOICE
+  /// A shared pin — lat/lng ride in `metadata`, not in the message body.
+  LOCATION
+  /// A card embedding a quote/job/payment by id (in `metadata`), so the bubble
+  /// always reflects the live record rather than a snapshot that can go stale.
+  QUOTE
+  JOB
+  PAYMENT
+}
+
+/// The sender-facing delivery tick (MSG-02). DELIVERED once the recipient's
+/// socket has the message; READ once they have opened the thread.
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+/// A member's part in a conversation. OBSERVER is the oversight seam (MSG): a
+/// safety agent added to a thread reads but is not a negotiating party.
+enum ConversationParticipantRole {
+  MEMBER
+  OBSERVER
+}
+
+/// Why a conversation or message was reported (MSG-04). Coded, not free text, so
+/// the moderation queue can filter and the localized copy lives in the catalogue.
+enum AbuseReportReason {
+  SPAM
+  HARASSMENT
+  SCAM
+  INAPPROPRIATE
+  OFF_PLATFORM
+  OTHER
+}
+
+enum AbuseReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
+}
+
+/// A private thread between identities (MSG-01), usually anchored to a job.
+model Conversation {
+  id String @id @default(uuid()) @db.Uuid
+
+  /// The job this conversation is about (MSG-01 "job-linked"). Nullable so a
+  /// support/oversight thread can exist without one.
+  jobId String? @db.Uuid
+
+  /// Denormalised last-message summary so a conversation list renders without a
+  /// correlated subquery per row. Rewritten inside the send transaction.
+  lastMessageAt      DateTime?
+  lastMessagePreview String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job          Job?                      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  participants ConversationParticipant[]
+  messages     Message[]
+  reports      AbuseReport[]
+
+  @@index([jobId])
+  /// The inbox list ordering: most recently active first.
+  @@index([lastMessageAt])
+}
+
+/// One identity's membership of one conversation (MSG-01). The unread badge and
+/// the two-party authorisation both read this — a message is visible only to
+/// members, checked in the WHERE, not just by a capability.
+model ConversationParticipant {
+  id             String                      @id @default(uuid()) @db.Uuid
+  conversationId String                      @db.Uuid
+  userId         String                      @db.Uuid
+  role           ConversationParticipantRole @default(MEMBER)
+
+  /// The read watermark: messages after this instant are unread for this member.
+  lastReadAt DateTime?
+  /// Muted threads still receive messages but suppress the member's notifications.
+  mutedAt    DateTime?
+  /// A member who left a thread keeps their history but stops receiving new ones.
+  leftAt     DateTime?
+
+  createdAt DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation("ConversationParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// One membership per identity per conversation.
+  @@unique([conversationId, userId])
+  /// The inbox read path: one identity's conversations.
+  @@index([userId, conversationId])
+}
+
+/// A message in a conversation (MSG-01, MSG-02).
+model Message {
+  id             String @id @default(uuid()) @db.Uuid
+  conversationId String @db.Uuid
+  senderId       String @db.Uuid
+
+  kind MessageKind @default(TEXT)
+  /// The text body for TEXT, or a caption for media. Null for a bare attachment
+  /// or a location pin.
+  body String?
+
+  /// The object key of a single primary attachment (image/voice), mirrored onto
+  /// the message for the common one-file case; richer sets use MessageAttachment.
+  /// Kept as a key rather than a URL so access is decided at read time.
+  mediaKey String?
+
+  /// Referenced ids and coordinates for the card/location kinds (never a copy of
+  /// the referenced record). e.g. { quoteId }, { jobId }, { bookingId }, { lat, lng }.
+  metadata Json?
+
+  status MessageStatus @default(SENT)
+
+  deliveredAt DateTime?
+  readAt      DateTime?
+  /// Soft delete: a removed message leaves a "message deleted" placeholder rather
+  /// than a hole in a thread the other party may have already replied to.
+  deletedAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  conversation Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User                @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  attachments  MessageAttachment[]
+  reports      AbuseReport[]
+
+  /// The thread read path: one conversation's messages in order.
+  @@index([conversationId, createdAt])
+  @@index([senderId, createdAt])
+}
+
+/// A file attached to a message (MSG-01). A MediaAsset FK, like every other
+/// attachment, so it goes through the same upload validation, ownership and
+/// signed-access rules — a URL column would be the one way to skip them.
+model MessageAttachment {
+  id           String @id @default(uuid()) @db.Uuid
+  messageId    String @db.Uuid
+  mediaAssetId String @db.Uuid
+
+  createdAt DateTime @default(now())
+
+  message    Message    @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, mediaAssetId])
+  @@index([messageId])
+}
+
+/// One identity blocking another (MSG-04). A directional pair: A blocking B does
+/// not block A for B, but the messaging service refuses a send in either
+/// direction once a live block exists between the two.
+model Block {
+  id        String @id @default(uuid()) @db.Uuid
+  blockerId String @db.Uuid
+  blockedId String @db.Uuid
+
+  reason String?
+
+  createdAt DateTime @default(now())
+
+  blocker User @relation("BlockBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  /// One block per ordered pair; re-blocking is idempotent.
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+/// A report of a conversation, a message, or a user (MSG-04). Feeds the admin
+/// moderation queue; one model rather than three because the workflow (open →
+/// review → action/dismiss) is identical whatever the target.
+model AbuseReport {
+  id         String @id @default(uuid()) @db.Uuid
+  reporterId String @db.Uuid
+
+  /// The identity being reported, always resolved so the queue can act on the
+  /// person even when the specific message is later deleted.
+  reportedUserId String  @db.Uuid
+  conversationId String? @db.Uuid
+  messageId      String? @db.Uuid
+
+  reason  AbuseReportReason
+  details String?
+  status  AbuseReportStatus @default(OPEN)
+
+  reviewedById String?   @db.Uuid
+  reviewNote   String?
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reporter     User          @relation("AbuseReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser User          @relation("AbuseReportReported", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reviewedBy   User?         @relation("AbuseReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  message      Message?      @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  /// The moderation queue (newest open first).
+  @@index([status, createdAt])
+  @@index([reportedUserId])
+  /// A reporter cannot spam the same message twice.
+  @@index([reporterId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Safety & SOS (PROMPT 73; SOS-01, SOS-02, SOS-03).
+//
+// An SOS alert is an auditable safety event: triggering it captures the person's
+// position and fans it out to their emergency contacts and/or the safety process,
+// and every alert stays on file with its resolution so a pattern is visible.
+//
+// The location follows the same rule as every other coordinate in the system: a
+// GIST-indexed geography column derived from plain lat/lng by a trigger, so the
+// alert's position is queryable on the same authoritative geometry as everything
+// else. Recipients are recorded per alert (SOSAlertShare) so "who was told, and
+// how" is answerable — a safety feature that cannot prove it notified anyone is
+// not a safety feature.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum SOSStatus {
+  ACTIVE
+  RESOLVED
+  FALSE_ALARM
+}
+
+/// A person a user nominates to be alerted in an emergency (SOS-02). Phone is
+/// E.164 at capture so SMS/WhatsApp fan-out flips on later with no call-site
+/// change, exactly like every other phone in the system.
+model EmergencyContact {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+
+  name         String
+  phone        String
+  /// How they know the user ("brother", "landlord"). Free text — a nominee is
+  /// whoever the user trusts, not a taxonomy.
+  relationship String?
+  /// The contact's own account, when they have one, so an in-app alert can reach
+  /// them directly rather than only by phone.
+  email        String?
+
+  /// Soft-disabled rather than deleted so a past alert's share record keeps
+  /// resolving to the contact it actually reached.
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shares SOSAlertShare[]
+
+  @@index([userId, isActive])
+}
+
+/// A triggered safety alert (SOS-01, SOS-03).
+model SOSAlert {
+  id     String    @id @default(uuid()) @db.Uuid
+  userId String    @db.Uuid
+  status SOSStatus @default(ACTIVE)
+
+  /// Where the person was when they triggered it. Plain floats are the writable
+  /// source of truth; `location` is derived by the trustpro_sync_location trigger
+  /// and GIST-indexed, like every other coordinate (SRS §12).
+  latitude  Float?
+  longitude Float?
+  accuracy  Float?
+  location  Unsupported("geography(Point, 4326)")?
+
+  /// Optional free-text the user added ("being followed near Akwa").
+  message String?
+
+  /// The job/booking in progress when it was triggered, for context in the
+  /// safety review. Nullable — an alert can be raised outside any job.
+  jobId     String? @db.Uuid
+  bookingId String? @db.Uuid
+
+  resolvedById   String?   @db.Uuid
+  resolvedAt     DateTime?
+  resolutionNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User            @relation("SOSAlertUser", fields: [userId], references: [id], onDelete: Cascade)
+  resolvedBy User?           @relation("SOSAlertResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  job        Job?            @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  booking    Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  shares     SOSAlertShare[]
+  events     SOSAlertEvent[]
+
+  /// The user's own SOS history, newest first (SOS-03).
+  @@index([userId, createdAt])
+  /// The safety team's live-alert queue.
+  @@index([status, createdAt])
+}
+
+/// Who an alert was shared with, and whether the share reached them (SOS-01).
+/// The auditable proof that an alert actually notified someone.
+model SOSAlertShare {
+  id                 String  @id @default(uuid()) @db.Uuid
+  sosAlertId         String  @db.Uuid
+  /// The nominated contact this share went to. Null for a share to the internal
+  /// safety process rather than a personal contact.
+  emergencyContactId String? @db.Uuid
+
+  /// How it was sent ("email", "console", "sms"). The dispatcher owns the actual
+  /// send; this records the outcome for the audit trail.
+  channel   String
+  delivered Boolean   @default(false)
+  error     String?
+  sentAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  sosAlert         SOSAlert          @relation(fields: [sosAlertId], references: [id], onDelete: Cascade)
+  emergencyContact EmergencyContact? @relation(fields: [emergencyContactId], references: [id], onDelete: SetNull)
+
+  @@index([sosAlertId])
+}
+
+/// Every move an alert made through its states (SOS-03). Append-only — the
+/// tamper-evident safety trail, the same discipline as the money and job logs.
+model SOSAlertEvent {
+  id         String @id @default(uuid()) @db.Uuid
+  sosAlertId String @db.Uuid
+
+  fromStatus SOSStatus?
+  toStatus   SOSStatus
+
+  /// Null for system transitions. Set to the resolving safety agent otherwise.
+  actorId   String? @db.Uuid
+  note      String?
+  requestId String?
+
+  createdAt DateTime @default(now())
+
+  sosAlert SOSAlert @relation(fields: [sosAlertId], references: [id], onDelete: Cascade)
+
+  @@index([sosAlertId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Live tracking (PROMPT 74; SOS-03; CLAUDE.md SPATIAL "foreground streaming").
+//
+// A tracking session lets a worker's live position stream to a consented client
+// while the tracking screen is open. The web has no reliable background tracking,
+// so this is FOREGROUND streaming with EXPLICIT, REVOCABLE consent:
+//
+//   • A session names the tracked subject, the consented viewer and the booking.
+//   • Consent is a timestamp pair (granted/revoked); revoking ends the fan-out
+//     immediately and no further pings are accepted for that viewer.
+//   • Pings persist to PostGIS (same trigger, same GIST index) so a route is
+//     replayable for a safety review — a session is not only a live channel.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TrackingSessionStatus {
+  ACTIVE
+  ENDED
+}
+
+/// One consented live-tracking channel around a booking (SOS-03).
+model TrackingSession {
+  id        String @id @default(uuid()) @db.Uuid
+  bookingId String @db.Uuid
+
+  /// The identity being tracked (the worker travelling to the job) and the one
+  /// permitted to watch (the client). Both are identities, not roles.
+  subjectId String @db.Uuid
+  viewerId  String @db.Uuid
+
+  status TrackingSessionStatus @default(ACTIVE)
+
+  /// Where the subject is heading, so ETA/distance can be computed server-side
+  /// against the authoritative geometry rather than trusted from the client.
+  destinationLat Float?
+  destinationLng Float?
+
+  /// Explicit, revocable consent (CLAUDE.md SPATIAL). `consentRevokedAt` set ⇒
+  /// the fan-out stops and ingestion is refused, even before the session ends.
+  consentGrantedAt DateTime  @default(now())
+  consentRevokedAt DateTime?
+
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  subject User           @relation("TrackingSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  viewer  User           @relation("TrackingViewer", fields: [viewerId], references: [id], onDelete: Cascade)
+  pings   LocationPing[]
+
+  /// At most one live session per booking + viewer pair (partial unique in the
+  /// migration on status = 'ACTIVE'): re-opening the screen resumes rather than
+  /// forking a second channel.
+  @@index([bookingId, status])
+  @@index([subjectId, status])
+  @@index([viewerId, status])
+}
+
+/// One position report on a tracking session (SOS-03). Persisted so a route is
+/// replayable; the live fan-out reads the latest row, the safety review the whole
+/// trail.
+model LocationPing {
+  id        String @id @default(uuid()) @db.Uuid
+  sessionId String @db.Uuid
+  /// The subject the ping is FOR — denormalised so a per-user position history is
+  /// one indexed scan without walking the session.
+  userId    String @db.Uuid
+
+  latitude  Float
+  longitude Float
+  location  Unsupported("geography(Point, 4326)")?
+
+  /// GPS quality signals from the browser Geolocation API, kept for the review.
+  accuracy Float?
+  heading  Float?
+  speed    Float?
+
+  /// When the browser fixed the position (may lag the row's createdAt on a slow
+  /// connection). The ordering key for "latest position".
+  recordedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  session TrackingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User            @relation("LocationPingUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The live read path: the latest ping on a session.
+  @@index([sessionId, recordedAt])
+  @@index([userId, recordedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Web-push device registry (PROMPT 76; NOT-01, SRS §26.1).
+//
+// A user reads TrustPro on several devices (phone browser, laptop). Web push
+// targets a SUBSCRIPTION (endpoint + VAPID keys), not a user, so one identity has
+// many registrations. A push that fails because the browser dropped the
+// subscription deactivates the row (isActive=false) so the dispatcher stops
+// aiming at a dead endpoint — the "deactivate expired subscriptions" the prompt
+// asks for.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The client platform a subscription belongs to. Only WEB at launch (PWA), but
+/// modelled so a future channel is an appended value, not a schema reshape.
+enum DevicePlatform {
+  WEB
+}
+
+/// One web-push subscription for one device (NOT-01). `endpoint` is globally
+/// unique — it IS the address the push service delivers to, and a re-subscribe on
+/// the same browser upserts this row rather than piling up dead duplicates.
+model DeviceRegistration {
+  id       String         @id @default(uuid()) @db.Uuid
+  userId   String         @db.Uuid
+  platform DevicePlatform @default(WEB)
+
+  /// The push-service endpoint URL (unique). The subscription's identity.
+  endpoint String @unique
+  /// The subscription's public key and auth secret (Web Push encryption). Stored
+  /// so the server can encrypt payloads; useless without the private VAPID key.
+  p256dh   String
+  auth     String
+
+  /// Coarse device label for the user's "signed-in devices" list; never a
+  /// fingerprint.
+  deviceName String?
+
+  /// Deactivated on the first delivery failure (410 Gone / 404) so the dispatcher
+  /// stops selecting it. Kept rather than deleted for the device-history view.
+  isActive Boolean @default(true)
+
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The dispatcher's lookup: a user's live subscriptions.
+  @@index([userId, isActive])
 }

@@ -88,6 +88,22 @@ export interface TemplateVariablesMap {
   'dispute.opened': { jobTitle: string };
   /** An admin resolved a dispute (ADM-05). `resolution` keys the localized copy. */
   'dispute.resolved': { jobTitle: string; resolution: string };
+  /** A new message arrived in a conversation (MSG-01). Deep-links to the thread. */
+  'message.received': { senderName: string; preview: string };
+  /** A worker's client left a review (TRU-*, future reviews module). */
+  'review.received': { jobTitle: string; rating: number };
+  /** A job matching the worker's skills/area was posted (JOB-04, future matching). */
+  'job.matched': { jobTitle: string; categoryName: string | null };
+  /**
+   * A safety SOS was triggered (SOS-01). Sent to the user's emergency contacts —
+   * who have no account — so it is addressed directly and carries a map link.
+   */
+  'safety.sos_triggered': {
+    userName: string;
+    contactName: string;
+    message: string | null;
+    mapUrl: string;
+  };
 }
 
 export type TemplateKey = keyof TemplateVariablesMap;
@@ -1459,6 +1475,172 @@ const disputeResolved: TemplateDefinition<'dispute.resolved'> = {
   },
 };
 
+// ── Messaging, reviews, matching (MSG-01, TRU-*, JOB-04) ─────────────────────
+
+const messageReceived: TemplateDefinition<'message.received'> = {
+  key: 'message.received',
+  category: NotificationCategory.MESSAGES,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: `New message from ${v.senderName}`,
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'You have a new message on TrustPro.',
+          heading: `Message from ${escapeHtml(v.senderName)}`,
+          bodyHtml: paragraphs(escapeHtml(v.preview), 'Open TrustPro to reply.'),
+        }),
+        text: `New message from ${v.senderName}: ${v.preview}`,
+      }),
+      fr: (v) => ({
+        subject: `Nouveau message de ${v.senderName}`,
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Vous avez un nouveau message sur TrustPro.',
+          heading: `Message de ${escapeHtml(v.senderName)}`,
+          bodyHtml: paragraphs(escapeHtml(v.preview), 'Ouvrez TrustPro pour répondre.'),
+        }),
+        text: `Nouveau message de ${v.senderName} : ${v.preview}`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: v.senderName, body: v.preview }),
+      fr: (v) => ({ title: v.senderName, body: v.preview }),
+    },
+  },
+};
+
+const reviewReceived: TemplateDefinition<'review.received'> = {
+  key: 'review.received',
+  category: NotificationCategory.REVIEWS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'You received a new review',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'A client reviewed your work.',
+          heading: 'New review',
+          bodyHtml: paragraphs(
+            `A client left you a ${v.rating}-star review for "${escapeHtml(v.jobTitle)}".`,
+            'Every review builds your Trust Score and helps the next client choose you.',
+          ),
+        }),
+        text: `You received a ${v.rating}-star review for "${v.jobTitle}" on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: 'Vous avez reçu un nouvel avis',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un client a évalué votre travail.',
+          heading: 'Nouvel avis',
+          bodyHtml: paragraphs(
+            `Un client vous a laissé un avis de ${v.rating} étoiles pour « ${escapeHtml(v.jobTitle)} ».`,
+            'Chaque avis renforce votre Score de Confiance et aide le prochain client à vous choisir.',
+          ),
+        }),
+        text: `Vous avez reçu un avis de ${v.rating} étoiles pour « ${v.jobTitle} » sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'New review', body: `${v.rating}★ for "${v.jobTitle}".` }),
+      fr: (v) => ({ title: 'Nouvel avis', body: `${v.rating}★ pour « ${v.jobTitle} ».` }),
+    },
+  },
+};
+
+const jobMatched: TemplateDefinition<'job.matched'> = {
+  key: 'job.matched',
+  category: NotificationCategory.JOBS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'A new job matches your skills',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'A job near you is looking for someone like you.',
+          heading: 'New job for you',
+          bodyHtml: paragraphs(
+            `A new job "${escapeHtml(v.jobTitle)}"${v.categoryName ? ` in ${escapeHtml(v.categoryName)}` : ''} was just posted near you.`,
+            'Open it to review the details and send a quote before someone else does.',
+          ),
+        }),
+        text: `A new job "${v.jobTitle}" matching your skills was posted on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: 'Une nouvelle mission correspond à vos compétences',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Une mission près de chez vous cherche quelqu’un comme vous.',
+          heading: 'Nouvelle mission pour vous',
+          bodyHtml: paragraphs(
+            `Une nouvelle mission « ${escapeHtml(v.jobTitle)} »${v.categoryName ? ` en ${escapeHtml(v.categoryName)}` : ''} vient d’être publiée près de chez vous.`,
+            'Ouvrez-la pour consulter les détails et envoyer un devis avant les autres.',
+          ),
+        }),
+        text: `Une nouvelle mission « ${v.jobTitle} » correspondant à vos compétences a été publiée sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'New job for you', body: `"${v.jobTitle}" near you.` }),
+      fr: (v) => ({ title: 'Nouvelle mission', body: `« ${v.jobTitle} » près de chez vous.` }),
+    },
+  },
+};
+
+// ── Safety (SOS-01) ──────────────────────────────────────────────────────────
+
+const safetySosTriggered: TemplateDefinition<'safety.sos_triggered'> = {
+  key: 'safety.sos_triggered',
+  category: NotificationCategory.SAFETY,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: `Emergency: ${v.userName} triggered an SOS`,
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: `${v.userName} may need help.`,
+          heading: `${escapeHtml(v.userName)} triggered an SOS`,
+          bodyHtml: paragraphs(
+            `${escapeHtml(v.contactName)}, ${escapeHtml(v.userName)} has triggered an emergency SOS on TrustPro and listed you as an emergency contact.`,
+            ...(v.message ? [`They added: "${escapeHtml(v.message)}"`] : []),
+            'Please check on them now.',
+          ),
+          ...(v.mapUrl ? { cta: { label: 'See their location', url: v.mapUrl } } : {}),
+        }),
+        text: `EMERGENCY: ${v.userName} triggered an SOS on TrustPro.${v.message ? ` Message: ${v.message}.` : ''}${v.mapUrl ? ` Location: ${v.mapUrl}` : ''}`,
+      }),
+      fr: (v) => ({
+        subject: `Urgence : ${v.userName} a déclenché un SOS`,
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: `${v.userName} a peut-être besoin d’aide.`,
+          heading: `${escapeHtml(v.userName)} a déclenché un SOS`,
+          bodyHtml: paragraphs(
+            `${escapeHtml(v.contactName)}, ${escapeHtml(v.userName)} a déclenché un SOS d’urgence sur TrustPro et vous a désigné comme contact d’urgence.`,
+            ...(v.message ? [`Message ajouté : « ${escapeHtml(v.message)} »`] : []),
+            'Merci de prendre de ses nouvelles immédiatement.',
+          ),
+          ...(v.mapUrl ? { cta: { label: 'Voir sa position', url: v.mapUrl } } : {}),
+        }),
+        text: `URGENCE : ${v.userName} a déclenché un SOS sur TrustPro.${v.message ? ` Message : ${v.message}.` : ''}${v.mapUrl ? ` Position : ${v.mapUrl}` : ''}`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: `SOS: ${v.userName}`,
+        body: 'Tap to see their location.',
+        url: v.mapUrl || undefined,
+      }),
+      fr: (v) => ({
+        title: `SOS : ${v.userName}`,
+        body: 'Appuyez pour voir sa position.',
+        url: v.mapUrl || undefined,
+      }),
+    },
+  },
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Registry + lookup
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1494,6 +1676,10 @@ const TEMPLATES: TemplateMap = {
   'payment.failed': paymentFailed,
   'dispute.opened': disputeOpened,
   'dispute.resolved': disputeResolved,
+  'message.received': messageReceived,
+  'review.received': reviewReceived,
+  'job.matched': jobMatched,
+  'safety.sos_triggered': safetySosTriggered,
 };
 
 export const TEMPLATE_KEYS = Object.keys(TEMPLATES) as TemplateKey[];

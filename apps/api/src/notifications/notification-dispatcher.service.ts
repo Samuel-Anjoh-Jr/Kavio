@@ -180,14 +180,21 @@ export class NotificationDispatcher {
       return null;
     }
 
+    // The endpoints only decide whether push is REACHABLE (WebPushProvider fans
+    // the payload out to every active device itself); a user with no live
+    // subscription resolves to an empty list, so push is skipped and email wins.
+    const devices = await this.prisma.client.deviceRegistration.findMany({
+      where: { userId: user.id, isActive: true },
+      select: { endpoint: true },
+    });
+
     return {
       userId: user.id,
       email: event.to?.email ?? user.email,
       phone: event.to?.phone ?? user.phone,
       // An explicit locale (e.g. the current request's) overrides the stored one.
       locale: resolveLocale(event.locale ?? user.locale),
-      // Populated from the DeviceRegistration registry in P76.
-      pushEndpoints: [],
+      pushEndpoints: devices.map((d) => d.endpoint),
     };
   }
 

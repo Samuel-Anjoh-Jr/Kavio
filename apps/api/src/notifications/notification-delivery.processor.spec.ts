@@ -49,7 +49,7 @@ function makeProcessor(env: NodeJS.ProcessEnv = { NOTIFICATIONS_EMAIL_PROVIDER: 
   const email = new EmailProvider(env);
   const registry = new NotificationProviderRegistry(
     email,
-    new WebPushProvider(env),
+    new WebPushProvider(prisma, env),
     new SmsProvider(env),
   );
 

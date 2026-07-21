@@ -74,6 +74,8 @@ function makeHarness(
       user: { findUnique },
       notificationLog: { create: createLog },
       notificationPreference: { findMany: findPreferences },
+      // P76: the dispatcher reads the device registry to decide push reachability.
+      deviceRegistration: { findMany: jest.fn().mockResolvedValue([]) },
     },
   } as unknown as PrismaService;
 
@@ -84,7 +86,7 @@ function makeHarness(
 
   const registry = new NotificationProviderRegistry(
     new EmailProvider(env),
-    new WebPushProvider(env),
+    new WebPushProvider(prisma, env),
     new SmsProvider(env),
   );
 
