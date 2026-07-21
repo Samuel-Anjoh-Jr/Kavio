@@ -4,8 +4,31 @@ import { AppException } from '../lib/app-exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
 
-function makePrisma(create: jest.Mock): PrismaService {
-  return { client: { user: { create } } } as unknown as PrismaService;
+/**
+ * Sign-up runs inside a transaction (User + roles + seeded notification
+ * preferences), so the mock plays the interactive-transaction callback back with
+ * a tx client. `createMany` is captured so the preference seeding is assertable.
+ */
+interface CreateManyArgs {
+  data: Array<{ userId: string; channel: string; category: string; enabled: boolean }>;
+  skipDuplicates: boolean;
+}
+
+type CreateManyMock = jest.Mock<Promise<{ count: number }>, [CreateManyArgs]>;
+
+function makePrisma(
+  create: jest.Mock,
+  createMany: CreateManyMock = jest
+    .fn<Promise<{ count: number }>, [CreateManyArgs]>()
+    .mockResolvedValue({ count: 0 }),
+): PrismaService {
+  const tx = { user: { create }, notificationPreference: { createMany } };
+  return {
+    client: {
+      $transaction: (fn: (client: typeof tx) => unknown) => fn(tx),
+      ...tx,
+    },
+  } as unknown as PrismaService;
 }
 
 describe('AuthService.signUp', () => {
@@ -55,6 +78,29 @@ describe('AuthService.signUp', () => {
       },
       select: { id: true, phone: true, status: true },
     });
+  });
+
+  it('seeds the default notification preference matrix in the same transaction', async () => {
+    const create = jest.fn().mockResolvedValue({
+      id: 'user-3',
+      phone: '+237655555555',
+      status: UserStatus.PENDING,
+    });
+    const createMany: CreateManyMock = jest
+      .fn<Promise<{ count: number }>, [CreateManyArgs]>()
+      .mockResolvedValue({ count: 33 });
+    const service = new AuthService(makePrisma(create, createMany));
+
+    await service.signUp({ roleIntent: 'find_work', phone: '655 555 555' });
+
+    expect(createMany).toHaveBeenCalledTimes(1);
+    const arg = createMany.mock.calls[0]![0];
+    expect(arg.skipDuplicates).toBe(true);
+    // 3 channels × 11 categories, every row bound to the new identity.
+    expect(arg.data).toHaveLength(33);
+    expect(arg.data.every((row) => row.userId === 'user-3')).toBe(true);
+    // SMS is deferred, so its rows seed disabled.
+    expect(arg.data.filter((row) => row.channel === 'SMS').every((row) => !row.enabled)).toBe(true);
   });
 
   it('rejects an invalid phone number with a typed field error', async () => {

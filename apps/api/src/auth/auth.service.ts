@@ -3,6 +3,7 @@ import { Prisma, Role, UserStatus } from '@trustpro/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { normalizeToE164 } from '../lib/phone.util';
+import { buildDefaultPreferences } from '../notifications/notification.config';
 import { PrismaService } from '../prisma/prisma.service';
 import type { RoleIntent, SignUpDto } from './dto/sign-up.dto';
 
@@ -48,14 +49,26 @@ export class AuthService {
     const role = INTENT_TO_ROLE[dto.roleIntent];
 
     try {
-      // User + initial UserRole created atomically; the initial role is active.
-      const user = await this.prisma.client.user.create({
-        data: {
-          phone,
-          status: UserStatus.PENDING,
-          roles: { create: { role, isActive: true } },
-        },
-        select: { id: true, phone: true, status: true },
+      // User + initial UserRole + default notification preferences are created
+      // atomically: an identity must never exist without its preference matrix,
+      // or the dispatcher would fall back to "enabled" for rows it should own
+      // (SRS §26.1 — seed default preferences at user creation).
+      const user = await this.prisma.client.$transaction(async (tx) => {
+        const created = await tx.user.create({
+          data: {
+            phone,
+            status: UserStatus.PENDING,
+            roles: { create: { role, isActive: true } },
+          },
+          select: { id: true, phone: true, status: true },
+        });
+
+        await tx.notificationPreference.createMany({
+          data: buildDefaultPreferences(created.id),
+          skipDuplicates: true,
+        });
+
+        return created;
       });
 
       // Never log the phone number itself (PII); the role + timing are enough.

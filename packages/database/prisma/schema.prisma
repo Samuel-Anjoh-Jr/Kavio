@@ -47,8 +47,10 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
-  roles     UserRole[]
-  auditLogs AuditLog[] @relation("AuditLogActor")
+  roles                   UserRole[]
+  auditLogs               AuditLog[]               @relation("AuditLogActor")
+  notificationLogs        NotificationLog[]
+  notificationPreferences NotificationPreference[]
 
   @@index([status, createdAt])
 }
@@ -83,4 +85,84 @@ model AuditLog {
 
   @@index([actorId, createdAt])
   @@index([action, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notifications (SRS §17, §26.1, NOT-02). Controllers EMIT typed domain events;
+// the NotificationDispatcher applies preferences, picks channels by priority and
+// enqueues delivery on the BullMQ "notifications" queue. Every dispatch attempt
+// lands in NotificationLog — templateKey only, never rendered content.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Delivery channels behind the NotificationChannel interface. SMS is registered
+/// but feature-flagged OFF at launch (deferred, paid API later); phone numbers are
+/// already stored in E.164 so enabling it needs no call-site change.
+enum NotificationChannel {
+  EMAIL
+  WEB_PUSH
+  SMS
+}
+
+/// Preference categories (typed enum per SRS §26.1, never free-text). SECURITY is
+/// listed for completeness but always bypasses preferences and forces EMAIL.
+enum NotificationCategory {
+  SECURITY
+  ACCOUNT
+  JOBS
+  QUOTES
+  MESSAGES
+  PAYMENTS
+  TRUST
+  REVIEWS
+  DISPUTES
+  SAFETY
+  MARKETING
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// One row per dispatch attempt (success or failure), written before the provider
+/// is called and updated with the outcome — this is what the admin delivery
+/// dashboard (P76) reads. `recipient` is the delivery address; rendered content is
+/// deliberately NOT stored, only `templateKey`.
+model NotificationLog {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String?             @db.Uuid
+  channel      NotificationChannel
+  provider     String
+  recipient    String
+  templateKey  String
+  subject      String?
+  status       NotificationStatus  @default(PENDING)
+  errorMessage String?
+  metadata     Json?
+  createdAt    DateTime            @default(now())
+  sentAt       DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, channel, createdAt])
+  @@index([status, createdAt])
+  @@index([templateKey, status])
+}
+
+/// Per-user channel × category opt-in, seeded with defaults at user creation.
+/// A missing row is treated as enabled; security notices ignore this table.
+model NotificationPreference {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @db.Uuid
+  channel   NotificationChannel
+  category  NotificationCategory
+  enabled   Boolean              @default(true)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channel, category])
+  @@index([userId])
 }

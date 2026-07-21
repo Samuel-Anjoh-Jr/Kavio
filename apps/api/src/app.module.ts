@@ -1,5 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import type { Redis } from 'ioredis';
@@ -14,6 +15,7 @@ import { QueueModule } from './queue/queue.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -23,6 +25,11 @@ import { AuthModule } from './auth/auth.module';
     RealtimeModule,
     HealthModule,
     AuthModule,
+    // Typed domain events (SRS §17): business modules emit, the notification
+    // dispatcher subscribes. Registered before NotificationsModule so its
+    // @OnEvent listeners are bound at bootstrap.
+    EventEmitterModule.forRoot({ global: true }),
+    NotificationsModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({
