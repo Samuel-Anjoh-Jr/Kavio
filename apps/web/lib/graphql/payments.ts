@@ -1,0 +1,114 @@
+import { gql } from '@apollo/client';
+import type { PaymentMethodKind, TransactionStatus, TransactionType } from '@/lib/payments';
+
+/**
+ * Wallet, transaction and payment-method READS (DUAL API RULE).
+ *
+ * These resolvers are delivered by PROMPTS 63-66 in a parallel lane. The wallet
+ * UI (PROMPT 67) is built against this contract now and renders a friendly
+ * "coming online" state until the resolvers answer — the escrow timeline itself
+ * runs on the already-shipped `myBookings` read, so the screen is useful before
+ * the wallet backend lands.
+ */
+
+export const WALLET_QUERY = gql`
+  query Wallet {
+    wallet {
+      availableBalance
+      inEscrow
+      currency
+      lastTransaction {
+        id
+        type
+        status
+        amount
+        createdAt
+      }
+    }
+  }
+`;
+
+export interface WalletSummary {
+  availableBalance: number;
+  inEscrow: number;
+  currency: string;
+  lastTransaction: {
+    id: string;
+    type: TransactionType;
+    status: TransactionStatus;
+    amount: number;
+    createdAt: string;
+  } | null;
+}
+
+export interface WalletQueryResult {
+  wallet: WalletSummary;
+}
+
+/** Transaction history with per-item detail and explicit failure reasons (PAY-05). */
+export const TRANSACTIONS_QUERY = gql`
+  query Transactions($type: String, $status: String, $limit: Int, $offset: Int) {
+    transactions(type: $type, status: $status, limit: $limit, offset: $offset) {
+      items {
+        id
+        type
+        status
+        amount
+        currency
+        reference
+        counterpartyName
+        bookingId
+        failureReason
+        createdAt
+      }
+      total
+      hasMore
+    }
+  }
+`;
+
+export interface TransactionItem {
+  id: string;
+  type: TransactionType;
+  status: TransactionStatus;
+  amount: number;
+  currency: string;
+  reference: string | null;
+  counterpartyName: string | null;
+  bookingId: string | null;
+  /** A localisable code (declined, insufficient_funds, operator_timeout) or null. */
+  failureReason: string | null;
+  createdAt: string;
+}
+
+export interface TransactionsQueryResult {
+  transactions: {
+    items: TransactionItem[];
+    total: number;
+    hasMore: boolean;
+  };
+}
+
+export const PAYMENT_METHODS_QUERY = gql`
+  query PaymentMethods {
+    paymentMethods {
+      id
+      kind
+      label
+      maskedAccount
+      isDefault
+    }
+  }
+`;
+
+export interface PaymentMethod {
+  id: string;
+  kind: PaymentMethodKind;
+  label: string | null;
+  maskedAccount: string | null;
+  isDefault: boolean;
+}
+
+export interface PaymentMethodsQueryResult {
+  paymentMethods: PaymentMethod[];
+}

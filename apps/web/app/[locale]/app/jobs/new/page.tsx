@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { DraftJobForm } from './draft-job-form';
+import { PostJobStepper } from '@/components/jobs/post-job-stepper';
 
 export async function generateMetadata({
   params,
@@ -29,7 +29,7 @@ export default async function NewJobPage({ params }: { params: Promise<{ locale:
       </h1>
       <p className="mt-2 text-muted-foreground">{t('subtitle')}</p>
       <div className="mt-8">
-        <DraftJobForm />
+        <PostJobStepper />
       </div>
     </div>
   );
