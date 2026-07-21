@@ -78,7 +78,11 @@ export class OnboardingService {
     const step = stepsFor(role).find((candidate) => candidate.key === stepKey);
 
     if (!step) {
-      throw new AppException(HttpStatus.BAD_REQUEST, 'UNKNOWN_STEP', 'That onboarding step does not exist.');
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        'UNKNOWN_STEP',
+        'That onboarding step does not exist.',
+      );
     }
 
     const parsed = step.schema.safeParse(payload);
@@ -383,7 +387,9 @@ export class OnboardingService {
 
     return {
       role,
-      currentStep: currentStep ?? (Object.keys(data).length > 0 ? nextStepKey(role, data) : firstStepKey(role)),
+      currentStep:
+        currentStep ??
+        (Object.keys(data).length > 0 ? nextStepKey(role, data) : firstStepKey(role)),
       completionPercent,
       completedAt,
       completedSteps: completedStepKeys(role, data),

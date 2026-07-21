@@ -80,9 +80,14 @@ export class StorageService implements OnModuleInit {
     }
 
     if (file.size === 0) {
-      throw new AppException(HttpStatus.BAD_REQUEST, 'FILE_EMPTY', 'That file appears to be empty.', {
-        file: ['Choose a file and try again.'],
-      });
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        'FILE_EMPTY',
+        'That file appears to be empty.',
+        {
+          file: ['Choose a file and try again.'],
+        },
+      );
     }
 
     const detected = detectMimeType(file.buffer);

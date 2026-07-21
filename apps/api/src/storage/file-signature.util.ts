@@ -14,20 +14,30 @@ type Signature = { mime: string; test: (buffer: Buffer) => boolean };
 
 const SIGNATURES: Signature[] = [
   // JPEG: FF D8 FF
-  { mime: 'image/jpeg', test: (b) => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+  {
+    mime: 'image/jpeg',
+    test: (b) => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
+  },
   // PNG: 89 50 4E 47 0D 0A 1A 0A
   {
     mime: 'image/png',
-    test: (b) => b.length > 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+    test: (b) =>
+      b.length > 8 &&
+      b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
   },
   // WebP: "RIFF" .... "WEBP"
   {
     mime: 'image/webp',
     test: (b) =>
-      b.length > 12 && b.subarray(0, 4).toString('ascii') === 'RIFF' && b.subarray(8, 12).toString('ascii') === 'WEBP',
+      b.length > 12 &&
+      b.subarray(0, 4).toString('ascii') === 'RIFF' &&
+      b.subarray(8, 12).toString('ascii') === 'WEBP',
   },
   // PDF: "%PDF-"
-  { mime: 'application/pdf', test: (b) => b.length > 5 && b.subarray(0, 5).toString('ascii') === '%PDF-' },
+  {
+    mime: 'application/pdf',
+    test: (b) => b.length > 5 && b.subarray(0, 5).toString('ascii') === '%PDF-',
+  },
 ];
 
 /** The detected MIME type, or null when the bytes match nothing we accept. */

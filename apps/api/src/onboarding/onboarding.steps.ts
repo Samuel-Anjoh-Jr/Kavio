@@ -81,14 +81,18 @@ function hasKeys(data: Record<string, unknown>, key: string, fields: string[]): 
   const record = value as Record<string, unknown>;
   return fields.every((field) => {
     const entry = record[field];
-    return typeof entry === 'string' ? entry.trim().length > 0 : entry !== undefined && entry !== null;
+    return typeof entry === 'string'
+      ? entry.trim().length > 0
+      : entry !== undefined && entry !== null;
   });
 }
 
 const WORKER_STEPS: OnboardingStepDef[] = [
   {
     key: 'services',
-    schema: z.object({ services: z.array(serviceSchema).min(1, 'Add at least one service.').max(20) }),
+    schema: z.object({
+      services: z.array(serviceSchema).min(1, 'Add at least one service.').max(20),
+    }),
     isComplete: (data) => nonEmptyArray(data, 'services'),
     required: true,
   },
@@ -152,7 +156,12 @@ const BUSINESS_STEPS: OnboardingStepDef[] = [
         description: z.string().trim().max(1200).optional(),
         rccmNumber: z.string().trim().max(80).optional(),
         taxId: z.string().trim().max(80).optional(),
-        contactEmail: z.string().trim().toLowerCase().email('Enter a valid email address.').optional(),
+        contactEmail: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .email('Enter a valid email address.')
+          .optional(),
         contactPhone: z.string().trim().max(32).optional(),
         address: z.string().trim().max(300).optional(),
         city: z.string().trim().max(120).optional(),

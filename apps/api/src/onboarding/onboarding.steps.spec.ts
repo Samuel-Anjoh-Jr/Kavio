@@ -154,9 +154,9 @@ describe('onboarding completion model', () => {
 
     it('accepts a service priced in whole XAF', () => {
       const step = stepsFor(OnboardingRole.WORKER).find((s) => s.key === 'services');
-      expect(step?.schema.safeParse({ services: [{ name: 'Tiling', startingPrice: 15000 }] }).success).toBe(
-        true,
-      );
+      expect(
+        step?.schema.safeParse({ services: [{ name: 'Tiling', startingPrice: 15000 }] }).success,
+      ).toBe(true);
     });
 
     it('rejects a fractional price — XAF has no minor unit', () => {

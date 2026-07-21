@@ -83,7 +83,14 @@ export class UploadsController {
         sizeBytes: stored.sizeBytes,
         visibility: stored.visibility,
       },
-      select: { id: true, kind: true, mimeType: true, sizeBytes: true, visibility: true, s3Key: true },
+      select: {
+        id: true,
+        kind: true,
+        mimeType: true,
+        sizeBytes: true,
+        visibility: true,
+        s3Key: true,
+      },
     });
 
     return {

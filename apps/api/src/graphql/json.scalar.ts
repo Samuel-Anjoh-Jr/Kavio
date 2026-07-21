@@ -43,8 +43,7 @@ function parseLiteral(node: ValueNode, variables?: Record<string, unknown> | nul
 
 export const GraphQLJSON = new GraphQLScalarType({
   name: 'JSON',
-  description:
-    'Arbitrary JSON. Used for onboarding step answers, whose shape is still evolving.',
+  description: 'Arbitrary JSON. Used for onboarding step answers, whose shape is still evolving.',
   serialize: (value) => value,
   parseValue: (value) => value,
   parseLiteral,

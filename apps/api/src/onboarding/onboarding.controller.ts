@@ -20,7 +20,11 @@ function parseRole(value: string): OnboardingRole {
   if (role in OnboardingRole) {
     return OnboardingRole[role as keyof typeof OnboardingRole];
   }
-  throw new AppException(HttpStatus.NOT_FOUND, 'UNKNOWN_ONBOARDING_ROLE', 'Unknown onboarding flow.');
+  throw new AppException(
+    HttpStatus.NOT_FOUND,
+    'UNKNOWN_ONBOARDING_ROLE',
+    'Unknown onboarding flow.',
+  );
 }
 
 /**
