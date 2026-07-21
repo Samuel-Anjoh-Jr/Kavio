@@ -12,7 +12,7 @@ import { getApiBaseUrl } from '@/lib/auth-api';
  * would let a single XSS reach every authenticated endpoint in the system. New
  * surfaces are added here deliberately, which is the point.
  */
-const ALLOWED_PREFIXES = ['auth/', 'onboarding/', 'uploads'] as const;
+const ALLOWED_PREFIXES = ['auth/', 'onboarding/', 'uploads', 'geo/'] as const;
 
 /** Methods a proxied write may use. GET is excluded: reads belong to GraphQL. */
 const ALLOWED_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE']);

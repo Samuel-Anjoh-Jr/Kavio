@@ -13,6 +13,15 @@ const eslintConfig = defineConfig([
     'build/**',
     'next-env.d.ts',
   ]),
+  {
+    // The single wrapper for media we do not host. next/image cannot be used
+    // there: every URL comes from an S3 bucket whose hostname is deployment
+    // configuration, and an unallowlisted host throws rather than degrading.
+    // The exemption is granted here, once, instead of as a comment at each of
+    // the dozen call sites — and lives next to its reasoning in the component.
+    files: ['components/ui/remote-image.tsx'],
+    rules: { '@next/next/no-img-element': 'off' },
+  },
 ]);
 
 export default eslintConfig;

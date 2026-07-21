@@ -1,11 +1,39 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { ArrowRight } from 'lucide-react';
+import {
+  ArrowRight,
+  Banknote,
+  BriefcaseBusiness,
+  CalendarClock,
+  FileText,
+  Inbox,
+  Users,
+} from 'lucide-react';
 import { auth } from '@/auth';
 import { redirect, Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
-import { loadOnboarding } from '../onboarding/load-onboarding';
+import { TierBadge } from '@/components/trust/tier-badge';
+import { TrustScoreRing } from '@/components/trust/trust-score-ring';
+import { DiscoverRail } from '@/components/home/discover-rail';
+import { HomeSection, PendingPanel, StatCard } from '@/components/home/home-primitives';
 import type { OnboardingRole } from '@/lib/onboarding';
+import { loadOnboarding } from '../onboarding/load-onboarding';
+import { loadTrustBreakdown } from '../trust/load-trust-breakdown';
+
+/**
+ * The authenticated, ROLE-BASED home (ACC-07, DIS-01) — PROMPT 53.1.
+ *
+ * A signed-in user is never shown the guest exploration view; they land here,
+ * framed for the role they are ACTING AS. Switching role re-renders this screen
+ * for the new role (RoleSwitcher calls router.refresh), and because tier and
+ * Trust Score attach to the IDENTITY rather than the role, the trust snapshot is
+ * identical across all three homes — a Worker who switches to Client does not
+ * become less verified.
+ *
+ * Panels backed by later-phase modules (job requests, quotes, earnings) are
+ * rendered as named, explicitly-pending panels rather than hidden or invented.
+ * See components/home/home-primitives.tsx for why.
+ */
 
 export async function generateMetadata({
   params,
@@ -27,14 +55,6 @@ function isOnboardingRole(role: string): role is OnboardingRole {
   return role === 'WORKER' || role === 'CLIENT' || role === 'BUSINESS';
 }
 
-/**
- * The authenticated, ROLE-BASED home (ACC-07). Switching role re-renders this
- * screen for the new active role — an authenticated user is never shown the
- * guest exploration view.
- *
- * The full per-role dashboards are PROMPT 53.1; what this owns today is the
- * post-login landing and the onboarding entry point for the active role.
- */
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -45,19 +65,53 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   }
 
   const t = await getTranslations('Home');
-  const tTrust = await getTranslations('Trust');
+  const tRole = await getTranslations('RoleHome');
+
+  const userId = session?.user?.id as string;
   const activeRole = session?.user?.activeRole ?? '';
+  const roleKey: OnboardingRole = isOnboardingRole(activeRole) ? activeRole : 'CLIENT';
 
   // AGENT and ADMIN have no self-service onboarding, so they simply get no card.
-  const onboarding = isOnboardingRole(activeRole) ? await loadOnboarding(activeRole) : null;
-  const roleKey = isOnboardingRole(activeRole) ? activeRole : 'CLIENT';
+  const [onboarding, trust] = await Promise.all([
+    isOnboardingRole(activeRole) ? loadOnboarding(activeRole) : Promise.resolve(null),
+    loadTrustBreakdown(),
+  ]);
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
-      <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground">
-        {t(`greeting.${roleKey}`)}
-      </h1>
-      <p className="mt-2 text-muted-foreground">{t(`subtitle.${roleKey}`)}</p>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
+      <div className="flex flex-wrap items-start justify-between gap-6">
+        <div>
+          <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground">
+            {t(`greeting.${roleKey}`)}
+          </h1>
+          <p className="mt-2 text-muted-foreground">{t(`subtitle.${roleKey}`)}</p>
+        </div>
+
+        {/* The identity's standing, shown on every role's home. It is the same
+            number and the same tier whichever role is active — that is the
+            entire promise of the role switcher. */}
+        {trust.status === 'ok' && (
+          <Link
+            href="/app/trust"
+            className="flex items-center gap-4 rounded-card border border-border bg-surface p-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <TrustScoreRing
+              score={trust.breakdown.total}
+              tier={trust.breakdown.tier}
+              suspended={trust.breakdown.suspended}
+              size="sm"
+            />
+            <span className="flex flex-col gap-1">
+              <TierBadge
+                tier={trust.breakdown.tier}
+                suspended={trust.breakdown.suspended}
+                size="sm"
+              />
+              <span className="text-xs text-muted-foreground">{tRole('viewTrust')}</span>
+            </span>
+          </Link>
+        )}
+      </div>
 
       {onboarding && !onboarding.completedAt && (
         <section className="mt-8 rounded-card border border-border bg-surface p-6">
@@ -94,33 +148,157 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-2">
-        <Link
-          href="/app/trust"
-          className="rounded-card border border-border bg-surface p-6 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <h2 className="font-heading text-lg font-semibold text-foreground">
-            {tTrust('viewBreakdown')}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">{tTrust('pillarsBody')}</p>
-        </Link>
-
-        <Link
-          href="/app/explore"
-          className="rounded-card border border-border bg-surface p-6 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <h2 className="font-heading text-lg font-semibold text-foreground">{t('exploreCard')}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{t('exploreCardBody')}</p>
-        </Link>
-
-        <Link
-          href="/app/jobs"
-          className="rounded-card border border-border bg-surface p-6 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <h2 className="font-heading text-lg font-semibold text-foreground">{t('jobsCard')}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{t(`jobsCardBody.${roleKey}`)}</p>
-        </Link>
-      </section>
+      {roleKey === 'WORKER' && <WorkerHome userId={userId} />}
+      {roleKey === 'CLIENT' && <ClientHome />}
+      {roleKey === 'BUSINESS' && <BusinessHome />}
     </div>
+  );
+}
+
+async function WorkerHome({ userId }: { userId: string }) {
+  const t = await getTranslations('RoleHome');
+
+  return (
+    <>
+      <HomeSection
+        title={t('worker.requestsHeading')}
+        action={
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/app/workers/${userId}`}>
+              {t('worker.viewPublicProfile')}
+              <ArrowRight aria-hidden />
+            </Link>
+          </Button>
+        }
+      >
+        <PendingPanel
+          icon={<Inbox aria-hidden className="size-5" />}
+          title={t('worker.requestsPendingTitle')}
+          body={t('worker.requestsPendingBody')}
+        />
+      </HomeSection>
+
+      <HomeSection title={t('worker.pipelineHeading')}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PendingPanel
+            icon={<FileText aria-hidden className="size-5" />}
+            title={t('worker.quotesPendingTitle')}
+            body={t('worker.quotesPendingBody')}
+          />
+          <PendingPanel
+            icon={<BriefcaseBusiness aria-hidden className="size-5" />}
+            title={t('worker.activeJobsPendingTitle')}
+            body={t('worker.activeJobsPendingBody')}
+          />
+        </div>
+      </HomeSection>
+
+      <HomeSection
+        title={t('worker.growthHeading')}
+        action={
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/app/verification">
+              {t('worker.continueVerification')}
+              <ArrowRight aria-hidden />
+            </Link>
+          </Button>
+        }
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PendingPanel
+            icon={<Banknote aria-hidden className="size-5" />}
+            title={t('worker.earningsPendingTitle')}
+            body={t('worker.earningsPendingBody')}
+          />
+
+          {/* Availability is edited where it is captured today; the dedicated
+              management screen arrives with PROMPT 48. */}
+          <div className="flex items-start gap-3 rounded-card border border-border bg-surface p-5">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <CalendarClock aria-hidden className="size-5" />
+            </span>
+            <div>
+              <h3 className="font-medium text-foreground">{t('worker.availabilityTitle')}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t('worker.availabilityBody')}</p>
+              <Button variant="outline" size="sm" className="mt-3" asChild>
+                <Link href="/app/onboarding/worker">{t('worker.manageAvailability')}</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </HomeSection>
+    </>
+  );
+}
+
+async function ClientHome() {
+  const t = await getTranslations('RoleHome');
+
+  return (
+    <>
+      <HomeSection
+        title={t('client.discoverHeading')}
+        action={
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/app/jobs/new">
+              {t('client.postJob')}
+              <ArrowRight aria-hidden />
+            </Link>
+          </Button>
+        }
+      >
+        <DiscoverRail />
+      </HomeSection>
+
+      <HomeSection title={t('client.jobsHeading')}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PendingPanel
+            icon={<BriefcaseBusiness aria-hidden className="size-5" />}
+            title={t('client.postedJobsPendingTitle')}
+            body={t('client.postedJobsPendingBody')}
+          />
+          <PendingPanel
+            icon={<FileText aria-hidden className="size-5" />}
+            title={t('client.quotesPendingTitle')}
+            body={t('client.quotesPendingBody')}
+          />
+        </div>
+      </HomeSection>
+    </>
+  );
+}
+
+async function BusinessHome() {
+  const t = await getTranslations('RoleHome');
+
+  return (
+    <>
+      <HomeSection title={t('business.hiringHeading')}>
+        <DiscoverRail />
+      </HomeSection>
+
+      <HomeSection title={t('business.operationsHeading')}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PendingPanel
+            icon={<Users aria-hidden className="size-5" />}
+            title={t('business.teamPendingTitle')}
+            body={t('business.teamPendingBody')}
+          />
+          <PendingPanel
+            icon={<BriefcaseBusiness aria-hidden className="size-5" />}
+            title={t('business.jobsPendingTitle')}
+            body={t('business.jobsPendingBody')}
+          />
+        </div>
+
+        {/* The full business dashboard is PROMPT 82; this home is the summary
+            that it later expands, not a placeholder for it. */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <StatCard label={t('business.statTeam')} value="—" hint={t('business.statPending')} />
+          <StatCard label={t('business.statJobs')} value="—" hint={t('business.statPending')} />
+          <StatCard label={t('business.statSpend')} value="—" hint={t('business.statPending')} />
+        </div>
+      </HomeSection>
+    </>
   );
 }

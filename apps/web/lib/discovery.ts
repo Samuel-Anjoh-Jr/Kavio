@@ -1,0 +1,306 @@
+'use client';
+
+/**
+ * The discovery contract: what a worker card needs, and the small amount of
+ * per-visitor state discovery keeps (DIS-02, DIS-10).
+ *
+ * Saved workers, saved searches and recently-viewed all live in localStorage
+ * here, deliberately, for the launch shape of the product:
+ *
+ *  - RECENTLY VIEWED is browsing history. It belongs to the device, not the
+ *    account, and a guest gets it without signing up — which is the point of the
+ *    guest first-interface (ACC-01).
+ *  - SAVING is a gated action (ACC-02): the button calls requireAuth first. What
+ *    is stored here is the local mirror that keeps the UI honest between the tap
+ *    and the server round-trip, and gives a signed-out visitor who just bounced
+ *    to login their selection back when they return.
+ *
+ * When the favourites backend lands this file becomes the cache in front of it,
+ * not a second source of truth.
+ */
+
+import type { NearbyWorkerResult, SearchWorkerResult } from './graphql/discovery';
+import type { VerificationTier } from './trust';
+
+/**
+ * Everything the Worker Card renders (DIS-02).
+ *
+ * Both `searchWorkers` and `nearbyWorkers` project into this shape, so one card
+ * serves every discovery surface rather than each growing its own variant.
+ */
+export interface WorkerCardData {
+  workerProfileId: string;
+  /** The identity. Trust attaches here, and this is what the profile URL uses. */
+  userId: string;
+  name: string | null;
+  avatar: string | null;
+  headline: string | null;
+  city: string | null;
+  area: string | null;
+  tier: VerificationTier;
+  trustScore: number;
+  completedJobs: number;
+  /** Null until rated — never zero, which reads as "bad" rather than "new". */
+  averageRating: number | null;
+  /** Metres, measured by PostGIS. Null when the search had no origin. */
+  distanceM: number | null;
+  /** Cheapest matching service in XAF. Null means "ask", which is honest. */
+  priceFrom: number | null;
+  matchedServiceName: string | null;
+  matchedServiceCount: number;
+  latitude: number | null;
+  longitude: number | null;
+  /** A few portfolio images for the preview strip — the top hiring driver. */
+  portfolioPreview: string[];
+}
+
+/**
+ * Projects a search hit onto the card contract.
+ *
+ * `portfolioPreview` is empty because the search read does not carry portfolio
+ * media — deliberately, on the API side: joining every worker's photos into a
+ * paged result set is a per-row cost paid by a list most people scroll past. The
+ * card renders no strip rather than grey placeholders, and the full evidence is
+ * one tap away on the profile.
+ */
+export function searchResultToCard(worker: SearchWorkerResult): WorkerCardData {
+  return {
+    workerProfileId: worker.workerProfileId,
+    userId: worker.userId,
+    name: worker.name,
+    avatar: worker.avatar,
+    headline: worker.headline,
+    city: worker.city,
+    area: worker.area,
+    tier: worker.tier,
+    trustScore: worker.trustScore,
+    completedJobs: worker.completedJobs,
+    averageRating: worker.averageRating,
+    distanceM: worker.distanceM,
+    priceFrom: worker.priceFrom,
+    matchedServiceName: worker.matchedServiceName,
+    matchedServiceCount: worker.matchedServiceCount,
+    latitude: worker.latitude,
+    longitude: worker.longitude,
+    portfolioPreview: [],
+  };
+}
+
+/**
+ * Projects a proximity hit onto the same card contract.
+ *
+ * Price is null here because a proximity read has no query to match a service
+ * against, and the cheapest thing somebody does is not the price of the thing
+ * you want. The card shows "on request" rather than a number that would be
+ * wrong for most jobs.
+ */
+export function nearbyResultToCard(worker: NearbyWorkerResult): WorkerCardData {
+  return {
+    workerProfileId: worker.workerProfileId,
+    userId: worker.userId,
+    name: worker.name,
+    avatar: worker.avatar,
+    headline: worker.headline,
+    city: worker.city,
+    area: worker.area,
+    tier: worker.tier,
+    trustScore: worker.trustScore,
+    completedJobs: worker.completedJobs,
+    averageRating: worker.averageRating,
+    distanceM: worker.distanceM,
+    priceFrom: null,
+    matchedServiceName: null,
+    matchedServiceCount: 0,
+    latitude: worker.latitude,
+    longitude: worker.longitude,
+    portfolioPreview: [],
+  };
+}
+
+/**
+ * Formats an XAF amount.
+ *
+ * XAF has no minor unit, so there are never decimals — a "5 000,00 FCFA" price
+ * tag is simply wrong here, not merely unidiomatic. Intl is given the locale so
+ * French gets its non-breaking space grouping and English does not.
+ */
+export function formatXaf(amount: number | null | undefined, locale: string): string | null {
+  if (typeof amount !== 'number' || !Number.isFinite(amount)) return null;
+
+  return new Intl.NumberFormat(locale === 'fr' ? 'fr-CM' : 'en-CM', {
+    style: 'currency',
+    currency: 'XAF',
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(Math.round(amount));
+}
+
+/** One decimal, in the viewer's locale — "4,8" in French, "4.8" in English. */
+export function formatRating(rating: number | null | undefined, locale: string): string | null {
+  if (typeof rating !== 'number' || !Number.isFinite(rating)) return null;
+  return new Intl.NumberFormat(locale === 'fr' ? 'fr-CM' : 'en-CM', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(rating);
+}
+
+/**
+ * Initials for the avatar fallback. Two letters at most: three or more turns
+ * into a smear at 40px, and many names here have four or five parts.
+ */
+export function initials(name: string | null | undefined): string {
+  if (!name) return '?';
+
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+
+  const first = parts[0] ?? '';
+  const last = parts.length === 1 ? '' : (parts[parts.length - 1] ?? '');
+
+  return `${first.charAt(0)}${last.charAt(0)}`.toLocaleUpperCase();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Saved workers, saved searches, recently viewed (DIS-10)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SAVED_WORKERS_KEY = 'trustpro.saved-workers';
+const SAVED_SEARCHES_KEY = 'trustpro.saved-searches';
+const RECENT_WORKERS_KEY = 'trustpro.recent-workers';
+
+/** Caps chosen so the lists stay browsable and the storage entry stays small. */
+const MAX_SAVED_SEARCHES = 20;
+const MAX_RECENT = 12;
+
+export interface SavedSearch {
+  /** The querystring produced by serialiseFilters — the whole search, shareable. */
+  querystring: string;
+  /** What the user typed, for the list label. */
+  label: string;
+  savedAt: number;
+}
+
+export interface RecentWorker {
+  userId: string;
+  name: string | null;
+  avatar: string | null;
+  headline: string | null;
+  viewedAt: number;
+}
+
+function readJson<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key: string, value: unknown): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Private browsing or a full quota. Saving is a convenience, never a
+    // correctness requirement, so a failure here is silent by design.
+  }
+}
+
+export function readSavedWorkers(): string[] {
+  return readJson<string[]>(SAVED_WORKERS_KEY, []).filter(
+    (id): id is string => typeof id === 'string',
+  );
+}
+
+/** Toggles a save and returns the new list, so callers re-render from one value. */
+export function toggleSavedWorker(userId: string): string[] {
+  const current = readSavedWorkers();
+  const next = current.includes(userId)
+    ? current.filter((id) => id !== userId)
+    : [userId, ...current];
+
+  writeJson(SAVED_WORKERS_KEY, next);
+  return next;
+}
+
+export function readSavedSearches(): SavedSearch[] {
+  return readJson<SavedSearch[]>(SAVED_SEARCHES_KEY, []).filter(
+    (entry): entry is SavedSearch =>
+      typeof entry?.querystring === 'string' && typeof entry?.savedAt === 'number',
+  );
+}
+
+/**
+ * Saves a search, keyed by its querystring so re-saving the same search moves it
+ * to the top instead of accumulating duplicates that all do the same thing.
+ */
+export function saveSearch(querystring: string, label: string): SavedSearch[] {
+  if (!querystring) return readSavedSearches();
+
+  const entry: SavedSearch = { querystring, label, savedAt: Date.now() };
+  const next = [entry, ...readSavedSearches().filter((s) => s.querystring !== querystring)].slice(
+    0,
+    MAX_SAVED_SEARCHES,
+  );
+
+  writeJson(SAVED_SEARCHES_KEY, next);
+  return next;
+}
+
+export function removeSavedSearch(querystring: string): SavedSearch[] {
+  const next = readSavedSearches().filter((entry) => entry.querystring !== querystring);
+  writeJson(SAVED_SEARCHES_KEY, next);
+  return next;
+}
+
+/**
+ * Snapshot cache for `readRecentWorkers`.
+ *
+ * Same reason as the location store: this backs a `useSyncExternalStore`
+ * snapshot, which compares by identity and would re-render forever if handed a
+ * fresh array on every call.
+ */
+const EMPTY_RECENT: RecentWorker[] = [];
+let cachedRecentRaw: string | null = null;
+let cachedRecent: RecentWorker[] = EMPTY_RECENT;
+
+export function readRecentWorkers(): RecentWorker[] {
+  if (typeof window === 'undefined') return EMPTY_RECENT;
+
+  let raw: string | null = null;
+  try {
+    raw = window.localStorage.getItem(RECENT_WORKERS_KEY);
+  } catch {
+    return EMPTY_RECENT;
+  }
+
+  if (raw === cachedRecentRaw) return cachedRecent;
+  cachedRecentRaw = raw;
+
+  cachedRecent = readJson<RecentWorker[]>(RECENT_WORKERS_KEY, EMPTY_RECENT).filter(
+    (entry): entry is RecentWorker => typeof entry?.userId === 'string',
+  );
+
+  return cachedRecent;
+}
+
+/** Server snapshot for `useSyncExternalStore` — stable, so it never loops. */
+export function emptyRecentWorkers(): RecentWorker[] {
+  return EMPTY_RECENT;
+}
+
+/** Records a profile view, most recent first, deduplicated by identity. */
+export function recordRecentWorker(worker: Omit<RecentWorker, 'viewedAt'>): void {
+  const entry: RecentWorker = { ...worker, viewedAt: Date.now() };
+  const next = [entry, ...readRecentWorkers().filter((w) => w.userId !== worker.userId)].slice(
+    0,
+    MAX_RECENT,
+  );
+
+  writeJson(RECENT_WORKERS_KEY, next);
+}
