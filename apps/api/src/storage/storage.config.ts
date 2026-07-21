@@ -106,6 +106,15 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     visibility: MediaVisibility.PRIVATE,
     prefix: 'quotes',
   },
+  [MediaAssetKind.DISPUTE_EVIDENCE]: {
+    // Evidence in a dispute thread (a photo of the finished work, a receipt).
+    // PRIVATE: seen only by the two parties and the admin resolving the case, and
+    // its own prefix so a dispute file is never mistaken for a public job photo.
+    mimeTypes: DOCUMENT_TYPES,
+    maxBytes: 10 * MB,
+    visibility: MediaVisibility.PRIVATE,
+    prefix: 'disputes',
+  },
 };
 
 /**

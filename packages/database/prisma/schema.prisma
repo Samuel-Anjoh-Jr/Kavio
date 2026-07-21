@@ -90,15 +90,25 @@ model User {
   clientProfile           ClientProfile?
   businessProfile         BusinessProfile?
 
-  postedJobs         Job[]             @relation("JobPoster")
-  jobStatusActs      JobStatusEvent[]  @relation("JobStatusActor")
-  jobApplications    JobApplication[]  @relation("JobApplicationWorker")
-  jobInvitations     JobInvitation[]   @relation("JobInvitationWorker")
-  sentJobInvitations JobInvitation[]   @relation("JobInvitationSender")
-  quotes             Quote[]           @relation("QuoteWorker")
-  workerBookings     Booking[]         @relation("BookingWorker")
-  clientBookings     Booking[]         @relation("BookingClient")
+  postedJobs         Job[]                @relation("JobPoster")
+  jobStatusActs      JobStatusEvent[]     @relation("JobStatusActor")
+  jobApplications    JobApplication[]     @relation("JobApplicationWorker")
+  jobInvitations     JobInvitation[]      @relation("JobInvitationWorker")
+  sentJobInvitations JobInvitation[]      @relation("JobInvitationSender")
+  quotes             Quote[]              @relation("QuoteWorker")
+  workerBookings     Booking[]            @relation("BookingWorker")
+  clientBookings     Booking[]            @relation("BookingClient")
   bookingStatusActs  BookingStatusEvent[] @relation("BookingStatusActor")
+
+  wallet           Wallet?
+  paymentMethods   PaymentMethod[]
+  transactions     Transaction[]
+  clientEscrows    EscrowHold[]        @relation("EscrowClient")
+  workerEscrows    EscrowHold[]        @relation("EscrowWorker")
+  escrowStatusActs EscrowStatusEvent[] @relation("EscrowStatusActor")
+  openedDisputes   Dispute[]           @relation("DisputeOpener")
+  resolvedDisputes Dispute[]           @relation("DisputeResolver")
+  disputeMessages  DisputeMessage[]    @relation("DisputeMessageAuthor")
 
   trustScoreRecord      TrustScore?
   trustEvents           TrustEvent[]             @relation("TrustEventSubject")
@@ -1136,10 +1146,10 @@ model PortfolioItem {
   workerProfileId String @db.Uuid
   mediaAssetId    String @db.Uuid
 
-  type     PortfolioItemType @default(PHOTO)
-  caption  String?
+  type         PortfolioItemType @default(PHOTO)
+  caption      String?
   /// Groups before/after pairs and multi-shot projects together.
-  groupKey String?
+  groupKey     String?
   /// The project's name, repeated on every item in the group.
   ///
   /// Denormalised rather than normalised into a PortfolioGroup table, because a
@@ -1190,6 +1200,10 @@ enum MediaAssetKind {
   JOB_PHOTO
   /// A file a worker attaches to a quote (QTE-01): a sketch, a parts list.
   QUOTE_ATTACHMENT
+  /// Evidence attached to a dispute message (PAY-03, ADM-05): a photo of the
+  /// finished work, a receipt. PRIVATE — seen only by the two parties and the
+  /// admin resolving the case, never public the way a job photo is.
+  DISPUTE_EVIDENCE
 }
 
 /// PRIVATE media is served only through short-lived signed URLs; PUBLIC media
@@ -1240,6 +1254,7 @@ model MediaAsset {
   businessLogos    BusinessProfile[]      @relation("BusinessProfileLogo")
   jobPhotos        JobPhoto[]
   quoteAttachments QuoteAttachment[]
+  disputeEvidence  DisputeAttachment[]
 
   @@index([ownerId, kind, createdAt])
   /// The Documents area lists live files only (TRU-08).
@@ -1462,13 +1477,13 @@ model Job {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  poster User @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
+  poster    User             @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
   /// Restrict, not SetNull: the taxonomy is retired rather than deleted (see
   /// ServiceCategory), so a delete here means something has gone wrong upstream
   /// and silently orphaning live jobs would hide it. Optional to match the
   /// nullable scalar — a draft may not have chosen a category yet.
   category  ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  geoRegion GeoRegion?      @relation("JobRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
+  geoRegion GeoRegion?       @relation("JobRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
 
   photos       JobPhoto[]
   statusEvents JobStatusEvent[]
@@ -1476,6 +1491,7 @@ model Job {
   invitations  JobInvitation[]
   quotes       Quote[]
   bookings     Booking[]
+  disputes     Dispute[]
 
   /// The public job board: open jobs, newest published first.
   @@index([status, publishedAt])
@@ -1549,8 +1565,8 @@ model JobStatusEvent {
 /// of a worker who has not seen the site yet, or let an expression of interest
 /// be accepted into a contract.
 model JobApplication {
-  id    String @id @default(uuid()) @db.Uuid
-  jobId String @db.Uuid
+  id       String @id @default(uuid()) @db.Uuid
+  jobId    String @db.Uuid
   /// The worker IDENTITY, not their WorkerProfile: trust, tier and history all
   /// attach to the identity, and the poster is deciding about a person.
   workerId String @db.Uuid
@@ -1679,7 +1695,7 @@ model Quote {
 
   status QuoteStatus @default(DRAFT)
 
-  sentAt DateTime?
+  sentAt       DateTime?
   /// Set the first time the client opens it — the "Viewed" chip in the worker's
   /// Sent inbox (QTE-04), and a real signal that silence means no rather than
   /// unseen.
@@ -1764,6 +1780,10 @@ enum BookingStatus {
   PENDING_PAYMENT
   /// Campay confirmed collection; funds held.
   PAID
+  /// Worker acknowledged the funded booking (SRS §15.1 "worker accepts booking").
+  /// Added by PROMPT 64 so booking status mirrors the EscrowHold money machine
+  /// one-for-one from PAID onward — see EscrowState.
+  ACCEPTED
   IN_PROGRESS
   COMPLETED
   /// Client confirmed; worker paid out minus the fee. Terminal.
@@ -1789,10 +1809,10 @@ model Booking {
   /// Whole XAF. Currency is not a column — the platform is XAF-only by
   /// requirement, and a column that can only hold one value invites code that
   /// pretends it can hold two.
-  agreedPrice Int
+  agreedPrice        Int
   /// The fee rate in basis points, snapshotted at acceptance. 1000 = 10%.
-  platformFeeBps    Int
-  platformFeeAmount Int
+  platformFeeBps     Int
+  platformFeeAmount  Int
   /// agreedPrice - platformFeeAmount. Stored rather than derived so a rounding
   /// rule change can never retroactively alter what a worker was promised.
   workerPayoutAmount Int
@@ -1810,7 +1830,7 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  job Job @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  job    Job   @relation(fields: [jobId], references: [id], onDelete: Restrict)
   /// One booking per quote, enforced by the unique below rather than checked in
   /// code: a double-accept under a double-tap on a bad connection would
   /// otherwise create two agreements for one offer.
@@ -1819,6 +1839,9 @@ model Booking {
   client User  @relation("BookingClient", fields: [clientId], references: [id], onDelete: Restrict)
 
   statusEvents BookingStatusEvent[]
+  escrowHold   EscrowHold?
+  transactions Transaction[]
+  disputes     Dispute[]
 
   @@unique([quoteId])
   /// Both parties' booking lists.
@@ -1852,4 +1875,393 @@ model BookingStatusEvent {
   actor   User?   @relation("BookingStatusActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([bookingId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Payments, Wallet & Escrow (PROMPTS 62-66, 68; SRS §15, §3.8 PAY-*).
+//
+// The rules money lives by here, each of them load-bearing:
+//
+//   1. XAF, WHOLE INTEGERS, EVERYWHERE. Cameroon's franc has no minor unit, so
+//      every amount is an integer number of francs — never a float, never a
+//      currency column that pretends the platform is multi-currency.
+//
+//   2. THE LEDGER IS THE TRUTH; THE BALANCE IS A CACHE. Every movement of money
+//      appends a Transaction row. `Wallet.availableBalance` is a running total
+//      the payments service keeps in step INSIDE the same database transaction
+//      that writes the ledger row, and a CHECK forbids it going negative — but
+//      it can always be rebuilt by replaying the ledger, which is what makes a
+//      reconciliation after a Campay hiccup a recomputation rather than a guess.
+//
+//   3. ESCROW IS A STATE MACHINE, NOT A FLAG. An EscrowHold walks the SRS §15.1
+//      states (Paid → Accepted → In Progress → Completed → Released, plus
+//      Refunded and Disputed) and is moved ONLY through escrow-lifecycle.model.ts.
+//      It is 1:1 with a Booking, and Booking.status mirrors it name-for-name from
+//      PAID onward (that is what BookingStatus.ACCEPTED was added for), so the two
+//      never disagree because one service writes both in one transaction.
+//
+//   4. IDEMPOTENCY IS KEYED ON THE EXTERNAL REF. Campay confirms collection and
+//      payout by webhook; a webhook can arrive twice. `Transaction.campayReference`
+//      is UNIQUE, so a replayed confirmation is a no-op at the database rather
+//      than a double credit (PAY-06, NFR-AVAIL-02).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The rails Campay exposes for collection and payout in XAF (PAY-04).
+///
+/// MTN and Orange Mobile Money are the two operators that matter at launch; card
+/// and bank are declared so the schema does not have to change when Campay's
+/// other rails are switched on.
+enum PaymentMethodType {
+  MTN_MOMO
+  ORANGE_MONEY
+  CARD
+  BANK
+}
+
+/// A user's saved way to pay or be paid (PAY-04).
+///
+/// NOTHING sensitive is stored in the clear: a Mobile Money method keeps only the
+/// E.164 phone the collection is charged to, and a card/bank method keeps only a
+/// masked tail Campay returns — the PAN and full account number never touch this
+/// database, which is what keeps card data out of PCI scope here.
+model PaymentMethod {
+  id     String            @id @default(uuid()) @db.Uuid
+  userId String            @db.Uuid
+  type   PaymentMethodType
+
+  /// Human label the user sees ("MTN •••• 6789", "My Orange line").
+  label         String
+  /// E.164 phone for a Mobile Money method — the number Campay collects from and
+  /// pays out to. Null for card/bank.
+  phone         String?
+  /// Last few digits of a card/bank account, for recognition only. Never the full
+  /// number. Null for Mobile Money (the phone is the recogniser there).
+  maskedAccount String?
+  /// Campay's operator label when known ("MTN", "ORANGE"), so a collection can be
+  /// routed without re-detecting it from the phone prefix on every payment.
+  operator      String?
+
+  /// Exactly one default per user, enforced by a partial unique index in the
+  /// migration (WHERE "isDefault") rather than a plain unique, so a user can have
+  /// many non-default methods but never two defaults.
+  isDefault Boolean @default(false)
+  /// Soft-removed rather than deleted: a Transaction points back at the method it
+  /// used, and that history must keep resolving after the user removes the card.
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  /// The management list: a user's live methods.
+  @@index([userId, isActive])
+}
+
+/// What a ledger row represents (PAY-05 "payments, holds/releases, refunds,
+/// withdrawals, fees"). A closed list: a new kind of money movement is a schema
+/// change reviewed with the code that creates it, never an ad-hoc string.
+enum TransactionType {
+  /// Money added to the wallet from a payment method (PAY-05 "Add Money").
+  DEPOSIT
+  /// A client's payment funding an escrow hold on a booking.
+  PAYMENT
+  /// The moment funds are locked into escrow on collection confirmation.
+  ESCROW_HOLD
+  /// Escrow released to the worker's wallet on client confirmation (minus fee).
+  ESCROW_RELEASE
+  /// The platform's service fee, taken at release.
+  FEE
+  /// Escrow returned to the client (cancel before work, or dispute for client).
+  REFUND
+  /// Money paid out of the wallet to a payment method (PAY-05 "Withdraw").
+  WITHDRAWAL
+}
+
+/// Where a ledger row is in its life. Campay-backed rows start PENDING and settle
+/// on the webhook; internal moves (hold, release, fee) are SUCCESS immediately.
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  /// A settled row undone by a later correction (a reconciliation reversal).
+  REVERSED
+}
+
+/// Money in or out from the WALLET OWNER's point of view — a display and filter
+/// axis (PAY-05 "status chips"), derived from the type at creation so the history
+/// can show a red/green arrow without re-deriving it per row.
+enum TransactionDirection {
+  CREDIT
+  DEBIT
+}
+
+/// The append-only money ledger (PAY-05, PAY-06). One row per movement; rows are
+/// never edited to a different amount — a correction is a new REVERSED/compensating
+/// row, so the trail an auditor or a disputing client reads is complete.
+model Transaction {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @db.Uuid
+  type      TransactionType
+  status    TransactionStatus    @default(PENDING)
+  direction TransactionDirection
+
+  /// Whole XAF, always positive. The direction says which way it moved.
+  amount Int
+
+  /// What the money was about, when it hangs off a booking's escrow.
+  bookingId       String? @db.Uuid
+  escrowHoldId    String? @db.Uuid
+  /// The method a DEPOSIT/PAYMENT/WITHDRAWAL used. Null for internal moves
+  /// (hold, release, fee) that never touch an external rail.
+  paymentMethodId String? @db.Uuid
+
+  /// Campay's transaction reference. UNIQUE and the idempotency key: a webhook
+  /// that arrives twice updates the same row rather than crediting again (PAY-06).
+  /// Null for internal moves that never call Campay.
+  campayReference   String? @unique
+  /// The reference WE generated and sent to Campay as external_reference, so a
+  /// callback can be matched back even before Campay's own reference is known.
+  externalReference String? @unique
+
+  /// Plain-language failure, keyed for localized copy (PAY-06 "declined,
+  /// insufficient funds, operator timeout"). Staff-readable code; the EN/FR
+  /// sentence lives in the web catalogue.
+  failureReason String?
+  /// Short human description for the history row ("Escrow for: Fix kitchen sink").
+  description   String?
+  metadata      Json?
+
+  createdAt DateTime  @default(now())
+  /// When Campay confirmed it (or an internal move committed). Null while PENDING.
+  settledAt DateTime?
+  updatedAt DateTime  @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking       Booking?       @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  escrowHold    EscrowHold?    @relation(fields: [escrowHoldId], references: [id], onDelete: SetNull)
+  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+
+  /// The history read path: one user's ledger, newest first, filterable by type
+  /// and status (PAY-05).
+  @@index([userId, type, createdAt])
+  @@index([userId, status, createdAt])
+  @@index([bookingId])
+  /// The reconciliation sweep: pending Campay-backed rows awaiting a webhook.
+  @@index([status, createdAt])
+}
+
+/// The escrow money states (SRS §15.1). A tighter set than BookingStatus: a hold
+/// only exists once money is actually collected, so there is no PENDING_PAYMENT or
+/// CANCELLED here — those are booking states before any money is held.
+enum EscrowState {
+  /// Client funds collected by Campay and held by the platform.
+  PAID
+  /// Worker acknowledged the funded booking.
+  ACCEPTED
+  /// Work under way.
+  IN_PROGRESS
+  /// Worker marked the work done, awaiting client confirmation.
+  COMPLETED
+  /// Client confirmed; payout credited to the worker minus the fee. Terminal.
+  RELEASED
+  /// Returned to the client. Terminal.
+  REFUNDED
+  /// Frozen pending admin resolution (PAY-03).
+  DISPUTED
+}
+
+/// The funds held against a booking (SRS entity EscrowHold; PAY-01, PAY-02).
+///
+/// Distinct from the Booking on purpose: a Booking is the AGREEMENT and exists the
+/// moment a quote is accepted; an EscrowHold is the MONEY and comes into being only
+/// when Campay confirms the client's collection. The gap between the two — a booking
+/// that is PENDING_PAYMENT with no hold yet — is a real, legible state rather than a
+/// null amount on the agreement.
+///
+/// The amounts are snapshotted from the booking (themselves snapshotted at
+/// acceptance), so what is held, what the fee is and what the worker will receive
+/// are fixed at collection time and a later fee-rate change cannot re-price them.
+model EscrowHold {
+  id        String @id @default(uuid()) @db.Uuid
+  bookingId String @unique @db.Uuid
+
+  /// Denormalised parties, like Booking: this is a money record and who is owed
+  /// what must be readable without walking two joins that an edit could change.
+  clientId String @db.Uuid
+  workerId String @db.Uuid
+
+  /// Whole XAF held = the agreed price. `feeAmount + payoutAmount = amount`,
+  /// enforced by a CHECK in the migration.
+  amount       Int
+  feeAmount    Int
+  payoutAmount Int
+
+  state EscrowState @default(PAID)
+
+  /// The Campay collection reference that funded the hold — the tie back to the
+  /// money-in event for reconciliation.
+  campayCollectionRef String?
+
+  paidAt      DateTime  @default(now())
+  acceptedAt  DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  releasedAt  DateTime?
+  refundedAt  DateTime?
+  disputedAt  DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  booking      Booking             @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  client       User                @relation("EscrowClient", fields: [clientId], references: [id], onDelete: Restrict)
+  worker       User                @relation("EscrowWorker", fields: [workerId], references: [id], onDelete: Restrict)
+  statusEvents EscrowStatusEvent[]
+  transactions Transaction[]
+  disputes     Dispute[]
+
+  /// The wallet's "in-escrow" overview reads these by party + live state (PAY-05).
+  @@index([clientId, state])
+  @@index([workerId, state])
+  @@index([state, updatedAt])
+}
+
+/// Every move an escrow hold made through the money states (PAY-03 "auditable,
+/// tamper-evident trail"). Append-only — the money audit trail, per hold.
+model EscrowStatusEvent {
+  id           String @id @default(uuid()) @db.Uuid
+  escrowHoldId String @db.Uuid
+
+  fromState EscrowState?
+  toState   EscrowState
+
+  /// Null for transitions a Campay webhook drove rather than a person.
+  actorId   String? @db.Uuid
+  note      String?
+  requestId String?
+
+  createdAt DateTime @default(now())
+
+  escrowHold EscrowHold @relation(fields: [escrowHoldId], references: [id], onDelete: Cascade)
+  actor      User?      @relation("EscrowStatusActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([escrowHoldId, createdAt])
+}
+
+/// A dispute's lifecycle (PAY-03, ADM-05). OPEN is raised by a party; ESCALATED is
+/// an admin marking it for closer handling; RESOLVED is terminal with a resolution.
+enum DisputeStatus {
+  OPEN
+  ESCALATED
+  RESOLVED
+}
+
+/// How an admin resolved a dispute (ADM-05). Each action drives the escrow machine:
+/// RELEASE_TO_WORKER releases, REFUND_TO_CLIENT refunds, REQUEST_INFO keeps it open
+/// while asking for more, CLOSE_NO_ACTION resolves without moving money (e.g. the
+/// parties settled between themselves).
+enum DisputeResolution {
+  RELEASE_TO_WORKER
+  REFUND_TO_CLIENT
+  REQUEST_INFO
+  CLOSE_NO_ACTION
+}
+
+/// A dispute over a job's escrow (PAY-03, ADM-05).
+///
+/// Opening one FREEZES the associated escrow (state → DISPUTED) so funds cannot
+/// move until an admin resolves it — enforced by the escrow state machine, which
+/// only allows a hold to leave DISPUTED via a SYSTEM (admin) transition, never a
+/// party's own start/complete/confirm call.
+model Dispute {
+  id           String  @id @default(uuid()) @db.Uuid
+  jobId        String  @db.Uuid
+  /// The booking whose escrow this dispute freezes. The anchor is the job (per the
+  /// SRS entity), but the money hangs off the booking, so both are kept.
+  bookingId    String  @db.Uuid
+  escrowHoldId String? @db.Uuid
+
+  /// The party who opened it (client or worker) — the IDENTITY, not a role.
+  openedById String @db.Uuid
+  reason     String
+
+  status         DisputeStatus      @default(OPEN)
+  resolution     DisputeResolution?
+  /// The admin's resolution note, shown to both parties with the outcome.
+  resolutionNote String?
+
+  resolvedById String?   @db.Uuid
+  resolvedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job        Job         @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  booking    Booking     @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  escrowHold EscrowHold? @relation(fields: [escrowHoldId], references: [id], onDelete: SetNull)
+  openedBy   User        @relation("DisputeOpener", fields: [openedById], references: [id], onDelete: Restrict)
+  resolvedBy User?       @relation("DisputeResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  messages DisputeMessage[]
+
+  /// One live dispute per booking, enforced by a partial unique index in the
+  /// migration (WHERE status <> 'RESOLVED'): a booking can be disputed again after
+  /// a resolution, but never carry two open disputes at once.
+  @@index([bookingId])
+  /// The admin dispute queue (ADM-05).
+  @@index([status, createdAt])
+  @@index([jobId])
+}
+
+/// A message in a dispute thread (PAY-03 "store messages + evidence"). Either
+/// party or the resolving admin posts; evidence rides along as attachments.
+model DisputeMessage {
+  id        String @id @default(uuid()) @db.Uuid
+  disputeId String @db.Uuid
+  authorId  String @db.Uuid
+
+  body String
+
+  createdAt DateTime @default(now())
+
+  dispute     Dispute             @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  author      User                @relation("DisputeMessageAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  attachments DisputeAttachment[]
+
+  @@index([disputeId, createdAt])
+}
+
+/// Evidence attached to a dispute message (PAY-03). A MediaAsset FK, like every
+/// other attachment, so it goes through the same upload validation, ownership and
+/// signed-access rules — a URL column would be the one way to skip them.
+model DisputeAttachment {
+  id               String @id @default(uuid()) @db.Uuid
+  disputeMessageId String @db.Uuid
+  mediaAssetId     String @db.Uuid
+
+  createdAt DateTime @default(now())
+
+  disputeMessage DisputeMessage @relation(fields: [disputeMessageId], references: [id], onDelete: Cascade)
+  mediaAsset     MediaAsset     @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([disputeMessageId, mediaAssetId])
+  @@index([mediaAssetId])
+}
+
+/// A user's wallet (PAY-05). One per identity — money attaches to the person, not
+/// a role, exactly like tier and Trust Score.
+model Wallet {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+
+  /// Withdrawable balance in whole XAF. Kept in step with the Transaction ledger
+  /// inside every money transaction and CHECK-constrained non-negative in the
+  /// migration; the in-escrow figure is NOT stored here — it is derived from live
+  /// EscrowHold rows so the two can never drift.
+  availableBalance Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

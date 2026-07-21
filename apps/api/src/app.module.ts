@@ -31,6 +31,7 @@ import { SearchModule } from './search/search.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { JobsModule } from './jobs/jobs.module';
 import { QuotesModule } from './quotes/quotes.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -84,6 +85,10 @@ import { QuotesModule } from './quotes/quotes.module';
     // JobsModule, whose job state machine it drives on the first quote and on
     // acceptance.
     QuotesModule,
+    // Payments, Wallet, Escrow & Disputes (SRS §15, PAY-*, ADM-05). After
+    // QuotesModule, whose ESCROW_INITIATION_REQUESTED seam it consumes, and
+    // JobsModule, whose job lifecycle the escrow machine drives.
+    PaymentsModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({

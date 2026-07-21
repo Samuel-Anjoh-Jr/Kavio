@@ -35,6 +35,7 @@ export const PERMISSIONS = [
   'payment:pay',
   'payment:receive',
   'payout:request',
+  'dispute:open',
 
   // Social
   'message:send',
@@ -72,6 +73,7 @@ const CLIENT: Permission[] = [
   'quote:respond',
   'worker:contact',
   'payment:pay',
+  'dispute:open',
   'message:send',
   'review:create',
   'endorsement:give',
@@ -86,6 +88,7 @@ const WORKER: Permission[] = [
   'quote:create',
   'payment:receive',
   'payout:request',
+  'dispute:open',
   'message:send',
   'review:create',
 ];

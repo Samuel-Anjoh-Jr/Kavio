@@ -3,7 +3,10 @@ import { NoProviderReason } from '../search/no-provider.util';
 import {
   BadgeType,
   BookingStatus,
+  DisputeResolution,
+  DisputeStatus,
   EndorsementRelationship,
+  EscrowState,
   GeoRegionLevel,
   JobApplicationStatus,
   JobInvitationStatus,
@@ -13,12 +16,16 @@ import {
   MediaAssetKind,
   MediaVisibility,
   OnboardingRole,
+  PaymentMethodType,
   PortfolioItemType,
   PortfolioSlot,
   QuoteDurationUnit,
   QuoteStatus,
   Role,
   TeamMemberRole,
+  TransactionDirection,
+  TransactionStatus,
+  TransactionType,
   TrustEventType,
   TrustPillar,
   UserStatus,
@@ -172,6 +179,42 @@ export function registerGraphQLEnums(): void {
   registerEnumType(BookingStatus, {
     name: 'BookingStatus',
     description: 'The escrow lifecycle of a booking (PAY-01, SRS §21.2).',
+  });
+
+  registerEnumType(PaymentMethodType, {
+    name: 'PaymentMethodType',
+    description: 'A payment rail Campay exposes (PAY-04): MTN/Orange Mobile Money, card, bank.',
+  });
+
+  registerEnumType(TransactionType, {
+    name: 'TransactionType',
+    description:
+      'What a ledger row represents (PAY-05): deposit, payment, escrow hold/release, fee, refund, withdrawal.',
+  });
+
+  registerEnumType(TransactionStatus, {
+    name: 'TransactionStatus',
+    description: 'Where a transaction is in its life (PAY-06): pending, success, failed, reversed.',
+  });
+
+  registerEnumType(TransactionDirection, {
+    name: 'TransactionDirection',
+    description: 'Money in or out from the wallet owner’s point of view (PAY-05).',
+  });
+
+  registerEnumType(EscrowState, {
+    name: 'EscrowState',
+    description: 'The escrow money machine (SRS §15.1, PAY-01, PAY-02).',
+  });
+
+  registerEnumType(DisputeStatus, {
+    name: 'DisputeStatus',
+    description: 'A dispute’s lifecycle (PAY-03, ADM-05): open, escalated, resolved.',
+  });
+
+  registerEnumType(DisputeResolution, {
+    name: 'DisputeResolution',
+    description: 'How an admin resolved a dispute (ADM-05).',
   });
 
   // Not a Prisma enum: the reason a search came back empty is derived at read

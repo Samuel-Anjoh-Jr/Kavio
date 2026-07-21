@@ -173,6 +173,20 @@ function sampleVariables(key: string): Record<string, unknown> {
         targetPrice: 20000,
         message: 'Could you do it for a little less?',
       };
+    case 'payment.required':
+      return { amount: 25000 };
+    case 'payment.received':
+      return { jobTitle: 'Fix a leaking kitchen tap', amount: 25000 };
+    case 'escrow.released':
+      return { jobTitle: 'Fix a leaking kitchen tap', amount: 22500 };
+    case 'escrow.refunded':
+      return { jobTitle: 'Fix a leaking kitchen tap', amount: 25000 };
+    case 'payment.failed':
+      return { amount: 25000, reasonKey: 'insufficient_funds' };
+    case 'dispute.opened':
+      return { jobTitle: 'Fix a leaking kitchen tap' };
+    case 'dispute.resolved':
+      return { jobTitle: 'Fix a leaking kitchen tap', resolution: 'RELEASE_TO_WORKER' };
     default:
       // Loud rather than `{}`: an empty object renders "undefined" into real
       // copy, and the parity test above would pass while the email was broken.

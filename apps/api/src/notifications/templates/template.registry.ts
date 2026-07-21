@@ -71,6 +71,23 @@ export interface TemplateVariablesMap {
     targetPrice: number | null;
     message: string | null;
   };
+  /** A booking is created and awaits the client's escrow payment (PAY-01). */
+  'payment.required': { amount: number };
+  /** Escrow funded; the worker can begin (PAY-01). */
+  'payment.received': { jobTitle: string; amount: number };
+  /** Escrow released to the worker's wallet, minus the fee (PAY-01). */
+  'escrow.released': { jobTitle: string; amount: number };
+  /** Escrow refunded to the client's wallet (PAY-01). */
+  'escrow.refunded': { jobTitle: string; amount: number };
+  /**
+   * A collection or payout failed (PAY-06). `reasonKey` is a code — declined,
+   * insufficient_funds, operator_timeout — chosen into localized copy here.
+   */
+  'payment.failed': { amount: number; reasonKey: string };
+  /** The other party opened a dispute, freezing the escrow (PAY-03). */
+  'dispute.opened': { jobTitle: string };
+  /** An admin resolved a dispute (ADM-05). `resolution` keys the localized copy. */
+  'dispute.resolved': { jobTitle: string; resolution: string };
 }
 
 export type TemplateKey = keyof TemplateVariablesMap;
@@ -1120,6 +1137,328 @@ const quoteCounterRequested: TemplateDefinition<'quote.counter_requested'> = {
   },
 };
 
+// ── Payments & disputes (PAY-01…PAY-06, ADM-05) ──────────────────────────────
+
+/** Localized plain-language failure copy, keyed on the coded reason (PAY-06). */
+const FAILURE_COPY: Record<string, { en: string; fr: string }> = {
+  insufficient_funds: {
+    en: 'There were not enough funds on the account.',
+    fr: 'Le solde du compte était insuffisant.',
+  },
+  operator_timeout: {
+    en: 'The mobile operator did not respond in time. Please try again.',
+    fr: 'L’opérateur mobile n’a pas répondu à temps. Veuillez réessayer.',
+  },
+  declined: {
+    en: 'The payment was declined.',
+    fr: 'Le paiement a été refusé.',
+  },
+  payment_failed: {
+    en: 'The payment could not be completed.',
+    fr: 'Le paiement n’a pas pu être effectué.',
+  },
+};
+
+function failureLine(reasonKey: string, locale: Locale): string {
+  const fallback = {
+    en: 'The payment could not be completed.',
+    fr: 'Le paiement n’a pas pu être effectué.',
+  };
+  const copy = FAILURE_COPY[reasonKey] ?? fallback;
+  return copy[locale];
+}
+
+const paymentRequired: TemplateDefinition<'payment.required'> = {
+  key: 'payment.required',
+  category: NotificationCategory.PAYMENTS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Secure your booking with escrow',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Pay into escrow to confirm your booking.',
+          heading: 'Almost there',
+          bodyHtml: paragraphs(
+            `Your quote was accepted. Pay ${xaf(v.amount, 'en')} into secure escrow to confirm the booking.`,
+            'Your money is held safely and only released to the worker once you confirm the work is done.',
+          ),
+        }),
+        text: `Pay ${xaf(v.amount, 'en')} into escrow to confirm your booking on TrustPro.`,
+      }),
+      fr: (v) => ({
+        subject: 'Sécurisez votre réservation via le séquestre',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Payez sous séquestre pour confirmer votre réservation.',
+          heading: 'Presque terminé',
+          bodyHtml: paragraphs(
+            `Votre devis a été accepté. Payez ${xaf(v.amount, 'fr')} sous séquestre sécurisé pour confirmer la réservation.`,
+            'Votre argent est conservé en sécurité et n’est versé au professionnel qu’une fois le travail confirmé.',
+          ),
+        }),
+        text: `Payez ${xaf(v.amount, 'fr')} sous séquestre pour confirmer votre réservation sur TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'Confirm your booking',
+        body: `Pay ${xaf(v.amount, 'en')} into escrow.`,
+      }),
+      fr: (v) => ({
+        title: 'Confirmez la réservation',
+        body: `Payez ${xaf(v.amount, 'fr')} sous séquestre.`,
+      }),
+    },
+  },
+};
+
+const paymentReceived: TemplateDefinition<'payment.received'> = {
+  key: 'payment.received',
+  category: NotificationCategory.PAYMENTS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Payment secured — you can start',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'The client’s payment is held in escrow.',
+          heading: 'Payment secured',
+          bodyHtml: paragraphs(
+            `The client’s payment of ${xaf(v.amount, 'en')} for "${escapeHtml(v.jobTitle)}" is now held safely in escrow.`,
+            'You can start the work. Funds are released to your wallet once the client confirms completion.',
+          ),
+        }),
+        text: `Payment of ${xaf(v.amount, 'en')} for "${v.jobTitle}" is secured in escrow. You can start.`,
+      }),
+      fr: (v) => ({
+        subject: 'Paiement sécurisé — vous pouvez commencer',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Le paiement du client est sous séquestre.',
+          heading: 'Paiement sécurisé',
+          bodyHtml: paragraphs(
+            `Le paiement du client de ${xaf(v.amount, 'fr')} pour « ${escapeHtml(v.jobTitle)} » est désormais sous séquestre sécurisé.`,
+            'Vous pouvez commencer le travail. Les fonds sont versés sur votre portefeuille dès que le client confirme.',
+          ),
+        }),
+        text: `Le paiement de ${xaf(v.amount, 'fr')} pour « ${v.jobTitle} » est sécurisé. Vous pouvez commencer.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Payment secured', body: `"${v.jobTitle}" — you can start.` }),
+      fr: (v) => ({
+        title: 'Paiement sécurisé',
+        body: `« ${v.jobTitle} » — vous pouvez commencer.`,
+      }),
+    },
+  },
+};
+
+const escrowReleased: TemplateDefinition<'escrow.released'> = {
+  key: 'escrow.released',
+  category: NotificationCategory.PAYMENTS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'You’ve been paid',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Escrow released to your wallet.',
+          heading: 'Payment released',
+          bodyHtml: paragraphs(
+            `The client confirmed "${escapeHtml(v.jobTitle)}" is done. ${xaf(v.amount, 'en')} has been released to your wallet.`,
+            'You can withdraw it to your Mobile Money at any time.',
+          ),
+        }),
+        text: `${xaf(v.amount, 'en')} for "${v.jobTitle}" has been released to your TrustPro wallet.`,
+      }),
+      fr: (v) => ({
+        subject: 'Vous avez été payé',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Séquestre versé sur votre portefeuille.',
+          heading: 'Paiement versé',
+          bodyHtml: paragraphs(
+            `Le client a confirmé que « ${escapeHtml(v.jobTitle)} » est terminé. ${xaf(v.amount, 'fr')} ont été versés sur votre portefeuille.`,
+            'Vous pouvez les retirer vers votre Mobile Money à tout moment.',
+          ),
+        }),
+        text: `${xaf(v.amount, 'fr')} pour « ${v.jobTitle} » ont été versés sur votre portefeuille TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'You’ve been paid',
+        body: `${xaf(v.amount, 'en')} for "${v.jobTitle}".`,
+      }),
+      fr: (v) => ({
+        title: 'Vous avez été payé',
+        body: `${xaf(v.amount, 'fr')} pour « ${v.jobTitle} ».`,
+      }),
+    },
+  },
+};
+
+const escrowRefunded: TemplateDefinition<'escrow.refunded'> = {
+  key: 'escrow.refunded',
+  category: NotificationCategory.PAYMENTS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your escrow was refunded',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Funds returned to your wallet.',
+          heading: 'Refund issued',
+          bodyHtml: paragraphs(
+            `${xaf(v.amount, 'en')} held for "${escapeHtml(v.jobTitle)}" has been refunded to your wallet.`,
+            'You can withdraw it to your Mobile Money at any time.',
+          ),
+        }),
+        text: `${xaf(v.amount, 'en')} for "${v.jobTitle}" has been refunded to your TrustPro wallet.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre séquestre a été remboursé',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Fonds retournés sur votre portefeuille.',
+          heading: 'Remboursement effectué',
+          bodyHtml: paragraphs(
+            `${xaf(v.amount, 'fr')} retenus pour « ${escapeHtml(v.jobTitle)} » ont été remboursés sur votre portefeuille.`,
+            'Vous pouvez les retirer vers votre Mobile Money à tout moment.',
+          ),
+        }),
+        text: `${xaf(v.amount, 'fr')} pour « ${v.jobTitle} » ont été remboursés sur votre portefeuille TrustPro.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Refund issued', body: `${xaf(v.amount, 'en')} for "${v.jobTitle}".` }),
+      fr: (v) => ({
+        title: 'Remboursement',
+        body: `${xaf(v.amount, 'fr')} pour « ${v.jobTitle} ».`,
+      }),
+    },
+  },
+};
+
+const paymentFailed: TemplateDefinition<'payment.failed'> = {
+  key: 'payment.failed',
+  category: NotificationCategory.PAYMENTS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your payment did not go through',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'A payment could not be completed.',
+          heading: 'Payment failed',
+          bodyHtml: paragraphs(
+            `Your payment of ${xaf(v.amount, 'en')} could not be completed. ${failureLine(v.reasonKey, 'en')}`,
+            'No money has left your account. Please try again from TrustPro.',
+          ),
+        }),
+        text: `Your payment of ${xaf(v.amount, 'en')} failed: ${failureLine(v.reasonKey, 'en')}`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre paiement n’a pas abouti',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un paiement n’a pas pu être effectué.',
+          heading: 'Échec du paiement',
+          bodyHtml: paragraphs(
+            `Votre paiement de ${xaf(v.amount, 'fr')} n’a pas pu être effectué. ${failureLine(v.reasonKey, 'fr')}`,
+            'Aucun montant n’a été débité. Veuillez réessayer depuis TrustPro.',
+          ),
+        }),
+        text: `Votre paiement de ${xaf(v.amount, 'fr')} a échoué : ${failureLine(v.reasonKey, 'fr')}`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Payment failed', body: failureLine(v.reasonKey, 'en') }),
+      fr: (v) => ({ title: 'Échec du paiement', body: failureLine(v.reasonKey, 'fr') }),
+    },
+  },
+};
+
+const disputeOpened: TemplateDefinition<'dispute.opened'> = {
+  key: 'dispute.opened',
+  category: NotificationCategory.DISPUTES,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'A dispute was opened',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'The escrow is frozen pending review.',
+          heading: 'Dispute opened',
+          bodyHtml: paragraphs(
+            `A dispute has been opened on "${escapeHtml(v.jobTitle)}". The escrow is frozen while our team reviews it.`,
+            'Open TrustPro to add your side and any evidence.',
+          ),
+        }),
+        text: `A dispute was opened on "${v.jobTitle}". The escrow is frozen pending review.`,
+      }),
+      fr: (v) => ({
+        subject: 'Un litige a été ouvert',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Le séquestre est gelé en attendant l’examen.',
+          heading: 'Litige ouvert',
+          bodyHtml: paragraphs(
+            `Un litige a été ouvert sur « ${escapeHtml(v.jobTitle)} ». Le séquestre est gelé pendant l’examen par notre équipe.`,
+            'Ouvrez TrustPro pour donner votre version et vos preuves.',
+          ),
+        }),
+        text: `Un litige a été ouvert sur « ${v.jobTitle} ». Le séquestre est gelé.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Dispute opened', body: `On "${v.jobTitle}". Escrow frozen.` }),
+      fr: (v) => ({ title: 'Litige ouvert', body: `Sur « ${v.jobTitle} ». Séquestre gelé.` }),
+    },
+  },
+};
+
+const disputeResolved: TemplateDefinition<'dispute.resolved'> = {
+  key: 'dispute.resolved',
+  category: NotificationCategory.DISPUTES,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your dispute has been resolved',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'An outcome has been decided.',
+          heading: 'Dispute resolved',
+          bodyHtml: paragraphs(
+            `The dispute on "${escapeHtml(v.jobTitle)}" has been resolved by our team.`,
+            'Open TrustPro to see the outcome and your updated wallet.',
+          ),
+        }),
+        text: `The dispute on "${v.jobTitle}" has been resolved. Open TrustPro to see the outcome.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre litige a été résolu',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Une décision a été prise.',
+          heading: 'Litige résolu',
+          bodyHtml: paragraphs(
+            `Le litige sur « ${escapeHtml(v.jobTitle)} » a été résolu par notre équipe.`,
+            'Ouvrez TrustPro pour voir la décision et votre portefeuille mis à jour.',
+          ),
+        }),
+        text: `Le litige sur « ${v.jobTitle} » a été résolu. Ouvrez TrustPro pour voir la décision.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Dispute resolved', body: `On "${v.jobTitle}".` }),
+      fr: (v) => ({ title: 'Litige résolu', body: `Sur « ${v.jobTitle} ».` }),
+    },
+  },
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Registry + lookup
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1148,6 +1487,13 @@ const TEMPLATES: TemplateMap = {
   'quote.accepted': quoteAccepted,
   'quote.declined': quoteDeclined,
   'quote.counter_requested': quoteCounterRequested,
+  'payment.required': paymentRequired,
+  'payment.received': paymentReceived,
+  'escrow.released': escrowReleased,
+  'escrow.refunded': escrowRefunded,
+  'payment.failed': paymentFailed,
+  'dispute.opened': disputeOpened,
+  'dispute.resolved': disputeResolved,
 };
 
 export const TEMPLATE_KEYS = Object.keys(TEMPLATES) as TemplateKey[];
