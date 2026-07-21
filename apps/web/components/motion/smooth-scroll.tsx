@@ -6,8 +6,8 @@ import { useReducedMotion } from '@/lib/motion';
 
 /**
  * Lenis smooth scroll — mounted only inside the (marketing) route group
- * layout, so it's scoped to marketing routes and never touches the (app)
- * dashboard's scroll behaviour. Disabled outright under reduced motion
+ * layout, so it's scoped to marketing routes and never touches the app
+ * shell's scroll behaviour. Disabled outright under reduced motion
  * (`options.autoRaf: false` + syncTouch off falls back to native scroll).
  */
 export function SmoothScroll({ children }: { children: ReactNode }) {
