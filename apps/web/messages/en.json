@@ -320,7 +320,15 @@
     "account": "Account",
     "home": "My home",
     "signIn": "Sign in",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "safety": "Safety",
+    "moderation": "Reports",
+    "settings": "Settings",
+    "adminSection": "Admin",
+    "adminDisputes": "Disputes",
+    "adminReports": "Reports"
   },
   "Roles": {
     "switcherLabel": "Switch role",
@@ -362,7 +370,8 @@
     "title": "Posted jobs",
     "subtitle": "Browse what people near you need done.",
     "post": "Post a job",
-    "empty": "No jobs to show yet. Once posting is live, open jobs in your area will appear here."
+    "empty": "No jobs to show yet. Once posting is live, open jobs in your area will appear here.",
+    "reportListing": "Report this listing"
   },
   "PostJob": {
     "title": "Describe your job",
@@ -1053,7 +1062,8 @@
     "linkCopied": "Profile link copied",
     "quoteComingSoon": "Quotes open when the quoting module goes live. We've saved your interest.",
     "messagingComingSoon": "Messaging opens when the messaging module goes live.",
-    "reportComingSoon": "Reporting opens when the safety module goes live."
+    "reportComingSoon": "Reporting opens when the safety module goes live.",
+    "reportItem": "Report this item"
   },
   "Business": {
     "notFoundTitle": "Business not found",
@@ -1478,5 +1488,349 @@
         "CLOSE_NO_ACTION": "Dispute closed."
       }
     }
+  },
+  "Messaging": {
+    "inboxTitle": "Messages",
+    "inboxSubtitle": "Your conversations with clients and workers.",
+    "searchPlaceholder": "Search messages",
+    "filters": "Filter conversations",
+    "filter": {
+      "ALL": "All",
+      "CLIENTS": "People",
+      "SYSTEM": "System",
+      "OFFERS": "Offers"
+    },
+    "systemThread": "TrustPro",
+    "noMessagesYet": "No messages yet",
+    "notFound": "This conversation was not found.",
+    "backToInbox": "Back to messages",
+    "composerPlaceholder": "Write a message…",
+    "send": "Send",
+    "attachImage": "Attach a photo",
+    "sendFailed": "Your message could not be sent. Please try again.",
+    "uploadFailed": "That file could not be uploaded. Please try again.",
+    "actionFailed": "That action could not be completed. Please try again.",
+    "blocked": "You have blocked this person.",
+    "blockedNotice": "You have blocked this person. Unblock them to send a message.",
+    "messageDeleted": "This message was removed.",
+    "day": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "presence": {
+      "online": "Online",
+      "offline": "Offline",
+      "typing": "Typing…"
+    },
+    "status": {
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read"
+    },
+    "menu": {
+      "open": "Conversation options",
+      "report": "Report conversation",
+      "block": "Block",
+      "blocked": "Unblock"
+    },
+    "voice": {
+      "record": "Record",
+      "stop": "Stop recording",
+      "discard": "Discard recording",
+      "send": "Send voice note",
+      "play": "Play voice note",
+      "pause": "Pause",
+      "dismiss": "Dismiss",
+      "unavailable": "Voice note unavailable",
+      "micDenied": "We could not access your microphone. Check your browser permissions."
+    },
+    "cards": {
+      "jobTitle": "Job",
+      "viewJob": "View job details",
+      "quoteTitle": "Quote",
+      "viewQuote": "View quote",
+      "paymentTitle": "Payment",
+      "paymentPending": "Awaiting payment",
+      "fundsSecure": "Funds held securely",
+      "escrowUnknown": "Escrow",
+      "imageAlt": "Shared photo",
+      "imageUnavailable": "Photo unavailable",
+      "sharedLocation": "Shared location",
+      "locationUnavailable": "Location unavailable",
+      "escrowState": {
+        "PAID": "Paid",
+        "ACCEPTED": "Accepted",
+        "IN_PROGRESS": "In progress",
+        "COMPLETED": "Completed",
+        "RELEASED": "Released",
+        "REFUNDED": "Refunded",
+        "DISPUTED": "Disputed"
+      }
+    },
+    "empty": {
+      "inboxTitle": "No conversations yet",
+      "inboxBody": "Message a worker from their profile, or reply to a client to start a conversation.",
+      "filterBody": "Nothing matches this filter yet.",
+      "filter": {
+        "ALL": "No conversations yet",
+        "CLIENTS": "No conversations with people yet",
+        "SYSTEM": "No system messages yet",
+        "OFFERS": "No job offers in your messages yet"
+      },
+      "threadTitle": "Say hello",
+      "threadBody": "Send the first message to start this conversation."
+    },
+    "auth": {
+      "title": "Sign in to see your messages",
+      "body": "Your conversations are private to your account.",
+      "signIn": "Sign in"
+    }
+  },
+  "Safety": {
+    "title": "Safety Center",
+    "subtitle": "Emergency contacts, your SOS history, and live tracking for active jobs.",
+    "sos": {
+      "hold": "Hold to send SOS",
+      "holding": "Keep holding…",
+      "sending": "Sending…",
+      "sent": "SOS sent",
+      "active": "SOS active",
+      "activeBanner": "An SOS is active. Your location is being shared.",
+      "helpOnWay": "Your emergency contacts have been alerted.",
+      "instruction": "Press and hold the button to alert your emergency contacts with your location.",
+      "failed": "We could not send your SOS. Please try again or call for help directly.",
+      "resolve": "Mark as resolved",
+      "falseAlarm": "False alarm",
+      "resolved": "This alert is resolved.",
+      "locating": "Finding your location…"
+    },
+    "contacts": {
+      "title": "Emergency contacts",
+      "subtitle": "The people alerted when you send an SOS.",
+      "empty": "No emergency contacts yet. Add someone who can help in an emergency.",
+      "add": "Add contact",
+      "edit": "Edit",
+      "remove": "Remove",
+      "removed": "Contact removed.",
+      "saved": "Contact saved.",
+      "name": "Name",
+      "phone": "Phone number",
+      "relationship": "Relationship (optional)",
+      "email": "Email (optional)",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saveFailed": "That contact could not be saved. Please check the details and try again."
+    },
+    "history": {
+      "title": "SOS history",
+      "empty": "You have not sent any SOS alerts. That is a good thing.",
+      "sharedWith": "Shared with {count} contacts",
+      "safetyProcess": "TrustPro safety",
+      "delivered": "Delivered",
+      "notDelivered": "Not delivered",
+      "viewMap": "View location",
+      "status": {
+        "ACTIVE": "Active",
+        "RESOLVED": "Resolved",
+        "FALSE_ALARM": "False alarm"
+      },
+      "openedOn": "Sent {date}"
+    },
+    "tracking": {
+      "title": "Live tracking",
+      "subtitle": "See your worker on the way, with an arrival estimate.",
+      "enRoute": "On the way",
+      "arrived": "Arriving now",
+      "eta": "Arrives in about {eta}",
+      "distance": "{distance} away",
+      "waiting": "Waiting for the worker to share their location…",
+      "ended": "Tracking has ended.",
+      "consentRevoked": "The worker stopped sharing their location.",
+      "noSession": "There is no active tracking session for this job.",
+      "shareTitle": "Share your location",
+      "shareBody": "While this screen is open, your live location is shared with the client so they can see you arriving. Close the screen to stop.",
+      "startSharing": "Start sharing",
+      "stopSharing": "Stop sharing",
+      "sharing": "Sharing your location",
+      "streamError": "We could not read your location. Check your browser permissions."
+    },
+    "auth": {
+      "title": "Sign in to use the Safety Center",
+      "body": "Emergency contacts and SOS history are private to your account.",
+      "signIn": "Sign in"
+    }
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "subtitle": "Job updates, messages, payments and safety alerts.",
+    "markAllRead": "Mark all as read",
+    "allRead": "All caught up.",
+    "filter": {
+      "ALL": "All",
+      "UNREAD": "Unread",
+      "IMPORTANT": "Important"
+    },
+    "empty": {
+      "ALL": "No notifications yet",
+      "UNREAD": "No unread notifications",
+      "IMPORTANT": "No important notifications",
+      "body": "Updates about your jobs, quotes, payments and safety will appear here."
+    },
+    "markReadFailed": "That could not be updated. Please try again.",
+    "justNow": "Just now",
+    "openBell": "Notifications",
+    "viewAll": "View all notifications",
+    "settings": {
+      "title": "Notification preferences",
+      "subtitle": "Choose how you hear about each kind of update.",
+      "channel": {
+        "IN_APP": "In-app",
+        "WEB_PUSH": "Push",
+        "EMAIL": "Email",
+        "SMS": "SMS"
+      },
+      "channelHint": {
+        "IN_APP": "Shown in your Notification Center",
+        "WEB_PUSH": "Sent to this device",
+        "EMAIL": "Sent to your email",
+        "SMS": "Text message"
+      },
+      "comingSoon": "Coming soon",
+      "smsDeferred": "SMS notifications are coming soon.",
+      "category": {
+        "JOBS": "Jobs",
+        "QUOTES": "Quotes",
+        "MESSAGES": "Messages",
+        "PAYMENTS": "Payments",
+        "TRUST": "Trust & verification",
+        "REVIEWS": "Reviews",
+        "DISPUTES": "Disputes",
+        "SAFETY": "Safety",
+        "ACCOUNT": "Account",
+        "MARKETING": "News & offers"
+      },
+      "securityNote": "Security alerts are always sent by email and cannot be turned off.",
+      "saved": "Preference updated.",
+      "saveFailed": "That preference could not be saved. Please try again.",
+      "push": {
+        "title": "Push notifications",
+        "body": "Get notified on this device even when TrustPro is closed.",
+        "enable": "Enable push",
+        "enabled": "Push is on for this device",
+        "disable": "Turn off",
+        "enabling": "Enabling…",
+        "unsupported": "This browser does not support push notifications.",
+        "denied": "Push is blocked. Allow notifications in your browser settings to turn it on.",
+        "unconfigured": "Push notifications are not available right now.",
+        "enableFailed": "We could not enable push. Please try again."
+      }
+    },
+    "auth": {
+      "title": "Sign in to see your notifications",
+      "body": "Your notifications are private to your account.",
+      "signIn": "Sign in"
+    }
+  },
+  "Report": {
+    "title": "Report this",
+    "subtitle": "Tell us what is wrong. Our team reviews every report.",
+    "reasonLabel": "Why are you reporting this?",
+    "detailsLabel": "Anything else? (optional)",
+    "detailsPlaceholder": "Add any detail that would help us understand.",
+    "chooseReason": "Please choose a reason.",
+    "submit": "Submit report",
+    "cancel": "Cancel",
+    "close": "Done",
+    "failed": "Your report could not be sent. Please try again.",
+    "thanksTitle": "Thank you",
+    "thanksBody": "We have received your report and our team will review it.",
+    "trigger": "Report",
+    "reason": {
+      "SPAM": "Spam",
+      "HARASSMENT": "Harassment or bullying",
+      "SCAM": "Scam or fraud",
+      "INAPPROPRIATE": "Inappropriate content",
+      "OFF_PLATFORM": "Trying to move off TrustPro",
+      "FAKE_PROFILE": "Fake or impersonating profile",
+      "STOLEN_CONTENT": "Stolen photos or work",
+      "MISLEADING": "Misleading or false information",
+      "ILLEGAL": "Illegal or dangerous",
+      "OTHER": "Something else"
+    }
+  },
+  "Moderation": {
+    "title": "Reports & moderation",
+    "subtitle": "Reported content, grouped by item. Decide once per item.",
+    "summary": {
+      "openGroups": "Items to review",
+      "openReports": "Open reports",
+      "reviewingGroups": "In review"
+    },
+    "queueEmpty": "Nothing to review",
+    "queueEmptyBody": "Reported profiles, jobs, photos and messages will appear here, grouped by item.",
+    "filterType": "Type",
+    "allTypes": "All types",
+    "reportsAbout": "{count} reports",
+    "reportedOnce": "1 report",
+    "reasonsHeading": "Reasons",
+    "reportersHeading": "Reports",
+    "historyHeading": "This party’s history",
+    "noHistory": "No prior actions against this party.",
+    "priorActions": "{count} prior actions",
+    "itemRemoved": "This item has been removed.",
+    "viewItem": "View item",
+    "reportedBy": "Reported by",
+    "anonymous": "A user",
+    "targetType": {
+      "USER": "User",
+      "WORKER_PROFILE": "Worker profile",
+      "BUSINESS_PROFILE": "Business profile",
+      "JOB": "Job post",
+      "PORTFOLIO_ITEM": "Portfolio item",
+      "MEDIA_ASSET": "Media",
+      "REVIEW": "Review",
+      "QUOTE": "Quote",
+      "MESSAGE": "Message",
+      "CONVERSATION": "Conversation"
+    },
+    "status": {
+      "OPEN": "Open",
+      "REVIEWING": "In review",
+      "ACTIONED": "Actioned",
+      "DISMISSED": "Dismissed"
+    },
+    "pickUp": "Start review",
+    "action": {
+      "WARN": "Warn",
+      "CONTENT_REMOVED": "Remove content",
+      "SUSPEND": "Suspend",
+      "BAN": "Ban",
+      "REINSTATE": "Reinstate",
+      "DISMISS": "Dismiss"
+    },
+    "actionEffect": {
+      "WARN": "Sends a formal warning to the party. The content stays up.",
+      "CONTENT_REMOVED": "Takes the item down. The account stays active.",
+      "SUSPEND": "Suspends the account for a set number of days.",
+      "BAN": "Permanently suspends the account.",
+      "REINSTATE": "Lifts a suspension or ban.",
+      "DISMISS": "Closes the reports with no penalty."
+    },
+    "decide": "Take action",
+    "decideTitle": "Take action on {action}",
+    "reasonLabel": "Reason (shown to the party)",
+    "reasonPlaceholder": "Explain the decision. The party will see this.",
+    "internalNoteLabel": "Internal note (optional)",
+    "internalNotePlaceholder": "Admin-only note.",
+    "suspendDaysLabel": "Suspension length (days)",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "actioned": "Action recorded.",
+    "actionFailed": "That action could not be completed. Please try again.",
+    "reasonRequired": "Please give a reason.",
+    "reportsClosed": "{count} reports closed.",
+    "contentRemoved": "The item was removed.",
+    "backToQueue": "Back to reports",
+    "notFound": "This report was not found."
   }
 }

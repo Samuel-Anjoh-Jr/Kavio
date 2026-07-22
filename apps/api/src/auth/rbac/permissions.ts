@@ -59,6 +59,7 @@ export const PERMISSIONS = [
   'admin:dispute_resolve',
   'admin:payment_manage',
   'admin:settings_manage',
+  'admin:moderate',
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

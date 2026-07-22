@@ -37,7 +37,8 @@ export class NotificationDeliveryProcessor implements OnModuleInit {
 
   async process(job: Job<NotificationDeliveryJob>): Promise<void> {
     const start = Date.now();
-    const { logId, channel, address, templateKey, locale, variables } = job.data;
+    const { logId, channel, address, templateKey, locale, variables, category, userId, metadata } =
+      job.data;
 
     if (!isTemplateKey(templateKey)) {
       // A job queued against a template that has since been removed. Fail it
@@ -69,7 +70,13 @@ export class NotificationDeliveryProcessor implements OnModuleInit {
     const subject = message.channel === 'EMAIL' ? message.content.subject : null;
 
     try {
-      await provider.send(address, message);
+      await provider.send(address, message, {
+        templateKey,
+        category,
+        userId,
+        locale,
+        ...(metadata ? { metadata } : {}),
+      });
 
       await this.prisma.client.notificationLog.update({
         where: { id: logId },

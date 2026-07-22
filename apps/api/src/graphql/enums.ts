@@ -1,6 +1,8 @@
 import { registerEnumType } from '@nestjs/graphql';
 import { NoProviderReason } from '../search/no-provider.util';
 import {
+  AbuseReportReason,
+  AbuseReportStatus,
   BadgeType,
   BookingStatus,
   DisputeFaultParty,
@@ -18,12 +20,16 @@ import {
   MediaVisibility,
   MessageKind,
   MessageStatus,
+  ModerationActionType,
+  NotificationCategory,
+  NotificationChannel,
   OnboardingRole,
   PaymentMethodType,
   PortfolioItemType,
   PortfolioSlot,
   QuoteDurationUnit,
   QuoteStatus,
+  ReportTargetType,
   Role,
   SOSStatus,
   TeamMemberAccessLevel,
@@ -260,6 +266,40 @@ export function registerGraphQLEnums(): void {
   registerEnumType(TrackingSessionStatus, {
     name: 'TrackingSessionStatus',
     description: 'A live-tracking session’s state (SOS-03): active or ended.',
+  });
+
+  registerEnumType(NotificationCategory, {
+    name: 'NotificationCategory',
+    description:
+      'The preference category a notification belongs to (SRS §26.1). Typed, never free-text, so the channel × category grid is exhaustive.',
+  });
+
+  registerEnumType(NotificationChannel, {
+    name: 'NotificationChannel',
+    description:
+      'A delivery channel (SRS §17). IN_APP is the Notification Center itself; SMS is wired but switched off at launch.',
+  });
+
+  registerEnumType(ReportTargetType, {
+    name: 'ReportTargetType',
+    description:
+      'What a report points at (ADM-08). With the target id it forms the grouping key of the moderation workspace.',
+  });
+
+  registerEnumType(AbuseReportReason, {
+    name: 'AbuseReportReason',
+    description:
+      'Why something was reported (MSG-04, ADM-08). A code, so the EN/FR copy stays in the web message catalogue.',
+  });
+
+  registerEnumType(AbuseReportStatus, {
+    name: 'AbuseReportStatus',
+    description: 'Where a report is in review (ADM-08): open, reviewing, actioned, dismissed.',
+  });
+
+  registerEnumType(ModerationActionType, {
+    name: 'ModerationActionType',
+    description: 'What an admin decided about a reported item or party (ADM-08).',
   });
 
   // Not a Prisma enum: the reason a search came back empty is derived at read

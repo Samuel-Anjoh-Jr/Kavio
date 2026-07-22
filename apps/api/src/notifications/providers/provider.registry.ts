@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { NotificationChannel } from '@trustpro/database';
 import type { NotificationChannelProvider } from '../notification.types';
 import { EmailProvider } from './email.provider';
+import { InAppProvider } from './in-app.provider';
 import { SmsProvider } from './sms.provider';
 import { WebPushProvider } from './web-push.provider';
 
@@ -14,10 +15,16 @@ import { WebPushProvider } from './web-push.provider';
 export class NotificationProviderRegistry {
   private readonly providers = new Map<NotificationChannel, NotificationChannelProvider>();
 
-  constructor(email: EmailProvider, webPush: WebPushProvider, sms: SmsProvider) {
+  constructor(
+    email: EmailProvider,
+    webPush: WebPushProvider,
+    sms: SmsProvider,
+    inApp: InAppProvider,
+  ) {
     // SMS is registered like any other provider; it simply reports isEnabled()
-    // false until the feature flag is flipped.
-    for (const provider of [email, webPush, sms]) {
+    // false until the feature flag is flipped. IN_APP is registered the same way
+    // — the inbox is a channel, not a special case in the dispatcher.
+    for (const provider of [email, webPush, sms, inApp]) {
       this.providers.set(provider.channel, provider);
     }
   }

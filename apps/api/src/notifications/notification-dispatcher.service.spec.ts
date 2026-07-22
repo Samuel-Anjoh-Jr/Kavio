@@ -4,6 +4,7 @@ import { getChannelPriority } from './notification.config';
 import { NotificationDispatcher } from './notification-dispatcher.service';
 import { NotificationPreferenceService } from './notification-preference.service';
 import { EmailProvider } from './providers/email.provider';
+import { InAppProvider } from './providers/in-app.provider';
 import { NotificationProviderRegistry } from './providers/provider.registry';
 import { SmsProvider } from './providers/sms.provider';
 import { WebPushProvider } from './providers/web-push.provider';
@@ -49,6 +50,12 @@ interface Harness {
   jobs: () => NotificationDeliveryJob[];
   /** The data payload of the nth NotificationLog row written. */
   loggedRow: (index?: number) => CreateLogArgs['data'];
+  /**
+   * The NotificationLog row for one channel. Preferred over `loggedRow(0)` since
+   * IN_APP was added ahead of the outward channels in the priority order — an
+   * index-based assertion silently starts testing a different channel.
+   */
+  loggedRowFor: (channel: NotificationChannel) => CreateLogArgs['data'] | undefined;
 }
 
 /**
@@ -88,6 +95,7 @@ function makeHarness(
     new EmailProvider(env),
     new WebPushProvider(prisma, env),
     new SmsProvider(env),
+    new InAppProvider(prisma),
   );
 
   const dispatcher = new NotificationDispatcher(
@@ -105,6 +113,8 @@ function makeHarness(
     findPreferences,
     jobs: () => enqueue.mock.calls.map((call) => call[2]),
     loggedRow: (index = 0) => createLog.mock.calls[index]![0].data,
+    loggedRowFor: (channel) =>
+      createLog.mock.calls.map((call) => call[0].data).find((row) => row.channel === channel),
   };
 }
 
@@ -121,12 +131,14 @@ describe('NotificationDispatcher', () => {
         }),
       );
 
-      expect(logIds).toHaveLength(1);
+      // Two attempts: the in-app inbox row and the email. IN_APP is a channel
+      // like any other and leads the priority order (NOT-02).
+      expect(logIds).toHaveLength(2);
+      expect(h.createLog).toHaveBeenCalledTimes(2);
 
       // A row exists for the attempt before any provider call, keyed by
       // templateKey — never rendered content.
-      expect(h.createLog).toHaveBeenCalledTimes(1);
-      const logged = h.loggedRow();
+      const logged = h.loggedRowFor(NotificationChannel.EMAIL);
       expect(logged).toMatchObject({
         userId: USER.id,
         channel: NotificationChannel.EMAIL,
@@ -137,7 +149,7 @@ describe('NotificationDispatcher', () => {
       });
 
       // Delivery is queued, not sent inline.
-      const [job] = h.jobs();
+      const job = h.jobs().find((j) => j.channel === NotificationChannel.EMAIL);
       expect(job).toMatchObject({
         channel: NotificationChannel.EMAIL,
         templateKey: 'system.test_notification',
@@ -157,7 +169,7 @@ describe('NotificationDispatcher', () => {
         }),
       );
 
-      expect(h.loggedRow().provider).toBe('resend');
+      expect(h.loggedRowFor(NotificationChannel.EMAIL)?.provider).toBe('resend');
     });
 
     it('honours the recipient locale so FR users get FR copy', async () => {
@@ -177,7 +189,12 @@ describe('NotificationDispatcher', () => {
 
   describe('preferences', () => {
     it('respects a disabled preference and produces no delivery', async () => {
-      const h = makeHarness({}, { disabled: [NotificationChannel.EMAIL] });
+      // Both reachable channels are opted out — IN_APP is a preference cell like
+      // any other, so muting only EMAIL would still leave an inbox row.
+      const h = makeHarness(
+        {},
+        { disabled: [NotificationChannel.EMAIL, NotificationChannel.IN_APP] },
+      );
 
       const logIds = await h.dispatcher.dispatch(
         new NotificationRequestedEvent({
@@ -220,7 +237,8 @@ describe('NotificationDispatcher', () => {
         }),
       );
 
-      expect(logIds).toHaveLength(1);
+      // In-app + email: both reachable, neither opted out.
+      expect(logIds).toHaveLength(2);
     });
   });
 
@@ -237,7 +255,10 @@ describe('NotificationDispatcher', () => {
 
       await h.dispatcher.dispatch(event());
 
-      expect(h.jobs().map((j) => j.channel)).toEqual([NotificationChannel.EMAIL]);
+      expect(h.jobs().map((j) => j.channel)).toEqual([
+        NotificationChannel.IN_APP,
+        NotificationChannel.EMAIL,
+      ]);
     });
 
     it('routes to the SMS stub when the flag is flipped ON, with no call-site change', async () => {
@@ -254,6 +275,7 @@ describe('NotificationDispatcher', () => {
       expect(sms?.address).toBe(USER.phone);
       // Email still goes out too; SMS is additive, ordered by channel priority.
       expect(jobs.map((j) => j.channel)).toEqual([
+        NotificationChannel.IN_APP,
         NotificationChannel.EMAIL,
         NotificationChannel.SMS,
       ]);
@@ -272,8 +294,12 @@ describe('NotificationDispatcher', () => {
         }),
       );
 
-      // Push is enabled but unreachable (registry lands in P76) → falls through.
-      expect(h.jobs().map((j) => j.channel)).toEqual([NotificationChannel.EMAIL]);
+      // Push is enabled but unreachable (no live subscription) → falls through to
+      // the channels that can reach them: the in-app inbox and email.
+      expect(h.jobs().map((j) => j.channel)).toEqual([
+        NotificationChannel.IN_APP,
+        NotificationChannel.EMAIL,
+      ]);
     });
 
     it('follows a configured channel priority order', async () => {

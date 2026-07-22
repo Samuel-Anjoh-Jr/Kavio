@@ -3,6 +3,8 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { DeviceRegistrationController } from './device-registration.controller';
 import { DeviceRegistrationService } from './device-registration.service';
+import { NotificationCenterResolver } from './notification-center.resolver';
+import { NotificationCenterService } from './notification-center.service';
 import { NotificationDashboardResolver } from './notification-dashboard.resolver';
 import { NotificationDashboardService } from './notification-dashboard.service';
 import { NotificationDeliveryProcessor } from './notification-delivery.processor';
@@ -11,6 +13,7 @@ import { NotificationPreferenceService } from './notification-preference.service
 import { NOTIFICATION_CHANNEL_PRIORITY, getChannelPriority } from './notification.config';
 import { NotificationsController } from './notifications.controller';
 import { EmailProvider } from './providers/email.provider';
+import { InAppProvider } from './providers/in-app.provider';
 import { NotificationProviderRegistry } from './providers/provider.registry';
 import { SmsProvider } from './providers/sms.provider';
 import { WebPushProvider } from './providers/web-push.provider';
@@ -41,6 +44,9 @@ import { WebPushProvider } from './providers/web-push.provider';
       inject: [PrismaService],
     },
     { provide: SmsProvider, useFactory: () => new SmsProvider(process.env) },
+    // IN_APP takes no env: the inbox is a database write, so there is no
+    // credential to configure and nothing to feature-flag.
+    InAppProvider,
     { provide: NOTIFICATION_CHANNEL_PRIORITY, useFactory: () => getChannelPriority(process.env) },
     NotificationProviderRegistry,
     NotificationPreferenceService,
@@ -49,6 +55,8 @@ import { WebPushProvider } from './providers/web-push.provider';
     DeviceRegistrationService,
     NotificationDashboardService,
     NotificationDashboardResolver,
+    NotificationCenterService,
+    NotificationCenterResolver,
   ],
   exports: [NotificationDispatcher, NotificationPreferenceService, NotificationProviderRegistry],
 })

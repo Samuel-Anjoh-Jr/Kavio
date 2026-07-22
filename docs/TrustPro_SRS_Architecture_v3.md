@@ -201,6 +201,7 @@ MSG-01	The system shall provide real-time 1:1 conversations tied to jobs/quotes,
 MSG-02	Messages shall support text, images, voice notes (record/play with waveform), location sharing, quote cards, job cards, and payment requests, and shall surface escrow/job status inline.
 MSG-03	The system shall support delivery/read status, block user, and report conversation; the inbox and conversation shall have empty states and be readable offline for recently synced threads (see SYS).
 MSG-04	The messaging schema (Conversation / Message / Attachment with nullable participants) shall support future agent assignment and admin oversight without a rewrite.
+MSG-06	Users shall be able to report a conversation or an individual message; reports feed the single moderation queue defined in ADM-08 rather than a messaging-only inbox.
 3.8 Payments, Escrow, Wallet & Payouts (PAY)
 ID	Requirement
 PAY-01	The system shall support secure in-app payment via Campay, holding funds in escrow from acceptance/payment until the Client confirms completion, then releasing to the Worker minus the platform fee. (SRS FR-36)
@@ -225,6 +226,8 @@ SOS-03	The system shall support optional live tracking of an in-progress job (wo
 ID	Requirement
 NOT-01	The system shall send web push and/or email (SMS later, behind the channel service) for key events: new job matches, quote requests, messages, verification status changes, and payment/escrow events. (SRS FR-46)
 NOT-02	A Notification Center shall provide All/Unread/Important filters, mark-as-read, per-channel preferences (in-app / web push / email; SMS shown as coming soon), detail views, deep-links, and an empty state.
+NOT-03	The in-app inbox shall be implemented as a delivery CHANNEL behind the same NotificationChannel interface as web push and email, so a single dispatcher applies preferences to it and no notification can reach the inbox while bypassing them. Its rows persist the rendered title/body and an app-relative deep link (distinct from NotificationLog, which records delivery attempts and stores no user-facing content). The in-app channel is attempted first, since it cannot fail for want of a subscription or a mailbox.
+NOT-04	Every notification shall resolve to a deep link, derived centrally from the template key plus event metadata rather than written into localized copy, so the push notification, the service-worker click handler and the inbox row always agree on one destination. Links are normalised to app-relative paths; a link to any other origin is discarded rather than stored.
 3.12 Business & Team (BIZ)
 ID	Requirement
 BIZ-01	Job posts marked as coming from a registered business shall support optional enhanced Business Verification (RCCM/registration) granting a “Verified Business” badge and eligibility for Tier-3-gated corporate engagements. (SRS FR-22)
@@ -245,6 +248,7 @@ ADM-04	Admins shall view and, in exceptional cases, adjust Trust Scores (e.g. ap
 ADM-05	Admins shall have a dispute-resolution workspace covering escrowed payments, cancellations, and reported incidents, with details, messages, evidence, history, and actions (release payment, refund client, request info, close). (SRS FR-43)
 ADM-06	Admins shall manage Users/Workers/Businesses/Agents; oversee Payments & Escrow and Reviews moderation; and operate a Fraud & Risk monitor (high-risk users, suspicious jobs, blocked accounts, risk alerts) plus a platform map/heatmap. Invite agents via email
 ADM-07	Admins shall access Analytics & Reports (user growth, jobs over time, jobs by category/location, revenue by source, trust-score distribution, top performers) with export, plus Audit Logs, Announcements, Roles & Permissions (RBAC), Integrations, and System Settings.
+ADM-08	Reporting & Moderation. Any authenticated user shall be able to report anything they can see — a worker or business profile, a job post, a portfolio item or image, a review, a quote, a message, a conversation, or an identity directly — choosing a coded reason and optional detail. Reports are a single polymorphic record (target type + target id + the resolved identity of the reported party), never one table per surface. Admins shall have a moderation workspace that GROUPS reports BY THE REPORTED ITEM, so many complaints about one photo present as one case with its reporter count, distinct reasons, and first/last report times, ranked so the most-reported open items surface first. From a case an admin shall take one decision that settles the whole group: warn, remove the content, suspend (time-boxed), ban (permanent), reinstate, or dismiss. Each decision is written as an append-only ModerationAction (actor, subject, target, reason shown to the party, optional internal note, expiry) — a suspension is never a silent account-status write — and every report in the group is closed against that action. The reported party shall be notified of any action taken against them, with the reason. Content removal shall use each surface's existing soft-delete/archive path so nothing is hard-deleted while an audit trail points at it; target types with no removal path shall refuse the action explicitly rather than silently no-op. Reporting is login-gated (an anonymous report channel would be used to bury competitors) and rate-limited, and a user cannot file duplicate open reports against the same item.
 3.15 Settings & Account Management (SET)
 ID	Requirement
 SET-01	All users shall view/edit their profile, manage uploaded documents/photos, and view their current Tier and Trust Score with an explanation of how to improve it. (SRS FR-45)
@@ -353,7 +357,10 @@ Transaction	id, walletId, type (payment|escrow_hold|escrow_release|refund|withdr
 EscrowHold	id, bookingId, amount, feeAmount, state (paid|accepted|in_progress|completed|released|refunded)	1:1 with Booking
 Review	id, jobId, authorId, subjectId, rating, text, photos[]	belongs to Job; feeds TrustScore
 Dispute	id, jobId, openedById, reason, status (open|escalated|resolved), resolution	belongs to Job; has messages/evidence
-Notification	id, userId, type, payload, channel, readAt	belongs to User
+Notification	id, userId, category, templateKey, title, body, url, important, readAt, metadata	belongs to User; the in-app inbox (NOT-03), distinct from NotificationLog
+NotificationLog	id, userId?, channel, provider, recipient, templateKey, status, errorMessage	one row per delivery ATTEMPT; stores no rendered content
+AbuseReport	id, reporterId, reportedUserId, targetType, targetId, reason, details, status, moderationActionId?	polymorphic report (ADM-08); (targetType, targetId) is the grouping key
+ModerationAction	id, subjectUserId, actorId, action, targetType?, targetId?, reason, internalNote?, expiresAt?	append-only admin decision (ADM-08); settles many AbuseReports at once
 SOSAlert	id, userId, location (geo), status (active|resolved|false_alarm), createdAt	belongs to User; notifies contacts
 EmergencyContact	id, userId, name, phone	belongs to User
 LocationPing	id, subjectId, jobId?, geo, accuracy, source, ts	telemetry for tracking (PostGIS)
@@ -685,7 +692,7 @@ Community endorsements (previous customer, workshop owner, quarter chief, landlo
 Prioritisation blends the team meeting’s mandatory functionality with survey-validated demand.
 Priority	Features
 Must Have	Unified discovery (worker profiles + jobs + search + location setter + post-job CTA); guest browsing with login-gated actions; role switch (Worker ↔ Client); fuzzy/debounced search with admin-configured categories and “no provider yet” fallback; advanced filtering (location, price, tier, rating); tiered verification (Tiers 0–3) + Trust Score; verification-gated job posting (Tier 2+); worker portfolio photos (59.3%); visible Verified ID/Trust Score badge (59.3%); fixed-price quotes (51.9%); secure escrow via Campay (44.4%); PWA installability with separate marketing landing; baseline security hardening, responsive design, profile management.
-Should Have	Emergency/SOS button (safety-critical despite 29.6% rank); community endorsements; ratings & reviews; web push + email notifications (SMS later); business verification badge for corporate posters.
+Should Have	Emergency/SOS button (safety-critical despite 29.6% rank); community endorsements; ratings & reviews; in-app + web push + email notifications (SMS later); user reporting of any visible content with a grouped admin moderation workspace (ADM-08) — a trust-first marketplace that lets users report nothing is asking them to leave instead; business verification badge for corporate posters.
 Could Have	Live tracking of worker arrival (14.8%); corporate / Tier-3-gated high-value contracts; Field Agent “Founding Professional” recruitment tooling.
 Won’t Have (Phase 1)	Native iOS/Android apps, explicitly deferred in the original SRS; the API is designed to add them without rearchitecting, and the delivery plan (§23) schedules them as the next phase.
  
@@ -703,10 +710,10 @@ MSG	messaging, realtime	Inbox, conversation, voice/quote/payment cards
 PAY	payments	Wallet, escrow timeline, payment methods, transactions
 REV	reviews	Review submit, profile reviews summary
 SOS	safety, realtime	SOS button, safety center, SOS history, live tracking
-NOT	notifications	Web push + email + notification center + preferences (SMS deferred)
+NOT	notifications	In-app inbox + web push + email + notification center + preferences (SMS deferred)
 BIZ	business	Business dashboard, team, company verification, analytics
 AGT	agents	Agent dashboard, pipeline, routes, inspections, founding intake
-ADM	admin	Dashboard, categories, verification queue, disputes, fraud, reports
+ADM	admin, moderation	Dashboard, categories, verification queue, disputes, moderation workspace (grouped reports), fraud, reports
 SET / SYS	users, admin, platform	Settings, invite & earn, PWA/offline, system states
 23.2 Suggested delivery phasing
 A build order that front-loads the shell, tokens, and trust primitives so nothing is retrofitted. The entire delivery is the Web PWA.
@@ -774,4 +781,4 @@ Branded transactional emails only (tokens, logo, header/footer, mobile-responsiv
 26.6 Compliance & analytics baseline
 Legal pages (Terms, Privacy, Refund/Dispute policy) ship at launch as static pages; a lightweight analytics event layer tracks the conversion funnel (landing CTA → sign-up → verification steps → first job/quote → first escrow) with events named in one typed constant; social-preview (OG) images per key public route.
 27. Version 3 changelog
-Web-only scope enforced end to end (native mobile removed); Redis + BullMQ layer added (queues, rate limiting, WS adapter); notifications rebuilt around the dispatcher pattern with NotificationLog, localized template store, multi-device web-push registry, E.164 phone normalisation, SMS deferred behind a feature flag; local dev environment defined (Docker Compose postgres+redis, canonical root scripts, env:sync, husky, keygen); CI/CD workflows specified (deploy-production with drift gate, path-triggered migrate, confirm-gated manual seed); production engineering addendum (§26) binding the startup-guide lessons; guest exploration view vs authenticated role-based homes confirmed (§3.1-3.2 access model).
+Web-only scope enforced end to end (native mobile removed); Redis + BullMQ layer added (queues, rate limiting, WS adapter); notifications rebuilt around the dispatcher pattern with NotificationLog, localized template store, multi-device web-push registry, E.164 phone normalisation, SMS deferred behind a feature flag; local dev environment defined (Docker Compose postgres+redis, canonical root scripts, env:sync, husky, keygen); CI/CD workflows specified (deploy-production with drift gate, path-triggered migrate, confirm-gated manual seed); production engineering addendum (§26) binding the startup-guide lessons; guest exploration view vs authenticated role-based homes confirmed (§3.1-3.2 access model). Version 3.1 adds: the in-app inbox as a first-class delivery CHANNEL behind the NotificationChannel interface (NOT-03) so the Notification Center honours the same preference grid as push and email; central deep-link resolution shared by push, the service worker and the inbox (NOT-04); and universal reporting with an append-only moderation trail (ADM-08, MSG-06) — reports are one polymorphic record over any visible surface, grouped by the reported ITEM so many complaints about one photo are one case, settled by one decision that both records the penalty and notifies the reported party.

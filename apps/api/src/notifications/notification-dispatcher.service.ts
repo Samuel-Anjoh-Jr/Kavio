@@ -131,6 +131,9 @@ export class NotificationDispatcher {
         locale: recipient.locale,
         variables: event.variables,
         userId: event.userId,
+        // Carried so the provider can build a deep link and the in-app row can
+        // keep the ids its surface needs (see DeliveryContext).
+        ...(event.metadata ? { metadata: event.metadata } : {}),
         ...(requestId ? { requestId } : {}),
       };
 

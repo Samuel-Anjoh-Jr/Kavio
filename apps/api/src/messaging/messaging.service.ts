@@ -1,6 +1,12 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { MediaAssetKind, MessageKind, MessageStatus, Prisma } from '@trustpro/database';
+import {
+  MediaAssetKind,
+  MessageKind,
+  MessageStatus,
+  Prisma,
+  ReportTargetType,
+} from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
@@ -287,10 +293,18 @@ export class MessagingService {
       }
     }
 
+    // The report's grouping key for the moderation workspace (ADM-08). Most
+    // specific target wins: a report citing a message is about that message, not
+    // the whole thread — which is what lets an admin see every complaint about
+    // one message as a single case.
+    const { targetType, targetId } = resolveMessagingTarget(dto);
+
     const report = await this.prisma.client.abuseReport.create({
       data: {
         reporterId: user.id,
         reportedUserId: dto.reportedUserId,
+        targetType,
+        targetId,
         conversationId: dto.conversationId ?? null,
         messageId: dto.messageId ?? null,
         reason: dto.reason,
@@ -471,4 +485,24 @@ function badField(field: string, message: string): AppException {
   return new AppException(HttpStatus.BAD_REQUEST, 'INVALID_MESSAGE', message, {
     [field]: [message],
   });
+}
+
+/**
+ * The (targetType, targetId) grouping key for a messaging report (ADM-08).
+ *
+ * Messaging reports predate universal reporting and keep their own entry point,
+ * so the pair is derived here from whichever id the caller cited rather than
+ * being asked for. Most specific target wins.
+ */
+function resolveMessagingTarget(dto: ReportDto): {
+  targetType: ReportTargetType;
+  targetId: string;
+} {
+  if (dto.messageId) {
+    return { targetType: ReportTargetType.MESSAGE, targetId: dto.messageId };
+  }
+  if (dto.conversationId) {
+    return { targetType: ReportTargetType.CONVERSATION, targetId: dto.conversationId };
+  }
+  return { targetType: ReportTargetType.USER, targetId: dto.reportedUserId };
 }

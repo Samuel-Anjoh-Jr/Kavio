@@ -37,6 +37,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { BusinessModule } from './business/business.module';
 import { SafetyModule } from './safety/safety.module';
 import { TrackingModule } from './tracking/tracking.module';
+import { ModerationModule } from './moderation/moderation.module';
 
 @Module({
   imports: [
@@ -110,6 +111,10 @@ import { TrackingModule } from './tracking/tracking.module';
     // Live tracking (SOS-03). Foreground, consented, revocable position streaming
     // over its own WS gateway, persisted to PostGIS.
     TrackingModule,
+    // Reporting & moderation (ADM-08). Registered last of the feature modules
+    // because it acts ON the others: it soft-deletes their content and suspends
+    // their authors, so it depends on all of them existing and none depend on it.
+    ModerationModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({

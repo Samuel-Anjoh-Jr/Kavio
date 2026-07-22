@@ -8,8 +8,12 @@ import {
 
 describe('notification config', () => {
   describe('getChannelPriority', () => {
-    it('defaults to push → email → SMS', () => {
+    it('defaults to in-app → push → email → SMS', () => {
+      // IN_APP leads: it is the only channel that cannot fail for want of a
+      // subscription or a mailbox, so the notice is always waiting in the
+      // Notification Center whatever happens on the outward channels (NOT-02).
       expect(getChannelPriority({})).toEqual([
+        NotificationChannel.IN_APP,
         NotificationChannel.WEB_PUSH,
         NotificationChannel.EMAIL,
         NotificationChannel.SMS,
@@ -24,9 +28,9 @@ describe('notification config', () => {
     });
 
     it('falls back to the default when the override is empty or all-invalid', () => {
-      expect(getChannelPriority({ NOTIFICATIONS_CHANNEL_PRIORITY: '   ' })).toHaveLength(3);
+      expect(getChannelPriority({ NOTIFICATIONS_CHANNEL_PRIORITY: '   ' })).toHaveLength(4);
       expect(getChannelPriority({ NOTIFICATIONS_CHANNEL_PRIORITY: 'CARRIER_PIGEON' })).toHaveLength(
-        3,
+        4,
       );
     });
   });

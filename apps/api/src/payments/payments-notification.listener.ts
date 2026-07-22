@@ -94,13 +94,19 @@ export class PaymentsNotificationListener {
   async onDisputeOpened(event: DisputeOpenedEvent): Promise<void> {
     const jobTitle = await this.jobTitle(event.jobId);
 
-    // The other party learns a dispute was raised and the escrow is frozen.
+    // The other party learns a dispute was raised and the escrow is frozen, and
+    // lands on the case itself rather than on a list they have to search.
     this.events.emit(
       NOTIFICATION_REQUESTED,
       new NotificationRequestedEvent({
         userId: event.otherPartyId,
         templateKey: 'dispute.opened',
         variables: { jobTitle },
+        metadata: {
+          disputeId: event.disputeId,
+          jobId: event.jobId,
+          deepLink: `/app/disputes/${event.disputeId}`,
+        },
         requestId: event.requestId,
       }),
     );
@@ -109,12 +115,16 @@ export class PaymentsNotificationListener {
     // the queue (ADM-05). A frozen escrow with nobody watching is a client's
     // money stuck indefinitely; a dispute must land in front of a resolver the
     // moment it opens. Everyone holding the ADMIN role is notified.
-    await this.alertAdmins(jobTitle, event.requestId, [event.openedById, event.otherPartyId]);
+    await this.alertAdmins(jobTitle, event.disputeId, event.requestId, [
+      event.openedById,
+      event.otherPartyId,
+    ]);
   }
 
   /** Fans the dispute-opened alert out to every admin (ADM-05). */
   private async alertAdmins(
     jobTitle: string,
+    disputeId: string,
     requestId: string | undefined,
     exclude: string[],
   ): Promise<void> {
@@ -132,6 +142,12 @@ export class PaymentsNotificationListener {
           userId,
           templateKey: 'dispute.opened',
           variables: { jobTitle },
+          // Admins deep-link into the RESOLUTION workspace, not the party view:
+          // the same alert has to land each recipient where they can act.
+          metadata: {
+            disputeId,
+            deepLink: `/app/admin/disputes/${disputeId}`,
+          },
           requestId,
         }),
       );
@@ -148,6 +164,11 @@ export class PaymentsNotificationListener {
           userId,
           templateKey: 'dispute.resolved',
           variables: { jobTitle, resolution: event.resolution },
+          metadata: {
+            disputeId: event.disputeId,
+            jobId: event.jobId,
+            deepLink: `/app/disputes/${event.disputeId}`,
+          },
           requestId: event.requestId,
         }),
       );

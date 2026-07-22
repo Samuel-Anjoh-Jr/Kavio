@@ -320,7 +320,15 @@
     "account": "Compte",
     "home": "Mon espace",
     "signIn": "Se connecter",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "safety": "Sécurité",
+    "moderation": "Signalements",
+    "settings": "Paramètres",
+    "adminSection": "Administration",
+    "adminDisputes": "Litiges",
+    "adminReports": "Signalements"
   },
   "Roles": {
     "switcherLabel": "Changer de rôle",
@@ -362,7 +370,8 @@
     "title": "Missions publiées",
     "subtitle": "Découvrez ce dont les gens près de chez vous ont besoin.",
     "post": "Publier une mission",
-    "empty": "Aucune mission pour le moment. Dès l'ouverture de la publication, les missions de votre zone apparaîtront ici."
+    "empty": "Aucune mission pour le moment. Dès l'ouverture de la publication, les missions de votre zone apparaîtront ici.",
+    "reportListing": "Signaler cette annonce"
   },
   "PostJob": {
     "title": "Décrivez votre mission",
@@ -1053,7 +1062,8 @@
     "linkCopied": "Lien du profil copié",
     "quoteComingSoon": "Les devis s'ouvriront avec le module de devis. Nous avons noté votre intérêt.",
     "messagingComingSoon": "La messagerie s'ouvrira avec le module de messagerie.",
-    "reportComingSoon": "Le signalement s'ouvrira avec le module de sécurité."
+    "reportComingSoon": "Le signalement s'ouvrira avec le module de sécurité.",
+    "reportItem": "Signaler cet élément"
   },
   "Business": {
     "notFoundTitle": "Entreprise introuvable",
@@ -1478,5 +1488,349 @@
         "CLOSE_NO_ACTION": "Litige clôturé."
       }
     }
+  },
+  "Messaging": {
+    "inboxTitle": "Messages",
+    "inboxSubtitle": "Vos conversations avec les clients et les prestataires.",
+    "searchPlaceholder": "Rechercher dans les messages",
+    "filters": "Filtrer les conversations",
+    "filter": {
+      "ALL": "Tous",
+      "CLIENTS": "Personnes",
+      "SYSTEM": "Système",
+      "OFFERS": "Offres"
+    },
+    "systemThread": "TrustPro",
+    "noMessagesYet": "Aucun message",
+    "notFound": "Cette conversation est introuvable.",
+    "backToInbox": "Retour aux messages",
+    "composerPlaceholder": "Écrire un message…",
+    "send": "Envoyer",
+    "attachImage": "Joindre une photo",
+    "sendFailed": "Votre message n’a pas pu être envoyé. Veuillez réessayer.",
+    "uploadFailed": "Ce fichier n’a pas pu être envoyé. Veuillez réessayer.",
+    "actionFailed": "Cette action n’a pas pu être effectuée. Veuillez réessayer.",
+    "blocked": "Vous avez bloqué cette personne.",
+    "blockedNotice": "Vous avez bloqué cette personne. Débloquez-la pour envoyer un message.",
+    "messageDeleted": "Ce message a été supprimé.",
+    "day": {
+      "today": "Aujourd’hui",
+      "yesterday": "Hier"
+    },
+    "presence": {
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "typing": "En train d’écrire…"
+    },
+    "status": {
+      "sent": "Envoyé",
+      "delivered": "Distribué",
+      "read": "Lu"
+    },
+    "menu": {
+      "open": "Options de la conversation",
+      "report": "Signaler la conversation",
+      "block": "Bloquer",
+      "blocked": "Débloquer"
+    },
+    "voice": {
+      "record": "Enregistrer",
+      "stop": "Arrêter l’enregistrement",
+      "discard": "Supprimer l’enregistrement",
+      "send": "Envoyer la note vocale",
+      "play": "Lire la note vocale",
+      "pause": "Pause",
+      "dismiss": "Fermer",
+      "unavailable": "Note vocale indisponible",
+      "micDenied": "Nous n’avons pas pu accéder à votre micro. Vérifiez les autorisations du navigateur."
+    },
+    "cards": {
+      "jobTitle": "Mission",
+      "viewJob": "Voir les détails de la mission",
+      "quoteTitle": "Devis",
+      "viewQuote": "Voir le devis",
+      "paymentTitle": "Paiement",
+      "paymentPending": "En attente de paiement",
+      "fundsSecure": "Fonds sécurisés",
+      "escrowUnknown": "Séquestre",
+      "imageAlt": "Photo partagée",
+      "imageUnavailable": "Photo indisponible",
+      "sharedLocation": "Position partagée",
+      "locationUnavailable": "Position indisponible",
+      "escrowState": {
+        "PAID": "Payé",
+        "ACCEPTED": "Accepté",
+        "IN_PROGRESS": "En cours",
+        "COMPLETED": "Terminé",
+        "RELEASED": "Versé",
+        "REFUNDED": "Remboursé",
+        "DISPUTED": "En litige"
+      }
+    },
+    "empty": {
+      "inboxTitle": "Aucune conversation",
+      "inboxBody": "Écrivez à un prestataire depuis son profil, ou répondez à un client pour démarrer une conversation.",
+      "filterBody": "Rien ne correspond à ce filtre pour l’instant.",
+      "filter": {
+        "ALL": "Aucune conversation",
+        "CLIENTS": "Aucune conversation avec des personnes",
+        "SYSTEM": "Aucun message système",
+        "OFFERS": "Aucune offre de mission dans vos messages"
+      },
+      "threadTitle": "Dites bonjour",
+      "threadBody": "Envoyez le premier message pour démarrer cette conversation."
+    },
+    "auth": {
+      "title": "Connectez-vous pour voir vos messages",
+      "body": "Vos conversations sont privées.",
+      "signIn": "Se connecter"
+    }
+  },
+  "Safety": {
+    "title": "Centre de sécurité",
+    "subtitle": "Contacts d’urgence, historique SOS et suivi en direct des missions en cours.",
+    "sos": {
+      "hold": "Maintenir pour envoyer un SOS",
+      "holding": "Continuez d’appuyer…",
+      "sending": "Envoi…",
+      "sent": "SOS envoyé",
+      "active": "SOS actif",
+      "activeBanner": "Un SOS est actif. Votre position est partagée.",
+      "helpOnWay": "Vos contacts d’urgence ont été alertés.",
+      "instruction": "Appuyez et maintenez le bouton pour alerter vos contacts d’urgence avec votre position.",
+      "failed": "Nous n’avons pas pu envoyer votre SOS. Réessayez ou appelez directement à l’aide.",
+      "resolve": "Marquer comme résolu",
+      "falseAlarm": "Fausse alerte",
+      "resolved": "Cette alerte est résolue.",
+      "locating": "Localisation en cours…"
+    },
+    "contacts": {
+      "title": "Contacts d’urgence",
+      "subtitle": "Les personnes alertées lorsque vous envoyez un SOS.",
+      "empty": "Aucun contact d’urgence. Ajoutez une personne qui peut vous aider en cas d’urgence.",
+      "add": "Ajouter un contact",
+      "edit": "Modifier",
+      "remove": "Supprimer",
+      "removed": "Contact supprimé.",
+      "saved": "Contact enregistré.",
+      "name": "Nom",
+      "phone": "Numéro de téléphone",
+      "relationship": "Lien (facultatif)",
+      "email": "E-mail (facultatif)",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saveFailed": "Ce contact n’a pas pu être enregistré. Vérifiez les informations et réessayez."
+    },
+    "history": {
+      "title": "Historique SOS",
+      "empty": "Vous n’avez envoyé aucune alerte SOS. C’est une bonne chose.",
+      "sharedWith": "Partagé avec {count} contacts",
+      "safetyProcess": "Sécurité TrustPro",
+      "delivered": "Distribué",
+      "notDelivered": "Non distribué",
+      "viewMap": "Voir la position",
+      "status": {
+        "ACTIVE": "Active",
+        "RESOLVED": "Résolue",
+        "FALSE_ALARM": "Fausse alerte"
+      },
+      "openedOn": "Envoyée le {date}"
+    },
+    "tracking": {
+      "title": "Suivi en direct",
+      "subtitle": "Voyez votre prestataire en route, avec une estimation d’arrivée.",
+      "enRoute": "En route",
+      "arrived": "Arrive maintenant",
+      "eta": "Arrive dans environ {eta}",
+      "distance": "À {distance}",
+      "waiting": "En attente du partage de position du prestataire…",
+      "ended": "Le suivi est terminé.",
+      "consentRevoked": "Le prestataire a cessé de partager sa position.",
+      "noSession": "Il n’y a pas de suivi actif pour cette mission.",
+      "shareTitle": "Partager votre position",
+      "shareBody": "Tant que cet écran est ouvert, votre position en direct est partagée avec le client pour qu’il vous voie arriver. Fermez l’écran pour arrêter.",
+      "startSharing": "Commencer le partage",
+      "stopSharing": "Arrêter le partage",
+      "sharing": "Partage de votre position",
+      "streamError": "Nous n’avons pas pu lire votre position. Vérifiez les autorisations du navigateur."
+    },
+    "auth": {
+      "title": "Connectez-vous pour utiliser le Centre de sécurité",
+      "body": "Les contacts d’urgence et l’historique SOS sont privés.",
+      "signIn": "Se connecter"
+    }
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "subtitle": "Mises à jour des missions, messages, paiements et alertes de sécurité.",
+    "markAllRead": "Tout marquer comme lu",
+    "allRead": "Vous êtes à jour.",
+    "filter": {
+      "ALL": "Toutes",
+      "UNREAD": "Non lues",
+      "IMPORTANT": "Importantes"
+    },
+    "empty": {
+      "ALL": "Aucune notification",
+      "UNREAD": "Aucune notification non lue",
+      "IMPORTANT": "Aucune notification importante",
+      "body": "Les mises à jour de vos missions, devis, paiements et de votre sécurité apparaîtront ici."
+    },
+    "markReadFailed": "La mise à jour a échoué. Veuillez réessayer.",
+    "justNow": "À l’instant",
+    "openBell": "Notifications",
+    "viewAll": "Voir toutes les notifications",
+    "settings": {
+      "title": "Préférences de notification",
+      "subtitle": "Choisissez comment recevoir chaque type de mise à jour.",
+      "channel": {
+        "IN_APP": "Dans l’app",
+        "WEB_PUSH": "Push",
+        "EMAIL": "E-mail",
+        "SMS": "SMS"
+      },
+      "channelHint": {
+        "IN_APP": "Affiché dans votre centre de notifications",
+        "WEB_PUSH": "Envoyé à cet appareil",
+        "EMAIL": "Envoyé à votre e-mail",
+        "SMS": "Message texte"
+      },
+      "comingSoon": "Bientôt",
+      "smsDeferred": "Les notifications SMS arrivent bientôt.",
+      "category": {
+        "JOBS": "Missions",
+        "QUOTES": "Devis",
+        "MESSAGES": "Messages",
+        "PAYMENTS": "Paiements",
+        "TRUST": "Confiance et vérification",
+        "REVIEWS": "Avis",
+        "DISPUTES": "Litiges",
+        "SAFETY": "Sécurité",
+        "ACCOUNT": "Compte",
+        "MARKETING": "Actualités et offres"
+      },
+      "securityNote": "Les alertes de sécurité sont toujours envoyées par e-mail et ne peuvent pas être désactivées.",
+      "saved": "Préférence mise à jour.",
+      "saveFailed": "Cette préférence n’a pas pu être enregistrée. Veuillez réessayer.",
+      "push": {
+        "title": "Notifications push",
+        "body": "Soyez notifié sur cet appareil même lorsque TrustPro est fermé.",
+        "enable": "Activer le push",
+        "enabled": "Le push est activé sur cet appareil",
+        "disable": "Désactiver",
+        "enabling": "Activation…",
+        "unsupported": "Ce navigateur ne prend pas en charge les notifications push.",
+        "denied": "Le push est bloqué. Autorisez les notifications dans les réglages du navigateur.",
+        "unconfigured": "Les notifications push ne sont pas disponibles pour le moment.",
+        "enableFailed": "Nous n’avons pas pu activer le push. Veuillez réessayer."
+      }
+    },
+    "auth": {
+      "title": "Connectez-vous pour voir vos notifications",
+      "body": "Vos notifications sont privées.",
+      "signIn": "Se connecter"
+    }
+  },
+  "Report": {
+    "title": "Signaler",
+    "subtitle": "Dites-nous ce qui ne va pas. Notre équipe examine chaque signalement.",
+    "reasonLabel": "Pourquoi signalez-vous ceci ?",
+    "detailsLabel": "Autre chose ? (facultatif)",
+    "detailsPlaceholder": "Ajoutez tout détail qui pourrait nous aider à comprendre.",
+    "chooseReason": "Veuillez choisir un motif.",
+    "submit": "Envoyer le signalement",
+    "cancel": "Annuler",
+    "close": "Terminé",
+    "failed": "Votre signalement n’a pas pu être envoyé. Veuillez réessayer.",
+    "thanksTitle": "Merci",
+    "thanksBody": "Nous avons reçu votre signalement et notre équipe va l’examiner.",
+    "trigger": "Signaler",
+    "reason": {
+      "SPAM": "Spam",
+      "HARASSMENT": "Harcèlement ou intimidation",
+      "SCAM": "Arnaque ou fraude",
+      "INAPPROPRIATE": "Contenu inapproprié",
+      "OFF_PLATFORM": "Tentative de quitter TrustPro",
+      "FAKE_PROFILE": "Profil faux ou usurpé",
+      "STOLEN_CONTENT": "Photos ou travaux volés",
+      "MISLEADING": "Informations trompeuses ou fausses",
+      "ILLEGAL": "Illégal ou dangereux",
+      "OTHER": "Autre chose"
+    }
+  },
+  "Moderation": {
+    "title": "Signalements et modération",
+    "subtitle": "Contenus signalés, regroupés par élément. Une décision par élément.",
+    "summary": {
+      "openGroups": "Éléments à examiner",
+      "openReports": "Signalements ouverts",
+      "reviewingGroups": "En cours d’examen"
+    },
+    "queueEmpty": "Rien à examiner",
+    "queueEmptyBody": "Les profils, missions, photos et messages signalés apparaîtront ici, regroupés par élément.",
+    "filterType": "Type",
+    "allTypes": "Tous les types",
+    "reportsAbout": "{count} signalements",
+    "reportedOnce": "1 signalement",
+    "reasonsHeading": "Motifs",
+    "reportersHeading": "Signalements",
+    "historyHeading": "Historique de cette partie",
+    "noHistory": "Aucune action antérieure contre cette partie.",
+    "priorActions": "{count} actions antérieures",
+    "itemRemoved": "Cet élément a été supprimé.",
+    "viewItem": "Voir l’élément",
+    "reportedBy": "Signalé par",
+    "anonymous": "Un utilisateur",
+    "targetType": {
+      "USER": "Utilisateur",
+      "WORKER_PROFILE": "Profil prestataire",
+      "BUSINESS_PROFILE": "Profil entreprise",
+      "JOB": "Annonce de mission",
+      "PORTFOLIO_ITEM": "Élément de portfolio",
+      "MEDIA_ASSET": "Média",
+      "REVIEW": "Avis",
+      "QUOTE": "Devis",
+      "MESSAGE": "Message",
+      "CONVERSATION": "Conversation"
+    },
+    "status": {
+      "OPEN": "Ouvert",
+      "REVIEWING": "En cours",
+      "ACTIONED": "Traité",
+      "DISMISSED": "Rejeté"
+    },
+    "pickUp": "Commencer l’examen",
+    "action": {
+      "WARN": "Avertir",
+      "CONTENT_REMOVED": "Retirer le contenu",
+      "SUSPEND": "Suspendre",
+      "BAN": "Bannir",
+      "REINSTATE": "Rétablir",
+      "DISMISS": "Rejeter"
+    },
+    "actionEffect": {
+      "WARN": "Envoie un avertissement formel à la partie. Le contenu reste en ligne.",
+      "CONTENT_REMOVED": "Retire l’élément. Le compte reste actif.",
+      "SUSPEND": "Suspend le compte pour un nombre de jours défini.",
+      "BAN": "Suspend définitivement le compte.",
+      "REINSTATE": "Lève une suspension ou un bannissement.",
+      "DISMISS": "Clôt les signalements sans sanction."
+    },
+    "decide": "Agir",
+    "decideTitle": "Agir : {action}",
+    "reasonLabel": "Motif (visible par la partie)",
+    "reasonPlaceholder": "Expliquez la décision. La partie la verra.",
+    "internalNoteLabel": "Note interne (facultatif)",
+    "internalNotePlaceholder": "Note réservée aux admins.",
+    "suspendDaysLabel": "Durée de suspension (jours)",
+    "confirm": "Confirmer",
+    "cancel": "Annuler",
+    "actioned": "Action enregistrée.",
+    "actionFailed": "Cette action n’a pas pu être effectuée. Veuillez réessayer.",
+    "reasonRequired": "Veuillez indiquer un motif.",
+    "reportsClosed": "{count} signalements clôturés.",
+    "contentRemoved": "L’élément a été supprimé.",
+    "backToQueue": "Retour aux signalements",
+    "notFound": "Ce signalement est introuvable."
   }
 }

@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import {
   AlertTriangle,
   CheckCircle2,
+  Flag,
   Loader2,
   MapPin,
   MessageCircle,
@@ -20,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useToast } from '@/components/ui/use-toast';
 import { useRequireAuth } from '@/components/auth/require-auth';
+import { ReportDialog } from '@/components/moderation/report-dialog';
 import { MilestoneStepper, type Milestone } from '@/components/transactions/milestone-stepper';
 import { ApiError } from '@/lib/api-error';
 import { formatXaf } from '@/lib/discovery';
@@ -233,6 +235,11 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
           </Button>
         )}
 
+        {/* Two different "something is wrong" paths, deliberately not merged.
+            A DISPUTE is about money on a job you are party to and freezes the
+            escrow; a REPORT is about the post itself (a scam listing, a fake
+            job) and anyone who can see it may file one. Offering only the first
+            would leave a passer-by with no way to flag a fraudulent post. */}
         {authStatus === 'authenticated' &&
           (job.status === 'IN_PROGRESS' || job.status === 'COMPLETED') && (
             <Button
@@ -244,6 +251,20 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
               {t('reportProblem')}
             </Button>
           )}
+
+        {!isPoster && (
+          <ReportDialog
+            targetType="JOB"
+            targetId={jobId}
+            reportedUserId={job.posterId}
+            trigger={
+              <Button variant="ghost" className="text-muted-foreground">
+                <Flag aria-hidden />
+                {t('reportListing')}
+              </Button>
+            }
+          />
+        )}
       </div>
 
       {job.status === 'COMPLETED' && isPoster && (

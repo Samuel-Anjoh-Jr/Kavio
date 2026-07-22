@@ -70,3 +70,32 @@ export function estimateFee(price: number): FeeBreakdown {
   const fee = Math.round(price * PLATFORM_FEE_RATE);
   return { price, fee, workerPayout: price - fee };
 }
+
+/**
+ * The escrow money machine's states (SRS §15.1). Mirrors the API's EscrowState —
+ * used inline in chat payment cards (MSG-02) and anywhere a hold's live state is
+ * shown outside the full escrow timeline.
+ */
+export type EscrowState =
+  'PAID' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'RELEASED' | 'REFUNDED' | 'DISPUTED';
+
+export const ESCROW_STATE_TONE: Record<EscrowState, StatusTone> = {
+  PAID: 'accent',
+  ACCEPTED: 'accent',
+  IN_PROGRESS: 'primary',
+  COMPLETED: 'primary',
+  RELEASED: 'success',
+  REFUNDED: 'neutral',
+  DISPUTED: 'danger',
+};
+
+/** Message-catalogue key for each escrow state, under the Messaging namespace. */
+export const ESCROW_STATE_LABEL_KEY: Record<EscrowState, string> = {
+  PAID: 'cards.escrowState.PAID',
+  ACCEPTED: 'cards.escrowState.ACCEPTED',
+  IN_PROGRESS: 'cards.escrowState.IN_PROGRESS',
+  COMPLETED: 'cards.escrowState.COMPLETED',
+  RELEASED: 'cards.escrowState.RELEASED',
+  REFUNDED: 'cards.escrowState.REFUNDED',
+  DISPUTED: 'cards.escrowState.DISPUTED',
+};

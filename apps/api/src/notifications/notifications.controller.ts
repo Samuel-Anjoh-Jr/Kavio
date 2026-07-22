@@ -1,25 +1,73 @@
-import { Body, Controller, HttpCode, HttpStatus, NotFoundException, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Throttle } from '@nestjs/throttler';
-import { Public } from '../auth/decorators/auth.decorators';
+import type { AuthenticatedUser } from '../auth/auth.types';
+import { CurrentUser, Public } from '../auth/decorators/auth.decorators';
 import { ZodValidationPipe } from '../lib/zod-validation.pipe';
 import { NOTIFICATION_REQUESTED, NotificationRequestedEvent } from './events/notification.events';
 import { testDispatchSchema, type TestDispatchDto } from './dto/test-dispatch.dto';
+import {
+  updateNotificationPreferenceSchema,
+  type UpdateNotificationPreferenceDto,
+} from './dto/notification-center.dto';
+import { NotificationCenterService } from './notification-center.service';
 
 /**
- * Notification writes (REST, per the DUAL API RULE).
+ * Notification writes (REST, per the DUAL API RULE; NOT-02, SET-02). Reads are on
+ * NotificationCenterResolver.
  *
- * Today this exposes only the dev-only smoke-test endpoint proving the dispatcher
- * path end to end. It also demonstrates the mandatory integration pattern: the
- * controller EMITS a typed domain event and never touches a provider, a channel,
- * a template or the queue.
+ * No RBAC capability guards the center: an inbox and its preferences belong to the
+ * identity, so any authenticated user manages their own — the same reasoning that
+ * leaves wallet and safety endpoints without a permission decorator. Scoping is by
+ * `userId` in the service's WHERE, never by a client-supplied argument.
  *
- * The endpoint 404s outside development so it can never be reached in production.
- * User-facing surfaces (notification center, preferences) land in P78.
+ * The dev-only smoke-test endpoint below also demonstrates the mandatory
+ * integration pattern: a controller EMITS a typed domain event and never touches
+ * a provider, a channel, a template or the queue.
  */
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly events: EventEmitter2) {}
+  constructor(
+    private readonly events: EventEmitter2,
+    private readonly center: NotificationCenterService,
+  ) {}
+
+  /** Marks one notification read (NOT-02). Idempotent: re-reading updates nothing. */
+  @Post(':id/read')
+  @HttpCode(HttpStatus.OK)
+  async markRead(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<{ updated: number }> {
+    return this.center.markRead(user, id);
+  }
+
+  @Post('read-all')
+  @HttpCode(HttpStatus.OK)
+  async markAllRead(@CurrentUser() user: AuthenticatedUser): Promise<{ updated: number }> {
+    return this.center.markAllRead(user);
+  }
+
+  /** Toggles one channel × category preference cell (NOT-02, SET-02). */
+  @Patch('preferences')
+  @HttpCode(HttpStatus.OK)
+  async setPreference(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(updateNotificationPreferenceSchema))
+    dto: UpdateNotificationPreferenceDto,
+  ) {
+    return this.center.setPreference(user, dto.channel, dto.category, dto.enabled);
+  }
 
   // Public only because it 404s outside development (see the guard below); a
   // token would otherwise be needed to smoke-test before any account exists.

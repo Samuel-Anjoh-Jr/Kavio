@@ -12,7 +12,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { MediaVisibility, type MediaAssetKind } from '@trustpro/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
-import { detectMimeType } from './file-signature.util';
+import { detectMimeTypes } from './file-signature.util';
 import {
   getS3Config,
   isKycKind,
@@ -103,7 +103,12 @@ export class StorageService implements OnModuleInit {
       );
     }
 
-    const detected = detectMimeType(file.buffer);
+    // The bytes may legitimately be more than one type: WebM, Ogg and MP4 have
+    // the same magic number whether they carry audio or video. So sniffing gives
+    // a CANDIDATE SET, and the declared type is allowed to pick among it — never
+    // to escape it. A renamed executable still matches nothing and is refused.
+    const candidates = detectMimeTypes(file.buffer);
+    const detected = candidates.includes(file.mimetype) ? file.mimetype : (candidates[0] ?? null);
 
     if (!detected || !policy.mimeTypes.includes(detected)) {
       throw new AppException(
@@ -221,6 +226,14 @@ function extensionFor(mimeType: string): string {
       return '.webp';
     case 'application/pdf':
       return '.pdf';
+    case 'audio/webm':
+      return '.weba';
+    case 'audio/ogg':
+      return '.ogg';
+    case 'audio/mp4':
+      return '.m4a';
+    case 'audio/mpeg':
+      return '.mp3';
     default:
       return '';
   }

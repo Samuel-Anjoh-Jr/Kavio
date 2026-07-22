@@ -279,7 +279,7 @@ export function WorkerProfileScreen({
           </TabsContent>
 
           <TabsContent value="portfolio" className="mt-6">
-            <PortfolioGallery groups={profile.portfolio} />
+            <PortfolioGallery groups={profile.portfolio} workerUserId={profile.userId} />
           </TabsContent>
 
           <TabsContent value="reviews" className="mt-6">

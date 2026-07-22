@@ -37,6 +37,12 @@ describe('template registry', () => {
           expect(rendered.content.body.trim().length).toBeGreaterThan(0);
         } else if (rendered?.channel === 'SMS') {
           expect(rendered.content.text.trim().length).toBeGreaterThan(0);
+        } else if (rendered?.channel === 'IN_APP') {
+          // IN_APP has no renderers of its own — it reuses the push copy — so
+          // this asserts the derivation produced real content in both locales
+          // rather than an empty row in someone's Notification Center.
+          expect(rendered.content.title.trim().length).toBeGreaterThan(0);
+          expect(rendered.content.body.trim().length).toBeGreaterThan(0);
         }
       }
     }
@@ -187,6 +193,27 @@ function sampleVariables(key: string): Record<string, unknown> {
       return { jobTitle: 'Fix a leaking kitchen tap' };
     case 'dispute.resolved':
       return { jobTitle: 'Fix a leaking kitchen tap', resolution: 'RELEASE_TO_WORKER' };
+    case 'message.received':
+      return { senderName: 'Awa', preview: 'I can come tomorrow morning.' };
+    case 'review.received':
+      return { jobTitle: 'Fix a leaking kitchen tap', rating: 5 };
+    case 'job.matched':
+      return { jobTitle: 'Rewire a kitchen', categoryName: 'Electrical' };
+    case 'safety.sos_triggered':
+      return {
+        userName: 'Awa',
+        contactName: 'Marie',
+        message: 'I do not feel safe here.',
+        mapUrl: 'https://maps.google.com/?q=4.05,9.7',
+      };
+    case 'moderation.action_taken':
+      return {
+        action: 'SUSPEND',
+        reason: 'Repeated off-platform payment requests.',
+        expiresAt: '2026-08-04T09:00:00.000Z',
+      };
+    case 'moderation.report_received':
+      return { targetLabel: 'Kitchen rewire', targetType: 'JOB' };
     default:
       // Loud rather than `{}`: an empty object renders "undefined" into real
       // copy, and the parity test above would pass while the email was broken.

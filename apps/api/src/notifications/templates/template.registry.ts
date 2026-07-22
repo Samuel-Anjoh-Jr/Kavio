@@ -104,6 +104,20 @@ export interface TemplateVariablesMap {
     message: string | null;
     mapUrl: string;
   };
+  /**
+   * An admin took a moderation decision against this identity (ADM-08). `action`
+   * is the enum value and is chosen into localized copy here — the reason is the
+   * admin's own words and is passed through verbatim, because a penalty a person
+   * cannot read is not due process.
+   */
+  'moderation.action_taken': {
+    action: string;
+    reason: string;
+    /** ISO instant a suspension lapses; null on every other action. */
+    expiresAt: string | null;
+  };
+  /** Something was reported and needs a decision (ADM-08). Sent to admins. */
+  'moderation.report_received': { targetLabel: string; targetType: string };
 }
 
 export type TemplateKey = keyof TemplateVariablesMap;
@@ -1648,6 +1662,122 @@ const safetySosTriggered: TemplateDefinition<'safety.sos_triggered'> = {
 /** Mapped so `TEMPLATES[key]` stays correlated with the key's variables type. */
 type TemplateMap = { [K in TemplateKey]: TemplateDefinition<K> };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Moderation (ADM-08)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Localized name for each decision. The enum never reaches a user's screen. */
+const ACTION_COPY: Record<string, { en: string; fr: string }> = {
+  WARN: { en: 'a warning', fr: 'un avertissement' },
+  CONTENT_REMOVED: { en: 'content removed', fr: 'un contenu retiré' },
+  SUSPEND: { en: 'a temporary suspension', fr: 'une suspension temporaire' },
+  BAN: { en: 'a permanent suspension', fr: 'une suspension définitive' },
+  REINSTATE: { en: 'your account restored', fr: 'votre compte rétabli' },
+  DISMISS: { en: 'no action', fr: 'aucune action' },
+};
+
+function actionLabel(action: string, locale: Locale): string {
+  return ACTION_COPY[action]?.[locale] ?? ACTION_COPY[action]?.en ?? action;
+}
+
+const moderationActionTaken: TemplateDefinition<'moderation.action_taken'> = {
+  key: 'moderation.action_taken',
+  category: NotificationCategory.ACCOUNT,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'An update about your TrustPro account',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'A moderation decision was made about your account.',
+          heading: 'An update about your account',
+          bodyHtml: paragraphs(
+            `After reviewing a report, our team applied ${escapeHtml(actionLabel(v.action, 'en'))} to your account.`,
+            `Reason given: ${escapeHtml(v.reason)}`,
+            ...(v.expiresAt
+              ? [`This lapses on ${escapeHtml(new Date(v.expiresAt).toDateString())}.`]
+              : []),
+            'If you believe this is a mistake, reply to this email and a person will look again.',
+          ),
+        }),
+        text: `TrustPro applied ${actionLabel(v.action, 'en')} to your account. Reason: ${v.reason}.${v.expiresAt ? ` Lapses ${new Date(v.expiresAt).toDateString()}.` : ''}`,
+      }),
+      fr: (v) => ({
+        subject: 'Une mise à jour concernant votre compte TrustPro',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Une décision de modération concerne votre compte.',
+          heading: 'Mise à jour de votre compte',
+          bodyHtml: paragraphs(
+            `Après examen d’un signalement, notre équipe a appliqué ${escapeHtml(actionLabel(v.action, 'fr'))} à votre compte.`,
+            `Motif indiqué : ${escapeHtml(v.reason)}`,
+            ...(v.expiresAt
+              ? [`Cette mesure prend fin le ${escapeHtml(new Date(v.expiresAt).toDateString())}.`]
+              : []),
+            'Si vous pensez qu’il s’agit d’une erreur, répondez à cet e-mail et une personne réexaminera le dossier.',
+          ),
+        }),
+        text: `TrustPro a appliqué ${actionLabel(v.action, 'fr')} à votre compte. Motif : ${v.reason}.${v.expiresAt ? ` Fin le ${new Date(v.expiresAt).toDateString()}.` : ''}`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'An update about your account',
+        body: `Our team applied ${actionLabel(v.action, 'en')}. Tap to read why.`,
+      }),
+      fr: (v) => ({
+        title: 'Mise à jour de votre compte',
+        body: `Notre équipe a appliqué ${actionLabel(v.action, 'fr')}. Appuyez pour en savoir plus.`,
+      }),
+    },
+  },
+};
+
+const moderationReportReceived: TemplateDefinition<'moderation.report_received'> = {
+  key: 'moderation.report_received',
+  category: NotificationCategory.ACCOUNT,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'New content report awaiting review',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Something was reported and needs a decision.',
+          heading: 'New content report',
+          bodyHtml: paragraphs(
+            `A ${escapeHtml(v.targetType.toLowerCase().replace(/_/g, ' '))} was reported${v.targetLabel ? `: "${escapeHtml(v.targetLabel)}"` : ''}.`,
+            'Open the moderation workspace to review it.',
+          ),
+        }),
+        text: `New content report on a ${v.targetType.toLowerCase().replace(/_/g, ' ')}${v.targetLabel ? `: "${v.targetLabel}"` : ''}.`,
+      }),
+      fr: (v) => ({
+        subject: 'Nouveau signalement à examiner',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un contenu a été signalé et attend une décision.',
+          heading: 'Nouveau signalement',
+          bodyHtml: paragraphs(
+            `Un élément (${escapeHtml(v.targetType.toLowerCase().replace(/_/g, ' '))}) a été signalé${v.targetLabel ? ` : « ${escapeHtml(v.targetLabel)} »` : ''}.`,
+            'Ouvrez l’espace de modération pour l’examiner.',
+          ),
+        }),
+        text: `Nouveau signalement (${v.targetType.toLowerCase().replace(/_/g, ' ')})${v.targetLabel ? ` : « ${v.targetLabel} »` : ''}.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'New content report',
+        body: v.targetLabel ? `"${v.targetLabel}" was reported.` : 'Something was reported.',
+      }),
+      fr: (v) => ({
+        title: 'Nouveau signalement',
+        body: v.targetLabel ? `« ${v.targetLabel} » a été signalé.` : 'Un contenu a été signalé.',
+      }),
+    },
+  },
+};
+
 const TEMPLATES: TemplateMap = {
   'system.test_notification': testNotification,
   'account.welcome': accountWelcome,
@@ -1680,6 +1810,8 @@ const TEMPLATES: TemplateMap = {
   'review.received': reviewReceived,
   'job.matched': jobMatched,
   'safety.sos_triggered': safetySosTriggered,
+  'moderation.action_taken': moderationActionTaken,
+  'moderation.report_received': moderationReportReceived,
 };
 
 export const TEMPLATE_KEYS = Object.keys(TEMPLATES) as TemplateKey[];
@@ -1692,10 +1824,34 @@ export function getTemplate<K extends TemplateKey>(key: K): TemplateDefinition<K
   return TEMPLATES[key];
 }
 
-/** Channels this template can actually be delivered on (has copy for). */
+/**
+ * Channels this template can actually be delivered on (has copy for).
+ *
+ * IN_APP has no renderers of its own: it reuses the WEB_PUSH copy, which is
+ * already "one line + one deep link" in both locales for every template. So a
+ * template that can be pushed can also land in the inbox, and the two can never
+ * drift apart into different wordings of the same event.
+ */
 export function getSupportedChannels(key: TemplateKey): NotificationChannel[] {
   const { render } = getTemplate(key);
-  return Object.values(NotificationChannel).filter((channel) => render[channel] !== undefined);
+
+  // Only the three channels that own renderers are keys of `Renderers` — IN_APP
+  // is derived below, so it is deliberately not in this list.
+  const RENDERABLE = [
+    NotificationChannel.EMAIL,
+    NotificationChannel.WEB_PUSH,
+    NotificationChannel.SMS,
+  ] as const;
+
+  const supported: NotificationChannel[] = RENDERABLE.filter(
+    (channel) => render[channel] !== undefined,
+  );
+
+  if (render[NotificationChannel.WEB_PUSH] !== undefined) {
+    supported.push(NotificationChannel.IN_APP);
+  }
+
+  return supported;
 }
 
 /**
@@ -1732,6 +1888,22 @@ export function renderTemplate(
       if (!byLocale) return null;
       const fn = byLocale[locale] ?? byLocale.en;
       return { channel: 'SMS', content: fn(variables as never) };
+    }
+    case NotificationChannel.IN_APP: {
+      // Deliberately no IN_APP renderers: the inbox reuses the push copy (see
+      // getSupportedChannels). `url` is carried through as the deep link.
+      const byLocale = render[NotificationChannel.WEB_PUSH];
+      if (!byLocale) return null;
+      const fn = byLocale[locale] ?? byLocale.en;
+      const push = fn(variables as never);
+      return {
+        channel: 'IN_APP',
+        content: {
+          title: push.title,
+          body: push.body,
+          ...(push.url ? { url: push.url } : {}),
+        },
+      };
     }
     default:
       return null;

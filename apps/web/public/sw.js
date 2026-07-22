@@ -75,3 +75,65 @@ async function cacheFirst(request) {
   if (response.ok) cache.put(request, response.clone());
   return response;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Web push (NOT-02, PROMPT 77).
+//
+// The server (WebPushProvider) encrypts a JSON payload of { title, body, url,
+// tag } and the browser wakes this worker to show it. The click handler then
+// deep-links into the app — focusing an existing tab if the app is already open,
+// or opening one at the notification's URL if not. The URL is always an app-
+// relative path the API produced (notification-links.ts), never attacker input.
+// ─────────────────────────────────────────────────────────────────────────────
+
+self.addEventListener('push', (event) => {
+  // A push with no/garbled data still shows something rather than being silently
+  // dropped — a notification the user was promised must not vanish over a parse
+  // error.
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = {};
+  }
+
+  const title = payload.title || 'TrustPro';
+  const options = {
+    body: payload.body || '',
+    icon: payload.icon || '/window.svg',
+    badge: payload.badge || '/window.svg',
+    // The deep link travels in `data` so the click handler can read it. Defaults
+    // to the app home so a click is never a dead end.
+    data: { url: payload.url || '/app/home' },
+    // Collapse repeats of the same subject (e.g. several messages in one thread)
+    // into one notification rather than stacking them.
+    tag: payload.tag || undefined,
+    renotify: Boolean(payload.tag),
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const target = (event.notification.data && event.notification.data.url) || '/app/home';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Prefer focusing an already-open app tab and navigating it, so a click
+      // does not pile up duplicate tabs.
+      for (const client of clientList) {
+        if (client.url.includes('/app') && 'focus' in client) {
+          client.postMessage({ type: 'notification-click', url: target });
+          return client.focus();
+        }
+      }
+      // Otherwise open a fresh tab at the deep link.
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(target);
+      }
+      return undefined;
+    }),
+  );
+});

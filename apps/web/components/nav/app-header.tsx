@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
-import { LogOut, Search, UserRound } from 'lucide-react';
+import { LifeBuoy, LogOut, Search, Settings, ShieldCheck, UserRound } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LocaleSwitcher } from '@/components/locale-switcher';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { RoleSwitcher } from './role-switcher';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,10 @@ export function AppHeader() {
   const pathname = usePathname();
 
   const isAuthenticated = status === 'authenticated';
+  // The admin surfaces are reachable by URL for anyone the API authorises, but
+  // only an ADMIN grant puts them in the menu — the nav is a convenience, never
+  // the access control, which is enforced server-side on every admin read/write.
+  const isAdmin = session?.user?.roles?.includes('ADMIN') ?? false;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
@@ -49,6 +54,11 @@ export function AppHeader() {
           <HeaderLink href="/app/jobs" active={pathname.startsWith('/app/jobs')}>
             {t('jobs')}
           </HeaderLink>
+          {isAuthenticated ? (
+            <HeaderLink href="/app/messages" active={pathname.startsWith('/app/messages')}>
+              {t('messages')}
+            </HeaderLink>
+          ) : null}
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
@@ -67,6 +77,7 @@ export function AppHeader() {
 
           {isAuthenticated ? (
             <>
+              <NotificationBell />
               <RoleSwitcher />
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -83,6 +94,42 @@ export function AppHeader() {
                   <DropdownMenuItem asChild>
                     <Link href="/app/home">{t('home')}</Link>
                   </DropdownMenuItem>
+                  {/* Safety must be reachable in minimal taps (NFR-UX-01, SOS-03).
+                      The press-and-hold SOS control itself lives on the job
+                      surfaces where an engagement is actually happening; this is
+                      the route to contacts, history and the safety guidance. */}
+                  <DropdownMenuItem asChild>
+                    <Link href="/app/safety">
+                      <LifeBuoy aria-hidden className="mr-2" />
+                      {t('safety')}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/app/settings/notifications">
+                      <Settings aria-hidden className="mr-2" />
+                      {t('settings')}
+                    </Link>
+                  </DropdownMenuItem>
+                  {isAdmin ? (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-xs uppercase tracking-wide text-muted-foreground">
+                        {t('adminSection')}
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem asChild>
+                        <Link href="/app/admin/disputes">
+                          <ShieldCheck aria-hidden className="mr-2" />
+                          {t('adminDisputes')}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/app/admin/reports">
+                          <ShieldCheck aria-hidden className="mr-2" />
+                          {t('adminReports')}
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  ) : null}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={() => void signOut({ callbackUrl: '/' })}>
                     <LogOut aria-hidden className="mr-2" />
@@ -117,7 +164,9 @@ function HeaderLink({
       aria-current={active ? 'page' : undefined}
       className={cn(
         'rounded-button px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        active ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+        active
+          ? 'bg-muted text-foreground'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
       )}
     >
       {children}

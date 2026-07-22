@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Link } from '@/i18n/navigation';
 import { useRequireAuth } from '@/components/auth/require-auth';
+import { ReportDialog } from '@/components/moderation/report-dialog';
 import { recordRecentWorker } from '@/lib/discovery';
 
 /**
@@ -124,20 +125,21 @@ export function ProfileActions({
         {t('share')}
       </Button>
 
-      {/* Reporting is gated like any other write. An anonymous report channel
-          would be abused to bury competitors, and the report is only actionable
-          for staff if it is attached to somebody. */}
-      <Button
-        variant="ghost"
-        onClick={() =>
-          requireAuth('submit_review', () => toast({ title: t('reportComingSoon') }), {
-            payload: { workerUserId, kind: 'report' },
-          })
+      {/* Reporting is gated like any other write (the dialog calls requireAuth
+          itself). An anonymous report channel would be abused to bury
+          competitors, and the report is only actionable for staff if it is
+          attached to somebody. */}
+      <ReportDialog
+        targetType="WORKER_PROFILE"
+        targetId={workerUserId}
+        reportedUserId={workerUserId}
+        trigger={
+          <Button variant="ghost">
+            <Flag aria-hidden />
+            {t('report')}
+          </Button>
         }
-      >
-        <Flag aria-hidden />
-        {t('report')}
-      </Button>
+      />
     </div>
   );
 }

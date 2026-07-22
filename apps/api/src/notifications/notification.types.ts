@@ -36,13 +36,27 @@ export interface SmsContent {
   text: string;
 }
 
-export type RenderedContent = EmailContent | WebPushContent | SmsContent;
+/**
+ * A row in the in-app Notification Center (NOT-02). Same shape as a push notice
+ * by design, not by accident: both are "one line, one deep link", so IN_APP
+ * renders from the WEB_PUSH copy rather than duplicating ~30 templates × 2
+ * locales that would then drift apart.
+ */
+export interface InAppContent {
+  title: string;
+  body: string;
+  /** App-relative deep link into the surface this is about. */
+  url?: string;
+}
+
+export type RenderedContent = EmailContent | WebPushContent | SmsContent | InAppContent;
 
 /** Discriminated union so a provider can narrow to the content it understands. */
 export type RenderedMessage =
   | { channel: 'EMAIL'; content: EmailContent }
   | { channel: 'WEB_PUSH'; content: WebPushContent }
-  | { channel: 'SMS'; content: SmsContent };
+  | { channel: 'SMS'; content: SmsContent }
+  | { channel: 'IN_APP'; content: InAppContent };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The provider contract
@@ -84,8 +98,27 @@ export interface NotificationChannelProvider {
    */
   resolveRecipient(recipient: RecipientContext): string | null;
 
-  /** Deliver. Throwing marks the attempt FAILED and lets BullMQ retry. */
-  send(address: string, message: RenderedMessage): Promise<void>;
+  /**
+   * Deliver. Throwing marks the attempt FAILED and lets BullMQ retry.
+   *
+   * `context` carries what the message body cannot: which template and category
+   * produced it, and the ids the surface needs. Network providers ignore it;
+   * IN_APP needs it to write a Notification row that can be filtered and
+   * deep-linked. Providers may declare a shorter signature — TypeScript accepts a
+   * function taking fewer parameters — so adding it broke nothing.
+   */
+  send(address: string, message: RenderedMessage, context: DeliveryContext): Promise<void>;
+}
+
+/** What produced a delivery, passed to the provider alongside the rendered copy. */
+export interface DeliveryContext {
+  templateKey: string;
+  category: NotificationCategory;
+  /** Null for pre-account deliveries (an OTP to an email with no user yet). */
+  userId: string | null;
+  locale: Locale;
+  /** Ids the destination surface needs (jobId, disputeId…). Never secrets. */
+  metadata?: Record<string, unknown>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -108,6 +141,8 @@ export interface NotificationDeliveryJob {
   locale: Locale;
   variables: Record<string, unknown>;
   userId: string | null;
+  /** Event metadata forwarded to the provider (see DeliveryContext.metadata). */
+  metadata?: Record<string, unknown>;
   /** Correlates the delivery back to the request that triggered it. */
   requestId?: string;
 }

@@ -2,6 +2,7 @@ import { NotificationCategory, NotificationChannel, NotificationStatus } from '@
 import type { Job } from 'bullmq';
 import { NotificationDeliveryProcessor } from './notification-delivery.processor';
 import { EmailProvider } from './providers/email.provider';
+import { InAppProvider } from './providers/in-app.provider';
 import { NotificationProviderRegistry } from './providers/provider.registry';
 import { SmsProvider } from './providers/sms.provider';
 import { WebPushProvider } from './providers/web-push.provider';
@@ -51,6 +52,7 @@ function makeProcessor(env: NodeJS.ProcessEnv = { NOTIFICATIONS_EMAIL_PROVIDER: 
     email,
     new WebPushProvider(prisma, env),
     new SmsProvider(env),
+    new InAppProvider(prisma),
   );
 
   const registerWorker = jest.fn();

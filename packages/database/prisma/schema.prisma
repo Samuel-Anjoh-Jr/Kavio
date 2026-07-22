@@ -160,6 +160,14 @@ model User {
   // Web-push device registry (PROMPT 76).
   deviceRegistrations DeviceRegistration[]
 
+  // In-app notification inbox (PROMPT 78; NOT-02).
+  notifications Notification[]
+
+  // Moderation (ADM-08). One identity is the subject of some actions and, when it
+  // holds the ADMIN role, the actor on others.
+  moderationAgainst ModerationAction[] @relation("ModerationSubject")
+  moderationTaken   ModerationAction[] @relation("ModerationActor")
+
   @@index([status, createdAt])
 }
 
@@ -282,10 +290,16 @@ model AuditLog {
 /// Delivery channels behind the NotificationChannel interface. SMS is registered
 /// but feature-flagged OFF at launch (deferred, paid API later); phone numbers are
 /// already stored in E.164 so enabling it needs no call-site change.
+/// IN_APP is a channel like any other — a provider that writes a Notification row
+/// instead of calling out to a network. Modelling the inbox as a channel rather
+/// than a side-effect is what lets NOT-02's per-channel preference grid include
+/// it, and what keeps the dispatcher the only thing that fans out.
+/// Appended last: Postgres enums can only be appended to.
 enum NotificationChannel {
   EMAIL
   WEB_PUSH
   SMS
+  IN_APP
 }
 
 /// Preference categories (typed enum per SRS §26.1, never free-text). SECURITY is
@@ -350,6 +364,52 @@ model NotificationPreference {
 
   @@unique([userId, channel, category])
   @@index([userId])
+}
+
+/// The in-app notification inbox (NOT-02) — the Notification Center's rows.
+///
+/// Distinct from NotificationLog on purpose: a log row is one DELIVERY ATTEMPT on
+/// one channel (audit; deliberately stores no rendered content), whereas this is
+/// the message the user actually reads and marks as read. Written by the IN_APP
+/// provider through the same dispatcher as every other channel, so a notification
+/// can never reach the inbox without honouring preferences.
+///
+/// Content IS stored here — unlike the log — because the inbox has to render
+/// without re-running a template months later, and the deep link has to survive.
+model Notification {
+  id       String               @id @default(uuid()) @db.Uuid
+  userId   String               @db.Uuid
+  category NotificationCategory
+
+  /// The template this was rendered from; the join back to the delivery trail.
+  templateKey String
+  title       String
+  body        String
+
+  /// Where clicking it goes (NOT-02 deep-link). App-relative, never absolute, so
+  /// it stays correct across environments and cannot be turned into an open
+  /// redirect by a template variable.
+  url String?
+
+  /// Drives the "Important" filter. Set from the template's category — money,
+  /// safety, disputes and security matter at a glance; marketing does not.
+  important Boolean @default(false)
+
+  readAt DateTime?
+
+  /// Ids the surface needs to render context (jobId, disputeId…). Never secrets.
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The centre's default list, newest first.
+  @@index([userId, createdAt])
+  /// The Unread filter and the header badge count.
+  @@index([userId, readAt])
+  /// The Important filter.
+  @@index([userId, important, createdAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2600,6 +2660,11 @@ enum ConversationParticipantRole {
 
 /// Why a conversation or message was reported (MSG-04). Coded, not free text, so
 /// the moderation queue can filter and the localized copy lives in the catalogue.
+/// Appended, never reordered: Postgres can only APPEND to an enum, so the file
+/// order must match the order the migrations added them or deploy reports drift.
+/// The last four arrived with universal reporting — a fake profile or a stolen
+/// portfolio photo is a different offence from chat spam, and collapsing them
+/// into OTHER is what makes a moderation queue unsortable.
 enum AbuseReportReason {
   SPAM
   HARASSMENT
@@ -2607,6 +2672,48 @@ enum AbuseReportReason {
   INAPPROPRIATE
   OFF_PLATFORM
   OTHER
+  FAKE_PROFILE
+  STOLEN_CONTENT
+  MISLEADING
+  ILLEGAL
+}
+
+/// What a report points at (ADM-08). A report is polymorphic — a user can report
+/// anything they can see — so the target is a (type, id) pair rather than a column
+/// per reportable model, which would need a migration for every new surface.
+///
+/// The pair is deliberately NOT a foreign key: the queue must survive the reported
+/// item being deleted (that is often the outcome), and `reportedUserId` always
+/// resolves the identity so an admin can still act on the person afterwards.
+enum ReportTargetType {
+  USER
+  WORKER_PROFILE
+  BUSINESS_PROFILE
+  JOB
+  PORTFOLIO_ITEM
+  MEDIA_ASSET
+  REVIEW
+  QUOTE
+  MESSAGE
+  CONVERSATION
+}
+
+/// What an admin did about a report (ADM-08). Recorded as its own row rather than
+/// a column on the report, because one decision usually settles MANY reports about
+/// the same item — that is the whole point of grouping the queue by target.
+enum ModerationActionType {
+  /// Formal warning to the reported identity; the content stays up.
+  WARN
+  /// The item was taken down (soft-deleted / archived) but the account stands.
+  CONTENT_REMOVED
+  /// Time-boxed suspension; `expiresAt` carries the end.
+  SUSPEND
+  /// Permanent suspension — the fake-document outcome in TRU-08.
+  BAN
+  /// Lifts a suspension or ban.
+  REINSTATE
+  /// Reviewed and found to need nothing. Closes the group without penalty.
+  DISMISS
 }
 
 enum AbuseReportStatus {
@@ -2755,7 +2862,18 @@ model AbuseReport {
 
   /// The identity being reported, always resolved so the queue can act on the
   /// person even when the specific message is later deleted.
-  reportedUserId String  @db.Uuid
+  reportedUserId String @db.Uuid
+
+  /// What was reported. The grouping key of the whole moderation workspace:
+  /// twelve reports about one photo are ONE case, not twelve.
+  ///
+  /// Not an FK by design — see ReportTargetType. For a USER report, `targetId`
+  /// equals `reportedUserId`, so the group key is uniform across every type.
+  targetType ReportTargetType
+  targetId   String           @db.Uuid
+
+  /// Kept as real relations because messaging reports predate the generic target
+  /// and the thread view still joins them for context in the admin case view.
   conversationId String? @db.Uuid
   messageId      String? @db.Uuid
 
@@ -2767,20 +2885,72 @@ model AbuseReport {
   reviewNote   String?
   reviewedAt   DateTime?
 
+  /// The decision that settled this report. Shared with every other report in the
+  /// same group, which is how one action closes a whole case.
+  moderationActionId String? @db.Uuid
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  reporter     User          @relation("AbuseReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
-  reportedUser User          @relation("AbuseReportReported", fields: [reportedUserId], references: [id], onDelete: Cascade)
-  reviewedBy   User?         @relation("AbuseReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
-  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  message      Message?      @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  reporter         User              @relation("AbuseReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser     User              @relation("AbuseReportReported", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reviewedBy       User?             @relation("AbuseReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  conversation     Conversation?     @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  message          Message?          @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  moderationAction ModerationAction? @relation(fields: [moderationActionId], references: [id], onDelete: SetNull)
 
   /// The moderation queue (newest open first).
   @@index([status, createdAt])
   @@index([reportedUserId])
+  /// The grouped workspace: every report about one item, open ones first.
+  @@index([targetType, targetId, status])
   /// A reporter cannot spam the same message twice.
   @@index([reporterId, createdAt])
+  @@index([moderationActionId])
+}
+
+/// An admin decision taken against an identity and/or an item (ADM-08).
+///
+/// Append-only and auditable: a suspension is never a silent `User.status` write.
+/// The row records who decided, why, against whom, over what, and until when — so
+/// "why is this account suspended?" has an answer, and REINSTATE is a new row
+/// rather than an edit that erases the history.
+model ModerationAction {
+  id String @id @default(uuid()) @db.Uuid
+
+  /// The identity the action lands on — the "concerned party".
+  subjectUserId String @db.Uuid
+  /// The admin who decided.
+  actorId       String @db.Uuid
+
+  action ModerationActionType
+
+  /// The item that triggered it, when the action was about content. Null for a
+  /// pure account action (a ban that followed a pattern rather than one item).
+  targetType ReportTargetType?
+  targetId   String?          @db.Uuid
+
+  /// Shown to the reported party — a penalty they cannot read is not due process.
+  reason String
+  /// Admin-only working note.
+  internalNote String?
+
+  /// When a SUSPEND lapses. Null on a BAN (permanent) and on every other action.
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  subject User @relation("ModerationSubject", fields: [subjectUserId], references: [id], onDelete: Cascade)
+  actor   User @relation("ModerationActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  reports AbuseReport[]
+
+  /// A party's moderation history, newest first.
+  @@index([subjectUserId, createdAt])
+  /// The item's decision history in the grouped workspace.
+  @@index([targetType, targetId])
+  /// The lapse sweep for time-boxed suspensions.
+  @@index([action, expiresAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

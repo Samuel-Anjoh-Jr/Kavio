@@ -9,8 +9,14 @@ export const NOTIFICATION_CHANNEL_PRIORITY = Symbol('NOTIFICATION_CHANNEL_PRIORI
  * The dispatcher walks this order and delivers on every channel that is enabled,
  * permitted by preferences, supported by the template, and reachable.
  * Override with NOTIFICATIONS_CHANNEL_PRIORITY="EMAIL,WEB_PUSH".
+ *
+ * IN_APP leads: the inbox is the one channel that cannot fail for want of a
+ * subscription or a mailbox, so it is written first and the outward channels
+ * follow. A user who has denied push and never opens email still finds the
+ * notice waiting in the Notification Center (NOT-02).
  */
 const DEFAULT_CHANNEL_PRIORITY: NotificationChannel[] = [
+  NotificationChannel.IN_APP,
   NotificationChannel.WEB_PUSH,
   NotificationChannel.EMAIL,
   NotificationChannel.SMS,
@@ -63,6 +69,26 @@ export function getEmailFromAddress(env: NodeJS.ProcessEnv = process.env): strin
 /** Base URL used to build deep links in templates. */
 export function getAppBaseUrl(env: NodeJS.ProcessEnv = process.env): string {
   return (env.APP_BASE_URL?.trim() || 'https://trustpro.cm').replace(/\/$/, '');
+}
+
+/**
+ * Categories the Notification Center's "Important" filter shows (NOT-02).
+ *
+ * Money, safety, disputes, account security and verification outcomes are the
+ * notices a user must not scroll past; everything else is routine traffic. Kept
+ * as a category set rather than a per-template flag so a new template inherits
+ * the right weight without anyone remembering to mark it.
+ */
+const IMPORTANT_CATEGORIES: ReadonlySet<NotificationCategory> = new Set([
+  NotificationCategory.SECURITY,
+  NotificationCategory.PAYMENTS,
+  NotificationCategory.DISPUTES,
+  NotificationCategory.SAFETY,
+  NotificationCategory.TRUST,
+]);
+
+export function isImportantCategory(category: NotificationCategory): boolean {
+  return IMPORTANT_CATEGORIES.has(category);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

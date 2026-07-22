@@ -18,6 +18,7 @@ export const GATED_ACTIONS = [
   'pay',
   'save_favorite',
   'submit_review',
+  'report_content',
 ] as const;
 
 export type GatedAction = (typeof GATED_ACTIONS)[number];
