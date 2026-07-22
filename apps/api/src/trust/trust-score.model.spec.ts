@@ -1,5 +1,6 @@
 import { TrustEventType, TrustPillar } from '@trustpro/database';
 import {
+  ADMIN_ADJUSTMENT_MAX_MAGNITUDE,
   computeTrustScore,
   crossedThresholds,
   ENDORSEMENT_CAP,
@@ -440,6 +441,165 @@ describe('trust score point model (SRS §21.5)', () => {
 
     it('counts a threshold landed on exactly as crossed', () => {
       expect(crossedThresholds(49, 50)).toEqual([50]);
+    });
+  });
+
+  /**
+   * Hiding a review must stop it paying (REV-03). Modelled as a revocation for
+   * the same reason endorsements are: the ledger is append-only, so influence is
+   * withdrawn by appending its negation rather than by deleting the grant.
+   */
+  describe('review revocation (REV-03)', () => {
+    it('withdraws the points of a hidden review', () => {
+      const withReview = pointsFor(TrustEventType.ACCOUNT_CREATED, TrustEventType.EXCELLENT_REVIEW);
+      const afterHiding = pointsFor(
+        TrustEventType.ACCOUNT_CREATED,
+        TrustEventType.EXCELLENT_REVIEW,
+        TrustEventType.EXCELLENT_REVIEW_REVOKED,
+      );
+
+      expect(withReview).toBeGreaterThan(afterHiding);
+      expect(afterHiding).toBe(pointsFor(TrustEventType.ACCOUNT_CREATED));
+    });
+
+    it('revokes one review, not the whole history', () => {
+      const three = computeTrustScore(
+        events(
+          TrustEventType.EXCELLENT_REVIEW,
+          TrustEventType.EXCELLENT_REVIEW,
+          TrustEventType.EXCELLENT_REVIEW,
+          TrustEventType.EXCELLENT_REVIEW_REVOKED,
+        ),
+      );
+
+      const marketplace = subScoreFor(three, TrustPillar.MARKETPLACE);
+      const contribution = marketplace.contributions.find(
+        (item) => item.type === TrustEventType.EXCELLENT_REVIEW,
+      );
+      expect(contribution?.occurrences).toBe(2);
+    });
+
+    it('never turns a revocation into a debt', () => {
+      // More revocations than reviews returns the subject to zero, not below it:
+      // moderation removing a review should undo it, not punish having had one.
+      const overRevoked = computeTrustScore(
+        events(
+          TrustEventType.EXCELLENT_REVIEW,
+          TrustEventType.EXCELLENT_REVIEW_REVOKED,
+          TrustEventType.EXCELLENT_REVIEW_REVOKED,
+        ),
+      );
+      expect(overRevoked.total).toBe(0);
+    });
+  });
+
+  /**
+   * ADM-04 is the one place a human moves a score, and the tests below are what
+   * keep it an EVENT rather than an edit: replayable, bounded, and unable to
+   * outrank the suspension verdict.
+   */
+  describe('admin adjustment (ADM-04)', () => {
+    const adjustment = (delta: number): TrustEventInput => ({
+      type: TrustEventType.ADMIN_ADJUSTMENT,
+      delta,
+    });
+
+    it('adds a bonus to the total', () => {
+      const base = computeTrustScore(events(TrustEventType.ACCOUNT_CREATED));
+      const bonused = computeTrustScore([
+        ...events(TrustEventType.ACCOUNT_CREATED),
+        adjustment(10),
+      ]);
+
+      expect(bonused.total).toBe(base.total + 10);
+      expect(bonused.adjustment).toBe(10);
+    });
+
+    it('subtracts a penalty from the total', () => {
+      const penalised = computeTrustScore([
+        ...events(TrustEventType.ACCOUNT_CREATED, TrustEventType.ID_VERIFIED),
+        adjustment(-20),
+      ]);
+
+      // 15 + 20 = 35, less the 20-point penalty.
+      expect(penalised.total).toBe(15);
+      expect(penalised.adjustment).toBe(-20);
+    });
+
+    it('leaves the four pillars untouched', () => {
+      const adjusted = computeTrustScore([
+        ...events(TrustEventType.ACCOUNT_CREATED),
+        adjustment(15),
+      ]);
+
+      // The adjustment moves the composite; it does not pretend to be evidence
+      // about identity, professionalism, marketplace behaviour or finances.
+      for (const pillar of Object.values(TrustPillar)) {
+        expect(subScoreFor(adjusted, pillar)).toEqual(
+          subScoreFor(computeTrustScore(events(TrustEventType.ACCOUNT_CREATED)), pillar),
+        );
+      }
+    });
+
+    it('bounds a single adjustment to the reviewed maximum', () => {
+      // A row that reached the database with an out-of-range delta still cannot
+      // move a score further than the model allows.
+      const absurd = computeTrustScore([
+        ...events(TrustEventType.ACCOUNT_CREATED),
+        adjustment(9999),
+      ]);
+      expect(absurd.adjustment).toBe(ADMIN_ADJUSTMENT_MAX_MAGNITUDE);
+    });
+
+    it('accumulates several adjustments', () => {
+      const twice = computeTrustScore([
+        ...events(TrustEventType.ACCOUNT_CREATED),
+        adjustment(10),
+        adjustment(-4),
+      ]);
+      expect(twice.adjustment).toBe(6);
+    });
+
+    it('never pushes a score outside the scale', () => {
+      const floored = computeTrustScore([
+        ...events(TrustEventType.ACCOUNT_CREATED),
+        adjustment(-25),
+      ]);
+      expect(floored.total).toBe(0);
+
+      const capped = computeTrustScore([
+        ...events(
+          TrustEventType.ACCOUNT_CREATED,
+          TrustEventType.PHONE_VERIFIED,
+          TrustEventType.ID_VERIFIED,
+          TrustEventType.FIELD_VERIFIED,
+          TrustEventType.PORTFOLIO_ADDED,
+        ),
+        adjustment(25),
+      ]);
+      expect(capped.total).toBeLessThanOrEqual(100);
+    });
+
+    it('cannot rescue a suspended identity', () => {
+      // Fraud is a verdict, not a number, and a generous adjustment must not be
+      // a way around it (TRU-08).
+      const suspended = computeTrustScore([
+        ...events(TrustEventType.ACCOUNT_CREATED, TrustEventType.FAKE_DOCUMENTS_CONFIRMED),
+        adjustment(25),
+      ]);
+
+      expect(suspended.suspended).toBe(true);
+      expect(suspended.total).toBe(0);
+      expect(suspended.adjustment).toBe(0);
+    });
+
+    it('stays idempotent under replay', () => {
+      const log = [...events(TrustEventType.ACCOUNT_CREATED), adjustment(10)];
+      expect(computeTrustScore(log).total).toBe(computeTrustScore([...log].reverse()).total);
+    });
+
+    it('reports no adjustment for an identity nobody touched', () => {
+      expect(computeTrustScore(events(TrustEventType.ACCOUNT_CREATED)).adjustment).toBe(0);
     });
   });
 });

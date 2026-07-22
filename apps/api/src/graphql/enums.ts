@@ -3,6 +3,7 @@ import { NoProviderReason } from '../search/no-provider.util';
 import {
   BadgeType,
   BookingStatus,
+  DisputeFaultParty,
   DisputeResolution,
   DisputeStatus,
   EndorsementRelationship,
@@ -25,7 +26,9 @@ import {
   QuoteStatus,
   Role,
   SOSStatus,
+  TeamMemberAccessLevel,
   TeamMemberRole,
+  TeamMemberStatus,
   TrackingSessionStatus,
   TransactionDirection,
   TransactionStatus,
@@ -150,6 +153,18 @@ export function registerGraphQLEnums(): void {
     description: 'A member’s role within a business team (BIZ-03).',
   });
 
+  registerEnumType(TeamMemberAccessLevel, {
+    name: 'TeamMemberAccessLevel',
+    description:
+      'What a team member may do, enforced server-side on every business write (BIZ-03). Distinct from their role, which is an HR label — renaming a job title must never change what somebody can spend.',
+  });
+
+  registerEnumType(TeamMemberStatus, {
+    name: 'TeamMemberStatus',
+    description:
+      'A team seat’s state (BIZ-03). Only ACTIVE confers access: an invitation that was sent, declined or removed grants nothing.',
+  });
+
   registerEnumType(JobStatus, {
     name: 'JobStatus',
     description: 'A job’s lifecycle state (JOB-05, SRS §21.3).',
@@ -219,6 +234,12 @@ export function registerGraphQLEnums(): void {
   registerEnumType(DisputeResolution, {
     name: 'DisputeResolution',
     description: 'How an admin resolved a dispute (ADM-05).',
+  });
+
+  registerEnumType(DisputeFaultParty, {
+    name: 'DisputeFaultParty',
+    description:
+      'Which party the resolving admin found at fault (ADM-05). Separate from the resolution, because the direction the money went does not settle who behaved badly — a client who escalates in good faith and loses has done nothing wrong. NONE is the common case and carries no trust penalty.',
   });
 
   registerEnumType(MessageKind, {

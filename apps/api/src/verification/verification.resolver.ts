@@ -2,7 +2,12 @@ import { Args, ID, Int, Query, Resolver } from '@nestjs/graphql';
 import { VerificationCheckType, VerificationStage, VerificationStatus } from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser, RequirePermissions } from '../auth/decorators/auth.decorators';
-import { REJECTION_POLICIES, rejectionMessageKey } from './verification.model';
+import {
+  REJECTION_POLICIES,
+  rejectionMessageKey,
+  VerificationQueueGroupEnum,
+  type VerificationQueueGroup,
+} from './verification.model';
 import { VerificationPipelineService } from './verification-pipeline.service';
 import { VerificationService } from './verification.service';
 import {
@@ -69,9 +74,11 @@ export class VerificationResolver {
   @RequirePermissions('admin:verification_review')
   @Query(() => [VerificationQueueItemView], {
     description:
-      'One column of the review board, oldest first — the queue is worked FIFO (AGT-03).',
+      'One column of the review board, oldest first — the queue is worked FIFO (AGT-03). `group` is the ADM-03 tab (ALL/ID/BUSINESS/FIELD).',
   })
   async verificationQueue(
+    @Args('group', { type: () => VerificationQueueGroupEnum, nullable: true })
+    group?: VerificationQueueGroup,
     @Args('stage', { type: () => VerificationStage, nullable: true }) stage?: VerificationStage,
     @Args('checkType', { type: () => VerificationCheckType, nullable: true })
     checkType?: VerificationCheckType,
@@ -80,6 +87,7 @@ export class VerificationResolver {
     @Args('offset', { type: () => Int, nullable: true }) offset?: number,
   ): Promise<VerificationQueueItemView[]> {
     const items = await this.pipeline.queue({
+      group: group ?? undefined,
       stage,
       checkType,
       assignedToId,

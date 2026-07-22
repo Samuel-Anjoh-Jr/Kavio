@@ -6,7 +6,13 @@ import {
 } from '@trustpro/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
-import { approvalRate, averageReviewMinutes, PIPELINE_STAGES } from './verification.model';
+import {
+  approvalRate,
+  averageReviewMinutes,
+  checkTypesForGroup,
+  PIPELINE_STAGES,
+  type VerificationQueueGroup,
+} from './verification.model';
 
 const logger = createLogger('verification:pipeline');
 
@@ -99,20 +105,36 @@ export class VerificationPipelineService {
     };
   }
 
-  /** One column of the board, oldest first — the queue is worked FIFO (AGT-03). */
+  /**
+   * One column of the board, oldest first — the queue is worked FIFO (AGT-03,
+   * ADM-03).
+   *
+   * `group` is the ADM-03 tab (All/ID/Business/Field); `checkType` narrows within
+   * it. When both are given the check type must belong to the group, otherwise
+   * the two filters contradict and the honest answer is an empty column — so a
+   * checkType outside the selected group returns nothing rather than silently
+   * winning over the tab the admin clicked.
+   */
   async queue(options: {
     stage?: VerificationStage;
+    group?: VerificationQueueGroup;
     checkType?: VerificationCheckType;
     assignedToId?: string;
     limit?: number;
     offset?: number;
   }) {
     const take = Math.min(options.limit ?? 25, MAX_QUEUE_PAGE);
+    const groupTypes = options.group ? checkTypesForGroup(options.group) : null;
+
+    // Resolve the tab and the explicit check-type into one `checkType IN (...)`
+    // filter, honouring both: a checkType outside the tab collapses to an empty
+    // set rather than overriding the tab.
+    const checkTypeFilter = this.resolveCheckTypeFilter(groupTypes, options.checkType);
 
     return this.prisma.client.verificationRecord.findMany({
       where: {
         ...(options.stage ? { stage: options.stage } : { status: VerificationStatus.PENDING }),
-        ...(options.checkType ? { checkType: options.checkType } : {}),
+        ...(checkTypeFilter ? { checkType: checkTypeFilter } : {}),
         ...(options.assignedToId ? { assignedToId: options.assignedToId } : {}),
       },
       select: {
@@ -135,5 +157,29 @@ export class VerificationPipelineService {
       take,
       skip: options.offset ?? 0,
     });
+  }
+
+  /**
+   * Combines the tab's check types with an explicit one into a single Prisma
+   * `checkType` filter.
+   *
+   * Returns `{ in: [] }` when the explicit type is outside the tab: an empty
+   * `IN` matches no rows, which is the correct answer to "Business tab, but show
+   * me an ID check" — the two filters genuinely intersect to nothing.
+   */
+  private resolveCheckTypeFilter(
+    groupTypes: readonly VerificationCheckType[] | null,
+    checkType?: VerificationCheckType,
+  ): { in: VerificationCheckType[] } | VerificationCheckType | undefined {
+    if (checkType && groupTypes && !groupTypes.includes(checkType)) {
+      return { in: [] };
+    }
+    if (checkType) {
+      return checkType;
+    }
+    if (groupTypes) {
+      return { in: [...groupTypes] };
+    }
+    return undefined;
   }
 }

@@ -1,17 +1,20 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
+  DisputeFaultParty,
   DisputeResolution,
   DisputeStatus,
   EscrowState,
   MediaAssetKind,
   Prisma,
+  TrustEventType,
 } from '@trustpro/database';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { roleHasPermission } from '../../auth/rbac/permissions';
 import { AppException } from '../../lib/app-exception';
 import { createLogger, getRequestId } from '../../lib/logger';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TrustScoreService } from '../../trust/trust-score.service';
 import { EscrowService } from '../escrow/escrow.service';
 import {
   DISPUTE_OPENED,
@@ -19,6 +22,7 @@ import {
   DisputeOpenedEvent,
   DisputeResolvedEvent,
 } from '../events/payment.events';
+import { defaultFaultParty, penalisedParty } from './dispute-fault.model';
 import type { DisputeMessageDto, OpenDisputeDto, ResolveDisputeDto } from './dto/dispute.dto';
 
 const logger = createLogger('disputes');
@@ -39,6 +43,7 @@ export class DisputesService {
     private readonly prisma: PrismaService,
     private readonly events: EventEmitter2,
     private readonly escrow: EscrowService,
+    private readonly trust: TrustScoreService,
   ) {}
 
   /** A party opens a dispute over a booking, freezing its escrow (PAY-03). */
@@ -175,6 +180,12 @@ export class DisputesService {
    *   REFUND_TO_CLIENT  → escrow REFUNDED
    *   REQUEST_INFO      → dispute ESCALATED, stays open, escrow stays frozen
    *   CLOSE_NO_ACTION   → resolved without moving money (only when nothing is held)
+   *
+   * And the FAULT FINDING drives the trust consequence (§21.5): a party found at
+   * fault gets a DISPUTE_UPHELD penalty recorded against the ledger, exactly like
+   * any other scored event. The finding is separate from the resolution — the
+   * admin can override the default — because who behaved badly is not settled by
+   * where the money went (see dispute-fault.model.ts).
    */
   async resolve(admin: AuthenticatedUser, disputeId: string, dto: ResolveDisputeDto) {
     const dispute = await this.prisma.client.dispute.findUnique({
@@ -201,7 +212,8 @@ export class DisputesService {
 
     const requestId = getRequestId();
 
-    // REQUEST_INFO is not a terminal resolution: escalate and record the ask.
+    // REQUEST_INFO is not a terminal resolution: escalate, record the ask, and
+    // record NO fault — nothing is decided, so nobody is penalised yet.
     if (dto.resolution === DisputeResolution.REQUEST_INFO) {
       await this.prisma.client.$transaction(async (tx) => {
         await tx.dispute.update({
@@ -234,18 +246,34 @@ export class DisputesService {
       }
     }
 
+    // The admin's explicit finding, or the resolution's default when none given.
+    const faultParty = dto.faultParty ?? defaultFaultParty(dto.resolution);
+
     await this.prisma.client.dispute.update({
       where: { id: disputeId },
       data: {
         status: DisputeStatus.RESOLVED,
         resolution: dto.resolution,
         resolutionNote: dto.note ?? null,
+        faultParty,
         resolvedById: admin.id,
         resolvedAt: new Date(),
       },
     });
 
-    await this.auditResolve(admin.id, dispute.id, dispute.bookingId, dto.resolution, requestId);
+    await this.auditResolve(
+      admin.id,
+      dispute.id,
+      dispute.bookingId,
+      dto.resolution,
+      requestId,
+      faultParty,
+    );
+
+    // The trust consequence (§21.5). Recorded AFTER the dispute is committed and
+    // only for a terminal resolution — the ledger, not this method, turns
+    // DISPUTE_UPHELD into a −20 penalty, keeping the scoring rule in one place.
+    await this.applyFaultPenalty(dispute, faultParty, admin.id);
 
     this.events.emit(
       DISPUTE_RESOLVED,
@@ -261,9 +289,45 @@ export class DisputesService {
     );
 
     logger.info('Dispute resolved', {
-      payload: { disputeId, resolution: dto.resolution },
+      payload: { disputeId, resolution: dto.resolution, faultParty },
     });
-    return { id: disputeId, status: DisputeStatus.RESOLVED };
+    return { id: disputeId, status: DisputeStatus.RESOLVED, faultParty };
+  }
+
+  /**
+   * Records the DISPUTE_UPHELD penalty against the faulted party, if any (§21.5).
+   *
+   * No-op when fault is NONE — the common, no-penalty outcome. The penalty is a
+   * trust EVENT, so the point model applies the −20 and the recompute re-derives
+   * the tier; this method never touches a score directly.
+   */
+  private async applyFaultPenalty(
+    dispute: {
+      id: string;
+      jobId: string;
+      booking: { clientId: string; workerId: string };
+    },
+    faultParty: DisputeFaultParty,
+    adminId: string,
+  ): Promise<void> {
+    // Every caller of this method has already passed the REQUEST_INFO early
+    // return, so the resolution is terminal and a finding of fault is real.
+    const subjectId = penalisedParty(faultParty, {
+      clientId: dispute.booking.clientId,
+      workerId: dispute.booking.workerId,
+    });
+    if (!subjectId) {
+      return;
+    }
+
+    await this.trust.record({
+      subjectId,
+      type: TrustEventType.DISPUTE_UPHELD,
+      actorId: adminId,
+      sourceType: 'Dispute',
+      sourceId: dispute.id,
+      metadata: { jobId: dispute.jobId, faultParty },
+    });
   }
 
   // ── Internals ────────────────────────────────────────────────────────────────
@@ -328,6 +392,7 @@ export class DisputesService {
     bookingId: string,
     resolution: DisputeResolution,
     requestId?: string,
+    faultParty?: DisputeFaultParty,
   ): Promise<void> {
     await this.prisma.client.auditLog.create({
       data: {
@@ -335,7 +400,7 @@ export class DisputesService {
         action: 'dispute.resolved',
         target: `Dispute:${disputeId}`,
         requestId: requestId ?? null,
-        meta: { bookingId, resolution },
+        meta: { bookingId, resolution, ...(faultParty ? { faultParty } : {}) },
       },
     });
   }

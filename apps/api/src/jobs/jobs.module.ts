@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BusinessModule } from '../business/business.module';
 import { GeoModule } from '../geo/geo.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageModule } from '../storage/storage.module';
@@ -17,17 +18,19 @@ import { JobsService } from './jobs.service';
  * side.
  *
  * Imports and why:
- *   TrustModule    the Tier 2+ posting gate derives the poster's tier fresh
- *   GeoModule      a job's location resolves its region the same way a profile's
- *                  does, so job proximity and worker proximity never disagree
- *   StorageModule  job photos resolve to URLs on read
+ *   TrustModule     the Tier 2+ posting gate derives the poster's tier fresh
+ *   GeoModule       a job's location resolves its region the same way a profile's
+ *                   does, so job proximity and worker proximity never disagree
+ *   StorageModule   job photos resolve to URLs on read
+ *   BusinessModule  a job posted on a company's behalf (BIZ-02) is authorised
+ *                   against that company's access levels, not against a body field
  *
  * Exports JobsService because the quotes module moves a job through QUOTED and
  * ACCEPTED as quotes arrive and are accepted — those transitions belong to the
  * job's own state machine, not to a second one invented in QuotesModule.
  */
 @Module({
-  imports: [PrismaModule, TrustModule, GeoModule, StorageModule],
+  imports: [PrismaModule, TrustModule, GeoModule, StorageModule, BusinessModule],
   controllers: [JobsController],
   providers: [
     JobsService,

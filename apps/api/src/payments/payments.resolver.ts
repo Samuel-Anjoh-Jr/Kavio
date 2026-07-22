@@ -3,6 +3,7 @@ import { DisputeStatus, TransactionStatus, TransactionType } from '@trustpro/dat
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser, RequirePermissions } from '../auth/decorators/auth.decorators';
 import {
+  AdminDisputeView,
   DisputeView,
   EscrowView,
   PaymentMethodView,
@@ -87,5 +88,19 @@ export class PaymentsResolver {
     @Args('status', { type: () => DisputeStatus, nullable: true }) status?: DisputeStatus,
   ): Promise<DisputeView[]> {
     return this.read.disputeQueue(status);
+  }
+
+  /**
+   * The full admin dispute workspace (ADM-05): details, parties, the frozen
+   * escrow, the thread with evidence, and the combined money-plus-case history.
+   * Admin-gated, and NOT party-scoped — an admin resolving a case is not one of
+   * its sides.
+   */
+  @RequirePermissions('admin:dispute_resolve')
+  @Query(() => AdminDisputeView, {
+    description: 'The admin dispute workspace: details, messages, evidence and history (ADM-05).',
+  })
+  async adminDispute(@Args('id', { type: () => ID }) id: string): Promise<AdminDisputeView> {
+    return this.read.adminDispute(id);
   }
 }

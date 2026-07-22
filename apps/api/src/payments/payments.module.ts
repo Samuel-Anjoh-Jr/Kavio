@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JobsModule } from '../jobs/jobs.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageModule } from '../storage/storage.module';
+import { TrustModule } from '../trust/trust.module';
 import { CampayService } from './campay/campay.service';
 import { DisputesController } from './disputes/disputes.controller';
 import { DisputesService } from './disputes/disputes.service';
@@ -32,9 +33,13 @@ import { ReconciliationController } from './webhooks/reconciliation.controller';
  *
  * The module consumes the ESCROW_INITIATION_REQUESTED seam QuotesModule left open
  * (a booking is created, money must now be collected) via EscrowInitiationListener.
+ *
+ * TrustModule is imported for ADM-05: resolving a dispute with a fault finding
+ * records a DISPUTE_UPHELD penalty against the faulted party's trust ledger — the
+ * dispute workspace drives both the money (escrow) and the reputation (trust).
  */
 @Module({
-  imports: [PrismaModule, JobsModule, StorageModule],
+  imports: [PrismaModule, JobsModule, StorageModule, TrustModule],
   controllers: [
     PaymentMethodsController,
     WalletController,

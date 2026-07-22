@@ -9,7 +9,9 @@ import {
   averageReviewMinutes,
   canTransition,
   CHECK_DEFINITIONS,
+  checkTypesForGroup,
   isTerminalStage,
+  QUEUE_GROUP_CHECK_TYPES,
   rejectionMessageKey,
   REJECTION_POLICIES,
   STAGE_TRANSITIONS,
@@ -188,5 +190,40 @@ describe('pipeline metrics (AGT-03)', () => {
   it('distinguishes "approved nothing" from "reviewed nothing"', () => {
     expect(approvalRate(0, 0)).toBeNull();
     expect(approvalRate(0, 5)).toBe(0);
+  });
+});
+
+describe('queue tabs (ADM-03)', () => {
+  it('applies no check-type filter for the ALL tab', () => {
+    expect(checkTypesForGroup('ALL')).toBeNull();
+  });
+
+  it('groups every ID-related check under the ID tab', () => {
+    const idTypes = checkTypesForGroup('ID');
+    expect(idTypes).toContain(VerificationCheckType.ID_SUBMITTED);
+    expect(idTypes).toContain(VerificationCheckType.ID_APPROVED);
+    expect(idTypes).toContain(VerificationCheckType.SELFIE_LIVENESS);
+  });
+
+  it('scopes the Business and Field tabs to their single check type', () => {
+    expect(checkTypesForGroup('BUSINESS')).toEqual([VerificationCheckType.BUSINESS_REGISTRATION]);
+    expect(checkTypesForGroup('FIELD')).toEqual([VerificationCheckType.FIELD_VERIFICATION]);
+  });
+
+  it('places every reviewed check type under exactly one tab', () => {
+    // A check that belongs to no tab is invisible in the grouped queue, and one
+    // in two tabs is double-counted — both are queue bugs a new check type could
+    // introduce silently, so the partition is asserted whole.
+    const grouped = Object.values(QUEUE_GROUP_CHECK_TYPES).flat();
+    const seen = new Set(grouped);
+    expect(seen.size).toBe(grouped.length);
+    // PHONE and PORTFOLIO settle instantly and never reach the reviewer queue,
+    // so they are intentionally outside the tabs.
+    const queued = Object.values(VerificationCheckType).filter(
+      (type) => type !== VerificationCheckType.PHONE && type !== VerificationCheckType.PORTFOLIO,
+    );
+    for (const type of queued) {
+      expect(seen.has(type)).toBe(true);
+    }
   });
 });

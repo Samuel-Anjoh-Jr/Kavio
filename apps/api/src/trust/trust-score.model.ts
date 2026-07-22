@@ -61,7 +61,19 @@ export type TrustRule =
    */
   | { readonly kind: 'REVOCATION'; readonly revokes: TrustEventType }
   /** Overrides the numeric score entirely (TRU-08). */
-  | { readonly kind: 'SUSPENSION' };
+  | { readonly kind: 'SUSPENSION' }
+  /**
+   * An admin moving a score by hand in an exceptional case (ADM-04, FR-42).
+   *
+   * The ONE rule whose magnitude is not fixed here: the amount rides on the
+   * ledger row's own `delta`, so replaying the log still reproduces the score
+   * exactly and an adjustment stays a fact the score is derived FROM rather than
+   * an edit applied TO it. `maxMagnitude` bounds a single event, which is what
+   * keeps "exceptional" from becoming "however much the tool allows".
+   *
+   * Applied to the TOTAL, not to a pillar — see APPLYING AN ADJUSTMENT below.
+   */
+  | { readonly kind: 'MANUAL_ADJUSTMENT'; readonly maxMagnitude: number };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Endorsement weighting (TRU-10, §21.6, FR-35)
@@ -97,6 +109,26 @@ export const ENDORSEMENT_CAP = 5;
  * exactly the reputation the platform exists to make legible.
  */
 export const ENDORSEMENT_TAPERED_OUT_AT = 10;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin adjustment (ADM-04, FR-42)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The most a SINGLE admin adjustment may move a score, in either direction.
+ *
+ * A quarter of the whole scale. Large enough for the cases ADM-04 names — a
+ * fraud penalty, a Field-Verified bonus for a Founding Professional — and small
+ * enough that no one action rewrites an identity's standing. An admin who needs
+ * more applies a second one, and each is separately reasoned and separately
+ * audited, which is the point: the ceiling is not there to stop an admin, it is
+ * there to make a large intervention look like what it is.
+ *
+ * Ending an account is NOT this mechanism. Confirmed fraud is
+ * FAKE_DOCUMENTS_CONFIRMED, which suspends outright and overrides the number —
+ * so nobody ever needs to reach for "-100" here.
+ */
+export const ADMIN_ADJUSTMENT_MAX_MAGNITUDE = 25;
 
 /**
  * The multiplier applied to the endorsement contribution at a given job count.
@@ -183,6 +215,10 @@ export const TRUST_POINT_MODEL: Readonly<Record<TrustEventType, TrustRule>> = {
     pointsPer: 1.5,
     cap: 15,
   },
+  [TrustEventType.EXCELLENT_REVIEW_REVOKED]: {
+    kind: 'REVOCATION',
+    revokes: TrustEventType.EXCELLENT_REVIEW,
+  },
   [TrustEventType.DISPUTE_UPHELD]: {
     kind: 'PENALTY',
     pillar: TrustPillar.MARKETPLACE,
@@ -196,6 +232,12 @@ export const TRUST_POINT_MODEL: Readonly<Record<TrustEventType, TrustRule>> = {
 
   // Overrides everything.
   [TrustEventType.FAKE_DOCUMENTS_CONFIRMED]: { kind: 'SUSPENSION' },
+
+  // Outside the model by design (ADM-04). See the MANUAL_ADJUSTMENT rule kind.
+  [TrustEventType.ADMIN_ADJUSTMENT]: {
+    kind: 'MANUAL_ADJUSTMENT',
+    maxMagnitude: ADMIN_ADJUSTMENT_MAX_MAGNITUDE,
+  },
 };
 
 /**
@@ -222,6 +264,12 @@ export const TRUST_SCORE_THRESHOLDS: readonly number[] = [25, 50, 75, 90];
 /** The only shape the model needs from a TrustEvent row. */
 export interface TrustEventInput {
   readonly type: TrustEventType;
+  /**
+   * The row's recorded delta. Read for MANUAL_ADJUSTMENT events ONLY, whose
+   * amount is not derivable from the type — every other rule ignores it, and the
+   * column stays what it always was for them: an audit note, not an input.
+   */
+  readonly delta?: number | null;
 }
 
 /** One rule's contribution, which is what the TRU-04 breakdown itemises. */
@@ -255,6 +303,16 @@ export interface TrustScoreResult {
   readonly suspended: boolean;
   /** Denormalised tier-gate input (§21.4), counted from the same log. */
   readonly completedJobs: number;
+  /**
+   * Net of the admin adjustments already folded into `total` (ADM-04).
+   *
+   * Surfaced as its own number so the breakdown can say so out loud. A score that
+   * was moved by hand and shows only four earned pillars is a screen that lies by
+   * omission — and the four pillars would no longer add up to the total, which is
+   * exactly the sort of quiet arithmetic mismatch that costs trust in a trust
+   * product. Zero for the overwhelming majority of identities.
+   */
+  readonly adjustment: number;
   readonly eventCount: number;
 }
 
@@ -289,6 +347,9 @@ export function ruleMax(rule: TrustRule): number {
     case 'PENALTY':
     case 'REVOCATION':
     case 'SUSPENSION':
+    // An adjustment is not a ceiling anyone can earn toward, so it contributes
+    // nothing to any pillar's maximum — it moves the total after the fact.
+    case 'MANUAL_ADJUSTMENT':
       return 0;
   }
 }
@@ -327,7 +388,29 @@ export function pillarMax(pillar: TrustPillar): number {
  * meaningless row in the TRU-04 breakdown.
  */
 export function scoringPillarOf(rule: TrustRule): TrustPillar | null {
-  return rule.kind === 'SUSPENSION' || rule.kind === 'REVOCATION' ? null : rule.pillar;
+  return rule.kind === 'SUSPENSION' ||
+    rule.kind === 'REVOCATION' ||
+    rule.kind === 'MANUAL_ADJUSTMENT'
+    ? null
+    : rule.pillar;
+}
+
+/**
+ * The net of every admin adjustment on the log, each clamped to its per-event
+ * bound (ADM-04).
+ *
+ * Clamped HERE rather than only at the write path, so a row that reached the
+ * database with an out-of-range delta — a bad migration, a direct SQL edit —
+ * still cannot move a score further than the reviewed maximum. The service
+ * rejects such a request; this makes the rejection true retroactively as well.
+ */
+export function adjustmentTotal(events: readonly TrustEventInput[]): number {
+  const rule = TRUST_POINT_MODEL[TrustEventType.ADMIN_ADJUSTMENT];
+  const bound = rule.kind === 'MANUAL_ADJUSTMENT' ? rule.maxMagnitude : 0;
+
+  return events
+    .filter((event) => event.type === TrustEventType.ADMIN_ADJUSTMENT)
+    .reduce((sum, event) => sum + clamp(event.delta ?? 0, -bound, bound), 0);
 }
 
 /**
@@ -357,8 +440,13 @@ export function computeTrustScore(events: readonly TrustEventInput[]): TrustScor
   for (const [type, rule] of Object.entries(TRUST_POINT_MODEL) as [TrustEventType, TrustRule][]) {
     // Suspension is a verdict, and a revocation scores nothing of its own — it
     // only reduces the count of what it cancels, which `effectiveOccurrences`
-    // has already applied to that rule.
-    if (rule.kind === 'SUSPENSION' || rule.kind === 'REVOCATION') {
+    // has already applied to that rule. An adjustment belongs to no pillar and
+    // is applied to the total below.
+    if (
+      rule.kind === 'SUSPENSION' ||
+      rule.kind === 'REVOCATION' ||
+      rule.kind === 'MANUAL_ADJUSTMENT'
+    ) {
       continue;
     }
 
@@ -411,10 +499,30 @@ export function computeTrustScore(events: readonly TrustEventInput[]): TrustScor
     };
   });
 
+  // APPLYING AN ADJUSTMENT (ADM-04).
+  //
+  // At the TOTAL, deliberately, not inside a pillar. Two reasons, both of which
+  // bite if it is done the other way:
+  //
+  //   - A pillar clamps to [0, its max]. A −20 fraud penalty filed under
+  //     Marketplace when that pillar holds 5 points would silently become −5, and
+  //     a +10 bonus filed under a pillar already at its ceiling would become
+  //     nothing at all. An admin's stated intervention must not be quietly
+  //     swallowed by a cap it never knew about.
+  //   - ADM-04 says "adjust Trust Scores" — the composite. The four pillars each
+  //     claim to measure a specific thing, and an exceptional manual correction
+  //     is not evidence about identity, professionalism, marketplace behaviour or
+  //     finances. Filing it under one of them would make that pillar overstate
+  //     what it knows.
+  //
+  // It lands before the [0, 100] clamp, so an adjustment can never push a score
+  // outside the scale, and `suspended` still overrides everything.
+  const adjustment = suspended ? 0 : adjustmentTotal(events);
+
   const total = suspended
     ? MIN_TOTAL_SCORE
     : clamp(
-        subScores.reduce((sum, sub) => sum + sub.points, 0),
+        subScores.reduce((sum, sub) => sum + sub.points, 0) + adjustment,
         MIN_TOTAL_SCORE,
         MAX_TOTAL_SCORE,
       );
@@ -424,6 +532,7 @@ export function computeTrustScore(events: readonly TrustEventInput[]): TrustScor
     subScores,
     suspended,
     completedJobs,
+    adjustment,
     eventCount: events.length,
   };
 }

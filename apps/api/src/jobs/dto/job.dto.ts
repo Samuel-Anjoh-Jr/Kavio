@@ -49,10 +49,39 @@ export const createJobSchema = z
     location: locationSchema.nullish(),
     /** Already-uploaded JOB_PHOTO assets. Upload happens on POST /uploads first. */
     photoAssetIds: z.array(z.uuid()).max(12, 'A job can carry up to 12 photos.').optional(),
+    /**
+     * Post on behalf of a business (BIZ-02). The server checks the caller holds
+     * `business:jobs` for it — a company id in a request body authorises nothing.
+     */
+    businessProfileId: z.uuid().optional(),
+    /**
+     * Team/bulk posting (BIZ-02). Absent on an ordinary single-worker job; a
+     * `teamSize` of 1 written everywhere would turn "is this a team job?" from a
+     * fact into a comparison.
+     */
+    teamSize: z
+      .number()
+      .int('Enter a whole number of workers.')
+      .min(2, 'A team job needs at least 2 workers — leave this out for a single worker.')
+      .max(100, 'That team size looks like a typo.')
+      .optional(),
+    durationDays: z
+      .number()
+      .int('Enter a whole number of days.')
+      .min(1, 'A job lasts at least a day.')
+      .max(365, 'Keep the duration under a year.')
+      .optional(),
   })
   .refine((v) => v.budgetMin == null || v.budgetMax == null || v.budgetMax >= v.budgetMin, {
     message: 'The maximum budget cannot be less than the minimum.',
     path: ['budgetMax'],
+  })
+  // A team size only means something against the company that is hiring the
+  // team. Allowing one without the other would produce a job nobody's dashboard
+  // owns and no access level governs.
+  .refine((v) => v.teamSize == null || v.businessProfileId != null, {
+    message: 'Team jobs are posted by a business.',
+    path: ['teamSize'],
   });
 
 export type CreateJobDto = z.infer<typeof createJobSchema>;

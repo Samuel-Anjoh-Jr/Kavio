@@ -1,4 +1,4 @@
-import { DisputeResolution } from '@trustpro/database';
+import { DisputeFaultParty, DisputeResolution } from '@trustpro/database';
 import { z } from 'zod';
 
 /**
@@ -32,9 +32,18 @@ export const disputeMessageSchema = z
   });
 export type DisputeMessageDto = z.infer<typeof disputeMessageSchema>;
 
-/** An admin resolving a dispute (ADM-05). The action drives the escrow machine. */
+/**
+ * An admin resolving a dispute (ADM-05). The action drives the escrow machine,
+ * and the fault finding drives the trust consequence.
+ *
+ * `faultParty` is OPTIONAL: left out, the resolution supplies a sensible default
+ * (a refund implies the worker did not deliver; a release implies nobody is at
+ * fault). Set explicitly, it overrides — because only the admin who read the
+ * evidence can say a client abused the process or a refund was nobody's fault.
+ */
 export const resolveDisputeSchema = z.object({
   resolution: z.enum(DisputeResolution),
   note: z.string().trim().max(2000).optional(),
+  faultParty: z.enum(DisputeFaultParty).optional(),
 });
 export type ResolveDisputeDto = z.infer<typeof resolveDisputeSchema>;

@@ -33,6 +33,8 @@ import { JobsModule } from './jobs/jobs.module';
 import { QuotesModule } from './quotes/quotes.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MessagingModule } from './messaging/messaging.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { BusinessModule } from './business/business.module';
 import { SafetyModule } from './safety/safety.module';
 import { TrackingModule } from './tracking/tracking.module';
 
@@ -80,6 +82,10 @@ import { TrackingModule } from './tracking/tracking.module';
     SearchModule,
     // Worker and business profiles, read and owner-edited (PRO-01…PRO-07).
     ProfilesModule,
+    // Business, teams and corporate eligibility (BIZ-*). Before JobsModule,
+    // which resolves a team job's company access through it, and after
+    // VerificationModule, whose pipeline the RCCM check rides.
+    BusinessModule,
     // Jobs & applications (SRS §6 JOB-*). After CatalogModule (jobs are scoped to
     // the taxonomy), GeoModule (job locations resolve their region) and
     // TrustModule (the Tier 2+ posting gate derives the poster's tier).
@@ -95,6 +101,10 @@ import { TrackingModule } from './tracking/tracking.module';
     // Messaging (SRS §13, MSG-*). Its WS gateway lives in RealtimeModule, which
     // imports this module — so it is registered here for its REST/GraphQL surface.
     MessagingModule,
+    // Reviews (REV-*). After PaymentsModule, whose booking states decide who may
+    // review at all, and after TrustModule, whose ledger a qualifying review
+    // reports into.
+    ReviewsModule,
     // Safety & SOS (SOS-*). Shares alerts through the NotificationDispatcher.
     SafetyModule,
     // Live tracking (SOS-03). Foreground, consented, revocable position streaming

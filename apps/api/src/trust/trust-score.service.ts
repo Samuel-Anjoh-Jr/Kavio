@@ -37,6 +37,12 @@ export interface RecordTrustEventInput {
   readonly sourceId?: string;
   readonly metadata?: Prisma.InputJsonValue;
   readonly occurredAt?: Date;
+  /**
+   * The amount, for the one event type that carries one: ADMIN_ADJUSTMENT
+   * (ADM-04). Required for that type and ignored for every other, whose value is
+   * fixed by the point model — a caller cannot choose what a verified ID is worth.
+   */
+  readonly delta?: number;
 }
 
 /**
@@ -69,7 +75,18 @@ export class TrustScoreService {
     // value, and IDENTITY is the honest place to file "something happened to who
     // this person is" — the ledger row is a record, not a score contribution.
     const pillar = scoringPillarOf(rule) ?? TrustPillar.IDENTITY;
-    const nominalDelta = nominalDeltaFor(input.type);
+
+    // ADMIN_ADJUSTMENT is the only type whose magnitude the caller supplies, and
+    // the delta column is what the recompute replays for it — so a missing one
+    // would append an event that reads like an intervention and moves nothing.
+    // Refused loudly rather than defaulted to zero: a silently ineffective admin
+    // action is worse than a failed one, because it looks like it worked.
+    if (rule.kind === 'MANUAL_ADJUSTMENT' && (input.delta === undefined || input.delta === 0)) {
+      throw new Error(`${input.type} requires a non-zero delta`);
+    }
+
+    const nominalDelta =
+      rule.kind === 'MANUAL_ADJUSTMENT' ? (input.delta ?? 0) : nominalDeltaFor(input.type);
 
     await this.prisma.client.trustEvent.create({
       data: {
@@ -110,7 +127,9 @@ export class TrustScoreService {
     const [events, previous] = await Promise.all([
       this.prisma.client.trustEvent.findMany({
         where: { subjectId },
-        select: { type: true },
+        // `delta` is read for ADMIN_ADJUSTMENT rows, whose amount lives on the
+        // row rather than in the point model (ADM-04). Every other rule ignores it.
+        select: { type: true, delta: true },
         orderBy: { occurredAt: 'asc' },
       }),
       this.prisma.client.trustScore.findUnique({
@@ -247,7 +266,7 @@ export class TrustScoreService {
   async currentResult(subjectId: string): Promise<TrustScoreResult> {
     const events = await this.prisma.client.trustEvent.findMany({
       where: { subjectId },
-      select: { type: true },
+      select: { type: true, delta: true },
       orderBy: { occurredAt: 'asc' },
     });
 
@@ -280,6 +299,12 @@ export function nominalDeltaFor(type: TrustEventType): number {
       // recompute shows what actually changed.
       return 0;
     case 'SUSPENSION':
+      return 0;
+    case 'MANUAL_ADJUSTMENT':
+      // The one rule whose amount the caller supplies. Handled by `record`
+      // before this function is reached; falling through to zero here would
+      // silently neutralise an admin's adjustment, so it is unreachable rather
+      // than defaulted — see the guard in `record`.
       return 0;
   }
 }

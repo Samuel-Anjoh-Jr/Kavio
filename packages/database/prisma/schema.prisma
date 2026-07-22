@@ -122,6 +122,20 @@ model User {
   reviewedEndorsements  Endorsement[]            @relation("EndorsementReviewer")
   badges                UserBadge[]
 
+  // Reviews (PROMPT 79; REV-01…REV-03). One identity authors some and is the
+  // subject of others — after a completed job the client rates the worker and
+  // the worker may rate the client back, so both sides hang off the identity.
+  authoredReviews  Review[] @relation("ReviewAuthor")
+  receivedReviews  Review[] @relation("ReviewSubject")
+  moderatedReviews Review[] @relation("ReviewModerator")
+
+  // Business teams (PROMPT 81; BIZ-03). A member row binds to an identity only
+  // once the invitation is ACCEPTED — an invited colleague usually has no
+  // TrustPro account yet — so membership is a nullable relation on both sides.
+  teamMemberships    BusinessTeamMember[] @relation("TeamMemberUser")
+  sentTeamInvites    BusinessTeamMember[] @relation("TeamMemberInviter")
+  verifiedBusinesses BusinessProfile[]    @relation("BusinessProfileVerifier")
+
   // Messaging (PROMPT 70). A conversation's members are a join, not two columns
   // on the identity — so a safety observer can be added to an existing thread.
   conversationParts ConversationParticipant[] @relation("ConversationParticipantUser")
@@ -392,6 +406,20 @@ enum TrustEventType {
   /// negation rather than deleting the original — the history still shows that
   /// the endorsement was given and then taken back, which is the honest record.
   ENDORSEMENT_REVOKED
+  /// Cancels one EXCELLENT_REVIEW when moderation hides the review behind it
+  /// (PROMPT 79, REV-03). Same discipline as ENDORSEMENT_REVOKED, and the reason
+  /// the REVOCATION rule kind was written as a general shape rather than an
+  /// endorsement special case: a review taken down must stop paying points, but
+  /// deleting the original ledger row would erase that it was ever counted.
+  EXCELLENT_REVIEW_REVOKED
+  /// An admin moving a score by hand in an exceptional case (ADM-04, FR-42).
+  ///
+  /// The ONLY event whose magnitude is not fixed by the point model: the amount
+  /// is carried on the ledger row's own `delta` and replayed from there, so an
+  /// adjustment is still a recorded fact the score is derived FROM rather than an
+  /// edit applied TO it (SRS §21: "the total is recomputed, never edited
+  /// directly"). Bounded per event and audit-logged with the acting admin.
+  ADMIN_ADJUSTMENT
 }
 
 /// An append-only entry in the trust ledger. Rows are NEVER updated or deleted —
@@ -717,6 +745,10 @@ enum BadgeType {
   JOBS_100
   /// Five approved community endorsements (TRU-10).
   COMMUNITY_ENDORSED
+  /// RCCM registration approved by staff (BIZ-01). Awarded to the OWNER identity,
+  /// like every other badge — the badge registry is keyed on a user, and the
+  /// company's standing travels with the person accountable for it.
+  VERIFIED_BUSINESS
 }
 
 /// One unlocked badge (TRU-11). Milestones are PERMANENT: a Trust Score that
@@ -942,8 +974,13 @@ model BusinessProfile {
   longitude      Float?
   locationSource LocationSource?
 
-  verified   Boolean   @default(false)
-  verifiedAt DateTime?
+  /// Enhanced Business Verification (BIZ-01). Set ONLY by the RCCM approval
+  /// listener when a BUSINESS_REGISTRATION check is approved — never by an owner
+  /// edit — which is what makes the "Verified Business" badge mean something.
+  verified     Boolean   @default(false)
+  verifiedAt   DateTime?
+  /// The staff member who approved the registration, for the audit trail.
+  verifiedById String?   @db.Uuid
 
   /// Company logo (PRO-06). A MediaAsset FK rather than a URL column: the logo
   /// goes through the same upload validation, ownership and signed-access rules
@@ -961,13 +998,17 @@ model BusinessProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner     User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  geoRegion GeoRegion?           @relation("BusinessProfileRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
-  logo      MediaAsset?          @relation("BusinessProfileLogo", fields: [logoAssetId], references: [id], onDelete: SetNull)
-  team      BusinessTeamMember[]
+  owner      User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  geoRegion  GeoRegion?           @relation("BusinessProfileRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
+  logo       MediaAsset?          @relation("BusinessProfileLogo", fields: [logoAssetId], references: [id], onDelete: SetNull)
+  verifiedBy User?                @relation("BusinessProfileVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  team       BusinessTeamMember[]
+  jobs       Job[]                @relation("JobBusiness")
 
   @@index([city])
   @@index([geoRegionId])
+  /// The "verified businesses" browse and the corporate-eligibility check (BIZ-01).
+  @@index([verified])
 }
 
 /// Team roles and access levels per BIZ-03. Captured at intake; full team
@@ -990,27 +1031,68 @@ enum TeamMemberStatus {
   INVITED
   ACTIVE
   REMOVED
+  /// The invitee said no. Distinct from REMOVED, which is the business's
+  /// decision: conflating the two would misreport why a seat is empty.
+  DECLINED
 }
 
-/// A member of a business's team. Identified by email/phone rather than a User
-/// FK: at intake the person invited usually has no TrustPro account yet.
+/// A member of a business's team (BIZ-03).
+///
+/// Identified by email/phone rather than a User FK AT INTAKE — the colleague
+/// being invited usually has no TrustPro account yet — and bound to `userId` when
+/// the invitation is accepted. Both facts are needed: the contact details are how
+/// the invitation is delivered, and the identity is what server-side access
+/// enforcement resolves against. An unaccepted row grants nothing.
 model BusinessTeamMember {
   id                String @id @default(uuid()) @db.Uuid
   businessProfileId String @db.Uuid
 
+  /// Bound on acceptance. NULL means "invited, not yet an identity" — and the
+  /// access resolver treats a NULL userId as no access at all, so a pending
+  /// invitation can never be a way in.
+  userId String? @db.Uuid
+
   name        String
   email       String?
   phone       String?
+  /// The member's job title inside the company. Free text: this is org chrome,
+  /// not a permission — `accessLevel` is what the server enforces.
+  title       String?
   role        TeamMemberRole        @default(STAFF)
+  /// What this member may DO (BIZ-03). Enforced server-side on every business
+  /// write via business-access.model.ts — never trusted from the client, and
+  /// never inferred from `role`, which is an HR label.
   accessLevel TeamMemberAccessLevel @default(VIEW_ONLY)
   status      TeamMemberStatus      @default(INVITED)
+
+  /// The owner/admin who sent the invitation, for the audit trail.
+  invitedById String? @db.Uuid
+
+  /// HMAC digest of the invitation token, never the token itself — the same
+  /// discipline as RefreshToken. A leaked database must not hand out team seats.
+  invitationTokenHash String?   @unique
+  invitationSentAt    DateTime?
+  /// Invitations lapse. An invite that is valid forever is a permanent
+  /// unrevoked grant sitting in someone's inbox.
+  invitationExpiresAt DateTime?
+  acceptedAt          DateTime?
+  removedAt           DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  user            User?           @relation("TeamMemberUser", fields: [userId], references: [id], onDelete: SetNull)
+  invitedBy       User?           @relation("TeamMemberInviter", fields: [invitedById], references: [id], onDelete: SetNull)
 
   @@index([businessProfileId, status])
+  /// The access resolver's hot path: "what may this identity do for this
+  /// business?" — one indexed lookup on every business-scoped write.
+  @@index([userId, status])
+  /// One live seat per identity per business, enforced by a partial unique index
+  /// in the migration (WHERE "userId" IS NOT NULL AND status <> 'REMOVED'): a
+  /// person can be re-invited after removal but never hold two seats at once.
+  @@index([businessProfileId, userId])
 }
 
 /// A service a worker offers, with transparent starting price (PRO-05).
@@ -1235,6 +1317,11 @@ enum MediaAssetKind {
   /// A voice note shared inside a conversation (MSG-01). PRIVATE, same rule as
   /// MESSAGE_IMAGE — audio evidence of a negotiation is between the parties.
   MESSAGE_VOICE
+  /// A photo attached to a review (REV-01). PUBLIC, because a review without its
+  /// evidence is just an opinion — but its own kind rather than PORTFOLIO_IMAGE:
+  /// this is the CLIENT's photo of delivered work and must never be counted as
+  /// the worker's own portfolio evidence by the Trust Engine.
+  REVIEW_PHOTO
 }
 
 /// PRIVATE media is served only through short-lived signed URLs; PUBLIC media
@@ -1287,6 +1374,7 @@ model MediaAsset {
   quoteAttachments   QuoteAttachment[]
   disputeEvidence    DisputeAttachment[]
   messageAttachments MessageAttachment[]
+  reviewPhotos       ReviewPhoto[]
 
   @@index([ownerId, kind, createdAt])
   /// The Documents area lists live files only (TRU-08).
@@ -1465,6 +1553,22 @@ model Job {
   /// Business owner post the same kind of job and pass the same tier gate.
   posterId String @db.Uuid
 
+  /// The business this job was posted ON BEHALF OF (BIZ-02), when a business
+  /// owner or a scoped team member posted it. NULL for an individual client.
+  ///
+  /// Kept ALONGSIDE `posterId` rather than replacing it: the poster is the
+  /// accountable identity that passed the tier gate and receives the quotes,
+  /// while this is the company the spend and the analytics belong to. A team
+  /// member with MANAGE_JOBS posts as themselves for a company they do not own,
+  /// and collapsing the two would lose whichever half of that is inconvenient.
+  businessProfileId String? @db.Uuid
+
+  /// Team/bulk posting (BIZ-02): how many workers are wanted and for how long.
+  /// Both NULL on an ordinary single-worker job — a `teamSize` of 1 written
+  /// everywhere would make "is this a team job?" a comparison instead of a fact.
+  teamSize     Int?
+  durationDays Int?
+
   /// Scoped to the admin taxonomy (JOB-02, ADM-02). Nullable ONLY so the stepper
   /// can autosave a draft before the category step is done — publish() refuses to
   /// take a job live without one, so no OPEN job is ever uncategorised. That is
@@ -1516,8 +1620,12 @@ model Job {
   /// nullable scalar — a draft may not have chosen a category yet.
   category  ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   geoRegion GeoRegion?       @relation("JobRegion", fields: [geoRegionId], references: [id], onDelete: SetNull)
+  /// SetNull, not Cascade: deleting a company profile must not silently delete
+  /// the jobs it posted, the quotes on them or the money that moved.
+  business  BusinessProfile? @relation("JobBusiness", fields: [businessProfileId], references: [id], onDelete: SetNull)
 
   photos        JobPhoto[]
+  reviews       Review[]
   statusEvents  JobStatusEvent[]
   applications  JobApplication[]
   invitations   JobInvitation[]
@@ -1536,6 +1644,8 @@ model Job {
   /// Region-scoped boards. Equality on the denormalised region rather than a
   /// polygon containment test on every request.
   @@index([geoRegionId, status])
+  /// The business dashboard's own board: one company's posts by state (BIZ-02).
+  @@index([businessProfileId, status, createdAt])
 }
 
 /// A photo attached to a job post (JOB-02).
@@ -1878,6 +1988,7 @@ model Booking {
   disputes         Dispute[]
   sosAlerts        SOSAlert[]
   trackingSessions TrackingSession[]
+  reviews          Review[]
 
   @@unique([quoteId])
   /// Both parties' booking lists.
@@ -2203,6 +2314,24 @@ enum DisputeResolution {
   CLOSE_NO_ACTION
 }
 
+/// Which party the resolving admin found at fault (ADM-05, §21.5 "disputes −20").
+///
+/// A SEPARATE judgement from `resolution`, deliberately, because the direction the
+/// money went does not settle who behaved badly. A client who legitimately
+/// escalates and loses has done nothing wrong, and charging them a 20-point
+/// penalty for it would teach both parties never to raise a dispute — which is
+/// the one outcome an escrow product cannot afford, since the escrow is only
+/// worth anything if people are willing to use the process that unlocks it. So
+/// the admin, who is the only one who read the evidence, records fault
+/// explicitly; the resolution merely supplies the default.
+///
+/// NONE is the common case and carries no trust consequence at all.
+enum DisputeFaultParty {
+  NONE
+  CLIENT
+  WORKER
+}
+
 /// A dispute over a job's escrow (PAY-03, ADM-05).
 ///
 /// Opening one FREEZES the associated escrow (state → DISPUTED) so funds cannot
@@ -2225,6 +2354,10 @@ model Dispute {
   resolution     DisputeResolution?
   /// The admin's resolution note, shown to both parties with the outcome.
   resolutionNote String?
+  /// Who the admin found at fault, driving the DISPUTE_UPHELD trust penalty.
+  /// Persisted rather than left in the emitted event: the trust ledger records
+  /// that a penalty was applied, and this records the finding it was applied for.
+  faultParty     DisputeFaultParty  @default(NONE)
 
   resolvedById String?   @db.Uuid
   resolvedAt   DateTime?
@@ -2300,6 +2433,116 @@ model Wallet {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reviews (PROMPT 79; SRS §3.7 REV-01…REV-03).
+//
+// Reviews are the Marketplace pillar's main input, which makes them worth
+// forging — so three rules hold this area up:
+//
+//   1. A REVIEW IS EARNED, NOT WRITTEN. A row can only exist for a job that
+//      actually completed, authored by one of that job's two real participants,
+//      about the other one. That is enforced in the service against the booking,
+//      and backstopped here by @@unique([jobId, authorId]) so one engagement can
+//      never yield two reviews from the same person. "Reviews tied to real
+//      completed jobs to prevent fabrication" (REV-02) is the requirement; the
+//      unique index is what makes it true under a double-tap on a bad connection.
+//
+//   2. MODERATION HIDES, IT DOES NOT DELETE. A reported review that breaks policy
+//      goes to HIDDEN and stops counting toward the average and the trust ledger,
+//      but the row and its history remain — a subject must not be able to make an
+//      inconvenient review disappear, and an admin must be able to explain later
+//      what was taken down and why.
+//
+//   3. THE TRUST CONSEQUENCE IS AN EVENT, NOT A COLUMN. A qualifying review
+//      appends EXCELLENT_REVIEW to the ledger and hiding it appends
+//      EXCELLENT_REVIEW_REVOKED. The score itself is never written from here.
+//
+// Reporting is NOT modelled here: reports live in AbuseReport with
+// targetType = REVIEW, so one moderation workspace covers every reportable
+// surface rather than reviews having a private queue of their own (ADM-08).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Whether a review counts. HIDDEN is a moderation outcome (REV-03) — the row
+/// survives, its influence does not.
+enum ReviewStatus {
+  PUBLISHED
+  HIDDEN
+}
+
+/// A rating and review of one job participant by the other (REV-01, REV-02).
+model Review {
+  id String @id @default(uuid()) @db.Uuid
+
+  /// The completed job being reviewed — the anchor, per the SRS entity.
+  jobId     String @db.Uuid
+  /// The engagement that proves it happened. The job is what the review is
+  /// ABOUT; the booking is the evidence that these two people transacted and
+  /// that the work reached a completed state. Denormalised alongside the job so
+  /// the eligibility check and the "verified purchase" marker are one read.
+  bookingId String @db.Uuid
+
+  /// Both identities, never role rows: a client reviews a worker and a worker
+  /// may review the client back, and the same person is author on one row and
+  /// subject on the other.
+  authorId  String @db.Uuid
+  subjectId String @db.Uuid
+
+  /// 1–5 stars. Range-validated in the DTO and CHECK-constrained in the
+  /// migration — the Trust Engine reads this, so a 7 must be impossible rather
+  /// than merely unexpected.
+  rating Int
+  /// Optional: REV-01 asks for stars plus a review, and forcing prose out of a
+  /// satisfied client is how a five-star rating turns into "ok".
+  text   String?
+
+  status ReviewStatus @default(PUBLISHED)
+
+  /// Set when moderation hides a review (REV-03). Staff-facing.
+  hiddenReason  String?
+  moderatedById String?   @db.Uuid
+  moderatedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job         Job     @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  booking     Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  author      User    @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  subject     User    @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  moderatedBy User?   @relation("ReviewModerator", fields: [moderatedById], references: [id], onDelete: SetNull)
+
+  photos ReviewPhoto[]
+
+  /// One review per person per job. The anti-fabrication guarantee (REV-02).
+  @@unique([jobId, authorId])
+  /// The profile Reviews tab: a subject's visible reviews, newest first (REV-02).
+  @@index([subjectId, status, createdAt])
+  /// "Have I already reviewed this?" on the author's completed-jobs list.
+  @@index([authorId, createdAt])
+  @@index([bookingId])
+}
+
+/// A photo attached to a review (REV-01).
+///
+/// A MediaAsset FK rather than a URL column, for the reason spelled out on
+/// BusinessProfile.logoAssetId: a URL column would be the one path into the
+/// system that skips upload validation, ownership and signed access.
+model ReviewPhoto {
+  id           String @id @default(uuid()) @db.Uuid
+  reviewId     String @db.Uuid
+  mediaAssetId String @db.Uuid
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  review     Review     @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, mediaAssetId])
+  @@index([reviewId, sortOrder])
+  @@index([mediaAssetId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

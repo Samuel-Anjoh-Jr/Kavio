@@ -131,6 +131,17 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     visibility: MediaVisibility.PRIVATE,
     prefix: 'messages',
   },
+  [MediaAssetKind.REVIEW_PHOTO]: {
+    // A client's photo of delivered work, attached to a review (REV-01). PUBLIC,
+    // because a review shown without its evidence is just an opinion — and the
+    // profile Reviews tab is browsable by guests (ACC-01). Its own kind and
+    // prefix, never PORTFOLIO_IMAGE: the Trust Engine pays a worker for their own
+    // portfolio uploads, and a client's snapshot must not earn them those points.
+    mimeTypes: IMAGE_TYPES,
+    maxBytes: 10 * MB,
+    visibility: MediaVisibility.PUBLIC,
+    prefix: 'reviews',
+  },
 };
 
 /**

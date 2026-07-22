@@ -267,6 +267,59 @@ export function isTerminalStage(stage: VerificationStage): boolean {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Queue tabs (ADM-03: All / ID / Business / Field)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The admin verification queue's tabs (ADM-03).
+ *
+ * A tab is a GROUP OF CHECK TYPES, not a single one: an admin working "ID" wants
+ * both the instant ID_SUBMITTED and the reviewed ID_APPROVED in one place, plus
+ * the selfie-liveness that backs the same claim. Modelled as a named grouping
+ * here rather than as an ad-hoc `checkType IN (...)` at the query site, so the
+ * tabs the UI shows and the filter the database applies come from ONE list and
+ * cannot drift into showing a tab that filters to something else.
+ */
+export type VerificationQueueGroup = 'ALL' | 'ID' | 'BUSINESS' | 'FIELD';
+
+/**
+ * The same tabs as a concrete object, for GraphQL enum registration. A TS string
+ * union has no runtime value to hand `registerEnumType`, so the enum the schema
+ * exposes lives here beside the union it mirrors rather than in the resolver.
+ */
+export const VerificationQueueGroupEnum = {
+  ALL: 'ALL',
+  ID: 'ID',
+  BUSINESS: 'BUSINESS',
+  FIELD: 'FIELD',
+} as const;
+
+/**
+ * Check types behind each tab. ALL is absent on purpose — it means "no check-type
+ * filter", which is the lack of an entry rather than a list of every value that a
+ * new check type could silently fall out of.
+ */
+export const QUEUE_GROUP_CHECK_TYPES: Readonly<
+  Record<Exclude<VerificationQueueGroup, 'ALL'>, readonly VerificationCheckType[]>
+> = {
+  ID: [
+    VerificationCheckType.ID_SUBMITTED,
+    VerificationCheckType.ID_APPROVED,
+    VerificationCheckType.SELFIE_LIVENESS,
+    VerificationCheckType.ADDRESS,
+  ],
+  BUSINESS: [VerificationCheckType.BUSINESS_REGISTRATION],
+  FIELD: [VerificationCheckType.FIELD_VERIFICATION],
+};
+
+/** The check-type filter a tab applies, or null for ALL (no filter). */
+export function checkTypesForGroup(
+  group: VerificationQueueGroup,
+): readonly VerificationCheckType[] | null {
+  return group === 'ALL' ? null : QUEUE_GROUP_CHECK_TYPES[group];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Pipeline metrics (AGT-03)
 // ─────────────────────────────────────────────────────────────────────────────
 

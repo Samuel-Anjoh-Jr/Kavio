@@ -1,0 +1,33 @@
+-- ─────────────────────────────────────────────────────────────────────────────
+-- PROMPT 84 — Admin Trust Score adjustment (ADM-04, SRS FR-42)
+--
+-- ADM-04 asks for something the Trust Engine was built to refuse: a human moving
+-- a score. SRS §21 is explicit that "sub-scores are derived/append-only via
+-- TrustEvents; the total is recomputed, never edited directly", and TrustScore is
+-- a cache that can be dropped and rebuilt from the ledger at any time. An UPDATE
+-- against it would survive exactly until the next recompute.
+--
+-- So an adjustment is not an edit — it is an EVENT. ADMIN_ADJUSTMENT appends a
+-- row to the ledger carrying the amount on its own `delta` column, and the point
+-- model replays it like everything else. That keeps all three properties the
+-- engine depends on:
+--
+--   - the score stays a pure function of the log (drop the cache, replay, same
+--     number, adjustment included);
+--   - the adjustment is auditable by construction — who, when, how much, why,
+--     against which subject — because the ledger is append-only;
+--   - reversing it is another event, not a deletion, so the history still shows
+--     that a score was moved by hand and then moved back.
+--
+-- ADMIN_ADJUSTMENT is the only event type whose magnitude is not fixed by the
+-- point model. That is a deliberate, contained exception: every other rule
+-- derives its points from the type alone, and this one reads the `delta` column
+-- that already existed for the audit trail. The per-event bound and the required
+-- reason live in the service and the DTO — a schema cannot express "exceptional".
+--
+-- No new columns: TrustEvent already carries delta, actorId, sourceType/sourceId
+-- and metadata. The shape was right; it just had no event type that used it.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- AlterEnum
+ALTER TYPE "TrustEventType" ADD VALUE 'ADMIN_ADJUSTMENT';

@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JobStatus, LocationSource, MediaAssetKind, Prisma } from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { BusinessAccessService } from '../business/business-access.service';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
@@ -93,6 +94,8 @@ export class JobsService {
     private readonly events: EventEmitter2,
     private readonly gate: JobPostingGateService,
     private readonly reverseGeocode: ReverseGeocodeService,
+    /** Resolves whether the poster may act for a business (BIZ-02). */
+    private readonly businessAccess: BusinessAccessService,
   ) {}
 
   /**
@@ -103,6 +106,14 @@ export class JobsService {
   async createDraft(user: AuthenticatedUser, dto: CreateJobDto): Promise<JobRow> {
     if (dto.categoryId) {
       await this.assertCategoryUsable(dto.categoryId);
+    }
+
+    // Posting for a company is an access-level decision, not a body field
+    // (BIZ-02): the caller must actually hold `business:jobs` for it. Checked
+    // here rather than at publish, so a draft can never be attributed to a
+    // company the poster has no standing with in the first place.
+    if (dto.businessProfileId) {
+      await this.businessAccess.require(user, dto.businessProfileId, 'business:jobs');
     }
 
     const location = dto.location ? await this.resolveLocation(dto.location) : null;
@@ -124,6 +135,12 @@ export class JobsService {
           budgetMax: dto.budgetMax ?? null,
           urgency: dto.urgency ?? undefined,
           status: JobStatus.DRAFT,
+          // Kept alongside posterId, never instead of it: the poster is the
+          // accountable identity that passed the tier gate, the business is who
+          // the spend and the analytics belong to (BIZ-02).
+          businessProfileId: dto.businessProfileId ?? null,
+          teamSize: dto.teamSize ?? null,
+          durationDays: dto.durationDays ?? null,
           ...(location ?? {}),
         } as Prisma.JobUncheckedCreateInput,
         select: JOB_ROW_SELECT,

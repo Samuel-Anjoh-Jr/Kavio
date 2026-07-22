@@ -5,6 +5,8 @@ import { EndorsementResolver } from './endorsements/endorsement.resolver';
 import { EndorsementService } from './endorsements/endorsement.service';
 import { EndorsementsController } from './endorsements/endorsements.controller';
 import { TierService } from './tier.service';
+import { TrustAdjustmentService } from './trust-adjustment.service';
+import { TrustAdminController } from './trust-admin.controller';
 import { TrustHistoryService } from './trust-history.service';
 import { TrustNotificationListener } from './trust-notification.listener';
 import { TrustResolver } from './trust.resolver';
@@ -30,12 +32,13 @@ import { TrustService } from './trust.service';
  */
 @Module({
   imports: [PrismaModule],
-  controllers: [EndorsementsController],
+  controllers: [EndorsementsController, TrustAdminController],
   providers: [
     TrustScoreService,
     TierService,
     TrustService,
     TrustHistoryService,
+    TrustAdjustmentService,
     BadgeService,
     EndorsementService,
     TrustResolver,

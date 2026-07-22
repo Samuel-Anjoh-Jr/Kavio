@@ -1,5 +1,6 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import {
+  DisputeFaultParty,
   DisputeResolution,
   DisputeStatus,
   EscrowState,
@@ -197,9 +198,113 @@ export class DisputeView {
   @Field(() => String, { nullable: true })
   resolutionNote!: string | null;
 
+  @Field(() => DisputeFaultParty, {
+    description:
+      'Who the admin found at fault (ADM-05). NONE until resolved, and on a no-fault outcome.',
+  })
+  faultParty!: DisputeFaultParty;
+
   @Field(() => [DisputeMessageView])
   messages!: DisputeMessageView[];
 
   @Field(() => Date)
   createdAt!: Date;
+}
+
+@ObjectType({
+  description:
+    'One entry in a dispute’s combined history (ADM-05): the escrow’s money moves plus the case’s own milestones, oldest first.',
+})
+export class DisputeHistoryEntryView {
+  @Field(() => String, {
+    description: 'What kind of entry: ESCROW_MOVE or DISPUTE_EVENT. Drives how the row renders.',
+  })
+  kind!: string;
+
+  @Field(() => String, {
+    description:
+      'i18n key for the headline. A key, never a sentence — the EN/FR copy lives in the web catalogue.',
+  })
+  labelKey!: string;
+
+  @Field(() => EscrowState, {
+    nullable: true,
+    description: 'The escrow state, for ESCROW_MOVE rows.',
+  })
+  escrowState!: EscrowState | null;
+
+  @Field(() => ID, { nullable: true, description: 'Who caused it. Null for webhook-driven moves.' })
+  actorId!: string | null;
+
+  @Field(() => String, { nullable: true })
+  note!: string | null;
+
+  @Field(() => Date)
+  occurredAt!: Date;
+}
+
+@ObjectType({
+  description:
+    'The admin dispute workspace (ADM-05): details, both parties, the escrow it froze, the full message thread with evidence, and the combined money-plus-case history. Admin-gated.',
+})
+export class AdminDisputeView {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => ID)
+  jobId!: string;
+
+  @Field(() => String, { nullable: true, description: 'The job’s title, for the header.' })
+  jobTitle!: string | null;
+
+  @Field(() => ID)
+  bookingId!: string;
+
+  @Field(() => ID)
+  openedById!: string;
+
+  @Field(() => ID, { description: 'The client party to the disputed booking.' })
+  clientId!: string;
+
+  @Field(() => ID, { description: 'The worker party to the disputed booking.' })
+  workerId!: string;
+
+  @Field(() => String)
+  reason!: string;
+
+  @Field(() => DisputeStatus)
+  status!: DisputeStatus;
+
+  @Field(() => DisputeResolution, { nullable: true })
+  resolution!: DisputeResolution | null;
+
+  @Field(() => String, { nullable: true })
+  resolutionNote!: string | null;
+
+  @Field(() => DisputeFaultParty)
+  faultParty!: DisputeFaultParty;
+
+  @Field(() => EscrowState, {
+    nullable: true,
+    description:
+      'The disputed escrow’s current state — DISPUTED while frozen, then its settlement.',
+  })
+  escrowState!: EscrowState | null;
+
+  @Field(() => Int, { nullable: true, description: 'Whole XAF held by the disputed escrow.' })
+  escrowAmount!: number | null;
+
+  @Field(() => [DisputeMessageView], { description: 'The thread with evidence, oldest first.' })
+  messages!: DisputeMessageView[];
+
+  @Field(() => [DisputeHistoryEntryView], {
+    description: 'Money moves + case milestones, oldest first.',
+  })
+  history!: DisputeHistoryEntryView[];
+
+  @Field(() => Date)
+  createdAt!: Date;
+
+  @Field(() => Date, { nullable: true })
+  resolvedAt!: Date | null;
 }
