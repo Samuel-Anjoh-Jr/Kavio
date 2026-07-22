@@ -168,6 +168,14 @@ model User {
   moderationAgainst ModerationAction[] @relation("ModerationSubject")
   moderationTaken   ModerationAction[] @relation("ModerationActor")
 
+  // Admin operations (PROMPT 87, 88; ADM-02, ADM-06, ADM-07). An admin invites
+  // agents and authors announcements; the accepted side of an invitation is the
+  // agent's own identity, which is why both ends hang off User.
+  sentAgentInvites     AgentInvitation[] @relation("AgentInvitationInviter")
+  acceptedAgentInvites AgentInvitation[] @relation("AgentInvitationAcceptor")
+  announcementsWritten Announcement[]    @relation("AnnouncementAuthor")
+  settingsUpdated      SystemSetting[]   @relation("SystemSettingEditor")
+
   @@index([status, createdAt])
 }
 
@@ -3239,4 +3247,220 @@ model DeviceRegistration {
 
   /// The dispatcher's lookup: a user's live subscriptions.
   @@index([userId, isActive])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin operations (PROMPT 87, 88; ADM-02, ADM-06, ADM-07).
+//
+// Deliberately absent from this section: any "risk score" or "fraud flag" table.
+// The Fraud & Risk monitor (ADM-06) is a DERIVED read over facts that already
+// exist — suspended trust scores, lost disputes, open reports, account status —
+// because a stored risk verdict is a number nobody recomputes and everybody
+// trusts. Blocking an account is an existing ModerationAction, not a new row.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Where an agent invitation is in its life (ADM-06, meeting-notes admin invites
+/// agents). REVOKED is the admin withdrawing it; EXPIRED is the clock running
+/// out. Distinct states because "why can't this person sign up" has different
+/// answers and different remedies.
+enum AgentInvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+/// An admin's invitation for someone to join as a field AGENT (ADM-06).
+///
+/// Agents cannot self-register: a field agent physically verifies workers, which
+/// is the most abusable capability on the platform, so the only route in is an
+/// admin creating this row. The invitation carries the contact details and a
+/// one-time token; the agent identity is created when the token is accepted, and
+/// `acceptedUserId` binds the two afterwards.
+model AgentInvitation {
+  id    String  @id @default(uuid()) @db.Uuid
+  name  String
+  email String
+  /// E.164, normalised at capture so SMS delivery can be switched on later.
+  phone String?
+
+  /// Hashed, never stored raw — an invitation token is a credential, and a
+  /// leaked invitations table must not hand out agent accounts.
+  tokenHash String @unique
+
+  status AgentInvitationStatus @default(PENDING)
+
+  invitedById String @db.Uuid
+  /// Bound on acceptance. NULL while outstanding: there is no identity yet.
+  acceptedUserId String? @db.Uuid
+
+  /// Free-text note from the admin ("Douala field team, starts Monday").
+  note String?
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  invitedBy    User  @relation("AgentInvitationInviter", fields: [invitedById], references: [id], onDelete: Cascade)
+  acceptedUser User? @relation("AgentInvitationAcceptor", fields: [acceptedUserId], references: [id], onDelete: SetNull)
+
+  /// The admin console lists outstanding invitations first.
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+/// Who an announcement is aimed at (ADM-07). Targeting by ROLE rather than by a
+/// saved user list: the audience of "all workers" changes every day, and a
+/// materialised recipient list would be stale the moment it was written.
+enum AnnouncementAudience {
+  ALL
+  WORKERS
+  CLIENTS
+  BUSINESSES
+  AGENTS
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+/// A platform announcement (ADM-07).
+///
+/// Both languages are REQUIRED columns rather than a translations side-table.
+/// The platform is bilingual EN/FR by requirement, and an announcement that
+/// exists in one language is one that half the users cannot read — making the
+/// second language a nullable extra is how that happens.
+model Announcement {
+  id String @id @default(uuid()) @db.Uuid
+
+  titleEn String
+  titleFr String
+  bodyEn  String
+  bodyFr  String
+
+  audience AnnouncementAudience @default(ALL)
+  status   AnnouncementStatus   @default(DRAFT)
+
+  /// Shows in the app until this instant. NULL means it stays until archived.
+  expiresAt   DateTime?
+  publishedAt DateTime?
+
+  authorId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User @relation("AnnouncementAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  /// The reader's query: what is live for my audience, newest first.
+  @@index([status, audience, publishedAt])
+}
+
+/// One piece of platform configuration (ADM-07).
+///
+/// Key/value with a JSON payload rather than a wide typed table: the settings
+/// surface grows every release, and a schema migration per toggle is the reason
+/// settings screens ossify. `category` groups them for the console; `updatedById`
+/// and `updatedAt` are what make a surprising production value traceable to a
+/// person — and every write is additionally mirrored into AuditLog.
+///
+/// SECRETS DO NOT LIVE HERE. Provider keys stay in the managed secret store; this
+/// table holds the switches and thresholds an admin is meant to see.
+model SystemSetting {
+  key      String @id
+  value    Json
+  category String @default("general")
+
+  /// What this controls, shown beside the field in the console.
+  description String?
+
+  updatedById String?  @db.Uuid
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  updatedBy User? @relation("SystemSettingEditor", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([category])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Marketing content (PROMPT 92.1; SRS §26.2).
+//
+// The landing page's FAQ and testimonials are DATABASE-DRIVEN, never hardcoded
+// arrays. That is a stated frontend system rule, and the reason is operational
+// rather than architectural: marketing copy changes on a marketing team's
+// schedule, and copy that only an engineer can edit is copy that goes stale.
+//
+// Both models carry EN and FR as REQUIRED columns rather than a translations
+// side-table, following Announcement above and for the same reason: the platform
+// is bilingual by requirement (SYS-03), and a nullable second language is how
+// half the audience ends up reading the other half's language.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// One question/answer pair on the marketing FAQ (SRS §26.2).
+model Faq {
+  id String @id @default(uuid()) @db.Uuid
+
+  questionEn String
+  questionFr String
+
+  /// Markdown. Answers need links and the occasional list — storing rendered
+  /// HTML instead would put an XSS sink in an admin-editable column.
+  answerEn String
+  answerFr String
+
+  /// Optional grouping ("payments", "verification"). Free text rather than an
+  /// enum: the FAQ is edited by non-engineers, and a new group must not require
+  /// a migration.
+  category String?
+
+  /// Admin-chosen display order, ascending.
+  order Int @default(0)
+
+  isPublished Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The public read: what is published, in order. Also serves the admin list,
+  /// which filters on nothing and sorts the same way.
+  @@index([isPublished, order])
+  @@index([category, order])
+}
+
+/// A published customer testimonial (SRS §26.2).
+model Testimonial {
+  id String @id @default(uuid()) @db.Uuid
+
+  /// Shown verbatim; not a User relation. A testimonial outlives the account
+  /// that gave it, and joining to a live profile would let a later display-name
+  /// change silently rewrite a quote someone approved.
+  author String
+
+  roleEn String
+  roleFr String
+
+  /// Nullable: initials render when absent, so a missing photo is never a
+  /// broken image on the conversion surface.
+  avatarUrl String?
+
+  contentEn String
+  contentFr String
+
+  /// 0.0–5.0. Decimal, not Int, because the rule is explicit that ratings render
+  /// with half-stars (4.3 -> 4 full + 1 half) — rounding at write time would
+  /// destroy the very precision the display is specified to show.
+  rating Decimal @db.Decimal(2, 1)
+
+  order   Int     @default(0)
+  visible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([visible, order])
 }

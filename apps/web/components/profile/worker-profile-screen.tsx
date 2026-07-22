@@ -10,6 +10,7 @@ import { TrustScoreRing } from '@/components/trust/trust-score-ring';
 import { formatArea } from '@/lib/geo';
 import { formatRating, formatXaf, initials } from '@/lib/discovery';
 import type { WorkerProfile } from '@/lib/graphql/discovery';
+import { ProfileReviews } from '@/components/reviews/profile-reviews';
 import { AvailabilityCalendar } from './availability-calendar';
 import { PortfolioGallery } from './portfolio-gallery';
 import { ProfileActions } from './profile-actions';
@@ -283,23 +284,11 @@ export function WorkerProfileScreen({
           </TabsContent>
 
           <TabsContent value="reviews" className="mt-6">
-            <div className="flex flex-wrap items-center gap-6 rounded-card border border-border bg-surface p-6">
-              <div>
-                <p className="font-numeric text-4xl font-semibold text-foreground">
-                  {formatRating(profile.reviews.averageRating, locale) ?? '—'}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t('ratedJobs', { count: profile.reviews.ratedJobCount })}
-                </p>
-              </div>
-            </div>
-
-            {/* The aggregate above is real; the list is not available yet.
-                Saying which is which stops a client reading "no reviews" as
-                "nobody was happy". */}
-            <p className="mt-4 text-sm text-muted-foreground">
-              {profile.reviews.reviewListAvailable ? t('reviewsEmpty') : t('reviewListUnavailable')}
-            </p>
+            {/* Summary and list both come from the reviews service (REV-02),
+                which is the one place that excludes hidden reviews from the
+                average — so what a visitor counts here always reconciles with
+                the number above it. */}
+            <ProfileReviews subjectId={profile.userId} />
           </TabsContent>
         </Tabs>
       </div>

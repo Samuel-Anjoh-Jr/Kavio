@@ -3,6 +3,9 @@ import { NoProviderReason } from '../search/no-provider.util';
 import {
   AbuseReportReason,
   AbuseReportStatus,
+  AgentInvitationStatus,
+  AnnouncementAudience,
+  AnnouncementStatus,
   BadgeType,
   BookingStatus,
   DisputeFaultParty,
@@ -300,6 +303,23 @@ export function registerGraphQLEnums(): void {
   registerEnumType(ModerationActionType, {
     name: 'ModerationActionType',
     description: 'What an admin decided about a reported item or party (ADM-08).',
+  });
+
+  registerEnumType(AgentInvitationStatus, {
+    name: 'AgentInvitationStatus',
+    description:
+      'Where an agent invitation stands (ADM-06). REVOKED is the admin withdrawing it; EXPIRED is the clock running out — different answers to "why can’t this person sign up", with different remedies.',
+  });
+
+  registerEnumType(AnnouncementAudience, {
+    name: 'AnnouncementAudience',
+    description:
+      'Who an announcement targets (ADM-07). Targeted by ROLE, never by a saved recipient list, which would be stale before it was sent.',
+  });
+
+  registerEnumType(AnnouncementStatus, {
+    name: 'AnnouncementStatus',
+    description: 'Draft, published or archived (ADM-07).',
   });
 
   // Not a Prisma enum: the reason a search came back empty is derived at read

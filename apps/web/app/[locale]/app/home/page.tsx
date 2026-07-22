@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { TierBadge } from '@/components/trust/tier-badge';
 import { TrustScoreRing } from '@/components/trust/trust-score-ring';
 import { DiscoverRail } from '@/components/home/discover-rail';
-import { HomeSection, PendingPanel, StatCard } from '@/components/home/home-primitives';
+import { HomeSection, PendingPanel } from '@/components/home/home-primitives';
 import type { OnboardingRole } from '@/lib/onboarding';
 import { loadOnboarding } from '../onboarding/load-onboarding';
 import { loadTrustBreakdown } from '../trust/load-trust-breakdown';
@@ -277,26 +277,42 @@ async function BusinessHome() {
         <DiscoverRail />
       </HomeSection>
 
-      <HomeSection title={t('business.operationsHeading')}>
+      {/* The home stays a summary; the numbers themselves live in the console
+          (BIZ-02), which resolves the caller's access level before it shows a
+          company's spend. Linking rather than duplicating means the home never
+          has to answer "may this person see the money". */}
+      <HomeSection
+        title={t('business.operationsHeading')}
+        action={
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/app/business">
+              {t('business.openConsole')}
+              <ArrowRight aria-hidden />
+            </Link>
+          </Button>
+        }
+      >
         <div className="grid gap-4 sm:grid-cols-2">
-          <PendingPanel
-            icon={<Users aria-hidden className="size-5" />}
-            title={t('business.teamPendingTitle')}
-            body={t('business.teamPendingBody')}
-          />
-          <PendingPanel
-            icon={<BriefcaseBusiness aria-hidden className="size-5" />}
-            title={t('business.jobsPendingTitle')}
-            body={t('business.jobsPendingBody')}
-          />
-        </div>
-
-        {/* The full business dashboard is PROMPT 82; this home is the summary
-            that it later expands, not a placeholder for it. */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <StatCard label={t('business.statTeam')} value="—" hint={t('business.statPending')} />
-          <StatCard label={t('business.statJobs')} value="—" hint={t('business.statPending')} />
-          <StatCard label={t('business.statSpend')} value="—" hint={t('business.statPending')} />
+          <Link
+            href="/app/business/team"
+            className="rounded-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <PendingPanel
+              icon={<Users aria-hidden className="size-5" />}
+              title={t('business.teamPanelTitle')}
+              body={t('business.teamPanelBody')}
+            />
+          </Link>
+          <Link
+            href="/app/business"
+            className="rounded-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <PendingPanel
+              icon={<BriefcaseBusiness aria-hidden className="size-5" />}
+              title={t('business.jobsPanelTitle')}
+              body={t('business.jobsPanelBody')}
+            />
+          </Link>
         </div>
       </HomeSection>
     </>

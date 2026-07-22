@@ -38,6 +38,7 @@ import { BusinessModule } from './business/business.module';
 import { SafetyModule } from './safety/safety.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { ModerationModule } from './moderation/moderation.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -115,6 +116,13 @@ import { ModerationModule } from './moderation/moderation.module';
     // because it acts ON the others: it soft-deletes their content and suspends
     // their authors, so it depends on all of them existing and none depend on it.
     ModerationModule,
+    // The admin console's own surfaces (ADM-01, ADM-02, ADM-06, ADM-07):
+    // cross-cutting analytics, the risk monitor, the account directory, agent
+    // invitations, announcements, audit, RBAC and settings. Registered last of
+    // the feature modules because it READS across all of them — and reads only:
+    // the admin surfaces that WRITE (verification, trust, disputes, moderation,
+    // taxonomy) stay in the modules that own those domains and their rules.
+    AdminModule,
     // Rate limiting uses the Redis store so counts are shared across API
     // instances and survive process restarts (SRS §18, §24.1).
     ThrottlerModule.forRootAsync({
