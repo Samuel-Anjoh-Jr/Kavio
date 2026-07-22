@@ -79,6 +79,62 @@ export class WorkerPreviewView {
   averageRating!: number | null;
 }
 
+@ObjectType({
+  description:
+    'The client-side trust card a worker reads before accepting a job request or applying to a posted job (JOB-03, JOB-04). The mirror image of WorkerPreviewView: the marketplace has to be legible in both directions, because the worker is the one who turns up, does the work and waits to be paid.',
+})
+export class ClientReliabilityView {
+  @Field(() => ID)
+  clientId!: string;
+
+  @Field(() => String, { nullable: true })
+  name!: string | null;
+
+  @Field(() => String, { nullable: true })
+  avatar!: string | null;
+
+  @Field(() => VerificationTier)
+  tier!: VerificationTier;
+
+  @Field(() => Int, { description: 'Trust Score 0-100 (TRU-01).' })
+  trustScore!: number;
+
+  @Field(() => Int, { description: 'Jobs actually published. Drafts are excluded.' })
+  jobsPosted!: number;
+
+  @Field(() => Int, { description: 'Jobs that reached completion or payout.' })
+  jobsCompleted!: number;
+
+  @Field(() => Float, {
+    nullable: true,
+    description:
+      'Completed ÷ posted, 0–1. Null before anything has been posted — a brand-new client must read as "new", not as "never finishes a job".',
+  })
+  completionRate!: number | null;
+
+  @Field(() => Float, {
+    nullable: true,
+    description:
+      'Mean rating workers gave this client (REV-01 lets the worker review back). Null until rated — NOT zero, which would read as "terrible" rather than "new".',
+  })
+  averageRating!: number | null;
+
+  @Field(() => Int, { description: 'Reviews behind that average.' })
+  ratedJobs!: number;
+
+  @Field(() => Int, { description: 'Bookings this client cancelled before work began.' })
+  cancelledBookings!: number;
+
+  @Field(() => Int, {
+    description:
+      'Disputes this client raised that an admin found against them (ADM-05). The signal a worker cannot infer from anything else on the page.',
+  })
+  disputesLost!: number;
+
+  @Field(() => Date, { description: 'When the identity joined.' })
+  memberSince!: Date;
+}
+
 @ObjectType({ description: 'A posted job (JOB-01, JOB-02).' })
 export class JobView {
   @Field(() => ID)
@@ -89,6 +145,13 @@ export class JobView {
 
   @Field(() => String, { nullable: true })
   posterName!: string | null;
+
+  @Field(() => ClientReliabilityView, {
+    nullable: true,
+    description:
+      'What kind of client posted this, so a worker can judge before spending a quote on it (JOB-04). Null only if the poster identity has since been removed.',
+  })
+  posterReliability!: ClientReliabilityView | null;
 
   @Field(() => ID, { nullable: true })
   categoryId!: string | null;
@@ -219,6 +282,13 @@ export class JobInvitationView {
     description: 'The invited worker card, for the poster’s view (JOB-03).',
   })
   worker!: WorkerPreviewView | null;
+
+  @Field(() => ClientReliabilityView, {
+    nullable: true,
+    description:
+      'Who is asking, for the WORKER’s view of an incoming job request (JOB-03). A worker should not have to accept a request from an identity they know nothing about.',
+  })
+  client!: ClientReliabilityView | null;
 
   @Field(() => Date, { nullable: true })
   expiresAt!: Date | null;

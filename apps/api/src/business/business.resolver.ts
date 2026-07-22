@@ -11,7 +11,6 @@ import {
   BusinessAnalyticsView,
   BusinessDashboardView,
   CompanyPaymentView,
-  CompanyWalletView,
   CorporateEligibilityView,
   TeamMemberView,
 } from './models/business.model';
@@ -58,22 +57,6 @@ export class BusinessResolver {
   ): Promise<BusinessAnalyticsView> {
     const id = await this.resolveBusinessId(user, businessProfileId);
     return this.analytics.analytics(user, id);
-  }
-
-  @RequirePermissions('business:manage')
-  @Query(() => CompanyWalletView, {
-    description:
-      'The company wallet (BIZ-03) — a scoped view over the shared ledger, never a second balance.',
-  })
-  async companyWallet(
-    @CurrentUser() user: AuthenticatedUser,
-    @Args('businessProfileId', { type: () => ID, nullable: true }) businessProfileId?: string,
-  ): Promise<CompanyWalletView> {
-    const id = await this.resolveBusinessId(user, businessProfileId);
-    // Gated even for the totals: `companyWallet` itself takes no viewer, so the
-    // capability check has to happen here rather than being assumed downstream.
-    await this.access.require(user, id, 'business:view');
-    return this.analytics.companyWallet(id);
   }
 
   @RequirePermissions('business:manage')

@@ -1,0 +1,34 @@
+-- ─────────────────────────────────────────────────────────────────────────────
+-- PROMPT 85 follow-up — the client side of a dispute (ADM-05, §21.5)
+--
+-- PROMPT 85 shipped fault as an admin judgement with RELEASE_TO_WORKER defaulting
+-- to NONE: a client who escalated in good faith and lost was not penalised. That
+-- left a real gap on the other side of the market — a client CAN abuse the
+-- dispute process, freezing a worker's payout on a complaint that does not hold
+-- up, and a worker deciding whether to take that client's job had no way to see
+-- it had ever happened.
+--
+-- So RELEASE_TO_WORKER now defaults to CLIENT at fault, and fault on the client
+-- records DISPUTE_LOST rather than DISPUTE_UPHELD.
+--
+-- WHY A SEPARATE EVENT TYPE, NOT THE SAME ONE. The two failures are not equally
+-- grave and must not be priced as if they were:
+--
+--   DISPUTE_UPHELD (−20)  a worker took payment and did not deliver. That is a
+--                         breach of the core bargain the escrow exists to secure.
+--   DISPUTE_LOST   (−10)  a client's complaint did not hold up. Costly to the
+--                         worker whose payout was frozen, and worth recording —
+--                         but not the same offence as non-delivery.
+--
+-- Charging both at −20 would have meant either under-punishing non-delivery or
+-- teaching clients that raising a dispute is as dangerous as failing to do the
+-- work. The admin can still set NONE on any resolution, so a good-faith
+-- escalation that simply did not succeed costs nothing when the admin says so.
+--
+-- Both land in the MARKETPLACE pillar, which is where §21.5 files dispute
+-- behaviour, so a client's reliability becomes legible to workers through the
+-- same Trust Score they already read.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- AlterEnum
+ALTER TYPE "TrustEventType" ADD VALUE 'DISPUTE_LOST';

@@ -15,7 +15,7 @@ import { BusinessAccessService } from './business-access.service';
 import type {
   BusinessAnalyticsView,
   BusinessDashboardView,
-  CompanyWalletView,
+  BusinessSpendView,
 } from './models/business.model';
 
 const logger = createLogger('business:analytics');
@@ -40,23 +40,26 @@ const LIVE_ESCROW_STATES: readonly EscrowState[] = [
 const RECENT_PAYMENTS = 10;
 
 /**
- * The business dashboard, analytics and company wallet (BIZ-02, BIZ-03).
+ * The business dashboard and analytics (BIZ-02, BIZ-03).
  *
- * THE COMPANY WALLET IS DERIVED, NOT STORED — the one decision worth reading
- * this docblock for.
+ * THERE IS NO COMPANY WALLET. A business has SPEND, not a balance — nothing can
+ * be paid into a company here and nothing out of it.
  *
- * A second stored balance would be a second source of truth for money. The
- * company's spending already flows through the identity ledger (the owner or a
- * team member funds an escrow; the escrow settles), and `Wallet.availableBalance`
- * is documented as a cache the Transaction ledger can rebuild. Adding a company
- * pot would mean top-ups, transfers and a reconciliation between two balances
- * that BIZ-* never asks for — and the first time they disagreed, nobody would
- * know which was right.
+ * That is a deliberate product decision, not an omission. Money in TrustPro flows
+ * through an IDENTITY: a person funds an escrow from their own wallet, Campay
+ * confirms, the escrow settles to the worker. A company float would be a second
+ * pot with its own balance, needing Campay top-up collection, a way to spend
+ * company funds instead of personal ones, withdrawal back out, and a permanent
+ * reconciliation between two balances. `Wallet.availableBalance` is documented as
+ * a cache the Transaction ledger can rebuild; a company balance nobody can
+ * rebuild from the ledger is the thing most likely to drift and be quietly wrong
+ * about real money.
  *
- * So the company wallet is a SCOPED VIEW over the same ledger: every booking on
- * a job posted for this business. Committed, settled, refunded and recent
- * payments all reconcile with the transaction history by construction, because
- * they are the transaction history, filtered.
+ * So what a business sees is a SCOPED AGGREGATE over the same ledger: every
+ * EscrowHold on a job posted for this company. Committed, settled, refunded and
+ * recent payments reconcile with the transaction history by construction, because
+ * they ARE the transaction history, filtered. If a real company float is ever
+ * wanted, it is a feature with its own prompt — not a column added here.
  */
 @Injectable()
 export class BusinessAnalyticsService {
@@ -125,7 +128,7 @@ export class BusinessAnalyticsService {
       completedJobs:
         (bookingsByStatus.get(BookingStatus.COMPLETED) ?? 0) +
         (bookingsByStatus.get(BookingStatus.RELEASED) ?? 0),
-      wallet: await this.companyWallet(businessProfileId),
+      spend: await this.spendSummary(businessProfileId),
     };
   }
 
@@ -193,14 +196,15 @@ export class BusinessAnalyticsService {
   }
 
   /**
-   * The company wallet (BIZ-03) — a scoped view over the shared ledger.
+   * What the company has spent and committed (BIZ-02, BIZ-03).
    *
-   * Read by `dashboard` for its headline totals, which every access level can
-   * see. The transaction DETAIL is gated on `business:payments` in
+   * A summary of money that has ALREADY MOVED — not a balance, and not spendable.
+   * Read by `dashboard` for its headline tiles, which every access level can see.
+   * The transaction DETAIL is gated on `business:payments` in
    * {@link companyPayments}: how much the company has spent is management
    * information, and who was paid what and when is finance.
    */
-  async companyWallet(businessProfileId: string): Promise<CompanyWalletView> {
+  async spendSummary(businessProfileId: string): Promise<BusinessSpendView> {
     const [committed, settled, refunded] = await Promise.all([
       this.prisma.client.escrowHold.aggregate({
         where: { booking: { job: { businessProfileId } }, state: { in: [...LIVE_ESCROW_STATES] } },
@@ -218,7 +222,7 @@ export class BusinessAnalyticsService {
 
     return {
       businessProfileId,
-      inEscrow: committed._sum.amount ?? 0,
+      committedToEscrow: committed._sum.amount ?? 0,
       totalSpent: settled._sum.amount ?? 0,
       platformFees: settled._sum.feeAmount ?? 0,
       totalRefunded: refunded._sum.amount ?? 0,

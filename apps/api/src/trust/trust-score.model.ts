@@ -224,6 +224,20 @@ export const TRUST_POINT_MODEL: Readonly<Record<TrustEventType, TrustRule>> = {
     pillar: TrustPillar.MARKETPLACE,
     pointsPer: -20,
   },
+  /**
+   * A client raised a dispute and lost it (ADM-05). Half the weight of
+   * DISPUTE_UPHELD, deliberately: a worker who took payment and did not deliver
+   * broke the bargain the escrow exists to secure, while a client whose
+   * complaint did not hold up froze someone's payout. Both are real; only one is
+   * a breach of the work. Pricing them the same would either under-punish
+   * non-delivery or teach clients that complaining is as dangerous as failing to
+   * do the job.
+   */
+  [TrustEventType.DISPUTE_LOST]: {
+    kind: 'PENALTY',
+    pillar: TrustPillar.MARKETPLACE,
+    pointsPer: -10,
+  },
   [TrustEventType.JOB_CANCELLED]: {
     kind: 'PENALTY',
     pillar: TrustPillar.MARKETPLACE,

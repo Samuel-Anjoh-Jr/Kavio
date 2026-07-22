@@ -1,4 +1,4 @@
-import { DisputeFaultParty, DisputeResolution } from '@trustpro/database';
+import { DisputeFaultParty, DisputeResolution, TrustEventType } from '@trustpro/database';
 
 /**
  * How an admin's resolution and fault finding turn into a trust consequence
@@ -18,25 +18,49 @@ import { DisputeFaultParty, DisputeResolution } from '@trustpro/database';
  *
  *   REFUND_TO_CLIENT   → the worker: the work was not delivered, so the money
  *                        went back. The common reason a refund happens.
- *   RELEASE_TO_WORKER  → NONE: the freeze ended and the worker was paid, which
- *                        usually means the complaint did not hold up — but the
- *                        client raising it is not thereby AT FAULT, so no penalty
- *                        by default. An admin who finds the client abused the
- *                        process sets CLIENT explicitly.
+ *   RELEASE_TO_WORKER  → the client: the freeze ended and the worker was paid,
+ *                        which means the complaint did not hold up. The client
+ *                        froze someone's payout on a claim that failed, and that
+ *                        is worth recording — a worker deciding whether to take
+ *                        this client's next job deserves to know it happened.
  *   REQUEST_INFO       → NONE: nothing is decided yet.
  *   CLOSE_NO_ACTION    → NONE: the parties settled, or there was nothing to it.
  *
- * A DEFAULT, not a verdict: every resolution path lets the admin override, and
- * this only fills the blank so the common case needs no extra click.
+ * A DEFAULT, not a verdict. The admin overrides to NONE whenever the client
+ * escalated in good faith and simply did not prevail — which is the escape hatch
+ * that stops this from teaching people never to use the dispute process at all.
+ * The two faults are also NOT priced the same; see {@link trustEventForFault}.
  */
 export function defaultFaultParty(resolution: DisputeResolution): DisputeFaultParty {
   switch (resolution) {
     case DisputeResolution.REFUND_TO_CLIENT:
       return DisputeFaultParty.WORKER;
     case DisputeResolution.RELEASE_TO_WORKER:
+      return DisputeFaultParty.CLIENT;
     case DisputeResolution.REQUEST_INFO:
     case DisputeResolution.CLOSE_NO_ACTION:
       return DisputeFaultParty.NONE;
+  }
+}
+
+/**
+ * Which trust event a fault finding records (§21.5).
+ *
+ * The asymmetry is the point. A worker who took payment and did not deliver
+ * broke the core bargain the escrow exists to secure (−20 DISPUTE_UPHELD); a
+ * client whose complaint did not hold up froze a payout and cost the worker time
+ * (−10 DISPUTE_LOST). Both are real failures and both belong in the Marketplace
+ * pillar, but charging them identically would either under-punish non-delivery
+ * or make raising a dispute as costly as failing to do the job.
+ */
+export function trustEventForFault(fault: DisputeFaultParty): TrustEventType | null {
+  switch (fault) {
+    case DisputeFaultParty.WORKER:
+      return TrustEventType.DISPUTE_UPHELD;
+    case DisputeFaultParty.CLIENT:
+      return TrustEventType.DISPUTE_LOST;
+    case DisputeFaultParty.NONE:
+      return null;
   }
 }
 

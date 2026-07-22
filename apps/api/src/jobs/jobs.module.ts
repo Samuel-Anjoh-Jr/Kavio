@@ -5,6 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { StorageModule } from '../storage/storage.module';
 import { TrustModule } from '../trust/trust.module';
 import { ApplicationsService } from './applications.service';
+import { ClientReliabilityService } from './client-reliability.service';
 import { InvitationsService } from './invitations.service';
 import { JobPostingGateService } from './job-posting-gate.service';
 import { JobsController } from './jobs.controller';
@@ -35,6 +36,7 @@ import { JobsService } from './jobs.service';
   providers: [
     JobsService,
     JobsReadService,
+    ClientReliabilityService,
     JobPostingGateService,
     ApplicationsService,
     InvitationsService,

@@ -1,12 +1,18 @@
-import { DisputeFaultParty, DisputeResolution } from '@trustpro/database';
-import { defaultFaultParty, isTerminalResolution, penalisedParty } from './dispute-fault.model';
+import { DisputeFaultParty, DisputeResolution, TrustEventType } from '@trustpro/database';
+import {
+  defaultFaultParty,
+  isTerminalResolution,
+  penalisedParty,
+  trustEventForFault,
+} from './dispute-fault.model';
 
 const PARTIES = { clientId: 'client-1', workerId: 'worker-1' };
 
 /**
- * Fault is the input to the −20 trust penalty (§21.5), so the mapping from a
- * resolution to a default finding — and from a finding to the penalised identity
- * — is pinned here rather than left implicit in the service.
+ * Fault is the input to the dispute trust penalties (§21.5), so the mapping from
+ * a resolution to a default finding, from a finding to the penalised identity,
+ * and from a finding to WHICH penalty, are all pinned here rather than left
+ * implicit in the service.
  */
 describe('dispute-fault.model (ADM-05, §21.5)', () => {
   describe('default fault finding', () => {
@@ -14,10 +20,12 @@ describe('dispute-fault.model (ADM-05, §21.5)', () => {
       expect(defaultFaultParty(DisputeResolution.REFUND_TO_CLIENT)).toBe(DisputeFaultParty.WORKER);
     });
 
-    it('faults nobody on a release — winning a dispute is not misconduct', () => {
-      // The load-bearing default: a client who escalates in good faith and loses
-      // must not be penalised, or nobody will ever use the dispute process.
-      expect(defaultFaultParty(DisputeResolution.RELEASE_TO_WORKER)).toBe(DisputeFaultParty.NONE);
+    it('faults the client on a release — their complaint did not hold up', () => {
+      // A client CAN abuse the process: freezing a worker's payout on a claim
+      // that fails is a real cost to the worker, and a worker weighing that
+      // client's next job deserves to see it happened. The admin still overrides
+      // to NONE for a good-faith escalation that simply did not prevail.
+      expect(defaultFaultParty(DisputeResolution.RELEASE_TO_WORKER)).toBe(DisputeFaultParty.CLIENT);
     });
 
     it('faults nobody on request-info or a no-action close', () => {
@@ -28,6 +36,29 @@ describe('dispute-fault.model (ADM-05, §21.5)', () => {
     it('has a default for every resolution', () => {
       for (const resolution of Object.values(DisputeResolution)) {
         expect(Object.values(DisputeFaultParty)).toContain(defaultFaultParty(resolution));
+      }
+    });
+  });
+
+  describe('which penalty a finding records', () => {
+    it('charges a worker at fault the full non-delivery penalty', () => {
+      expect(trustEventForFault(DisputeFaultParty.WORKER)).toBe(TrustEventType.DISPUTE_UPHELD);
+    });
+
+    it('charges a client at fault the lighter lost-dispute penalty', () => {
+      // Asymmetric on purpose: failing to deliver paid work is a graver breach
+      // than a complaint that did not hold up.
+      expect(trustEventForFault(DisputeFaultParty.CLIENT)).toBe(TrustEventType.DISPUTE_LOST);
+    });
+
+    it('records nothing when nobody is at fault', () => {
+      expect(trustEventForFault(DisputeFaultParty.NONE)).toBeNull();
+    });
+
+    it('has an answer for every finding', () => {
+      for (const fault of Object.values(DisputeFaultParty)) {
+        const event = trustEventForFault(fault);
+        expect(event === null || Object.values(TrustEventType).includes(event)).toBe(true);
       }
     });
   });

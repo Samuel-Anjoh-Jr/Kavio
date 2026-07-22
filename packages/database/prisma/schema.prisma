@@ -480,6 +480,15 @@ enum TrustEventType {
   /// edit applied TO it (SRS §21: "the total is recomputed, never edited
   /// directly"). Bounded per event and audit-logged with the acting admin.
   ADMIN_ADJUSTMENT
+  /// A dispute the CLIENT raised and lost (ADM-05, PROMPT 85 follow-up).
+  ///
+  /// Separate from DISPUTE_UPHELD, and lighter (−10 against −20), because the two
+  /// failures are not equally grave. A worker who took payment and did not
+  /// deliver broke the core bargain; a client whose complaint did not hold up
+  /// froze someone's payout and cost them time. Both are real, only one is a
+  /// breach of the work itself — and pricing them the same would either
+  /// under-punish non-delivery or teach clients never to raise a dispute.
+  DISPUTE_LOST
 }
 
 /// An append-only entry in the trust ledger. Rows are NEVER updated or deleted —

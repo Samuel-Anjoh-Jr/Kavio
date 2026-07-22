@@ -80,6 +80,21 @@ describe('trust score point model (SRS §21.5)', () => {
       expect(computeTrustScore([...base, { type: TrustEventType.DISPUTE_UPHELD }]).total).toBe(0);
     });
 
+    it('charges −10 for a dispute the client raised and lost', () => {
+      const base = events(...Array<TrustEventType>(20).fill(TrustEventType.EXCELLENT_REVIEW));
+      expect(computeTrustScore(base).total).toBe(15);
+      // Half the weight of DISPUTE_UPHELD: a complaint that did not hold up is
+      // not the same offence as taking payment and not delivering.
+      expect(computeTrustScore([...base, { type: TrustEventType.DISPUTE_LOST }]).total).toBe(5);
+    });
+
+    it('prices a lost dispute below an upheld one', () => {
+      const base = events(...Array<TrustEventType>(20).fill(TrustEventType.EXCELLENT_REVIEW));
+      const lost = computeTrustScore([...base, { type: TrustEventType.DISPUTE_LOST }]).total;
+      const upheld = computeTrustScore([...base, { type: TrustEventType.DISPUTE_UPHELD }]).total;
+      expect(lost).toBeGreaterThan(upheld);
+    });
+
     it('charges −10 for a cancelled job', () => {
       const base = events(
         ...Array<TrustEventType>(20).fill(TrustEventType.JOB_COMPLETED),

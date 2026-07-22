@@ -89,7 +89,7 @@ describe('DisputesService.resolve — money and trust (ADM-05)', () => {
     );
   });
 
-  it('releases to the worker and penalises no one by default', async () => {
+  it('releases to the worker and charges the client the lighter penalty', async () => {
     const { service, escrow, record } = makeHarness();
 
     await service.resolve(
@@ -104,13 +104,22 @@ describe('DisputesService.resolve — money and trust (ADM-05)', () => {
       'admin-1',
       undefined,
     );
-    // A client who lost the dispute in good faith is not at fault.
-    expect(record).not.toHaveBeenCalled();
+    // The complaint did not hold up and it froze a worker's payout, so it lands
+    // on the client — but as DISPUTE_LOST (−10), not the worker's −20.
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subjectId: 'client-1',
+        type: TrustEventType.DISPUTE_LOST,
+        actorId: 'admin-1',
+        sourceType: 'Dispute',
+        sourceId: 'dispute-1',
+      }),
+    );
   });
 
-  it('honours an explicit fault finding that overrides the default', async () => {
-    // A release usually faults no one, but an admin who finds the client abused
-    // the process can say so — and then the client takes the penalty.
+  it('lets an admin clear a good-faith escalation of all fault', async () => {
+    // The escape hatch: a client who escalated honestly and simply did not
+    // prevail pays nothing, so the dispute process stays safe to use.
     const { service, record } = makeHarness();
 
     await service.resolve(
@@ -118,12 +127,29 @@ describe('DisputesService.resolve — money and trust (ADM-05)', () => {
       'dispute-1',
       resolveDto({
         resolution: DisputeResolution.RELEASE_TO_WORKER,
+        faultParty: DisputeFaultParty.NONE,
+      }),
+    );
+
+    expect(record).not.toHaveBeenCalled();
+  });
+
+  it('honours an explicit fault finding that overrides the default', async () => {
+    // A refund normally faults the worker, but an admin who finds the client
+    // engineered it can say so — and the client takes the client-side penalty.
+    const { service, record } = makeHarness();
+
+    await service.resolve(
+      ADMIN,
+      'dispute-1',
+      resolveDto({
+        resolution: DisputeResolution.REFUND_TO_CLIENT,
         faultParty: DisputeFaultParty.CLIENT,
       }),
     );
 
     expect(record).toHaveBeenCalledWith(
-      expect.objectContaining({ subjectId: 'client-1', type: TrustEventType.DISPUTE_UPHELD }),
+      expect.objectContaining({ subjectId: 'client-1', type: TrustEventType.DISPUTE_LOST }),
     );
   });
 

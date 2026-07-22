@@ -66,14 +66,14 @@ export class TeamMemberView {
 
 @ObjectType({
   description:
-    'The company wallet (BIZ-03): a scoped view over the shared ledger, not a second balance. Every figure reconciles with the transaction history because it IS the transaction history, filtered to this company’s jobs.',
+    'What a company has spent and committed (BIZ-02, BIZ-03). Deliberately NOT called a wallet: there is no company balance, nothing can be paid into it and nothing out of it. Every figure is aggregated live from the EscrowHolds on this company’s jobs, so it reconciles with the transaction history because it IS the transaction history, filtered.',
 })
-export class CompanyWalletView {
+export class BusinessSpendView {
   @Field(() => ID)
   businessProfileId!: string;
 
-  @Field(() => Int, { description: 'Whole XAF committed to live escrows.' })
-  inEscrow!: number;
+  @Field(() => Int, { description: 'Whole XAF committed to live escrows, not yet settled.' })
+  committedToEscrow!: number;
 
   @Field(() => Int, { description: 'Whole XAF settled to workers on released escrows.' })
   totalSpent!: number;
@@ -111,8 +111,10 @@ export class BusinessDashboardView {
   @Field(() => Int)
   completedJobs!: number;
 
-  @Field(() => CompanyWalletView)
-  wallet!: CompanyWalletView;
+  @Field(() => BusinessSpendView, {
+    description: 'Spending and escrow commitment. A summary of money already moved, not a float.',
+  })
+  spend!: BusinessSpendView;
 }
 
 @ObjectType({ description: 'Business analytics (BIZ-03).' })

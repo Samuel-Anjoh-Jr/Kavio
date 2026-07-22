@@ -22,7 +22,7 @@ import {
   DisputeOpenedEvent,
   DisputeResolvedEvent,
 } from '../events/payment.events';
-import { defaultFaultParty, penalisedParty } from './dispute-fault.model';
+import { defaultFaultParty, penalisedParty, trustEventForFault } from './dispute-fault.model';
 import type { DisputeMessageDto, OpenDisputeDto, ResolveDisputeDto } from './dto/dispute.dto';
 
 const logger = createLogger('disputes');
@@ -295,11 +295,17 @@ export class DisputesService {
   }
 
   /**
-   * Records the DISPUTE_UPHELD penalty against the faulted party, if any (§21.5).
+   * Records the dispute penalty against the faulted party, if any (§21.5).
    *
-   * No-op when fault is NONE — the common, no-penalty outcome. The penalty is a
-   * trust EVENT, so the point model applies the −20 and the recompute re-derives
-   * the tier; this method never touches a score directly.
+   * WHICH penalty depends on WHO: a worker at fault records DISPUTE_UPHELD (−20,
+   * they took payment and did not deliver), a client at fault records
+   * DISPUTE_LOST (−10, their complaint did not hold up and it froze a payout).
+   * That mapping lives in {@link trustEventForFault} so the asymmetry is stated
+   * once and testable on its own.
+   *
+   * No-op when fault is NONE. The penalty is a trust EVENT, so the point model
+   * applies the weight and the recompute re-derives the tier; this method never
+   * touches a score directly.
    */
   private async applyFaultPenalty(
     dispute: {
@@ -316,13 +322,14 @@ export class DisputesService {
       clientId: dispute.booking.clientId,
       workerId: dispute.booking.workerId,
     });
-    if (!subjectId) {
+    const trustEvent = trustEventForFault(faultParty);
+    if (!subjectId || !trustEvent) {
       return;
     }
 
     await this.trust.record({
       subjectId,
-      type: TrustEventType.DISPUTE_UPHELD,
+      type: trustEvent,
       actorId: adminId,
       sourceType: 'Dispute',
       sourceId: dispute.id,

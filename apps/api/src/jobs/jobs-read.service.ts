@@ -4,7 +4,9 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { ClientReliabilityService } from './client-reliability.service';
 import type {
+  ClientReliabilityView,
   JobApplicationView,
   JobInvitationView,
   JobListView,
@@ -67,6 +69,8 @@ export class JobsReadService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    /** The poster-side trust card, batched — see ClientReliabilityService. */
+    private readonly clientReliability: ClientReliabilityService,
   ) {}
 
   /**
@@ -99,7 +103,12 @@ export class JobsReadService {
 
     const timeline = isParty ? await this.timelineFor(job.id) : [];
 
-    return this.mapJob(job, timeline, await this.photoUrls(job.photos));
+    return this.mapJob(
+      job,
+      timeline,
+      await this.photoUrls(job.photos),
+      await this.clientReliability.forClient(job.posterId),
+    );
   }
 
   /** The public job board (JOB-04): open jobs, filterable, newest published first. */
@@ -200,13 +209,23 @@ export class JobsReadService {
     }));
   }
 
-  /** The worker's incoming Job Requests (JOB-04). */
+  /**
+   * The worker's incoming Job Requests (JOB-03, JOB-04).
+   *
+   * Carries the CLIENT's reliability card, not the worker's: this is the screen
+   * where a worker decides whether to accept, and they should not have to commit
+   * to an identity they know nothing about.
+   */
   async listMyInvitations(user: AuthenticatedUser): Promise<JobInvitationView[]> {
     const invitations = await this.prisma.client.jobInvitation.findMany({
       where: { workerId: user.id },
       orderBy: { createdAt: 'desc' },
-      include: { job: { select: { title: true } } },
+      include: { job: { select: { title: true, posterId: true } } },
     });
+
+    const reliability = await this.clientReliability.forClients(
+      invitations.map((i) => i.job.posterId),
+    );
 
     return invitations.map((i) => ({
       id: i.id,
@@ -215,6 +234,7 @@ export class JobsReadService {
       status: i.status,
       message: i.message,
       worker: null,
+      client: reliability.get(i.job.posterId) ?? null,
       expiresAt: i.expiresAt,
       createdAt: i.createdAt,
     }));
@@ -244,6 +264,9 @@ export class JobsReadService {
       status: i.status,
       message: i.message,
       worker: previews.get(i.workerId) ?? null,
+      // The poster is looking at who THEY invited; their own card would tell
+      // them nothing they do not already know.
+      client: null,
       expiresAt: i.expiresAt,
       createdAt: i.createdAt,
     }));
@@ -266,8 +289,20 @@ export class JobsReadService {
   }
 
   private async mapJobs(jobs: JobWithIncludes[]): Promise<JobView[]> {
+    // ONE batch for the whole page. Building a poster's reliability card per row
+    // would be the same N+1 that `workerPreviews` exists to prevent, just facing
+    // the other way.
+    const reliability = await this.clientReliability.forClients(jobs.map((job) => job.posterId));
+
     return Promise.all(
-      jobs.map(async (job) => this.mapJob(job, [], await this.photoUrls(job.photos))),
+      jobs.map(async (job) =>
+        this.mapJob(
+          job,
+          [],
+          await this.photoUrls(job.photos),
+          reliability.get(job.posterId) ?? null,
+        ),
+      ),
     );
   }
 
@@ -275,11 +310,13 @@ export class JobsReadService {
     job: Omit<JobWithIncludes, 'photos'>,
     timeline: JobStatusEventView[],
     photos: JobView['photos'],
+    posterReliability: ClientReliabilityView | null,
   ): JobView {
     return {
       id: job.id,
       posterId: job.posterId,
       posterName: job.poster.name,
+      posterReliability,
       categoryId: job.categoryId,
       categorySlug: job.category?.slug ?? null,
       categoryNameEn: job.category?.nameEn ?? null,
