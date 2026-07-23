@@ -40,16 +40,16 @@ jobs:
       - name: Generate Prisma client
         run: pnpm db:generate
         env:
-          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
 
       - name: Run database migrations (prisma migrate deploy)
         run: pnpm db:migrate:deploy
         env:
-          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
 
       - name: Schema-drift gate (prisma migrate diff --exit-code)
         run: pnpm db:migrate:diff
         env:
-          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}

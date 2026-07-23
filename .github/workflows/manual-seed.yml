@@ -39,14 +39,14 @@ jobs:
       - name: Generate Prisma client
         run: pnpm db:generate
         env:
-          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
 
       - name: Seed database
         run: pnpm db:seed
         env:
-          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
 
   refused:
     name: Refused (confirmation not given)

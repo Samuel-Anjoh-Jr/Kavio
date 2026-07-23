@@ -18,6 +18,10 @@ jobs:
   validate:
     name: Install, generate, type-check, lint
     runs-on: ubuntu-latest
+    env:
+      # Dummy values: validate/type-check only need Prisma to parse the schema.
+      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/trustpro?schema=public'
+      DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/trustpro?schema=public'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,9 +42,6 @@ jobs:
 
       - name: Generate Prisma client
         run: pnpm db:generate
-        env:
-          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
 
       - name: Type-check
         run: pnpm type-check
@@ -98,14 +99,14 @@ jobs:
         if: steps.check-paths.outputs.prisma == 'true'
         run: pnpm db:migrate:deploy
         env:
-          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
 
       - name: Schema-drift gate (prisma migrate diff --exit-code)
         if: steps.check-paths.outputs.prisma == 'true'
         run: pnpm db:migrate:diff
         env:
-          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
 
   summary:
     name: Deployment summary

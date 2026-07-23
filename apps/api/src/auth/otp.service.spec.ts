@@ -7,7 +7,7 @@ import type { PrismaService } from '../prisma/prisma.service';
 import type { OtpConfig } from './auth.config';
 import { OtpService } from './otp.service';
 
-process.env.AUTH_SECRET_PEPPER ??= 'test-pepper';
+process.env.AUTH_SECRET_PEPPER = 'test-pepper';
 
 const CONFIG: OtpConfig = {
   length: 6,

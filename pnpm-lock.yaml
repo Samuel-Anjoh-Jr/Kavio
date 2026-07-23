@@ -332,6 +332,9 @@ importers:
       '@trustpro/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.13.3
       prisma:
         specifier: ^6.3.1
         version: 6.19.3(typescript@5.9.3)

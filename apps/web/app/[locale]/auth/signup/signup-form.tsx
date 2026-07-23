@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -47,17 +47,17 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
 
   const {
     register,
+    control,
     handleSubmit,
     setValue,
     setError,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { roleIntent: defaultIntent, phone: '', email: '', password: '', website: '' },
   });
 
-  const roleIntent = watch('roleIntent');
+  const roleIntent = useWatch({ control, name: 'roleIntent' });
 
   async function onSubmit(values: FormValues) {
     setBanner(null);
@@ -120,7 +120,9 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
                   : 'border-input bg-surface text-muted-foreground hover:bg-muted',
               )}
             >
-              <span className="block font-medium text-foreground">{t(`intent.${intent}.title`)}</span>
+              <span className="block font-medium text-foreground">
+                {t(`intent.${intent}.title`)}
+              </span>
               <span className="mt-1 block text-xs">{t(`intent.${intent}.description`)}</span>
             </button>
           ))}

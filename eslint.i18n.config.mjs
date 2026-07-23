@@ -26,8 +26,8 @@ export default tseslint.config(
       // in this pass, so noInlineConfig fires a warning for each comment even
       // though the comment is valid in the main lint pass. Excluding the files
       // here is cleaner than removing the comments from the source.
-      'apps/web/app/[locale]/\(marketing\)/page.tsx',
-      'apps/web/app/[locale]/app/onboarding/worker/worker-onboarding.tsx',
+      'apps/web/app/**/(marketing)/page.tsx',
+      'apps/web/app/**/app/onboarding/worker/worker-onboarding.tsx',
       'apps/web/components/auth/require-auth.tsx',
       'apps/web/components/marketing/before-after-card.tsx',
       'apps/web/components/marketing/testimonial-marquee.tsx',
