@@ -1,6 +1,9 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+overrides:
+  sharp: 0.35.0
+  ws: 8.21.1
 allowBuilds:
   # Its postinstall only builds the parser Apollo Studio usage reporting needs,
   # and we do not enable that — GraphQL serves fine without the build step.
