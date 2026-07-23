@@ -1,11 +1,12 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import type { Redis } from 'ioredis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { GqlThrottlerGuard } from './lib/gql-throttler.guard';
 import { RequestIdMiddleware } from './lib/request-id.middleware';
 import { RequestLoggerMiddleware } from './lib/request-logger.middleware';
 import { PrismaModule } from './prisma/prisma.module';
@@ -146,7 +147,7 @@ import { AdminModule } from './admin/admin.module';
     // then authorisation. Auth is DENY BY DEFAULT — a route is protected unless
     // it carries @Public(), so a new controller is never accidentally exposed
     // (NFR-SEC-02).
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: GqlThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],

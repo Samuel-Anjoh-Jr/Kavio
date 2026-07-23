@@ -1,5 +1,6 @@
 import { registerEnumType } from '@nestjs/graphql';
 import { NoProviderReason } from '../search/no-provider.util';
+import { VerificationQueueGroupEnum } from '../verification/verification.model';
 import {
   AbuseReportReason,
   AbuseReportStatus,
@@ -329,5 +330,15 @@ export function registerGraphQLEnums(): void {
     name: 'NoProviderReason',
     description:
       'Why a search returned nothing (DIS-06). A code, so the friendly EN/FR copy stays in the web message catalogue.',
+  });
+
+  // Also not a Prisma enum: the verification queue's tabs are a product grouping
+  // over check types (ADM-03), not a stored column. `verificationQueue(group:)`
+  // references it as an @Args type, so it must be registered here or the schema
+  // build fails at bootstrap with "cannot determine a GraphQL input type".
+  registerEnumType(VerificationQueueGroupEnum, {
+    name: 'VerificationQueueGroup',
+    description:
+      'A tab of the admin verification queue (ADM-03): ALL, or the group of check types behind ID, BUSINESS or FIELD.',
   });
 }

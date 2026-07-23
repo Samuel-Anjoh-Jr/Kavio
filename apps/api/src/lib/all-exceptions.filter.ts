@@ -1,4 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import { GqlArgumentsHost, GqlContextType } from '@nestjs/graphql';
 import { Request, Response } from 'express';
 import { createLogger, getRequestId } from './logger';
 import { AppException } from './app-exception';
@@ -21,10 +22,35 @@ interface ResolvedError {
  * requestId is echoed on the x-request-id header, and the full original
  * error is logged server-side (never sent to the client) so it can be
  * correlated with the response via requestId.
+ *
+ * Registered globally, this also catches exceptions thrown inside GraphQL
+ * resolvers — but `host.switchToHttp()` has no request/response to give there
+ * (GraphQL isn't the HTTP context; it's a distinct one laid over the same POST
+ * /graphql call), so writing a REST-shaped response would crash on `undefined`
+ * and bury whatever the resolver actually threw. For that context this filter
+ * only logs and re-throws, leaving the client-facing envelope to
+ * `formatGraphQLError` (the same typed contract, built by graphql-js's own
+ * error path instead of an HTTP response object).
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
+    if (host.getType<GqlContextType>() === 'graphql') {
+      const gqlRequest = GqlArgumentsHost.create(host).getContext<{ req?: Request }>().req;
+      const resolved = this.resolve(exception);
+
+      logger.error('Request failed', {
+        payload: {
+          method: gqlRequest?.method,
+          path: gqlRequest?.path,
+          statusCode: resolved.status,
+        },
+        error: exception,
+      });
+
+      throw exception;
+    }
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();

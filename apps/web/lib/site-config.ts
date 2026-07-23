@@ -17,7 +17,7 @@ import { routing } from '@/i18n/routing';
  * 404s is worse for trust than no `sameAs` at all.
  */
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(
   /\/$/,
   '',
 );

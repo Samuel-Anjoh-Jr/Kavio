@@ -37,6 +37,7 @@ function createMockHost(overrides: { method?: string; path?: string } = {}): {
   };
 
   const host = {
+    getType: () => 'http',
     switchToHttp: () => ({
       getResponse: () => response,
       getRequest: () => request,
@@ -161,5 +162,34 @@ describe('AllExceptionsFilter', () => {
 
     const body = response.body as { error: { requestId: string } };
     expect(response.headers['x-request-id']).toBe(body.error.requestId);
+  });
+
+  it('logs and re-throws for a GraphQL context instead of writing an HTTP response', () => {
+    // A resolver exception has no Response object to write to — this filter's
+    // job there is only to log; formatGraphQLError builds the client envelope
+    // from whatever is re-thrown here. Regression test: this used to crash on
+    // `request.method` because switchToHttp() has nothing for a GraphQL call.
+    setRequestId('req_gql_1');
+    const filter = new AllExceptionsFilter();
+    const gqlRequest = { method: 'POST', path: '/graphql' };
+    // GqlArgumentsHost.create() reads the [root, args, context, info] tuple via
+    // getArgs() and re-wraps it — the same shape @nestjs/graphql passes for
+    // every resolver call — then getContext() reads index 2, the GraphQL
+    // context object carrying { req, res }.
+    const host = {
+      getType: () => 'graphql',
+      getArgs: () => [undefined, undefined, { req: gqlRequest }, undefined],
+      switchToHttp: () => {
+        throw new Error('must not be called for a GraphQL context');
+      },
+    } as unknown as ArgumentsHost;
+
+    const exception = new Error('resolver exploded');
+
+    expect(() => filter.catch(exception, host)).toThrow(exception);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    const output = consoleErrorSpy.mock.calls[0]![0] as string;
+    expect(output).toContain('req_gql_1');
+    expect(output).toContain('resolver exploded');
   });
 });
