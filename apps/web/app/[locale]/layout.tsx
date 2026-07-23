@@ -6,6 +6,7 @@ import { Geist, Geist_Mono, Inter, Inter_Tight, IBM_Plex_Sans } from 'next/font/
 import { routing } from '@/i18n/routing';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
+import { SITE_URL, OG_LOCALES, twitterHandle, verificationTokens } from '@/lib/site-config';
 import './globals.css';
 
 const geistSans = Geist({
@@ -45,10 +46,47 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
+  const handle = twitterHandle();
 
+  /**
+   * Site-wide metadata DEFAULTS. Individual public pages override the specifics
+   * through `buildMetadata`; what lives here is the entity-level frame every page
+   * inherits — a templated title so a sub-page reads "Explore · TrustPro", the
+   * canonical origin (`metadataBase`), the publisher/creator identity, and the
+   * `format-detection` guard that stops phone browsers auto-linking numbers in
+   * copy as if they were dial links.
+   */
   return {
-    title: t('title'),
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: t('title'),
+      template: `%s · TrustPro`,
+    },
     description: t('description'),
+    applicationName: 'TrustPro',
+    authors: [{ name: 'TrustPro' }],
+    creator: 'TrustPro',
+    publisher: 'TrustPro',
+    category: 'marketplace',
+    formatDetection: { telephone: false, email: false, address: false },
+    alternates: {
+      canonical: `${SITE_URL}/${locale}`,
+      languages: Object.fromEntries(
+        routing.locales.map((l) => [l === 'fr' ? 'fr-CM' : 'en-CM', `${SITE_URL}/${l}`]),
+      ),
+    },
+    openGraph: {
+      type: 'website',
+      siteName: 'TrustPro',
+      locale: OG_LOCALES[locale] ?? 'en_CM',
+      title: t('title'),
+      description: t('description'),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      ...(handle ? { site: handle, creator: handle } : {}),
+    },
+    ...(Object.keys(verificationTokens()).length > 0 ? { verification: verificationTokens() } : {}),
   };
 }
 

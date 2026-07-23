@@ -35,6 +35,7 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('Legal.terms');
+  const tHome = await getTranslations('Breadcrumbs');
 
   // t.raw pulls the structured section array straight from the catalogue, so
   // adding a clause is a translation edit rather than a code change.
@@ -42,6 +43,9 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
 
   return (
     <LegalPage
+      locale={locale}
+      path="/legal/terms"
+      homeLabel={tHome('home')}
       copy={{
         title: t('title'),
         updated: t('updated'),

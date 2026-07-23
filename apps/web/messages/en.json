@@ -2424,10 +2424,12 @@
   },
   "Marketing": {
     "meta": {
-      "title": "TrustPro — Verified skilled workers in Douala & Yaoundé",
+      "title": "Verified skilled workers in Douala & Yaoundé",
       "description": "Hire verified electricians, plumbers, welders and more. Transparent quotes, escrow-protected payments, and a Trust Score you can check before you book.",
       "ogHeadline": "Trust, not just listings.",
-      "ogTagline": "Verified skilled workers, transparent quotes, escrow-protected payments."
+      "ogTagline": "Verified skilled workers, transparent quotes, escrow-protected payments.",
+      "serviceName": "Verified skilled-worker hiring with escrow protection",
+      "keywords": "verified workers Cameroon, skilled labour Douala, electrician Yaoundé, plumber Cameroon, welder Douala, escrow payment Cameroon, Trust Score, hire artisan Cameroon, home services Douala Yaoundé, local services Cameroon"
     },
     "nav": {
       "primary": "Primary",
@@ -2647,5 +2649,8 @@
         }
       ]
     }
+  },
+  "Breadcrumbs": {
+    "home": "Home"
   }
 }

@@ -13,10 +13,34 @@ import { VoiceWaveform } from '@/components/marketing/voice-waveform';
 import { FaqSection } from '@/components/marketing/faq-section';
 import { LandingAnalytics } from '@/components/marketing/landing-analytics';
 import { StarRating } from '@/components/ui/star-rating';
+import { JsonLd } from '@/components/seo/json-ld';
 import { localised } from '@/lib/graphql/marketing';
-import { buildMetadata, canonicalFor, SITE_URL } from '@/lib/seo';
+import { buildMetadata, canonicalFor } from '@/lib/seo';
+import {
+  faqPageNode,
+  graph,
+  organizationNode,
+  serviceNode,
+  webPageNode,
+  websiteNode,
+} from '@/lib/structured-data';
 import { routing } from '@/i18n/routing';
 import { loadMarketingContent } from './load-marketing-content';
+
+/**
+ * Strips the light Markdown FAQ answers carry (links, bold, italic) down to
+ * plain text for the FAQPage schema — a rich result renders answer text, not
+ * HTML, and a stray `[label](url)` in a structured-data string reads as noise to
+ * a crawler.
+ */
+function toPlainText(markdown: string): string {
+  return markdown
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 /**
  * The signature landing page (SYS-05, SRS §20.6).
@@ -58,6 +82,7 @@ export async function generateMetadata({
     path: '/',
     title: t('title'),
     description: t('description'),
+    keywords: t('keywords'),
   });
 }
 
@@ -98,51 +123,58 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   }));
 
   /**
-   * Structured data (SYS-05). Organization + FAQPage, both derived from what the
-   * page actually renders — a JSON-LD block describing questions that are not on
-   * the page is exactly what "structured data must match visible content" is
-   * meant to prevent.
+   * Structured data (SYS-05), as ONE linked @graph rather than loose blocks — see
+   * lib/structured-data.ts for why the links are the point. Every node is derived
+   * from what the page actually renders (the FAQ nodes come from the same `faqs`
+   * the FAQ section shows), because structured data that describes content not on
+   * the page is a manual-action risk, not an SEO win.
    */
-  const jsonLd = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: 'TrustPro',
-      url: canonicalFor(locale, '/'),
+  const url = canonicalFor(locale, '/');
+  // The trades the platform is authoritative on, from the same catalogue the
+  // portfolio rail draws — a topical-authority signal for `knowsAbout` (see
+  // structured-data.ts) and the Service categories.
+  const tradeCategories = ['electrician', 'plumber', 'painter', 'welder'].map((trade) =>
+    t(`portfolio.items.${trade}.trade`),
+  );
+
+  const structuredData = graph([
+    organizationNode({
+      locale,
       description: t('meta.description'),
-      areaServed: ['Douala', 'Yaoundé'],
-      logo: `${SITE_URL}/${locale}/app/icons/512`,
-    },
+      slogan: t('hero.heading'),
+      knowsAbout: tradeCategories,
+    }),
+    websiteNode({ locale, description: t('meta.description') }),
+    webPageNode({
+      locale,
+      url,
+      title: t('meta.title'),
+      description: t('meta.description'),
+      primary: true,
+    }),
+    serviceNode({
+      locale,
+      name: t('meta.serviceName'),
+      description: t('meta.description'),
+      categories: tradeCategories,
+    }),
     ...(faqs.length > 0
       ? [
-          {
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: faqs.map((faq) => ({
-              '@type': 'Question',
-              name: localised(faq, 'question', locale),
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: localised(faq, 'answer', locale),
-              },
+          faqPageNode({
+            locale,
+            url,
+            questions: faqs.map((faq) => ({
+              question: localised(faq, 'question', locale),
+              answer: toPlainText(localised(faq, 'answer', locale)),
             })),
-          },
+          }),
         ]
       : []),
-  ];
+  ]);
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        // Content is our own copy and admin-authored FAQ text, serialised by
-        // JSON.stringify. The `<` escape closes the one XSS hole this pattern
-        // has: a literal "</script>" inside an answer would otherwise end the
-        // block early and everything after it would parse as markup.
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
+      <JsonLd data={structuredData} />
 
       <LandingAnalytics />
 

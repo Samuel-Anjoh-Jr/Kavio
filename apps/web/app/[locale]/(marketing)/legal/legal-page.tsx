@@ -1,3 +1,7 @@
+import { JsonLd } from '@/components/seo/json-ld';
+import { canonicalFor } from '@/lib/seo';
+import { breadcrumbNode, graph, webPageNode } from '@/lib/structured-data';
+
 /**
  * Shared chrome + content loader for the three legal pages (SRS §26.6).
  *
@@ -6,6 +10,11 @@
  * (`{ title, updated, intro, sections: [{ heading, body: [...] }] }`), so one
  * component renders all three and the EN/FR catalogues stay structurally
  * identical by construction (SYS-03).
+ *
+ * It also emits the page's structured data: a WebPage tied into the site graph
+ * plus a BreadcrumbList. Breadcrumbs are worth the few lines — they render as a
+ * path in search results (better than a bare URL) and give an answer engine the
+ * page's place in the site, both from content that is genuinely on the page.
  */
 
 export interface LegalSection {
@@ -20,9 +29,43 @@ export interface LegalCopy {
   sections: LegalSection[];
 }
 
-export function LegalPage({ copy }: { copy: LegalCopy }) {
+export function LegalPage({
+  copy,
+  locale,
+  path,
+  homeLabel,
+}: {
+  copy: LegalCopy;
+  locale: string;
+  /** Locale-stripped path, e.g. `/legal/terms`. */
+  path: string;
+  /** Translated label for the breadcrumb root. */
+  homeLabel: string;
+}) {
+  const url = canonicalFor(locale, path);
+
+  const structuredData = graph([
+    webPageNode({
+      locale,
+      url,
+      title: copy.title,
+      description: copy.intro,
+      breadcrumbId: `${url}#breadcrumb`,
+    }),
+    breadcrumbNode({
+      locale,
+      url,
+      items: [
+        { name: homeLabel, path: '/' },
+        { name: copy.title, path },
+      ],
+    }),
+  ]);
+
   return (
     <article className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-16 sm:px-6">
+      <JsonLd data={structuredData} />
+
       <header className="flex flex-col gap-2">
         <h1 className="font-heading text-3xl font-semibold text-foreground sm:text-4xl">
           {copy.title}

@@ -21,10 +21,24 @@ import { MARKETING_CONTENT_QUERY, type MarketingContentQueryResult } from '@/lib
  */
 export async function loadMarketingContent(): Promise<MarketingContentQueryResult> {
   try {
-    const response = await fetch(`${getApiBaseUrl()}/graphql`, {
+    const base = getApiBaseUrl();
+
+    // The base must be absolute for a server-side fetch. During a build with no
+    // API configured it can be empty or relative, and fetching that either
+    // throws or — worse — hangs until a connection timeout, which can fail static
+    // generation. Bail to empty content instead; ISR fills it in at runtime once
+    // the API is reachable (§26.3: builds survive an unavailable backend).
+    if (!/^https?:\/\//.test(base)) {
+      return { faqs: [], testimonials: [] };
+    }
+
+    const response = await fetch(`${base}/graphql`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: print(MARKETING_CONTENT_QUERY) }),
+      // A hard ceiling so neither the build nor a slow runtime request ever
+      // blocks the page on this — the content is an enhancement, not a gate.
+      signal: AbortSignal.timeout(3000),
       // ISR: revalidated on the same hourly cadence as the page itself, so the
       // static HTML and its data never disagree about how fresh they are.
       next: { revalidate: 3600 },

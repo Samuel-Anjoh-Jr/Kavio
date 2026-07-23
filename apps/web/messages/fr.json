@@ -2424,10 +2424,12 @@
   },
   "Marketing": {
     "meta": {
-      "title": "TrustPro — Artisans vérifiés à Douala et Yaoundé",
+      "title": "Artisans qualifiés vérifiés à Douala et Yaoundé",
       "description": "Engagez des électriciens, plombiers, soudeurs vérifiés et plus encore. Devis transparents, paiements sous séquestre et un Score de Confiance à vérifier avant de réserver.",
       "ogHeadline": "La confiance, pas juste des annonces.",
-      "ogTagline": "Artisans vérifiés, devis transparents, paiements sous séquestre."
+      "ogTagline": "Artisans vérifiés, devis transparents, paiements sous séquestre.",
+      "serviceName": "Embauche d’artisans vérifiés avec paiement sous séquestre",
+      "keywords": "artisans vérifiés Cameroun, main-d’œuvre qualifiée Douala, électricien Yaoundé, plombier Cameroun, soudeur Douala, paiement sous séquestre Cameroun, Score de Confiance, engager artisan Cameroun, services à domicile Douala Yaoundé, services locaux Cameroun"
     },
     "nav": {
       "primary": "Principal",
@@ -2647,5 +2649,8 @@
         }
       ]
     }
+  },
+  "Breadcrumbs": {
+    "home": "Accueil"
   }
 }
