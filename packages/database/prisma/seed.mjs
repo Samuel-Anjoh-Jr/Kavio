@@ -203,11 +203,55 @@ async function seedServiceCategories() {
   console.log(`  service categories: ${STARTER_CATEGORIES.length} upserted`);
 }
 
+/**
+ * Marketing content for the landing page (PROMPT 92.1; SRS §26.2).
+ *
+ * FAQ and testimonials are database-driven, so the launch set has to come from
+ * somewhere — an empty FAQ on the conversion surface is worse than no FAQ at
+ * all. Ids are fixed in the data file, which is what makes these upserts
+ * idempotent rather than additive.
+ *
+ * `isPublished` and `visible` are pointedly absent from the UPDATE branches: an
+ * admin who unpublished an entry, or hid a testimonial at its author's request,
+ * must not have that decision quietly reversed the next time anyone runs the
+ * seed.
+ */
+async function seedMarketingContent() {
+  const { faqs, testimonials } = JSON.parse(
+    readFileSync(join(here, 'data', 'marketing-content.json'), 'utf8'),
+  );
+
+  let order = 0;
+  for (const { id, ...fields } of faqs) {
+    await prisma.faq.upsert({
+      where: { id },
+      create: { id, ...fields, order, isPublished: true },
+      update: { ...fields, order },
+    });
+    order += 1;
+  }
+
+  order = 0;
+  for (const { id, ...fields } of testimonials) {
+    await prisma.testimonial.upsert({
+      where: { id },
+      create: { id, ...fields, order, visible: true },
+      update: { ...fields, order },
+    });
+    order += 1;
+  }
+
+  console.log(
+    `  marketing content: ${faqs.length} FAQ entries, ${testimonials.length} testimonials upserted`,
+  );
+}
+
 async function main() {
   console.log('Seeding TrustPro…');
   await seedAdmin();
   await seedGeoRegions();
   await seedServiceCategories();
+  await seedMarketingContent();
   console.log('Seed complete.');
 }
 

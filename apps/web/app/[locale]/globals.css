@@ -165,3 +165,36 @@ h5,
 h6 {
   font-family: var(--font-heading);
 }
+
+/* Anchor-nav landing (SRS §26.2 "Navigation"): every [id] target clears the
+   sticky header, so a hash click does not scroll the section up underneath it.
+   The value matches the 64px (h-16) header. */
+:target,
+[id] {
+  scroll-margin-top: 5rem;
+}
+
+/*
+ * prefers-reduced-motion, honoured globally (NFR-A11Y-01).
+ *
+ * The JS motion presets already collapse to 0ms via lib/motion.ts; this is the
+ * CSS backstop for everything they do not own — Tailwind's animate-* utilities,
+ * smooth-scroll, and any transition on the page. A user who asked their OS for
+ * less motion must get it everywhere, not only where a component remembered to
+ * check. `scroll-behavior: auto` also stops Lenis and native smooth scrolling
+ * from fighting that request.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}

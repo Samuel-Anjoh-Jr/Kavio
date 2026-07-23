@@ -1,0 +1,152 @@
+{
+  "_comment": "Launch FAQ and testimonials for the marketing landing page (PROMPT 92.1; SRS §26.2). Ids are fixed rather than generated so the seed's upsert is idempotent — a re-run edits the row it wrote last time instead of adding a near-duplicate every time. At least 8 testimonials is a requirement, not a round number: the marquee loops, and with fewer the same faces come round often enough to read as filler.",
+  "faqs": [
+    {
+      "id": "af157a55-5d6d-5492-b6c7-a0d3acb04dae",
+      "category": "general",
+      "questionEn": "What is TrustPro?",
+      "questionFr": "Qu’est-ce que TrustPro ?",
+      "answerEn": "TrustPro connects households and businesses in Douala and Yaoundé with skilled workers whose identity, work and track record have been verified. Every worker carries a Trust Score you can inspect before you hire.",
+      "answerFr": "TrustPro met en relation les ménages et les entreprises de Douala et Yaoundé avec des artisans dont l’identité, le travail et les antécédents sont vérifiés. Chaque artisan porte un Score de Confiance que vous pouvez consulter avant d’embaucher."
+    },
+    {
+      "id": "637961dd-bc56-56bc-978e-82764cc0df29",
+      "category": "verification",
+      "questionEn": "What does \"verified\" actually mean?",
+      "questionFr": "Que signifie réellement « vérifié » ?",
+      "answerEn": "Verification is progressive, across four tiers. A verified worker has passed identity checks against a government ID and a live selfie, had their address confirmed, and submitted portfolio evidence of real completed work. Higher tiers add in-person checks by a TrustPro agent.",
+      "answerFr": "La vérification est progressive, sur quatre niveaux. Un artisan vérifié a validé son identité avec une pièce officielle et un selfie en direct, fait confirmer son adresse et fourni des preuves de travaux réellement réalisés. Les niveaux supérieurs ajoutent des contrôles sur le terrain par un agent TrustPro."
+    },
+    {
+      "id": "8bc6ad9b-0e17-5009-bc2a-48f58ab715f4",
+      "category": "payments",
+      "questionEn": "How does escrow protect my money?",
+      "questionFr": "Comment le séquestre protège-t-il mon argent ?",
+      "answerEn": "When you accept a quote, your payment is held by TrustPro rather than sent to the worker. It is released only after you confirm the work is complete. If something goes wrong, you open a dispute and the funds stay held until it is settled.",
+      "answerFr": "Lorsque vous acceptez un devis, votre paiement est conservé par TrustPro plutôt que versé à l’artisan. Il n’est libéré qu’après votre confirmation que le travail est terminé. En cas de problème, vous ouvrez un litige et les fonds restent bloqués jusqu’à son règlement."
+    },
+    {
+      "id": "51ada6a4-350b-56fa-b9e4-f2ffdede8ab0",
+      "category": "payments",
+      "questionEn": "What does it cost?",
+      "questionFr": "Combien cela coûte-t-il ?",
+      "answerEn": "Browsing, posting a job and receiving quotes are free. TrustPro takes a service fee of about 10% on completed work, and it is shown to you in full before you pay — never added afterwards.",
+      "answerFr": "La navigation, la publication d’une mission et la réception de devis sont gratuites. TrustPro prélève des frais de service d’environ 10 % sur les travaux terminés, affichés intégralement avant le paiement — jamais ajoutés ensuite."
+    },
+    {
+      "id": "15012ea2-716f-548e-8c21-8518902f534b",
+      "category": "payments",
+      "questionEn": "What happens if the work is not done properly?",
+      "questionFr": "Que se passe-t-il si le travail est mal fait ?",
+      "answerEn": "Do not confirm completion. Open a dispute instead: the escrowed funds stay held, both sides submit evidence, and a TrustPro reviewer decides the outcome. Refunds go back through the same channel you paid with.",
+      "answerFr": "Ne confirmez pas la fin des travaux. Ouvrez plutôt un litige : les fonds sous séquestre restent bloqués, les deux parties fournissent des preuves et un examinateur TrustPro tranche. Les remboursements repassent par le moyen de paiement utilisé."
+    },
+    {
+      "id": "f6ba4b9a-3d49-53bd-9ce6-80869b9e7023",
+      "category": "trust",
+      "questionEn": "How is the Trust Score calculated?",
+      "questionFr": "Comment le Score de Confiance est-il calculé ?",
+      "answerEn": "From four pillars: verified identity, professional evidence such as portfolio and endorsements, marketplace behaviour including completed jobs and reviews, and financial reliability. It updates continuously, and the breakdown is visible on every worker profile.",
+      "answerFr": "À partir de quatre piliers : identité vérifiée, preuves professionnelles comme le portfolio et les recommandations, comportement sur la plateforme dont les missions terminées et les avis, et fiabilité financière. Il se met à jour en continu et le détail est visible sur chaque profil."
+    },
+    {
+      "id": "32d533af-a561-5d6a-bd55-790c0da6f1a3",
+      "category": "general",
+      "questionEn": "Which cities do you cover?",
+      "questionFr": "Quelles villes couvrez-vous ?",
+      "answerEn": "Douala and Yaoundé at launch, with the surrounding areas covered by workers who list them in their service radius. Other cities follow as we verify workers there.",
+      "answerFr": "Douala et Yaoundé au lancement, ainsi que les zones environnantes couvertes par les artisans qui les incluent dans leur rayon d’intervention. D’autres villes suivront à mesure que nous y vérifions des artisans."
+    },
+    {
+      "id": "46d5a5ad-580a-5c61-a596-966c5254e381",
+      "category": "workers",
+      "questionEn": "How do I join as a worker?",
+      "questionFr": "Comment m’inscrire en tant qu’artisan ?",
+      "answerEn": "Create an account, choose the Worker role and complete verification: ID, a live selfie, your address, and photos of work you have finished. You can receive jobs from Tier 1, and each tier you clear unlocks more visibility.",
+      "answerFr": "Créez un compte, choisissez le rôle Artisan et complétez la vérification : pièce d’identité, selfie en direct, adresse et photos de travaux terminés. Vous pouvez recevoir des missions dès le niveau 1, et chaque niveau franchi augmente votre visibilité."
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "ca538339-7122-5342-b2ed-a41df7d2bc28",
+      "author": "Aminatou Njoya",
+      "roleEn": "Homeowner, Bonapriso",
+      "roleFr": "Propriétaire, Bonapriso",
+      "rating": 5,
+      "contentEn": "I had been burned twice by workmen who took a deposit and vanished. With escrow I stopped worrying about the money and just judged the work. The plumber finished in a day and I released payment from my phone.",
+      "contentFr": "Deux artisans étaient déjà partis avec mon acompte. Avec le séquestre, je n’ai plus eu à me soucier de l’argent, seulement du travail. Le plombier a fini en une journée et j’ai libéré le paiement depuis mon téléphone."
+    },
+    {
+      "id": "50f20b3d-566d-5599-b5e3-a94d2dd809bc",
+      "author": "Emmanuel Tchoua",
+      "roleEn": "Electrician, Tier 3",
+      "roleFr": "Électricien, niveau 3",
+      "rating": 4.8,
+      "contentEn": "The portfolio is what changed my business. Clients used to ask for references I could not prove. Now they see thirty finished jobs and my Trust Score before they even call.",
+      "contentFr": "Le portfolio a transformé mon activité. Les clients demandaient des références que je ne pouvais pas prouver. Ils voient maintenant trente chantiers terminés et mon Score de Confiance avant même d’appeler."
+    },
+    {
+      "id": "999be278-f46c-56d4-b79f-792e96fa6576",
+      "author": "Sandrine Mbarga",
+      "roleEn": "Restaurant owner, Yaoundé",
+      "roleFr": "Restauratrice, Yaoundé",
+      "rating": 4.5,
+      "contentEn": "My cold room failed on a Friday night. I posted the job, had four quotes within the hour and a verified refrigeration technician on site by morning. Fixed prices, no haggling at the door.",
+      "contentFr": "Ma chambre froide est tombée en panne un vendredi soir. J’ai publié la mission, reçu quatre devis en une heure et un frigoriste vérifié est arrivé au matin. Prix fixes, aucune négociation sur le pas de la porte."
+    },
+    {
+      "id": "52088482-7350-5fbc-87a0-6d440a6167ac",
+      "author": "Ibrahim Sali",
+      "roleEn": "Welder, Bonabéri",
+      "roleFr": "Soudeur, Bonabéri",
+      "rating": 4.7,
+      "contentEn": "Getting to Tier 2 took an afternoon with the agent. Since then I have not had a single client argue about price, because the quote is agreed before I pick up a tool.",
+      "contentFr": "Atteindre le niveau 2 m’a pris un après-midi avec l’agent. Depuis, aucun client ne discute le prix, car le devis est accepté avant que je ne prenne un outil."
+    },
+    {
+      "id": "2be9368b-5ea9-5062-ba7b-bc507c6de411",
+      "author": "Clarisse Ateba",
+      "roleEn": "Facilities manager, Akwa",
+      "roleFr": "Responsable des installations, Akwa",
+      "rating": 4.9,
+      "contentEn": "We run twelve buildings. Being able to see a worker’s tier and completed-job history in one place turned supplier vetting from a week of phone calls into an afternoon.",
+      "contentFr": "Nous gérons douze immeubles. Voir le niveau d’un artisan et son historique de missions au même endroit a transformé une semaine d’appels en un après-midi de vérification."
+    },
+    {
+      "id": "7df8c651-4598-5494-8bb2-690a613aa9f5",
+      "author": "Serge Kamdem",
+      "roleEn": "Painter, Tier 2",
+      "roleFr": "Peintre, niveau 2",
+      "rating": 4.6,
+      "contentEn": "The before-and-after photos do the selling for me. I stopped explaining what I can do and started showing it, and my quote acceptance roughly doubled.",
+      "contentFr": "Les photos avant/après vendent à ma place. J’ai cessé d’expliquer ce que je sais faire pour le montrer, et mes devis acceptés ont presque doublé."
+    },
+    {
+      "id": "5c07d307-9699-5ee8-8958-65d17eb6a179",
+      "author": "Nadège Fotso",
+      "roleEn": "Teacher, Mvog-Ada",
+      "roleFr": "Enseignante, Mvog-Ada",
+      "rating": 5,
+      "contentEn": "As a woman hiring alone I care who comes to my door. Seeing a verified ID and an address that had been checked in person was the difference between booking and not booking.",
+      "contentFr": "En tant que femme qui embauche seule, je fais attention à qui vient chez moi. Voir une pièce d’identité vérifiée et une adresse contrôlée sur place a fait toute la différence."
+    },
+    {
+      "id": "45a1d2cf-5e20-51b1-b5ab-f5271d1568f3",
+      "author": "Patrick Ondoa",
+      "roleEn": "Mechanic, Tier 3",
+      "roleFr": "Mécanicien, niveau 3",
+      "rating": 4.4,
+      "contentEn": "Payment used to be the hardest conversation of every job. Now it is settled before I start and released the same day I finish. I have not chased an invoice in eight months.",
+      "contentFr": "Le paiement était la conversation la plus difficile de chaque chantier. Il est maintenant réglé avant que je commence et libéré le jour où je termine. Je n’ai pas relancé une facture depuis huit mois."
+    },
+    {
+      "id": "ffa884b1-488d-5af5-8176-6fa567f7b2c8",
+      "author": "Marie-Louise Etoga",
+      "roleEn": "Hotel manager, Bastos",
+      "roleFr": "Directrice d’hôtel, Bastos",
+      "rating": 4.3,
+      "contentEn": "We needed six rooms repainted before a conference. One job post, one verified team, one fixed price agreed up front. It was finished a day early.",
+      "contentFr": "Il fallait repeindre six chambres avant une conférence. Une seule annonce, une équipe vérifiée, un prix fixe convenu d’avance. Le chantier s’est terminé avec un jour d’avance."
+    }
+  ]
+}

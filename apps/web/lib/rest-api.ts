@@ -1,6 +1,7 @@
 'use client';
 
 import { fetchJson } from './api-error';
+import { enqueueWrite, isQueueable, type QueuedWriteMethod } from './offline/write-queue';
 
 /**
  * Browser-side REST writes (DUAL API RULE). Everything goes through the
@@ -34,6 +35,53 @@ export function restDelete<T>(path: string, body?: unknown): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body ?? {}),
   });
+}
+
+/**
+ * An offline-tolerant write (SYS-02, NFR-PWA-02).
+ *
+ * Tries the network first; if the request cannot leave the device, persists it
+ * to the offline queue and reports that it was DEFERRED rather than done. The
+ * caller must branch on `status` — that is the point of the return shape. A
+ * helper that swallowed the difference would let a form show "Saved" for
+ * something sitting in IndexedDB, which is precisely the silent failure SYS-06
+ * forbids.
+ *
+ * Not every write may take this path: `isQueueable` refuses money and
+ * trust-state writes, which throw as normal so the UI can say so plainly. See
+ * lib/offline/write-queue.ts for why.
+ */
+export type OfflineWriteResult<T> =
+  { status: 'sent'; data: T } | { status: 'queued'; queuedAt: number };
+
+export async function restWrite<T>(
+  path: string,
+  options: {
+    method?: QueuedWriteMethod;
+    body?: Record<string, unknown>;
+    /** Two writes sharing this key collapse under last-write-wins. */
+    dedupeKey?: string | null;
+  } = {},
+): Promise<OfflineWriteResult<T>> {
+  const { method = 'POST', body = {}, dedupeKey = null } = options;
+
+  try {
+    const data = await fetchJson<T>(restUrl(path), {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return { status: 'sent', data };
+  } catch (error) {
+    // A response that arrived — any status — is the server's answer, not a
+    // connectivity problem, and replaying it later would not change it.
+    const reachedServer = typeof (error as { status?: number }).status === 'number';
+
+    if (reachedServer || !isQueueable(path)) throw error;
+
+    const entry = await enqueueWrite({ path, method, body, dedupeKey });
+    return { status: 'queued', queuedAt: entry.updatedAt };
+  }
 }
 
 export interface UploadResult {

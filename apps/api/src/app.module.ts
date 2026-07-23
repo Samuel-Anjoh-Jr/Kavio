@@ -38,6 +38,7 @@ import { BusinessModule } from './business/business.module';
 import { SafetyModule } from './safety/safety.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { ModerationModule } from './moderation/moderation.module';
+import { MarketingModule } from './marketing/marketing.module';
 import { AdminModule } from './admin/admin.module';
 
 @Module({
@@ -116,6 +117,10 @@ import { AdminModule } from './admin/admin.module';
     // because it acts ON the others: it soft-deletes their content and suspends
     // their authors, so it depends on all of them existing and none depend on it.
     ModerationModule,
+    // Marketing content: the landing page's FAQ and testimonials (SRS §26.2).
+    // Order is irrelevant here and that is the point — it is a leaf that depends
+    // on nothing but Prisma, and nothing in the marketplace reads from it.
+    MarketingModule,
     // The admin console's own surfaces (ADM-01, ADM-02, ADM-06, ADM-07):
     // cross-cutting analytics, the risk monitor, the account directory, agent
     // invitations, announcements, audit, RBAC and settings. Registered last of

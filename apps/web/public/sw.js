@@ -7,18 +7,46 @@
 // registration time, not by any check in here (PROMPT 18 / CLAUDE.md
 // ACCESS MODEL).
 //
-// Strategy: navigations (HTML documents) are network-first with a cached
-// offline fallback; hashed, immutable Next.js build assets are cache-first.
-// Everything else (API calls, GraphQL, uploads) passes straight through —
-// this worker never caches non-GET requests or cross-origin traffic.
+// Strategy (SYS-02, NFR-PWA-01):
+//
+//   * Hashed, immutable Next.js build assets  -> cache-first.
+//   * Everything else the app shell renders from (page documents, RSC flight
+//     payloads, generated icons) -> STALE-WHILE-REVALIDATE: the cached copy is
+//     served immediately and a fresh one is fetched in the background for next
+//     time. This is what makes a previously viewed worker profile, job post or
+//     discovery screen open instantly, and open at all with no network.
+//   * Everything else (GraphQL, REST writes, uploads, cross-origin) passes
+//     straight through, uncached.
+//
+// SWR is chosen over network-first deliberately. Network-first makes every
+// navigation wait out a timeout before falling back — on the 3G connections
+// TrustPro targets that is the difference between an app that feels broken and
+// one that feels instant. The cost is that a document can be one visit stale;
+// that is acceptable here because the DATA on these screens does not come from
+// the document. Reads go through Apollo (persisted separately to IndexedDB, see
+// lib/offline/apollo-persist.ts), so the cached document is a shell, not
+// yesterday's prices.
+//
+// What is NEVER served stale: anything under /api. A cached GraphQL read could
+// show a released escrow as still held, and a cached write is nonsense.
 
-const CACHE_VERSION = 'trustpro-app-shell-v1';
+const SHELL_CACHE = 'trustpro-shell-v2';
+const CONTENT_CACHE = 'trustpro-content-v2';
 const OFFLINE_URL = '/offline.html';
+
+/**
+ * Ceiling on cached documents/payloads. Browsers evict the whole origin at once
+ * under storage pressure, so a worker that grows without limit does not just
+ * waste space — it risks taking the offline fallback down with it.
+ */
+const CONTENT_CACHE_LIMIT = 80;
+
+const CURRENT_CACHES = [SHELL_CACHE, CONTENT_CACHE];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
-      .open(CACHE_VERSION)
+      .open(SHELL_CACHE)
       .then((cache) => cache.addAll([OFFLINE_URL]))
       .then(() => self.skipWaiting()),
   );
@@ -29,7 +57,9 @@ self.addEventListener('activate', (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_VERSION).map((key) => caches.delete(key))),
+        Promise.all(
+          keys.filter((key) => !CURRENT_CACHES.includes(key)).map((key) => caches.delete(key)),
+        ),
       )
       .then(() => self.clients.claim()),
   );
@@ -43,37 +73,88 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (request.mode === 'navigate') {
-    event.respondWith(networkFirstNavigation(request));
+  // API traffic is never cached — see the header note.
+  if (url.pathname.startsWith('/api/')) return;
+
+  // Hashed build output is immutable: if the name matches, the bytes match.
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(cacheFirst(request, SHELL_CACHE));
     return;
   }
 
-  if (url.pathname.startsWith('/_next/static/')) {
-    event.respondWith(cacheFirst(request));
+  // Page documents and the RSC flight payloads that client-side navigation
+  // fetches. Both are how a screen the user has already seen comes back.
+  if (request.mode === 'navigate' || isFlightRequest(request, url)) {
+    event.respondWith(staleWhileRevalidate(request, { navigation: request.mode === 'navigate' }));
+    return;
+  }
+
+  // Generated PWA icons and other same-origin GETs the shell depends on.
+  if (url.pathname.includes('/app/icons/') || url.pathname.startsWith('/_next/image')) {
+    event.respondWith(staleWhileRevalidate(request, { navigation: false }));
   }
 });
 
-async function networkFirstNavigation(request) {
-  const cache = await caches.open(CACHE_VERSION);
-
-  try {
-    const response = await fetch(request);
-    cache.put(request, response.clone());
-    return response;
-  } catch {
-    const cached = await cache.match(request);
-    return cached ?? (await cache.match(OFFLINE_URL));
-  }
+/** App Router client navigation asks for the same URL with an RSC marker. */
+function isFlightRequest(request, url) {
+  return request.headers.get('RSC') === '1' || url.searchParams.has('_rsc');
 }
 
-async function cacheFirst(request) {
-  const cache = await caches.open(CACHE_VERSION);
+async function cacheFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
   if (cached) return cached;
 
   const response = await fetch(request);
   if (response.ok) cache.put(request, response.clone());
   return response;
+}
+
+/**
+ * Serve cached, revalidate behind it.
+ *
+ * The revalidation promise is deliberately not awaited on the hit path — that
+ * is the whole strategy — but its rejection IS caught. An unhandled rejection
+ * in a service worker can take the worker down, which would cost the user every
+ * offline capability at once over a single failed background fetch.
+ */
+async function staleWhileRevalidate(request, { navigation }) {
+  const cache = await caches.open(CONTENT_CACHE);
+  const cached = await cache.match(request);
+
+  const network = fetch(request)
+    .then((response) => {
+      // Opaque and error responses are not worth keeping: caching a 500 would
+      // serve that 500 back for as long as the entry survives.
+      if (response.ok && response.type === 'basic') {
+        cache.put(request, response.clone()).then(() => trimCache(cache, CONTENT_CACHE_LIMIT));
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  if (cached) return cached;
+
+  const fresh = await network;
+  if (fresh) return fresh;
+
+  // Nothing cached and nothing reachable. A navigation gets the branded offline
+  // page; a flight payload gets an error, which the client treats as a failed
+  // navigation rather than rendering a broken half-page.
+  if (navigation) {
+    const shell = await caches.open(SHELL_CACHE);
+    const offline = await shell.match(OFFLINE_URL);
+    if (offline) return offline;
+  }
+
+  return Response.error();
+}
+
+/** Oldest-first eviction. Cache API preserves insertion order of keys. */
+async function trimCache(cache, limit) {
+  const keys = await cache.keys();
+  if (keys.length <= limit) return;
+  await Promise.all(keys.slice(0, keys.length - limit).map((key) => cache.delete(key)));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

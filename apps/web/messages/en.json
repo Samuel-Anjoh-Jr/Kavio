@@ -1995,7 +1995,8 @@
       "categories": "Categories",
       "announcements": "Announcements",
       "audit": "Audit log",
-      "settings": "Settings"
+      "settings": "Settings",
+      "marketing": "Marketing"
     },
     "loadError": "We couldn't load this just now. Please try again shortly.",
     "noData": "There's nothing to show yet.",
@@ -2339,6 +2340,312 @@
     "permission": "Permission",
     "granted": "Granted",
     "notGranted": "Not granted",
-    "rbacReadOnlyNote": "This matrix is declared in code, because the authorisation guards read it from there. Making it editable here would let one compromised admin session grant itself every capability. Changing it is a reviewed code change."
+    "rbacReadOnlyNote": "This matrix is declared in code, because the authorisation guards read it from there. Making it editable here would let one compromised admin session grant itself every capability. Changing it is a reviewed code change.",
+    "marketing": {
+      "pageTitle": "Marketing content",
+      "pageSubtitle": "The FAQ and testimonials shown on the public landing page.",
+      "faqTitle": "FAQ",
+      "faqSubtitle": "Questions and answers on the landing page. Drag order with the arrows.",
+      "testimonialsTitle": "Testimonials",
+      "testimonialsSubtitle": "Customer stories in the landing-page marquee.",
+      "addFaq": "Add question",
+      "editFaq": "Edit question",
+      "addTestimonial": "Add testimonial",
+      "editTestimonial": "Edit testimonial",
+      "faqDialogHint": "Both languages are required. Answers support basic Markdown.",
+      "testimonialDialogHint": "Both languages are required. Rating renders with half-stars.",
+      "draft": "Draft",
+      "hidden": "Hidden",
+      "published": "Published",
+      "visible": "Visible in marquee",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "loadError": "We couldn’t load marketing content. Please try again.",
+      "loadingFaqs": "Loading FAQ entries",
+      "loadingTestimonials": "Loading testimonials",
+      "noFaqs": "No FAQ entries yet",
+      "noFaqsHint": "Add your first question to populate the landing-page FAQ.",
+      "noTestimonials": "No testimonials yet",
+      "noTestimonialsHint": "Add at least eight so the marquee doesn’t visibly repeat.",
+      "questionEn": "Question (English)",
+      "questionFr": "Question (French)",
+      "answerEn": "Answer (English)",
+      "answerFr": "Answer (French)",
+      "categoryOptional": "Category (optional)",
+      "categoryPlaceholder": "e.g. payments",
+      "author": "Author",
+      "roleEn": "Role (English)",
+      "roleFr": "Role (French)",
+      "contentEn": "Testimonial (English)",
+      "contentFr": "Testimonial (French)",
+      "rating": "Rating (0–5)",
+      "avatarOptional": "Avatar URL (optional)"
+    }
+  },
+  "SystemStates": {
+    "notFound": {
+      "title": "We can’t find that page",
+      "description": "The page you’re looking for doesn’t exist or has moved. Try browsing verified workers instead.",
+      "browse": "Browse workers",
+      "home": "Go home"
+    },
+    "maintenance": {
+      "title": "We’ll be right back",
+      "description": "TrustPro is down for scheduled maintenance. Please check back in a few minutes — your data is safe."
+    },
+    "offline": {
+      "banner": "You’re offline — showing saved content",
+      "bannerWithPending": "You’re offline — showing saved content · {count, plural, one {# change waiting} other {# changes waiting}} to sync",
+      "syncing": "Back online — syncing {count, plural, one {# change} other {# changes}}…"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "description": "We hit an unexpected error and our team has been notified. Please try again.",
+      "retry": "Try again"
+    }
+  },
+  "Pwa": {
+    "install": {
+      "title": "Install TrustPro",
+      "description": "Add TrustPro to your home screen for faster access and offline browsing.",
+      "action": "Install app",
+      "later": "Not now",
+      "iosHint": "Tap Share, then “Add to Home Screen”.",
+      "dismiss": "Dismiss"
+    }
+  },
+  "A11y": {
+    "skipToContent": "Skip to main content"
+  },
+  "Marketing": {
+    "meta": {
+      "title": "TrustPro — Verified skilled workers in Douala & Yaoundé",
+      "description": "Hire verified electricians, plumbers, welders and more. Transparent quotes, escrow-protected payments, and a Trust Score you can check before you book.",
+      "ogHeadline": "Trust, not just listings.",
+      "ogTagline": "Verified skilled workers, transparent quotes, escrow-protected payments."
+    },
+    "nav": {
+      "primary": "Primary",
+      "cta": "Open the app",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "menu": "Menu",
+      "menuDescription": "Site sections and account entry.",
+      "trustEngine": "Trust Engine",
+      "portfolio": "Portfolio",
+      "pricing": "Pricing",
+      "testimonials": "Stories",
+      "faq": "FAQ"
+    },
+    "hero": {
+      "badge": "Douala & Yaoundé",
+      "heading": "Find a worker you can actually trust.",
+      "subheading": "Verified identity, real portfolios, fixed quotes and escrow-protected payments — the trust layer is the product.",
+      "primaryCta": "Explore workers",
+      "secondaryCta": "Create an account",
+      "noAccountNote": "No account needed to browse. You only sign in when you’re ready to act.",
+      "workerPortraitAlt": "A verified TrustPro worker",
+      "clientPortraitAlt": "A TrustPro client",
+      "workerTwoPortraitAlt": "Another verified TrustPro worker",
+      "trustScoreLabel": "Trust Score {score} out of 100",
+      "trustScoreCaption": "Verified · Tier 3",
+      "verifiedBadge": "ID verified"
+    },
+    "proof": {
+      "heading": "TrustPro by the numbers",
+      "verified": "Verified workers",
+      "success": "Job success rate",
+      "rating": "Average rating",
+      "paid": "Paid through escrow"
+    },
+    "trustEngine": {
+      "heading": "Trust is earned in stages, and you can see every one.",
+      "body": "The Trust Engine scores every worker across identity, professional evidence, marketplace behaviour and financial reliability — and updates continuously as they work.",
+      "link": "See how the Trust Score works",
+      "stages": {
+        "15": {
+          "label": "New & identified",
+          "description": "Phone verified and profile created. The starting line, honestly labelled."
+        },
+        "35": {
+          "label": "ID verified",
+          "description": "Government ID and a live selfie checked. You know who’s coming."
+        },
+        "60": {
+          "label": "Address & portfolio",
+          "description": "Location confirmed and real completed work on file."
+        },
+        "82": {
+          "label": "Proven on-platform",
+          "description": "A track record of completed jobs, reviews and released escrow."
+        },
+        "100": {
+          "label": "Agent-verified pro",
+          "description": "In-person checks by a TrustPro agent. The highest assurance we offer."
+        }
+      }
+    },
+    "portfolio": {
+      "heading": "Real work, not stock photos.",
+      "body": "Every portfolio is evidence of a real job — drag to see the before and after.",
+      "before": "Before",
+      "after": "After",
+      "beforeAlt": "Before: {trade} work",
+      "afterAlt": "Finished {trade} work",
+      "sliderLabel": "Reveal the before and after for this {trade} job",
+      "sliderValue": "{percent}% revealed",
+      "items": {
+        "electrician": {
+          "trade": "Electrician",
+          "caption": "Panel rewire, Bonapriso"
+        },
+        "plumber": {
+          "trade": "Plumber",
+          "caption": "Bathroom refit, Bastos"
+        },
+        "painter": {
+          "trade": "Painter",
+          "caption": "Full repaint, Akwa"
+        },
+        "welder": {
+          "trade": "Welder",
+          "caption": "Security gate, Bonabéri"
+        }
+      }
+    },
+    "pricing": {
+      "heading": "Your money is protected until the work is done.",
+      "body": "Payment is held in escrow and released only when you confirm the job is complete. The fee is shown in full before you pay.",
+      "steps": {
+        "hold": {
+          "title": "You pay into escrow",
+          "body": "When you accept a quote, your payment is held by TrustPro — not sent to the worker."
+        },
+        "work": {
+          "title": "The work happens",
+          "body": "The worker does the job. The funds stay held the whole time."
+        },
+        "release": {
+          "title": "You release payment",
+          "body": "Happy with the work? Release the funds. Not happy? Open a dispute — the money stays held."
+        }
+      },
+      "feeHeading": "A ~10% service fee, shown before you pay.",
+      "feeBody": "One transparent fee on completed work — never added after the fact, never a surprise at the door."
+    },
+    "testimonials": {
+      "heading": "Trusted by clients and workers alike.",
+      "body": "Real stories from households, businesses and the workers who serve them.",
+      "voiceNote": "Voice note",
+      "ratingLabel": "Rated {rating} out of 5"
+    },
+    "faq": {
+      "heading": "Questions, answered.",
+      "body": "Everything you might want to know before you start.",
+      "emptyTitle": "No questions yet",
+      "emptyDescription": "Check back soon — we’re adding answers to the most common questions."
+    },
+    "cta": {
+      "heading": "Find a worker you can trust today.",
+      "body": "Browse verified workers in Douala and Yaoundé. No account needed to start looking.",
+      "button": "Explore workers",
+      "note": "Free to browse · You only sign in to act"
+    },
+    "footer": {
+      "tagline": "The trust-first marketplace for local services in Cameroon.",
+      "legalHeading": "Legal",
+      "productHeading": "Product",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "refunds": "Refund & Dispute Policy",
+      "browseWorkers": "Browse workers",
+      "browseJobs": "Browse jobs",
+      "joinAsWorker": "Join as a worker",
+      "copyright": "© {year} TrustPro. All rights reserved."
+    }
+  },
+  "Legal": {
+    "terms": {
+      "title": "Terms of Service",
+      "updated": "Last updated 23 July 2026",
+      "intro": "These terms govern your use of TrustPro. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
+      "sections": [
+        {
+          "heading": "1. Using TrustPro",
+          "body": [
+            "TrustPro connects clients with verified skilled workers in Cameroon. You must be able to form a binding contract to use the platform.",
+            "You are responsible for the accuracy of the information you provide and for activity under your account."
+          ]
+        },
+        {
+          "heading": "2. Bookings and escrow",
+          "body": [
+            "Payments for jobs are held in escrow and released according to the Refund & Dispute Policy. TrustPro is not a party to the contract between a client and a worker."
+          ]
+        },
+        {
+          "heading": "3. Prohibited conduct",
+          "body": [
+            "You may not use TrustPro to defraud, harass, or endanger others, or to circumvent the platform’s payment or verification systems."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "updated": "Last updated 23 July 2026",
+      "intro": "How TrustPro collects, uses and protects your data. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
+      "sections": [
+        {
+          "heading": "1. What we collect",
+          "body": [
+            "Account details, verification documents (ID, selfie, address), portfolio media, and activity on the platform such as jobs, quotes and messages.",
+            "Verification media is access-controlled and encrypted at rest."
+          ]
+        },
+        {
+          "heading": "2. How we use it",
+          "body": [
+            "To operate the marketplace, compute Trust Scores, process escrow payments, and keep the platform safe."
+          ]
+        },
+        {
+          "heading": "3. Your rights",
+          "body": [
+            "You may request access to, correction of, or deletion of your personal data, subject to legal and operational retention requirements."
+          ]
+        }
+      ]
+    },
+    "refunds": {
+      "title": "Refund & Dispute Policy",
+      "updated": "Last updated 23 July 2026",
+      "intro": "How escrow, refunds and disputes work on TrustPro. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
+      "sections": [
+        {
+          "heading": "1. Escrow",
+          "body": [
+            "Payment for a job is held by TrustPro when you accept a quote and released to the worker only when you confirm completion."
+          ]
+        },
+        {
+          "heading": "2. Opening a dispute",
+          "body": [
+            "If the work is not completed as agreed, open a dispute instead of confirming completion. The escrowed funds stay held while the dispute is reviewed."
+          ]
+        },
+        {
+          "heading": "3. Refunds",
+          "body": [
+            "Approved refunds are returned through the original payment channel. Resolution timelines depend on the payment provider."
+          ]
+        }
+      ]
+    }
   }
 }

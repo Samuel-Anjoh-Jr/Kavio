@@ -3,7 +3,15 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { auth } from '@/auth';
 import { redirect } from '@/i18n/navigation';
 import { GuestHome } from '@/components/discovery/guest-home';
+import { buildMetadata } from '@/lib/seo';
 
+/**
+ * The guest first-interface is a PUBLIC, crawlable discovery surface (ACC-01),
+ * so it carries a clean canonical and an OG image like any landing page —
+ * routed through buildMetadata so all four required fields come as one (§26.4).
+ * The clean base path is the canonical; any filter query is stripped by
+ * buildMetadata, so a filtered variant never competes with it to rank.
+ */
 export async function generateMetadata({
   params,
 }: {
@@ -11,7 +19,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Explore' });
-  return { title: t('title'), description: t('subtitle') };
+  return buildMetadata({
+    locale,
+    path: '/app/explore',
+    title: t('title'),
+    description: t('subtitle'),
+  });
 }
 
 /**

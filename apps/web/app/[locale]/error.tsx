@@ -2,10 +2,21 @@
 
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { SystemState } from '@/components/system/system-state';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('error-boundary');
 
+/**
+ * The 500 state for anything under a locale (SYS-04).
+ *
+ * Routes through the shared SystemState shell so it is visually one family with
+ * the 404, offline and empty screens rather than a bespoke layout — the whole
+ * point of centralising the states. The digest is surfaced as a `reference` a
+ * user can read to support (SRS §19 requestId contract).
+ */
 export default function ErrorBoundary({
   error,
   reset,
@@ -23,21 +34,17 @@ export default function ErrorBoundary({
   }, [error]);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
-      <h2 className="font-heading text-xl font-semibold text-foreground">{t('heading')}</h2>
-      <p className="max-w-md text-muted-foreground">{t('description')}</p>
-      {error.digest && (
-        <p className="rounded-input bg-muted px-3 py-1.5 font-mono text-xs text-muted-foreground">
-          {t('reference', { digest: error.digest })}
-        </p>
-      )}
-      <button
-        type="button"
-        onClick={() => reset()}
-        className="rounded-button bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-      >
-        {t('retry')}
-      </button>
-    </div>
+    <SystemState
+      tone="danger"
+      icon={<AlertTriangle aria-hidden="true" />}
+      title={t('heading')}
+      description={t('description')}
+      reference={error.digest ? t('reference', { digest: error.digest }) : undefined}
+      action={
+        <Button variant="primary" onClick={() => reset()}>
+          {t('retry')}
+        </Button>
+      }
+    />
   );
 }

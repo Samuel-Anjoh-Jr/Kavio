@@ -1995,7 +1995,8 @@
       "categories": "Catégories",
       "announcements": "Annonces",
       "audit": "Journal d'audit",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "marketing": "Marketing"
     },
     "loadError": "Impossible de charger ces données pour le moment. Réessayez dans un instant.",
     "noData": "Rien à afficher pour l'instant.",
@@ -2339,6 +2340,312 @@
     "permission": "Permission",
     "granted": "Accordée",
     "notGranted": "Non accordée",
-    "rbacReadOnlyNote": "Cette matrice est déclarée dans le code, car les gardes d'autorisation la lisent depuis là. La rendre modifiable ici permettrait à une seule session admin compromise de s'accorder toutes les capacités. La modifier passe par une revue de code."
+    "rbacReadOnlyNote": "Cette matrice est déclarée dans le code, car les gardes d'autorisation la lisent depuis là. La rendre modifiable ici permettrait à une seule session admin compromise de s'accorder toutes les capacités. La modifier passe par une revue de code.",
+    "marketing": {
+      "pageTitle": "Contenu marketing",
+      "pageSubtitle": "La FAQ et les témoignages affichés sur la page d’accueil publique.",
+      "faqTitle": "FAQ",
+      "faqSubtitle": "Questions et réponses de la page d’accueil. Réordonnez avec les flèches.",
+      "testimonialsTitle": "Témoignages",
+      "testimonialsSubtitle": "Histoires clients du carrousel de la page d’accueil.",
+      "addFaq": "Ajouter une question",
+      "editFaq": "Modifier la question",
+      "addTestimonial": "Ajouter un témoignage",
+      "editTestimonial": "Modifier le témoignage",
+      "faqDialogHint": "Les deux langues sont requises. Les réponses acceptent le Markdown de base.",
+      "testimonialDialogHint": "Les deux langues sont requises. La note s’affiche en demi-étoiles.",
+      "draft": "Brouillon",
+      "hidden": "Masqué",
+      "published": "Publié",
+      "visible": "Visible dans le carrousel",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "confirmDelete": "Supprimer",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "loadError": "Impossible de charger le contenu marketing. Veuillez réessayer.",
+      "loadingFaqs": "Chargement des questions",
+      "loadingTestimonials": "Chargement des témoignages",
+      "noFaqs": "Aucune question pour l’instant",
+      "noFaqsHint": "Ajoutez votre première question pour alimenter la FAQ de la page d’accueil.",
+      "noTestimonials": "Aucun témoignage pour l’instant",
+      "noTestimonialsHint": "Ajoutez-en au moins huit pour que le carrousel ne se répète pas visiblement.",
+      "questionEn": "Question (anglais)",
+      "questionFr": "Question (français)",
+      "answerEn": "Réponse (anglais)",
+      "answerFr": "Réponse (français)",
+      "categoryOptional": "Catégorie (facultatif)",
+      "categoryPlaceholder": "ex. paiements",
+      "author": "Auteur",
+      "roleEn": "Rôle (anglais)",
+      "roleFr": "Rôle (français)",
+      "contentEn": "Témoignage (anglais)",
+      "contentFr": "Témoignage (français)",
+      "rating": "Note (0–5)",
+      "avatarOptional": "URL de l’avatar (facultatif)"
+    }
+  },
+  "SystemStates": {
+    "notFound": {
+      "title": "Page introuvable",
+      "description": "La page que vous cherchez n’existe pas ou a été déplacée. Parcourez plutôt des artisans vérifiés.",
+      "browse": "Parcourir les artisans",
+      "home": "Accueil"
+    },
+    "maintenance": {
+      "title": "De retour très vite",
+      "description": "TrustPro est en maintenance planifiée. Revenez dans quelques minutes — vos données sont en sécurité."
+    },
+    "offline": {
+      "banner": "Hors ligne — contenu enregistré affiché",
+      "bannerWithPending": "Hors ligne — contenu enregistré · {count, plural, one {# modification en attente} other {# modifications en attente}} de synchronisation",
+      "syncing": "De retour en ligne — synchronisation de {count, plural, one {# modification} other {# modifications}}…"
+    },
+    "error": {
+      "title": "Une erreur est survenue",
+      "description": "Une erreur inattendue s’est produite et notre équipe a été notifiée. Veuillez réessayer.",
+      "retry": "Réessayer"
+    }
+  },
+  "Pwa": {
+    "install": {
+      "title": "Installer TrustPro",
+      "description": "Ajoutez TrustPro à votre écran d’accueil pour un accès plus rapide et la navigation hors ligne.",
+      "action": "Installer l’app",
+      "later": "Plus tard",
+      "iosHint": "Touchez Partager, puis « Sur l’écran d’accueil ».",
+      "dismiss": "Fermer"
+    }
+  },
+  "A11y": {
+    "skipToContent": "Aller au contenu principal"
+  },
+  "Marketing": {
+    "meta": {
+      "title": "TrustPro — Artisans vérifiés à Douala et Yaoundé",
+      "description": "Engagez des électriciens, plombiers, soudeurs vérifiés et plus encore. Devis transparents, paiements sous séquestre et un Score de Confiance à vérifier avant de réserver.",
+      "ogHeadline": "La confiance, pas juste des annonces.",
+      "ogTagline": "Artisans vérifiés, devis transparents, paiements sous séquestre."
+    },
+    "nav": {
+      "primary": "Principal",
+      "cta": "Ouvrir l’app",
+      "openMenu": "Ouvrir le menu",
+      "closeMenu": "Fermer le menu",
+      "menu": "Menu",
+      "menuDescription": "Sections du site et accès au compte.",
+      "trustEngine": "Moteur de Confiance",
+      "portfolio": "Portfolio",
+      "pricing": "Tarifs",
+      "testimonials": "Témoignages",
+      "faq": "FAQ"
+    },
+    "hero": {
+      "badge": "Douala et Yaoundé",
+      "heading": "Trouvez un artisan à qui vous pouvez vraiment faire confiance.",
+      "subheading": "Identité vérifiée, portfolios réels, devis fixes et paiements sous séquestre — la couche de confiance est le produit.",
+      "primaryCta": "Explorer les artisans",
+      "secondaryCta": "Créer un compte",
+      "noAccountNote": "Aucun compte requis pour parcourir. Connectez-vous uniquement pour agir.",
+      "workerPortraitAlt": "Un artisan TrustPro vérifié",
+      "clientPortraitAlt": "Un client TrustPro",
+      "workerTwoPortraitAlt": "Un autre artisan TrustPro vérifié",
+      "trustScoreLabel": "Score de Confiance {score} sur 100",
+      "trustScoreCaption": "Vérifié · Niveau 3",
+      "verifiedBadge": "Identité vérifiée"
+    },
+    "proof": {
+      "heading": "TrustPro en chiffres",
+      "verified": "Artisans vérifiés",
+      "success": "Taux de réussite",
+      "rating": "Note moyenne",
+      "paid": "Payé sous séquestre"
+    },
+    "trustEngine": {
+      "heading": "La confiance se gagne par étapes, et vous les voyez toutes.",
+      "body": "Le Moteur de Confiance évalue chaque artisan sur l’identité, les preuves professionnelles, le comportement sur la plateforme et la fiabilité financière — et se met à jour en continu.",
+      "link": "Voir comment fonctionne le Score de Confiance",
+      "stages": {
+        "15": {
+          "label": "Nouveau & identifié",
+          "description": "Téléphone vérifié et profil créé. Le point de départ, affiché honnêtement."
+        },
+        "35": {
+          "label": "Identité vérifiée",
+          "description": "Pièce d’identité et selfie en direct contrôlés. Vous savez qui vient."
+        },
+        "60": {
+          "label": "Adresse & portfolio",
+          "description": "Localisation confirmée et travaux réels au dossier."
+        },
+        "82": {
+          "label": "Éprouvé sur la plateforme",
+          "description": "Un historique de missions terminées, d’avis et de séquestres libérés."
+        },
+        "100": {
+          "label": "Pro vérifié par un agent",
+          "description": "Contrôles en personne par un agent TrustPro. La plus haute garantie."
+        }
+      }
+    },
+    "portfolio": {
+      "heading": "Du vrai travail, pas des photos de stock.",
+      "body": "Chaque portfolio est la preuve d’une vraie mission — glissez pour voir l’avant/après.",
+      "before": "Avant",
+      "after": "Après",
+      "beforeAlt": "Avant : travaux de {trade}",
+      "afterAlt": "Travaux de {trade} terminés",
+      "sliderLabel": "Révéler l’avant/après de cette mission de {trade}",
+      "sliderValue": "{percent}% révélé",
+      "items": {
+        "electrician": {
+          "trade": "Électricien",
+          "caption": "Réfection du tableau, Bonapriso"
+        },
+        "plumber": {
+          "trade": "Plombier",
+          "caption": "Rénovation salle de bain, Bastos"
+        },
+        "painter": {
+          "trade": "Peintre",
+          "caption": "Repeinte complète, Akwa"
+        },
+        "welder": {
+          "trade": "Soudeur",
+          "caption": "Portail de sécurité, Bonabéri"
+        }
+      }
+    },
+    "pricing": {
+      "heading": "Votre argent est protégé jusqu’à la fin des travaux.",
+      "body": "Le paiement est conservé sous séquestre et libéré seulement quand vous confirmez la fin de la mission. Les frais sont affichés en entier avant le paiement.",
+      "steps": {
+        "hold": {
+          "title": "Vous payez sous séquestre",
+          "body": "Quand vous acceptez un devis, votre paiement est conservé par TrustPro — pas versé à l’artisan."
+        },
+        "work": {
+          "title": "Les travaux se déroulent",
+          "body": "L’artisan réalise la mission. Les fonds restent conservés pendant tout ce temps."
+        },
+        "release": {
+          "title": "Vous libérez le paiement",
+          "body": "Satisfait ? Libérez les fonds. Insatisfait ? Ouvrez un litige — l’argent reste conservé."
+        }
+      },
+      "feeHeading": "Des frais de service d’environ 10 %, affichés avant le paiement.",
+      "feeBody": "Un seul frais transparent sur les travaux terminés — jamais ajouté après coup, jamais une surprise sur le pas de la porte."
+    },
+    "testimonials": {
+      "heading": "La confiance des clients comme des artisans.",
+      "body": "De vraies histoires de ménages, d’entreprises et des artisans qui les servent.",
+      "voiceNote": "Note vocale",
+      "ratingLabel": "Noté {rating} sur 5"
+    },
+    "faq": {
+      "heading": "Vos questions, nos réponses.",
+      "body": "Tout ce que vous voulez savoir avant de commencer.",
+      "emptyTitle": "Pas encore de questions",
+      "emptyDescription": "Revenez bientôt — nous ajoutons des réponses aux questions les plus fréquentes."
+    },
+    "cta": {
+      "heading": "Trouvez dès aujourd’hui un artisan de confiance.",
+      "body": "Parcourez des artisans vérifiés à Douala et Yaoundé. Aucun compte requis pour commencer.",
+      "button": "Explorer les artisans",
+      "note": "Navigation gratuite · Connexion uniquement pour agir"
+    },
+    "footer": {
+      "tagline": "La marketplace de la confiance pour les services locaux au Cameroun.",
+      "legalHeading": "Légal",
+      "productHeading": "Produit",
+      "terms": "Conditions d’utilisation",
+      "privacy": "Politique de confidentialité",
+      "refunds": "Politique de remboursement et litige",
+      "browseWorkers": "Parcourir les artisans",
+      "browseJobs": "Parcourir les missions",
+      "joinAsWorker": "Devenir artisan",
+      "copyright": "© {year} TrustPro. Tous droits réservés."
+    }
+  },
+  "Legal": {
+    "terms": {
+      "title": "Conditions d’utilisation",
+      "updated": "Dernière mise à jour le 23 juillet 2026",
+      "intro": "Ces conditions régissent votre utilisation de TrustPro. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
+      "sections": [
+        {
+          "heading": "1. Utiliser TrustPro",
+          "body": [
+            "TrustPro met en relation des clients avec des artisans vérifiés au Cameroun. Vous devez pouvoir conclure un contrat pour utiliser la plateforme.",
+            "Vous êtes responsable de l’exactitude des informations fournies et de l’activité sur votre compte."
+          ]
+        },
+        {
+          "heading": "2. Réservations et séquestre",
+          "body": [
+            "Les paiements sont conservés sous séquestre et libérés selon la Politique de remboursement et litige. TrustPro n’est pas partie au contrat entre un client et un artisan."
+          ]
+        },
+        {
+          "heading": "3. Conduite interdite",
+          "body": [
+            "Vous ne pouvez pas utiliser TrustPro pour frauder, harceler ou mettre en danger autrui, ni pour contourner les systèmes de paiement ou de vérification."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "updated": "Dernière mise à jour le 23 juillet 2026",
+      "intro": "Comment TrustPro collecte, utilise et protège vos données. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
+      "sections": [
+        {
+          "heading": "1. Ce que nous collectons",
+          "body": [
+            "Détails du compte, documents de vérification (pièce d’identité, selfie, adresse), médias du portfolio et activité sur la plateforme comme les missions, devis et messages.",
+            "Les médias de vérification sont à accès contrôlé et chiffrés au repos."
+          ]
+        },
+        {
+          "heading": "2. Comment nous les utilisons",
+          "body": [
+            "Pour faire fonctionner la marketplace, calculer les Scores de Confiance, traiter les paiements sous séquestre et assurer la sécurité de la plateforme."
+          ]
+        },
+        {
+          "heading": "3. Vos droits",
+          "body": [
+            "Vous pouvez demander l’accès, la correction ou la suppression de vos données personnelles, sous réserve des obligations légales et opérationnelles de conservation."
+          ]
+        }
+      ]
+    },
+    "refunds": {
+      "title": "Politique de remboursement et litige",
+      "updated": "Dernière mise à jour le 23 juillet 2026",
+      "intro": "Comment fonctionnent le séquestre, les remboursements et les litiges sur TrustPro. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
+      "sections": [
+        {
+          "heading": "1. Séquestre",
+          "body": [
+            "Le paiement d’une mission est conservé par TrustPro dès l’acceptation d’un devis et libéré à l’artisan seulement à la confirmation de la fin des travaux."
+          ]
+        },
+        {
+          "heading": "2. Ouvrir un litige",
+          "body": [
+            "Si les travaux ne sont pas réalisés comme convenu, ouvrez un litige au lieu de confirmer la fin. Les fonds sous séquestre restent conservés pendant l’examen."
+          ]
+        },
+        {
+          "heading": "3. Remboursements",
+          "body": [
+            "Les remboursements approuvés sont renvoyés par le moyen de paiement d’origine. Les délais dépendent du prestataire de paiement."
+          ]
+        }
+      ]
+    }
   }
 }
