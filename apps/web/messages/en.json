@@ -2420,7 +2420,8 @@
     }
   },
   "A11y": {
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "close": "Close"
   },
   "Marketing": {
     "meta": {

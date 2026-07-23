@@ -258,7 +258,7 @@ describe('TierService', () => {
     it('takes only an identity, never a target tier', () => {
       // Inspects the method's arity and never calls it, so there is no `this`
       // to bind — which is the one case unbound-method is not warning about.
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+
       const applyDerivedTier = TierService.prototype.applyDerivedTier;
       expect(applyDerivedTier).toHaveLength(1);
     });

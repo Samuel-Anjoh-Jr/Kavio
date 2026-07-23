@@ -361,9 +361,9 @@ export function ruleMax(rule: TrustRule): number {
     case 'PENALTY':
     case 'REVOCATION':
     case 'SUSPENSION':
-    // An adjustment is not a ceiling anyone can earn toward, so it contributes
-    // nothing to any pillar's maximum — it moves the total after the fact.
     case 'MANUAL_ADJUSTMENT':
+      // An adjustment is not a ceiling anyone can earn toward, so it contributes
+      // nothing to any pillar's maximum — it moves the total after the fact.
       return 0;
   }
 }

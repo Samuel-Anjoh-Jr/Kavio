@@ -33,7 +33,7 @@ function makeHarness(disputeOverrides: Record<string, unknown> = {}) {
       },
       disputeMessage: { create: jest.fn().mockResolvedValue({}) },
       auditLog: { create: jest.fn().mockResolvedValue({}) },
-      $transaction: jest.fn().mockImplementation(async (fn: (tx: unknown) => unknown) => {
+      $transaction: jest.fn().mockImplementation((fn: (tx: unknown) => unknown) => {
         if (typeof fn === 'function') {
           return fn({
             dispute: { update: jest.fn().mockResolvedValue({}) },
