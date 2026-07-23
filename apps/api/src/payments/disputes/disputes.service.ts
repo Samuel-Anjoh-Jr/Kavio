@@ -7,7 +7,6 @@ import {
   EscrowState,
   MediaAssetKind,
   Prisma,
-  TrustEventType,
 } from '@trustpro/database';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { roleHasPermission } from '../../auth/rbac/permissions';
@@ -181,9 +180,9 @@ export class DisputesService {
    *   REQUEST_INFO      → dispute ESCALATED, stays open, escrow stays frozen
    *   CLOSE_NO_ACTION   → resolved without moving money (only when nothing is held)
    *
-   * And the FAULT FINDING drives the trust consequence (§21.5): a party found at
-   * fault gets a DISPUTE_UPHELD penalty recorded against the ledger, exactly like
-   * any other scored event. The finding is separate from the resolution — the
+   * And the FAULT FINDING drives the trust consequence (§21.5): a worker at fault
+   * takes DISPUTE_UPHELD (−20), a client at fault takes DISPUTE_LOST (−10), and
+   * NONE costs nobody anything. The finding is separate from the resolution — the
    * admin can override the default — because who behaved badly is not settled by
    * where the money went (see dispute-fault.model.ts).
    */
@@ -271,8 +270,8 @@ export class DisputesService {
     );
 
     // The trust consequence (§21.5). Recorded AFTER the dispute is committed and
-    // only for a terminal resolution — the ledger, not this method, turns
-    // DISPUTE_UPHELD into a −20 penalty, keeping the scoring rule in one place.
+    // only for a terminal resolution — the ledger, not this method, turns the
+    // event into points, keeping the scoring rule in one place.
     await this.applyFaultPenalty(dispute, faultParty, admin.id);
 
     this.events.emit(

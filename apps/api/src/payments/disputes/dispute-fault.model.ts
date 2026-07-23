@@ -65,11 +65,13 @@ export function trustEventForFault(fault: DisputeFaultParty): TrustEventType | n
 }
 
 /**
- * Which identity, if any, the DISPUTE_UPHELD penalty lands on (§21.5).
+ * Which identity, if any, the dispute penalty lands on (§21.5).
  *
- * Returns the faulted party's id, or null when nobody is at fault — the common
- * outcome, which must cost no one anything. The parties are passed in rather than
- * resolved here so this stays a pure mapping from a finding to a subject.
+ * Returns the faulted party's id, or null when the admin found nobody at fault —
+ * which must cost no one anything. WHICH penalty they take is
+ * {@link trustEventForFault}'s answer, not this one. The parties are passed in
+ * rather than resolved here so this stays a pure mapping from a finding to a
+ * subject.
  */
 export function penalisedParty(
   fault: DisputeFaultParty,

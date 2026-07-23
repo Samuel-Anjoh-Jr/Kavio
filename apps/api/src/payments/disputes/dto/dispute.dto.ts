@@ -37,9 +37,10 @@ export type DisputeMessageDto = z.infer<typeof disputeMessageSchema>;
  * and the fault finding drives the trust consequence.
  *
  * `faultParty` is OPTIONAL: left out, the resolution supplies a sensible default
- * (a refund implies the worker did not deliver; a release implies nobody is at
- * fault). Set explicitly, it overrides — because only the admin who read the
- * evidence can say a client abused the process or a refund was nobody's fault.
+ * (a refund implies the worker did not deliver; a release implies the client's
+ * complaint did not hold up). Set explicitly, it overrides — and NONE is the one
+ * that matters most, because only the admin who read the evidence can say a
+ * client escalated in good faith and simply did not prevail.
  */
 export const resolveDisputeSchema = z.object({
   resolution: z.enum(DisputeResolution),
