@@ -855,7 +855,21 @@
       "OTHER": "Autre",
       "SUSPECTED_FRAUD": "Fraude suspectée — escalader",
       "CONFIRMED_FRAUDULENT": "Falsification confirmée — suspendre"
-    }
+    },
+    "adjustTrustScore": "Ajuster le score de confiance",
+    "adjustDialogTitle": "Ajustement exceptionnel du score de confiance",
+    "adjustDialogSubtitle": "Applique une pénalité pour fraude ou un bonus « vérifié sur le terrain » sous forme d'événement explicite et auditable.",
+    "adjustDialogSubtitleNamed": "Pour {name}. Applique une pénalité pour fraude ou un bonus « vérifié sur le terrain » sous forme d'événement explicite et auditable.",
+    "adjustWarning": "Il s'agit d'une action exceptionnelle sur le signal de confiance central de la plateforme. Elle est enregistrée de façon permanente et ne peut pas être modifiée — seulement compensée par un nouvel ajustement.",
+    "deltaLabel": "Points",
+    "deltaPlaceholder": "ex. -20 ou +15",
+    "deltaHint": "Un nombre entier, positif pour un bonus ou négatif pour une pénalité. Jusqu'à {max} points par ajustement — faites deux ajustements plus petits et justifiés séparément pour un changement plus important.",
+    "adjustReasonLabel": "Motif",
+    "adjustReasonPlaceholder": "Expliquez le constat exceptionnel — ceci est enregistré sur l'événement et dans le journal d'audit.",
+    "adjustReasonHint": "Obligatoire, au moins 10 caractères. Réservé au personnel, non visible par la personne concernée.",
+    "applyAdjustment": "Appliquer l'ajustement",
+    "applying": "Application…",
+    "adjustmentApplied": "Score de confiance ajusté de {delta, plural, =0 {0} other {#}} points."
   },
   "Location": {
     "setLocation": "Définir votre position",

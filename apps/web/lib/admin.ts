@@ -39,6 +39,31 @@ export const AGENT_INVITATION_TONE: Record<string, StatusTone> = {
   REVOKED: 'neutral',
 };
 
+/**
+ * Mirrors the API's ADMIN_ADJUSTMENT_MAX_MAGNITUDE (trust-score.model.ts) so
+ * the form stops the admin before the server has to.
+ */
+export const TRUST_ADJUSTMENT_MAX_MAGNITUDE = 25;
+
+/**
+ * An exceptional Trust Score adjustment (ADM-04): a fraud penalty or a
+ * Field-Verified bonus, applied as an explicit, auditable TrustEvent. Gated on
+ * `admin:trust_adjust` — a permission held only by ADMIN, deliberately separate
+ * from `admin:verification_review` so clearing the queue never implies the power
+ * to move a score by hand.
+ */
+export function adjustTrustScore(
+  subjectId: string,
+  delta: number,
+  reason: string,
+): Promise<{ subjectId: string; delta: number; total: number }> {
+  return restPost<{ subjectId: string; delta: number; total: number }>('admin/trust/adjustments', {
+    subjectId,
+    delta,
+    reason,
+  });
+}
+
 export const USER_STATUS_TONE: Record<string, StatusTone> = {
   ACTIVE: 'success',
   PENDING: 'warning',

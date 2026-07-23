@@ -1,11 +1,13 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
 import { Clock, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TierBadge } from '@/components/trust/tier-badge';
 import { ReviewPanel } from './review-panel';
 import { SecureDocumentViewer } from './secure-document-viewer';
+import { TrustAdjustmentDialog } from './trust-adjustment-dialog';
 import { claimVerification } from '@/lib/verification-api';
 import { daysWaiting, isTerminalStage, STALE_AFTER_DAYS } from '@/lib/verification';
 import type { VerificationQueueItem } from '@/lib/graphql/documents';
@@ -28,10 +30,15 @@ export function QueueCard({
 }) {
   const t = useTranslations('ReviewBoard');
   const tVerify = useTranslations('Verification');
+  const { data: session } = useSession();
 
   const waiting = daysWaiting(item.submittedAt);
   const stale = waiting >= STALE_AFTER_DAYS && !isTerminalStage(item.stage);
   const decided = isTerminalStage(item.stage);
+  // `admin:trust_adjust` is ADMIN-only — an agent reviewing this same board
+  // must never see a control the server would 403. The UI check is a courtesy;
+  // the API's permission guard is the actual enforcement (ADM-04).
+  const isAdmin = session?.user?.activeRole === 'ADMIN';
 
   return (
     <article
@@ -77,6 +84,20 @@ export function QueueCard({
           </span>
         )}
       </div>
+
+      {/* Not scoped to `!decided`: an exceptional adjustment (a fraud finding, a
+          Founding Professional bonus) is a fact about the SUBJECT's score, not a
+          decision on this one submission, so it stays reachable even once the
+          item itself has left the active queue. */}
+      {isAdmin && (
+        <div className="mt-2">
+          <TrustAdjustmentDialog
+            subjectId={item.subjectId}
+            subjectName={item.subjectName}
+            onAdjusted={onChanged}
+          />
+        </div>
+      )}
 
       {item.documentIds.length > 0 && (
         <div className="mt-3">

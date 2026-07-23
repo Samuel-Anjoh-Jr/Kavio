@@ -855,7 +855,21 @@
       "OTHER": "Other",
       "SUSPECTED_FRAUD": "Suspected fraud — escalate",
       "CONFIRMED_FRAUDULENT": "Confirmed forgery — suspend"
-    }
+    },
+    "adjustTrustScore": "Adjust Trust Score",
+    "adjustDialogTitle": "Exceptional Trust Score adjustment",
+    "adjustDialogSubtitle": "This applies a fraud penalty or a Field-Verified bonus as an explicit, auditable event.",
+    "adjustDialogSubtitleNamed": "For {name}. This applies a fraud penalty or a Field-Verified bonus as an explicit, auditable event.",
+    "adjustWarning": "This is an exceptional action against the platform's core trust signal. It is recorded permanently and cannot be edited — only offset by a further adjustment.",
+    "deltaLabel": "Points",
+    "deltaPlaceholder": "e.g. -20 or +15",
+    "deltaHint": "A whole number, positive for a bonus or negative for a penalty. Up to {max} points per adjustment — make two smaller, separately reasoned adjustments for a larger move.",
+    "adjustReasonLabel": "Reason",
+    "adjustReasonPlaceholder": "Explain the exceptional finding — this is stored on the event and the audit log.",
+    "adjustReasonHint": "Required, at least 10 characters. This is staff-facing and is not shown to the subject.",
+    "applyAdjustment": "Apply adjustment",
+    "applying": "Applying…",
+    "adjustmentApplied": "Trust Score adjusted by {delta, plural, =0 {0} other {#}} points."
   },
   "Location": {
     "setLocation": "Set your location",
