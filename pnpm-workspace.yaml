@@ -12,6 +12,7 @@ allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
   '@swc/core': true
+  bcrypt: true
   msgpackr-extract: false
   prisma: true
   sharp: true

@@ -65,23 +65,112 @@ const roundXaf = (n) => Math.round(n / 500) * 500;
 // faker.js Western names, so the demo actually looks like Douala/Yaoundé.
 // ─────────────────────────────────────────────────────────────────────────
 const MALE_FIRST_NAMES = [
-  'Jean', 'Paul', 'Emmanuel', 'Serge', 'Patrick', 'Yannick', 'Arnaud', 'Christian',
-  'Blaise', 'Hervé', 'Florent', 'Cédric', 'Landry', 'Achille', 'Boris', 'Rodrigue',
-  'Ghislain', 'Aristide', 'Fabrice', 'Junior', 'Ibrahim', 'Aboubakar', 'Moussa',
-  'Souleymane', 'Bertrand', 'Idriss', 'Marcelin', 'Thierry', 'Innocent', 'Romuald',
+  'Jean',
+  'Paul',
+  'Emmanuel',
+  'Serge',
+  'Patrick',
+  'Yannick',
+  'Arnaud',
+  'Christian',
+  'Blaise',
+  'Hervé',
+  'Florent',
+  'Cédric',
+  'Landry',
+  'Achille',
+  'Boris',
+  'Rodrigue',
+  'Ghislain',
+  'Aristide',
+  'Fabrice',
+  'Junior',
+  'Ibrahim',
+  'Aboubakar',
+  'Moussa',
+  'Souleymane',
+  'Bertrand',
+  'Idriss',
+  'Marcelin',
+  'Thierry',
+  'Innocent',
+  'Romuald',
 ];
 const FEMALE_FIRST_NAMES = [
-  'Marie', 'Christelle', 'Solange', 'Brenda', 'Larissa', 'Josiane', 'Carine', 'Nadège',
-  'Aïcha', 'Fatimatou', 'Bernadette', 'Odette', 'Vanessa', 'Prisca', 'Estelle', 'Flore',
-  'Chantal', 'Delphine', 'Rosine', 'Pulchérie', 'Judith', 'Grace', 'Aurélie', 'Sandrine',
-  'Colette', 'Yvette', 'Huguette', 'Ariane', 'Clarisse', 'Inès',
+  'Marie',
+  'Christelle',
+  'Solange',
+  'Brenda',
+  'Larissa',
+  'Josiane',
+  'Carine',
+  'Nadège',
+  'Aïcha',
+  'Fatimatou',
+  'Bernadette',
+  'Odette',
+  'Vanessa',
+  'Prisca',
+  'Estelle',
+  'Flore',
+  'Chantal',
+  'Delphine',
+  'Rosine',
+  'Pulchérie',
+  'Judith',
+  'Grace',
+  'Aurélie',
+  'Sandrine',
+  'Colette',
+  'Yvette',
+  'Huguette',
+  'Ariane',
+  'Clarisse',
+  'Inès',
 ];
 const LAST_NAMES = [
-  'Mbarga', 'Ngono', 'Etoundi', 'Onana', 'Eyenga', 'Abena', 'Fotso', 'Kamga', 'Tchoua',
-  'Wandji', 'Djoumessi', 'Nguemo', 'Talla', 'Tankou', 'Ndzana', 'Mballa', 'Nkeng', 'Ngu',
-  'Tabi', 'Ndjock', 'Assembe', 'Belinga', 'Essomba', 'Meka', 'Nnomo', 'Zambo', 'Biloa',
-  'Amougou', 'Owona', 'Nkolo', 'Fouda', 'Kenfack', 'Toukam', 'Nana', 'Djoukeng', 'Simo',
-  'Kwedi', 'Njoya', 'Modibo', 'Oumarou', 'Garga', 'Souaibou',
+  'Mbarga',
+  'Ngono',
+  'Etoundi',
+  'Onana',
+  'Eyenga',
+  'Abena',
+  'Fotso',
+  'Kamga',
+  'Tchoua',
+  'Wandji',
+  'Djoumessi',
+  'Nguemo',
+  'Talla',
+  'Tankou',
+  'Ndzana',
+  'Mballa',
+  'Nkeng',
+  'Ngu',
+  'Tabi',
+  'Ndjock',
+  'Assembe',
+  'Belinga',
+  'Essomba',
+  'Meka',
+  'Nnomo',
+  'Zambo',
+  'Biloa',
+  'Amougou',
+  'Owona',
+  'Nkolo',
+  'Fouda',
+  'Kenfack',
+  'Toukam',
+  'Nana',
+  'Djoukeng',
+  'Simo',
+  'Kwedi',
+  'Njoya',
+  'Modibo',
+  'Oumarou',
+  'Garga',
+  'Souaibou',
 ];
 
 function randomPersonName() {
@@ -94,10 +183,46 @@ function randomPersonName() {
 /** Cameroon mobile number in E.164, matching the MTN/Orange prefix ranges. */
 function cameroonPhone() {
   const prefixes = [
-    '650', '651', '652', '653', '654', '655', '656', '657', '658', '659', // MTN
-    '670', '671', '672', '673', '674', '675', '676', '677', '678', '679', // Orange
-    '680', '681', '682', '683', '684', '685', '686', '687', '688', '689', // Orange
-    '690', '691', '692', '693', '694', '695', '696', '697', '698', '699', // MTN
+    '650',
+    '651',
+    '652',
+    '653',
+    '654',
+    '655',
+    '656',
+    '657',
+    '658',
+    '659', // MTN
+    '670',
+    '671',
+    '672',
+    '673',
+    '674',
+    '675',
+    '676',
+    '677',
+    '678',
+    '679', // Orange
+    '680',
+    '681',
+    '682',
+    '683',
+    '684',
+    '685',
+    '686',
+    '687',
+    '688',
+    '689', // Orange
+    '690',
+    '691',
+    '692',
+    '693',
+    '694',
+    '695',
+    '696',
+    '697',
+    '698',
+    '699', // MTN
   ];
   return `+237${randomItem(prefixes)}${String(randomInt(100000, 999999)).padStart(6, '0')}`;
 }
@@ -148,8 +273,14 @@ const trustLedger = new Map();
 function ledgerFor(userId) {
   if (!trustLedger.has(userId)) {
     trustLedger.set(userId, {
-      IDENTITY: 0, PROFESSIONAL: 0, MARKETPLACE: 0, FINANCIAL: 0,
-      checks: new Set(), completedJobs: 0, ratings: [], eventCount: 0,
+      IDENTITY: 0,
+      PROFESSIONAL: 0,
+      MARKETPLACE: 0,
+      FINANCIAL: 0,
+      checks: new Set(),
+      completedJobs: 0,
+      ratings: [],
+      eventCount: 0,
     });
   }
   return trustLedger.get(userId);
@@ -157,8 +288,11 @@ function ledgerFor(userId) {
 
 async function addTrustEvent(subjectId, type, pillar, delta, opts = {}) {
   const {
-    actorId = null, sourceType = null, sourceId = null,
-    metadata = null, occurredAt = NOW,
+    actorId = null,
+    sourceType = null,
+    sourceId = null,
+    metadata = null,
+    occurredAt = NOW,
   } = opts;
   await prisma.trustEvent.create({
     data: { subjectId, type, pillar, delta, actorId, sourceType, sourceId, metadata, occurredAt },
@@ -198,14 +332,35 @@ const BALANCE_AFFECTING = new Set(['DEPOSIT', 'WITHDRAWAL', 'ESCROW_RELEASE', 'F
 
 async function addTransaction(userId, type, direction, amount, opts = {}) {
   const {
-    status = 'SUCCESS', bookingId = null, escrowHoldId = null, paymentMethodId = null,
-    description = null, metadata = null, campayReference = null, externalReference = null,
-    createdAt = NOW, settledAt = status === 'SUCCESS' ? NOW : null, failureReason = null,
+    status = 'SUCCESS',
+    bookingId = null,
+    escrowHoldId = null,
+    paymentMethodId = null,
+    description = null,
+    metadata = null,
+    campayReference = null,
+    externalReference = null,
+    createdAt = NOW,
+    settledAt = status === 'SUCCESS' ? NOW : null,
+    failureReason = null,
   } = opts;
   await prisma.transaction.create({
     data: {
-      userId, type, status, direction, amount, bookingId, escrowHoldId, paymentMethodId,
-      description, metadata, campayReference, externalReference, createdAt, settledAt, failureReason,
+      userId,
+      type,
+      status,
+      direction,
+      amount,
+      bookingId,
+      escrowHoldId,
+      paymentMethodId,
+      description,
+      metadata,
+      campayReference,
+      externalReference,
+      createdAt,
+      settledAt,
+      failureReason,
     },
   });
   if (BALANCE_AFFECTING.has(type)) {
@@ -219,7 +374,11 @@ async function addTransaction(userId, type, direction, amount, opts = {}) {
 // through an appended event log in production, so the seed writes a real
 // chain of transitions rather than a bare final status with no history.
 // ─────────────────────────────────────────────────────────────────────────
-async function writeJobHistory(jobId, chain, { actorId = null, startAt = daysAgo(20), noteFor = () => null }) {
+async function writeJobHistory(
+  jobId,
+  chain,
+  { actorId = null, startAt = daysAgo(20), noteFor = () => null },
+) {
   let t = startAt;
   for (const [fromStatus, toStatus] of chain) {
     await prisma.jobStatusEvent.create({
@@ -230,7 +389,11 @@ async function writeJobHistory(jobId, chain, { actorId = null, startAt = daysAgo
   return t;
 }
 
-async function writeBookingHistory(bookingId, chain, { actorId = null, startAt, noteFor = () => null }) {
+async function writeBookingHistory(
+  bookingId,
+  chain,
+  { actorId = null, startAt, noteFor = () => null },
+) {
   let t = startAt;
   for (const [fromStatus, toStatus] of chain) {
     await prisma.bookingStatusEvent.create({
@@ -241,7 +404,11 @@ async function writeBookingHistory(bookingId, chain, { actorId = null, startAt, 
   return t;
 }
 
-async function writeEscrowHistory(escrowHoldId, chain, { actorId = null, startAt, noteFor = () => null }) {
+async function writeEscrowHistory(
+  escrowHoldId,
+  chain,
+  { actorId = null, startAt, noteFor = () => null },
+) {
   let t = startAt;
   for (const [fromState, toState] of chain) {
     await prisma.escrowStatusEvent.create({
@@ -255,10 +422,19 @@ async function writeEscrowHistory(escrowHoldId, chain, { actorId = null, startAt
 // A MediaAsset factory — every attachment in the schema is a MediaAsset FK
 // rather than a raw URL column, so every photo in this seed goes through
 // this one function.
-async function createMedia(ownerId, kind, url, { mimeType = 'image/jpeg', visibility = 'PUBLIC', sizeBytes } = {}) {
+async function createMedia(
+  ownerId,
+  kind,
+  url,
+  { mimeType = 'image/jpeg', visibility = 'PUBLIC', sizeBytes } = {},
+) {
   return prisma.mediaAsset.create({
     data: {
-      ownerId, kind, s3Key: url, mimeType, visibility,
+      ownerId,
+      kind,
+      s3Key: url,
+      mimeType,
+      visibility,
       sizeBytes: sizeBytes ?? randomInt(80_000, 600_000),
       checksum: randomUUID().replace(/-/g, ''),
     },
@@ -277,9 +453,9 @@ async function main() {
   await prisma.$transaction([
     prisma.locationPing.deleteMany(),
     prisma.trackingSession.deleteMany(),
-    prisma.sosAlertEvent.deleteMany(),
-    prisma.sosAlertShare.deleteMany(),
-    prisma.sosAlert.deleteMany(),
+    prisma.sOSAlertEvent.deleteMany(),
+    prisma.sOSAlertShare.deleteMany(),
+    prisma.sOSAlert.deleteMany(),
     prisma.emergencyContact.deleteMany(),
     prisma.messageAttachment.deleteMany(),
     prisma.message.deleteMany(),
@@ -352,10 +528,38 @@ async function main() {
   // from. Kept as data (not literals) and reused below by deriveTier() so
   // every seeded user's tier is actually consistent with these rows.
   const TIER_CONFIGS = [
-    { tier: 'TIER_0', minScore: 0, requiredChecks: [], minCompletedJobs: null, minAverageRating: null, labelKey: 'tier0' },
-    { tier: 'TIER_1', minScore: 15, requiredChecks: ['PHONE'], minCompletedJobs: null, minAverageRating: null, labelKey: 'tier1' },
-    { tier: 'TIER_2', minScore: 30, requiredChecks: ['PHONE', 'ID_APPROVED'], minCompletedJobs: null, minAverageRating: null, labelKey: 'tier2' },
-    { tier: 'TIER_3', minScore: 50, requiredChecks: ['PHONE', 'ID_APPROVED', 'FIELD_VERIFICATION'], minCompletedJobs: 3, minAverageRating: 4.0, labelKey: 'tier3' },
+    {
+      tier: 'TIER_0',
+      minScore: 0,
+      requiredChecks: [],
+      minCompletedJobs: null,
+      minAverageRating: null,
+      labelKey: 'tier0',
+    },
+    {
+      tier: 'TIER_1',
+      minScore: 15,
+      requiredChecks: ['PHONE'],
+      minCompletedJobs: null,
+      minAverageRating: null,
+      labelKey: 'tier1',
+    },
+    {
+      tier: 'TIER_2',
+      minScore: 30,
+      requiredChecks: ['PHONE', 'ID_APPROVED'],
+      minCompletedJobs: null,
+      minAverageRating: null,
+      labelKey: 'tier2',
+    },
+    {
+      tier: 'TIER_3',
+      minScore: 50,
+      requiredChecks: ['PHONE', 'ID_APPROVED', 'FIELD_VERIFICATION'],
+      minCompletedJobs: 3,
+      minAverageRating: 4.0,
+      labelKey: 'tier3',
+    },
   ];
   for (const tc of TIER_CONFIGS) {
     await prisma.tierConfig.create({ data: tc });
@@ -364,7 +568,11 @@ async function main() {
   /** Walks TIER_CONFIGS in order and stops at the first unmet gate — the
    * exact derivation rule described in the schema's TierConfig comment. */
   function deriveTier(ledger) {
-    const total = clamp(ledger.IDENTITY + ledger.PROFESSIONAL + ledger.MARKETPLACE + ledger.FINANCIAL, 0, 100);
+    const total = clamp(
+      ledger.IDENTITY + ledger.PROFESSIONAL + ledger.MARKETPLACE + ledger.FINANCIAL,
+      0,
+      100,
+    );
     const avgRating = ledger.ratings.length
       ? ledger.ratings.reduce((s, r) => s + r, 0) / ledger.ratings.length
       : null;
@@ -373,7 +581,8 @@ async function main() {
       const scoreOk = total >= cfg.minScore;
       const checksOk = cfg.requiredChecks.every((c) => ledger.checks.has(c));
       const jobsOk = cfg.minCompletedJobs == null || ledger.completedJobs >= cfg.minCompletedJobs;
-      const ratingOk = cfg.minAverageRating == null || (avgRating != null && avgRating >= cfg.minAverageRating);
+      const ratingOk =
+        cfg.minAverageRating == null || (avgRating != null && avgRating >= cfg.minAverageRating);
       if (scoreOk && checksOk && jobsOk && ratingOk) achieved = cfg.tier;
       else break;
     }
@@ -382,14 +591,54 @@ async function main() {
 
   // SystemSetting — admin-tunable switches/thresholds, never secrets.
   const SYSTEM_SETTINGS = [
-    { key: 'platform_fee_bps', value: PLATFORM_FEE_BPS, category: 'payments', description: 'Platform fee in basis points (10%)' },
-    { key: 'trust_score_thresholds', value: { '25': 25, '50': 50, '75': 75, '90': 90 }, category: 'trust', description: 'Trust Score badge thresholds' },
-    { key: 'sms_enabled', value: false, category: 'notifications', description: 'Enable SMS delivery (MTN/Orange). Off at launch — email/console only.' },
-    { key: 'min_withdrawal_xaf', value: 2000, category: 'payments', description: 'Minimum wallet withdrawal amount, in XAF' },
-    { key: 'escrow_auto_release_days', value: 5, category: 'payments', description: 'Days after COMPLETED before escrow auto-releases if the client is silent' },
-    { key: 'support_email', value: 'support@trustpro.cm', category: 'general', description: 'Public support contact email' },
-    { key: 'support_phone', value: '+237699000000', category: 'general', description: 'Public support contact phone' },
-    { key: 'job_posting_min_tier', value: 'TIER_0', category: 'jobs', description: 'Minimum verification tier required to post a job' },
+    {
+      key: 'platform_fee_bps',
+      value: PLATFORM_FEE_BPS,
+      category: 'payments',
+      description: 'Platform fee in basis points (10%)',
+    },
+    {
+      key: 'trust_score_thresholds',
+      value: { 25: 25, 50: 50, 75: 75, 90: 90 },
+      category: 'trust',
+      description: 'Trust Score badge thresholds',
+    },
+    {
+      key: 'sms_enabled',
+      value: false,
+      category: 'notifications',
+      description: 'Enable SMS delivery (MTN/Orange). Off at launch — email/console only.',
+    },
+    {
+      key: 'min_withdrawal_xaf',
+      value: 2000,
+      category: 'payments',
+      description: 'Minimum wallet withdrawal amount, in XAF',
+    },
+    {
+      key: 'escrow_auto_release_days',
+      value: 5,
+      category: 'payments',
+      description: 'Days after COMPLETED before escrow auto-releases if the client is silent',
+    },
+    {
+      key: 'support_email',
+      value: 'support@trustpro.cm',
+      category: 'general',
+      description: 'Public support contact email',
+    },
+    {
+      key: 'support_phone',
+      value: '+237699000000',
+      category: 'general',
+      description: 'Public support contact phone',
+    },
+    {
+      key: 'job_posting_min_tier',
+      value: 'TIER_0',
+      category: 'jobs',
+      description: 'Minimum verification tier required to post a job',
+    },
   ];
   for (const s of SYSTEM_SETTINGS) {
     await prisma.systemSetting.create({ data: s });
@@ -406,24 +655,57 @@ async function main() {
     { slug: 'gardening', nameEn: 'Gardening', nameFr: 'Jardinage', icon: 'seedling' },
     { slug: 'moving', nameEn: 'Moving', nameFr: 'Déménagement', icon: 'truck' },
     { slug: 'security', nameEn: 'Security', nameFr: 'Sécurité', icon: 'shield' },
-    { slug: 'appliance-repair', nameEn: 'Appliance Repair', nameFr: 'Réparation d\u2019Électroménager', icon: 'washing-machine' },
+    {
+      slug: 'appliance-repair',
+      nameEn: 'Appliance Repair',
+      nameFr: 'Réparation d\u2019Électroménager',
+      icon: 'washing-machine',
+    },
     { slug: 'masonry', nameEn: 'Masonry', nameFr: 'Maçonnerie', icon: 'trowel' },
     { slug: 'tiling', nameEn: 'Tiling', nameFr: 'Carrelage', icon: 'grid' },
     { slug: 'welding', nameEn: 'Welding', nameFr: 'Soudure', icon: 'flame' },
   ];
   const CHILD_CATEGORIES = [
-    { slug: 'pipe-installation', nameEn: 'Pipe Installation', nameFr: 'Installation de Tuyauterie', parentSlug: 'plumbing' },
-    { slug: 'leak-repair', nameEn: 'Leak Repair', nameFr: 'Réparation de Fuites', parentSlug: 'plumbing' },
-    { slug: 'water-heater-install', nameEn: 'Water Heater Installation', nameFr: 'Installation de Chauffe-eau', parentSlug: 'plumbing' },
-    { slug: 'house-wiring', nameEn: 'House Wiring', nameFr: 'Câblage Domestique', parentSlug: 'electrical' },
-    { slug: 'solar-installation', nameEn: 'Solar Panel Installation', nameFr: 'Installation de Panneaux Solaires', parentSlug: 'electrical' },
+    {
+      slug: 'pipe-installation',
+      nameEn: 'Pipe Installation',
+      nameFr: 'Installation de Tuyauterie',
+      parentSlug: 'plumbing',
+    },
+    {
+      slug: 'leak-repair',
+      nameEn: 'Leak Repair',
+      nameFr: 'Réparation de Fuites',
+      parentSlug: 'plumbing',
+    },
+    {
+      slug: 'water-heater-install',
+      nameEn: 'Water Heater Installation',
+      nameFr: 'Installation de Chauffe-eau',
+      parentSlug: 'plumbing',
+    },
+    {
+      slug: 'house-wiring',
+      nameEn: 'House Wiring',
+      nameFr: 'Câblage Domestique',
+      parentSlug: 'electrical',
+    },
+    {
+      slug: 'solar-installation',
+      nameEn: 'Solar Panel Installation',
+      nameFr: 'Installation de Panneaux Solaires',
+      parentSlug: 'electrical',
+    },
   ];
   const categoryBySlug = {};
   let catSortOrder = 0;
   for (const cat of TOP_CATEGORIES) {
     const created = await prisma.serviceCategory.create({
       data: {
-        slug: cat.slug, nameEn: cat.nameEn, nameFr: cat.nameFr, icon: cat.icon,
+        slug: cat.slug,
+        nameEn: cat.nameEn,
+        nameFr: cat.nameFr,
+        icon: cat.icon,
         descriptionEn: `Professional ${cat.nameEn.toLowerCase()} services, vetted through TrustPro's tiered verification.`,
         descriptionFr: `Services professionnels de ${cat.nameFr.toLowerCase()}, vérifiés via le système de niveaux de confiance TrustPro.`,
         sortOrder: catSortOrder++,
@@ -435,7 +717,9 @@ async function main() {
   for (const cat of CHILD_CATEGORIES) {
     const created = await prisma.serviceCategory.create({
       data: {
-        slug: cat.slug, nameEn: cat.nameEn, nameFr: cat.nameFr,
+        slug: cat.slug,
+        nameEn: cat.nameEn,
+        nameFr: cat.nameFr,
         descriptionEn: `A specialisation within ${categoryBySlug[cat.parentSlug].nameEn}.`,
         descriptionFr: `Une spécialisation au sein de ${categoryBySlug[cat.parentSlug].nameFr}.`,
         parentId: categoryBySlug[cat.parentSlug].id,
@@ -454,7 +738,10 @@ async function main() {
   async function makeRegion(slug, nameEn, nameFr, level, parentSlug) {
     const created = await prisma.geoRegion.create({
       data: {
-        slug, nameEn, nameFr, level,
+        slug,
+        nameEn,
+        nameFr,
+        level,
         parentId: parentSlug ? geoBySlug[parentSlug].id : null,
         isActive: true,
       },
@@ -496,7 +783,14 @@ async function main() {
     douala: { lat: 4.05, lng: 9.7 },
     yaounde: { lat: 3.87, lng: 11.52 },
   };
-  const DOUALA_QUARTIERS = new Set(['bonanjo', 'akwa', 'makepe', 'bepanda', 'bonamoussadi', 'kotto']);
+  const DOUALA_QUARTIERS = new Set([
+    'bonanjo',
+    'akwa',
+    'makepe',
+    'bepanda',
+    'bonamoussadi',
+    'kotto',
+  ]);
   const neighbourhoodCitySlug = (n) => (DOUALA_QUARTIERS.has(n.slug) ? 'douala' : 'yaounde');
   function coordsNear(neighbourhood) {
     const city = neighbourhoodCitySlug(neighbourhood);
@@ -526,15 +820,30 @@ async function main() {
    * baseline trust ledger entries (ACCOUNT_CREATED, PHONE_VERIFIED) and the
    * wallet row are never forgotten for any of the 40-odd users below. */
   async function createIdentity({
-    email, phone, name, avatar, locale, status = 'ACTIVE',
-    phoneVerifiedAt = null, emailVerifiedAt = NOW, twoFactorEnabled = false,
+    email,
+    phone,
+    name,
+    avatar,
+    locale,
+    status = 'ACTIVE',
+    phoneVerifiedAt = null,
+    emailVerifiedAt = NOW,
+    twoFactorEnabled = false,
     createdAt = daysAgo(randomInt(10, 240)),
   }) {
     const user = await prisma.user.create({
       data: {
-        email, phone, name, avatar, locale, status,
-        passwordHash, phoneVerifiedAt, emailVerifiedAt,
-        twoFactorEnabled, twoFactorEnabledAt: twoFactorEnabled ? createdAt : null,
+        email,
+        phone,
+        name,
+        avatar,
+        locale,
+        status,
+        passwordHash,
+        phoneVerifiedAt,
+        emailVerifiedAt,
+        twoFactorEnabled,
+        twoFactorEnabledAt: twoFactorEnabled ? createdAt : null,
         createdAt,
       },
     });
@@ -543,15 +852,22 @@ async function main() {
     await addTrustEvent(user.id, 'ACCOUNT_CREATED', 'IDENTITY', 15, { occurredAt: createdAt });
     if (phoneVerifiedAt) {
       markCheckPassed(user.id, 'PHONE');
-      await addTrustEvent(user.id, 'PHONE_VERIFIED', 'IDENTITY', 5, { occurredAt: phoneVerifiedAt });
+      await addTrustEvent(user.id, 'PHONE_VERIFIED', 'IDENTITY', 5, {
+        occurredAt: phoneVerifiedAt,
+      });
     }
     return user;
   }
 
   // — Admin —
   const admin = await createIdentity({
-    email: 'admin@trustpro.cm', phone: '+237699000001', name: 'Admin TrustPro',
-    avatar: avatarUrl(), locale: 'en', phoneVerifiedAt: daysAgo(200), twoFactorEnabled: true,
+    email: 'admin@trustpro.cm',
+    phone: '+237699000001',
+    name: 'Admin TrustPro',
+    avatar: avatarUrl(),
+    locale: 'en',
+    phoneVerifiedAt: daysAgo(200),
+    twoFactorEnabled: true,
     createdAt: daysAgo(240),
   });
   await addRole(admin.id, 'ADMIN', true);
@@ -560,9 +876,14 @@ async function main() {
   // A consumed TWO_FACTOR code on the admin's own login, showing ACC-08 end to end.
   await prisma.verificationCode.create({
     data: {
-      userId: admin.id, purpose: 'TWO_FACTOR', destination: admin.email,
-      codeHash: randomUUID(), expiresAt: hoursAfter(daysAgo(1), 1), attempts: 1,
-      consumedAt: daysAgo(1), createdAt: daysAgo(1),
+      userId: admin.id,
+      purpose: 'TWO_FACTOR',
+      destination: admin.email,
+      codeHash: randomUUID(),
+      expiresAt: hoursAfter(daysAgo(1), 1),
+      attempts: 1,
+      consumedAt: daysAgo(1),
+      createdAt: daysAgo(1),
     },
   });
 
@@ -570,12 +891,19 @@ async function main() {
   //   active — plus two still-open invitations for the Bafoussam/Bamenda
   //   expansion, showing AGT-01 recruiting ahead of a market launch. —
   const agents = [];
-  for (const [first, city] of [['Agent Douala', 'Douala'], ['Agent Yaoundé', 'Yaoundé']]) {
+  for (const [first, city] of [
+    ['Agent Douala', 'Douala'],
+    ['Agent Yaoundé', 'Yaoundé'],
+  ]) {
     const { name } = randomPersonName();
     const agentUser = await createIdentity({
       email: `${first.toLowerCase().replace(/\s+/g, '.')}@trustpro.cm`,
-      phone: uniqueCameroonPhone(), name, avatar: avatarUrl(), locale: pct(0.5) ? 'fr' : 'en',
-      phoneVerifiedAt: daysAgo(180), createdAt: daysAgo(190),
+      phone: uniqueCameroonPhone(),
+      name,
+      avatar: avatarUrl(),
+      locale: pct(0.5) ? 'fr' : 'en',
+      phoneVerifiedAt: daysAgo(180),
+      createdAt: daysAgo(190),
     });
     await addRole(agentUser.id, 'AGENT', true);
     agents.push(agentUser);
@@ -584,21 +912,40 @@ async function main() {
   for (const agentUser of agents) {
     await prisma.agentInvitation.create({
       data: {
-        name: agentUser.name, email: agentUser.email, phone: agentUser.phone,
-        tokenHash: randomUUID(), status: 'ACCEPTED', invitedById: admin.id,
-        acceptedUserId: agentUser.id, note: 'Founding field team, TRU-09 in-person verification.',
-        expiresAt: daysAgo(150), acceptedAt: daysAgo(185), createdAt: daysAgo(190),
+        name: agentUser.name,
+        email: agentUser.email,
+        phone: agentUser.phone,
+        tokenHash: randomUUID(),
+        status: 'ACCEPTED',
+        invitedById: admin.id,
+        acceptedUserId: agentUser.id,
+        note: 'Founding field team, TRU-09 in-person verification.',
+        expiresAt: daysAgo(150),
+        acceptedAt: daysAgo(185),
+        createdAt: daysAgo(190),
       },
     });
   }
   // Two pipeline invitations, still open — a growth story for the demo.
-  for (const [city, note] of [['Bafoussam', 'Expansion team, West Region — starts after the Douala/Yaoundé launch stabilises.'], ['Bamenda', 'North-West expansion; candidate referred by an existing field agent.']]) {
+  for (const [city, note] of [
+    [
+      'Bafoussam',
+      'Expansion team, West Region — starts after the Douala/Yaoundé launch stabilises.',
+    ],
+    ['Bamenda', 'North-West expansion; candidate referred by an existing field agent.'],
+  ]) {
     const { name } = randomPersonName();
     await prisma.agentInvitation.create({
       data: {
-        name, email: faker.internet.email({ firstName: name.split(' ')[0] }).toLowerCase(),
-        phone: uniqueCameroonPhone(), tokenHash: randomUUID(), status: 'PENDING',
-        invitedById: admin.id, note, expiresAt: daysFromNow(7), createdAt: daysAgo(2),
+        name,
+        email: faker.internet.email({ firstName: name.split(' ')[0] }).toLowerCase(),
+        phone: uniqueCameroonPhone(),
+        tokenHash: randomUUID(),
+        status: 'PENDING',
+        invitedById: admin.id,
+        note,
+        expiresAt: daysFromNow(7),
+        createdAt: daysAgo(2),
       },
     });
   }
@@ -608,33 +955,74 @@ async function main() {
   const suspendedUsers = new Set(); // TRU-08: confirmed-fraud identities, score overridden to 0
   async function createVerificationRecord(subjectId, checkType, opts = {}) {
     const {
-      status = 'VERIFIED', stage = 'APPROVED', attempt = 1,
-      reviewerId = null, assignedToId = null, rejectionReason = null, reason = null,
-      submittedAt = daysAgo(30), reviewedAt = stage === 'APPROVED' || stage === 'REJECTED' ? hoursAfter(submittedAt, 36) : null,
-      docKinds = ['NATIONAL_ID_FRONT', 'NATIONAL_ID_BACK'], metadata = null,
+      status = 'VERIFIED',
+      stage = 'APPROVED',
+      attempt = 1,
+      reviewerId = null,
+      assignedToId = null,
+      rejectionReason = null,
+      reason = null,
+      submittedAt = daysAgo(30),
+      reviewedAt = stage === 'APPROVED' || stage === 'REJECTED'
+        ? hoursAfter(submittedAt, 36)
+        : null,
+      docKinds = ['NATIONAL_ID_FRONT', 'NATIONAL_ID_BACK'],
+      metadata = null,
     } = opts;
     const record = await prisma.verificationRecord.create({
       data: {
-        subjectId, checkType, status, stage, attempt, assignedToId, reviewerId,
-        rejectionReason, reason, metadata, submittedAt,
-        stageUpdatedAt: reviewedAt ?? submittedAt, reviewedAt, createdAt: submittedAt,
+        subjectId,
+        checkType,
+        status,
+        stage,
+        attempt,
+        assignedToId,
+        reviewerId,
+        rejectionReason,
+        reason,
+        metadata,
+        submittedAt,
+        stageUpdatedAt: reviewedAt ?? submittedAt,
+        reviewedAt,
+        createdAt: submittedAt,
       },
     });
     for (const kind of docKinds) {
-      const media = await createMedia(subjectId, kind, idDocUrl(`${subjectId}-${checkType}-${kind}-${attempt}`), { visibility: 'PRIVATE' });
-      await prisma.verificationDocument.create({ data: { verificationRecordId: record.id, mediaAssetId: media.id } });
+      const media = await createMedia(
+        subjectId,
+        kind,
+        idDocUrl(`${subjectId}-${checkType}-${kind}-${attempt}`),
+        { visibility: 'PRIVATE' },
+      );
+      await prisma.verificationDocument.create({
+        data: { verificationRecordId: record.id, mediaAssetId: media.id },
+      });
     }
     const chain = [[null, 'SUBMITTED']];
     if (stage !== 'SUBMITTED') chain.push(['SUBMITTED', 'UNDER_REVIEW']);
     if (stage === 'FIELD_CHECK') chain.push(['UNDER_REVIEW', 'FIELD_CHECK']);
-    if (stage === 'APPROVED') chain.push(['UNDER_REVIEW', 'PENDING_APPROVAL'], ['PENDING_APPROVAL', 'APPROVED']);
+    if (stage === 'APPROVED')
+      chain.push(['UNDER_REVIEW', 'PENDING_APPROVAL'], ['PENDING_APPROVAL', 'APPROVED']);
     if (stage === 'REJECTED') chain.push(['UNDER_REVIEW', 'REJECTED']);
     let t = submittedAt;
     for (const [from, to] of chain) {
-      const actorId = ['UNDER_REVIEW', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'FIELD_CHECK'].includes(to)
-        ? (reviewerId ?? assignedToId) : null;
+      const actorId = [
+        'UNDER_REVIEW',
+        'PENDING_APPROVAL',
+        'APPROVED',
+        'REJECTED',
+        'FIELD_CHECK',
+      ].includes(to)
+        ? (reviewerId ?? assignedToId)
+        : null;
       await prisma.verificationStageEvent.create({
-        data: { verificationRecordId: record.id, fromStage: from, toStage: to, actorId, createdAt: t },
+        data: {
+          verificationRecordId: record.id,
+          fromStage: from,
+          toStage: to,
+          actorId,
+          createdAt: t,
+        },
       });
       t = hoursAfter(t, randomInt(4, 48));
     }
@@ -651,7 +1039,12 @@ async function main() {
     ...Array(9).fill('TIER_2'),
     ...Array(3).fill('TIER_3'),
   ]);
-  const TIER_AGE_DAYS = { TIER_0: [5, 30], TIER_1: [30, 100], TIER_2: [100, 260], TIER_3: [220, 420] };
+  const TIER_AGE_DAYS = {
+    TIER_0: [5, 30],
+    TIER_1: [30, 100],
+    TIER_2: [100, 260],
+    TIER_3: [220, 420],
+  };
 
   const workers = [];
   let fraudCaseAssigned = false;
@@ -664,8 +1057,13 @@ async function main() {
     const phoneVerified = targetTier !== 'TIER_0' || pct(0.4);
 
     const worker = await createIdentity({
-      email: `worker${i + 1}@example.com`, phone: uniqueCameroonPhone(), name, avatar: avatarUrl(),
-      locale, phoneVerifiedAt: phoneVerified ? hoursAfter(createdAt, randomInt(1, 48)) : null, createdAt,
+      email: `worker${i + 1}@example.com`,
+      phone: uniqueCameroonPhone(),
+      name,
+      avatar: avatarUrl(),
+      locale,
+      phoneVerifiedAt: phoneVerified ? hoursAfter(createdAt, randomInt(1, 48)) : null,
+      createdAt,
     });
     await addRole(worker.id, 'WORKER', true);
     worker.tierTarget = targetTier;
@@ -678,8 +1076,10 @@ async function main() {
       // in the agent queue — the AGT-03 pipeline board, not just empty state.
       if (pct(0.5)) {
         await createVerificationRecord(worker.id, 'ID_SUBMITTED', {
-          status: 'PENDING', stage: pct(0.5) ? 'SUBMITTED' : 'UNDER_REVIEW',
-          assignedToId: randomItem(agents).id, submittedAt: hoursAfter(createdAt, 6),
+          status: 'PENDING',
+          stage: pct(0.5) ? 'SUBMITTED' : 'UNDER_REVIEW',
+          assignedToId: randomItem(agents).id,
+          submittedAt: hoursAfter(createdAt, 6),
         });
       }
       continue;
@@ -688,8 +1088,10 @@ async function main() {
     if (targetTier === 'TIER_1') {
       if (pct(0.5)) {
         await createVerificationRecord(worker.id, 'ID_SUBMITTED', {
-          status: 'PENDING', stage: 'UNDER_REVIEW',
-          assignedToId: randomItem(agents).id, submittedAt: hoursAfter(createdAt, 24),
+          status: 'PENDING',
+          stage: 'UNDER_REVIEW',
+          assignedToId: randomItem(agents).id,
+          submittedAt: hoursAfter(createdAt, 24),
         });
       }
       continue;
@@ -703,30 +1105,43 @@ async function main() {
       // TRU-08: a confirmed-fraudulent submission. Permanent suspension,
       // overriding whatever score the identity had accumulated.
       await createVerificationRecord(worker.id, 'ID_APPROVED', {
-        status: 'REJECTED', stage: 'REJECTED', reviewerId: reviewer.id,
+        status: 'REJECTED',
+        stage: 'REJECTED',
+        reviewerId: reviewer.id,
         rejectionReason: 'CONFIRMED_FRAUDULENT',
-        reason: 'Submitted ID does not match the national registry photo on file; a second identity was found using the same document number.',
+        reason:
+          'Submitted ID does not match the national registry photo on file; a second identity was found using the same document number.',
         submittedAt: hoursAfter(createdAt, 48),
       });
       await addTrustEvent(worker.id, 'FAKE_DOCUMENTS_CONFIRMED', 'IDENTITY', -100, {
-        actorId: reviewer.id, sourceType: 'VerificationRecord', occurredAt: hoursAfter(createdAt, 96),
+        actorId: reviewer.id,
+        sourceType: 'VerificationRecord',
+        occurredAt: hoursAfter(createdAt, 96),
         metadata: { reason: 'CONFIRMED_FRAUDULENT' },
       });
       suspendedUsers.add(worker.id);
       await prisma.user.update({ where: { id: worker.id }, data: { status: 'SUSPENDED' } });
       await prisma.moderationAction.create({
         data: {
-          subjectUserId: worker.id, actorId: admin.id, action: 'BAN',
-          targetType: null, targetId: null,
+          subjectUserId: worker.id,
+          actorId: admin.id,
+          action: 'BAN',
+          targetType: null,
+          targetId: null,
           reason: 'Confirmed fraudulent identity document (forged national ID).',
-          internalNote: 'Escalated by field agent review; document number reused across two accounts.',
+          internalNote:
+            'Escalated by field agent review; document number reused across two accounts.',
           createdAt: hoursAfter(createdAt, 96),
         },
       });
       await prisma.auditLog.create({
         data: {
-          actorId: admin.id, action: 'USER_SUSPENDED', target: worker.id,
-          requestId: randomUUID(), meta: { reason: 'CONFIRMED_FRAUDULENT' }, createdAt: hoursAfter(createdAt, 96),
+          actorId: admin.id,
+          action: 'USER_SUSPENDED',
+          target: worker.id,
+          requestId: randomUUID(),
+          meta: { reason: 'CONFIRMED_FRAUDULENT' },
+          createdAt: hoursAfter(createdAt, 96),
         },
       });
       continue; // no further checks matter once suspended
@@ -734,45 +1149,75 @@ async function main() {
 
     // One TIER_2 worker shows a real re-submission after a rejection
     // (TRU-06 "re-upload on rejection"), everyone else clears first try.
-    const showsResubmission = targetTier === 'TIER_2' && i === WORKER_TIER_PLAN.findIndex((t) => t === 'TIER_2');
+    const showsResubmission =
+      targetTier === 'TIER_2' && i === WORKER_TIER_PLAN.findIndex((t) => t === 'TIER_2');
     if (showsResubmission) {
       await createVerificationRecord(worker.id, 'ID_APPROVED', {
-        status: 'REJECTED', stage: 'REJECTED', attempt: 1, reviewerId: reviewer.id,
-        rejectionReason: 'OCR_UNREADABLE', reason: 'Photo of the ID was blurred; asked for a retake in better lighting.',
+        status: 'REJECTED',
+        stage: 'REJECTED',
+        attempt: 1,
+        reviewerId: reviewer.id,
+        rejectionReason: 'OCR_UNREADABLE',
+        reason: 'Photo of the ID was blurred; asked for a retake in better lighting.',
         submittedAt: hoursAfter(createdAt, 24),
       });
       await createVerificationRecord(worker.id, 'ID_APPROVED', {
-        status: 'VERIFIED', stage: 'APPROVED', attempt: 2, reviewerId: reviewer.id,
+        status: 'VERIFIED',
+        stage: 'APPROVED',
+        attempt: 2,
+        reviewerId: reviewer.id,
         submittedAt: hoursAfter(createdAt, 72),
       });
     } else {
       await createVerificationRecord(worker.id, 'ID_APPROVED', {
-        status: 'VERIFIED', stage: 'APPROVED', reviewerId: reviewer.id,
+        status: 'VERIFIED',
+        stage: 'APPROVED',
+        reviewerId: reviewer.id,
         submittedAt: hoursAfter(createdAt, 24),
       });
     }
     markCheckPassed(worker.id, 'ID_APPROVED');
     await addTrustEvent(worker.id, 'ID_VERIFIED', 'IDENTITY', 10, {
-      actorId: reviewer.id, sourceType: 'VerificationRecord', occurredAt: hoursAfter(createdAt, 96),
+      actorId: reviewer.id,
+      sourceType: 'VerificationRecord',
+      occurredAt: hoursAfter(createdAt, 96),
     });
 
     if (targetTier === 'TIER_3') {
       const fieldAgent = randomItem(agents);
       await createVerificationRecord(worker.id, 'FIELD_VERIFICATION', {
-        status: 'VERIFIED', stage: 'APPROVED', reviewerId: fieldAgent.id,
-        docKinds: ['SELFIE'], submittedAt: hoursAfter(createdAt, 240),
-        metadata: { gps: { lat: 4.05 + (Math.random() - 0.5) * 0.05, lng: 9.7 + (Math.random() - 0.5) * 0.05 }, method: 'in-person workshop visit' },
+        status: 'VERIFIED',
+        stage: 'APPROVED',
+        reviewerId: fieldAgent.id,
+        docKinds: ['SELFIE'],
+        submittedAt: hoursAfter(createdAt, 240),
+        metadata: {
+          gps: {
+            lat: 4.05 + (Math.random() - 0.5) * 0.05,
+            lng: 9.7 + (Math.random() - 0.5) * 0.05,
+          },
+          method: 'in-person workshop visit',
+        },
       });
       markCheckPassed(worker.id, 'FIELD_VERIFICATION');
       await addTrustEvent(worker.id, 'FIELD_VERIFIED', 'PROFESSIONAL', 15, {
-        actorId: fieldAgent.id, sourceType: 'VerificationRecord', occurredAt: hoursAfter(createdAt, 312),
+        actorId: fieldAgent.id,
+        sourceType: 'VerificationRecord',
+        occurredAt: hoursAfter(createdAt, 312),
       });
       await prisma.userBadge.create({
-        data: { subjectId: worker.id, type: 'FOUNDING_PROFESSIONAL', sourceType: 'FieldAgentIntake', awardedAt: hoursAfter(createdAt, 312) },
+        data: {
+          subjectId: worker.id,
+          type: 'FOUNDING_PROFESSIONAL',
+          sourceType: 'FieldAgentIntake',
+          awardedAt: hoursAfter(createdAt, 312),
+        },
       });
     }
   }
-  console.log(`   Workers ......... ${workers.length} (tiers: ${WORKER_TIER_PLAN.filter((t) => t === 'TIER_0').length}×T0, ${WORKER_TIER_PLAN.filter((t) => t === 'TIER_1').length}×T1, ${WORKER_TIER_PLAN.filter((t) => t === 'TIER_2').length}×T2, ${WORKER_TIER_PLAN.filter((t) => t === 'TIER_3').length}×T3)`);
+  console.log(
+    `   Workers ......... ${workers.length} (tiers: ${WORKER_TIER_PLAN.filter((t) => t === 'TIER_0').length}×T0, ${WORKER_TIER_PLAN.filter((t) => t === 'TIER_1').length}×T1, ${WORKER_TIER_PLAN.filter((t) => t === 'TIER_2').length}×T2, ${WORKER_TIER_PLAN.filter((t) => t === 'TIER_3').length}×T3)`,
+  );
 
   // — Individual clients —
   const CLIENT_COUNT = 12;
@@ -783,8 +1228,13 @@ async function main() {
     const createdAt = daysAgo(randomInt(5, 300));
     const phoneVerified = i < 10; // 10 of 12 verified enough to post jobs (JOB-01 tier gate)
     const client = await createIdentity({
-      email: `client${i + 1}@example.com`, phone: uniqueCameroonPhone(), name, avatar: avatarUrl(),
-      locale, phoneVerifiedAt: phoneVerified ? hoursAfter(createdAt, randomInt(1, 24)) : null, createdAt,
+      email: `client${i + 1}@example.com`,
+      phone: uniqueCameroonPhone(),
+      name,
+      avatar: avatarUrl(),
+      locale,
+      phoneVerifiedAt: phoneVerified ? hoursAfter(createdAt, randomInt(1, 24)) : null,
+      createdAt,
     });
     await addRole(client.id, 'CLIENT', true);
     client.locale = locale;
@@ -807,8 +1257,13 @@ async function main() {
     const { name: ownerName } = randomPersonName();
     const createdAt = daysAgo(randomInt(60, 300));
     const owner = await createIdentity({
-      email: `business${i + 1}@example.com`, phone: uniqueCameroonPhone(), name: ownerName, avatar: avatarUrl(),
-      locale: pct(0.5) ? 'fr' : 'en', phoneVerifiedAt: hoursAfter(createdAt, 12), createdAt,
+      email: `business${i + 1}@example.com`,
+      phone: uniqueCameroonPhone(),
+      name: ownerName,
+      avatar: avatarUrl(),
+      locale: pct(0.5) ? 'fr' : 'en',
+      phoneVerifiedAt: hoursAfter(createdAt, 12),
+      createdAt,
     });
     await addRole(owner.id, 'BUSINESS', true);
     markCheckPassed(owner.id, 'PHONE');
@@ -817,34 +1272,61 @@ async function main() {
     if (verified) {
       verifiedAt = hoursAfter(createdAt, 24 * 14);
       await createVerificationRecord(owner.id, 'BUSINESS_REGISTRATION', {
-        status: 'VERIFIED', stage: 'APPROVED', reviewerId: admin.id,
-        docKinds: ['BUSINESS_REGISTRATION'], submittedAt: hoursAfter(createdAt, 24 * 10),
+        status: 'VERIFIED',
+        stage: 'APPROVED',
+        reviewerId: admin.id,
+        docKinds: ['BUSINESS_REGISTRATION'],
+        submittedAt: hoursAfter(createdAt, 24 * 10),
         reviewedAt: verifiedAt,
       });
       markCheckPassed(owner.id, 'BUSINESS_REGISTRATION');
       await addTrustEvent(owner.id, 'ID_VERIFIED', 'IDENTITY', 10, {
-        actorId: admin.id, sourceType: 'VerificationRecord', occurredAt: verifiedAt,
+        actorId: admin.id,
+        sourceType: 'VerificationRecord',
+        occurredAt: verifiedAt,
         metadata: { check: 'BUSINESS_REGISTRATION' },
       });
-      await prisma.userBadge.create({ data: { subjectId: owner.id, type: 'VERIFIED_BUSINESS', sourceType: 'BusinessVerification', awardedAt: verifiedAt } });
+      await prisma.userBadge.create({
+        data: {
+          subjectId: owner.id,
+          type: 'VERIFIED_BUSINESS',
+          sourceType: 'BusinessVerification',
+          awardedAt: verifiedAt,
+        },
+      });
     }
-    const logo = await createMedia(owner.id, 'BUSINESS_LOGO', logoUrl(bizName), { visibility: 'PUBLIC' });
+    const logo = await createMedia(owner.id, 'BUSINESS_LOGO', logoUrl(bizName), {
+      visibility: 'PUBLIC',
+    });
     const geo = randomItem(neighbourhoods.filter((n) => neighbourhoodCitySlug(n) === city));
     const coords = coordsNear(geo);
     const profile = await prisma.businessProfile.create({
       data: {
-        ownerId: owner.id, name: bizName,
+        ownerId: owner.id,
+        name: bizName,
         description: pct(0.5)
           ? `Registered facility-management and skilled-trade company serving ${coords.city} and surrounding neighbourhoods.`
           : `Entreprise agréée de services multi-métiers et gestion de bâtiments à ${coords.city}.`,
-        rccmNumber: verified ? `RC/${coords.city === 'Douala' ? 'DLA' : 'YAO'}/${2018 + i}/B/${randomInt(1000, 9999)}` : null,
+        rccmNumber: verified
+          ? `RC/${coords.city === 'Douala' ? 'DLA' : 'YAO'}/${2018 + i}/B/${randomInt(1000, 9999)}`
+          : null,
         taxId: verified ? `M${randomInt(100000000, 999999999)}` : null,
-        contactEmail: owner.email, contactPhone: owner.phone,
-        city: coords.city, area: geo.nameEn, address: `${randomInt(20, 900)} Rue ${randomItem(['de la Joie', 'des Manguiers', 'Bonanjo', 'Njo-Njo', 'du Marché'])}`,
-        latitude: coords.latitude, longitude: coords.longitude, locationSource: 'HUMAN_INPUT',
-        verified, verifiedAt, verifiedById: verified ? admin.id : null,
-        logoAssetId: logo.id, geoRegionId: geo.id, landmark: `En face de ${randomItem(['la pharmacie', 'la station Total', 'l\u2019école publique', 'le marché'])}`,
-        locationUpdatedAt: createdAt, createdAt,
+        contactEmail: owner.email,
+        contactPhone: owner.phone,
+        city: coords.city,
+        area: geo.nameEn,
+        address: `${randomInt(20, 900)} Rue ${randomItem(['de la Joie', 'des Manguiers', 'Bonanjo', 'Njo-Njo', 'du Marché'])}`,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        locationSource: 'HUMAN_INPUT',
+        verified,
+        verifiedAt,
+        verifiedById: verified ? admin.id : null,
+        logoAssetId: logo.id,
+        geoRegionId: geo.id,
+        landmark: `En face de ${randomItem(['la pharmacie', 'la station Total', 'l\u2019école publique', 'le marché'])}`,
+        locationUpdatedAt: createdAt,
+        createdAt,
       },
     });
     businesses.push({ owner, profile, city: coords.city });
@@ -852,56 +1334,90 @@ async function main() {
     const teamSize = randomInt(1, 3);
     for (let t = 0; t < teamSize; t++) {
       const { name: memberName } = randomPersonName();
-      const status = t === 0 && i === 0 ? 'INVITED' : (t === 1 && i === 1 ? 'DECLINED' : 'ACTIVE');
+      const status = t === 0 && i === 0 ? 'INVITED' : t === 1 && i === 1 ? 'DECLINED' : 'ACTIVE';
       const invitationSentAt = hoursAfter(createdAt, 24 * (20 + t));
       let memberUser = null;
       if (status === 'ACTIVE') {
         memberUser = await createIdentity({
-          email: `team${t + 1}.biz${i + 1}@example.com`, phone: uniqueCameroonPhone(), name: memberName,
-          avatar: avatarUrl(), locale: owner.locale ?? 'fr', phoneVerifiedAt: hoursAfter(invitationSentAt, 24), createdAt: invitationSentAt,
+          email: `team${t + 1}.biz${i + 1}@example.com`,
+          phone: uniqueCameroonPhone(),
+          name: memberName,
+          avatar: avatarUrl(),
+          locale: owner.locale ?? 'fr',
+          phoneVerifiedAt: hoursAfter(invitationSentAt, 24),
+          createdAt: invitationSentAt,
         });
         await addRole(memberUser.id, 'WORKER', true);
       }
       const member = await prisma.businessTeamMember.create({
         data: {
-          businessProfileId: profile.id, userId: memberUser?.id ?? null,
-          name: memberName, email: memberUser?.email ?? `pending.team${t + 1}.biz${i + 1}@example.com`,
+          businessProfileId: profile.id,
+          userId: memberUser?.id ?? null,
+          name: memberName,
+          email: memberUser?.email ?? `pending.team${t + 1}.biz${i + 1}@example.com`,
           phone: memberUser?.phone ?? uniqueCameroonPhone(),
           title: randomItem(['Site Supervisor', 'Chef d\u2019équipe', 'Comptable', 'Technicien']),
           role: randomItem(['ADMIN', 'HR_MANAGER', 'ACCOUNTANT', 'STAFF']),
-          accessLevel: status === 'ACTIVE' ? randomItem(['MANAGE_JOBS', 'PAYMENTS', 'VIEW_ONLY']) : 'VIEW_ONLY',
-          status, invitedById: owner.id,
+          accessLevel:
+            status === 'ACTIVE'
+              ? randomItem(['MANAGE_JOBS', 'PAYMENTS', 'VIEW_ONLY'])
+              : 'VIEW_ONLY',
+          status,
+          invitedById: owner.id,
           invitationTokenHash: status !== 'ACTIVE' ? randomUUID() : null,
-          invitationSentAt, invitationExpiresAt: hoursAfter(invitationSentAt, 24 * 7),
+          invitationSentAt,
+          invitationExpiresAt: hoursAfter(invitationSentAt, 24 * 7),
           acceptedAt: status === 'ACTIVE' ? hoursAfter(invitationSentAt, 6) : null,
-          removedAt: null, createdAt: invitationSentAt,
+          removedAt: null,
+          createdAt: invitationSentAt,
         },
       });
       if (memberUser) teamMembers.push({ user: memberUser, business: profile });
     }
   }
-  console.log(`   Businesses ...... ${businesses.length} (${businesses.filter((b) => b.profile.verified).length} Enhanced-Verified), ${teamMembers.length} active team seats`);
+  console.log(
+    `   Businesses ...... ${businesses.length} (${businesses.filter((b) => b.profile.verified).length} Enhanced-Verified), ${teamMembers.length} active team seats`,
+  );
 
   // — Dual-role showcase (ACC-06): two established workers also hold a
   //   CLIENT role on the same identity, and one client also works. Tier and
   //   Trust Score never re-derive on the switch — same identity, same score. —
-  const dualRoleWorkers = workers.filter((w) => w.tierTarget === 'TIER_2' || w.tierTarget === 'TIER_3').slice(0, 2);
+  const dualRoleWorkers = workers
+    .filter((w) => w.tierTarget === 'TIER_2' || w.tierTarget === 'TIER_3')
+    .slice(0, 2);
   for (const w of dualRoleWorkers) {
     await addRole(w.id, 'CLIENT', false);
   }
-  console.log(`   Dual-role identities: ${dualRoleWorkers.length} worker(s) also hold a CLIENT role\n`);
+  console.log(
+    `   Dual-role identities: ${dualRoleWorkers.length} worker(s) also hold a CLIENT role\n`,
+  );
 
   // ── Phase 3: auth session artifacts ──────────────────────────────────────
   console.log('🔑 Creating sessions, reset tokens and OTP history...');
-  const allIdentities = [admin, ...agents, ...workers, ...clients, ...businesses.map((b) => b.owner), ...teamMembers.map((t) => t.user)];
+  const allIdentities = [
+    admin,
+    ...agents,
+    ...workers,
+    ...clients,
+    ...businesses.map((b) => b.owner),
+    ...teamMembers.map((t) => t.user),
+  ];
 
   const activeSessionUsers = sample(allIdentities, 18);
   for (const u of activeSessionUsers) {
     const familyId = randomUUID();
     await prisma.refreshToken.create({
       data: {
-        userId: u.id, familyId, tokenHash: randomUUID(), expiresAt: daysFromNow(30),
-        userAgent: randomItem(['Mozilla/5.0 (Linux; Android 13) Chrome/124', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4)', 'Mozilla/5.0 (Windows NT 10.0) Chrome/124', 'Mozilla/5.0 (Macintosh) Safari/17.4']),
+        userId: u.id,
+        familyId,
+        tokenHash: randomUUID(),
+        expiresAt: daysFromNow(30),
+        userAgent: randomItem([
+          'Mozilla/5.0 (Linux; Android 13) Chrome/124',
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4)',
+          'Mozilla/5.0 (Windows NT 10.0) Chrome/124',
+          'Mozilla/5.0 (Macintosh) Safari/17.4',
+        ]),
         createdAt: daysAgo(randomInt(0, 5)),
       },
     });
@@ -911,25 +1427,48 @@ async function main() {
     const u = randomItem(clients);
     const familyId = randomUUID();
     await prisma.refreshToken.create({
-      data: { userId: u.id, familyId, tokenHash: randomUUID(), expiresAt: daysAgo(20), rotatedAt: daysAgo(25), revokedAt: daysAgo(20), userAgent: 'Mozilla/5.0 (Linux; Android 12)', createdAt: daysAgo(30) },
+      data: {
+        userId: u.id,
+        familyId,
+        tokenHash: randomUUID(),
+        expiresAt: daysAgo(20),
+        rotatedAt: daysAgo(25),
+        revokedAt: daysAgo(20),
+        userAgent: 'Mozilla/5.0 (Linux; Android 12)',
+        createdAt: daysAgo(30),
+      },
     });
   }
 
   for (const u of sample(allIdentities, 3)) {
     await prisma.passwordResetToken.create({
-      data: { userId: u.id, tokenHash: randomUUID(), expiresAt: daysFromNow(1), consumedAt: pct(0.5) ? daysAgo(2) : null, createdAt: daysAgo(2) },
+      data: {
+        userId: u.id,
+        tokenHash: randomUUID(),
+        expiresAt: daysFromNow(1),
+        consumedAt: pct(0.5) ? daysAgo(2) : null,
+        createdAt: daysAgo(2),
+      },
     });
   }
 
   for (const u of sample(workers, 6)) {
     await prisma.verificationCode.create({
       data: {
-        userId: u.id, purpose: 'PHONE_VERIFICATION', destination: u.phone, codeHash: randomUUID(),
-        expiresAt: hoursAfter(u.createdAt, 1), attempts: randomInt(1, 2), consumedAt: hoursAfter(u.createdAt, 1), createdAt: u.createdAt,
+        userId: u.id,
+        purpose: 'PHONE_VERIFICATION',
+        destination: u.phone,
+        codeHash: randomUUID(),
+        expiresAt: hoursAfter(u.createdAt, 1),
+        attempts: randomInt(1, 2),
+        consumedAt: hoursAfter(u.createdAt, 1),
+        createdAt: u.createdAt,
       },
     });
   }
-  console.log(`   Refresh sessions: ${activeSessionUsers.length + 1}, password resets: 3, OTP history: 6\n`);
+  console.log(
+    `   Refresh sessions: ${activeSessionUsers.length + 1}, password resets: 3, OTP history: 6\n`,
+  );
 
   // ── Phase 4: community endorsements (FR-35) ──────────────────────────────
   console.log('🤝 Creating community endorsements...');
@@ -945,12 +1484,26 @@ async function main() {
     'A construit notre comptoir exactement selon le croquis, dans les délais.',
     'A peint toute la concession en un week-end, sans une seule tache sur les fenêtres.',
   ];
-  const endorsableWorkers = sample(workers.filter((w) => !suspendedUsers.has(w.id)), 6);
+  const endorsableWorkers = sample(
+    workers.filter((w) => !suspendedUsers.has(w.id)),
+    6,
+  );
   let endorsementCount = 0;
   for (const worker of endorsableWorkers) {
-    const status = weightedPick([['APPROVED', 6], ['PENDING', 2], ['REJECTED', 1]]);
+    const status = weightedPick([
+      ['APPROVED', 6],
+      ['PENDING', 2],
+      ['REJECTED', 1],
+    ]);
     const offPlatform = pct(0.4);
-    const relationship = randomItem(['PREVIOUS_CUSTOMER', 'WORKSHOP_OWNER', 'QUARTER_CHIEF', 'LANDLORD', 'COMMUNITY_LEADER', 'COLLEAGUE']);
+    const relationship = randomItem([
+      'PREVIOUS_CUSTOMER',
+      'WORKSHOP_OWNER',
+      'QUARTER_CHIEF',
+      'LANDLORD',
+      'COMMUNITY_LEADER',
+      'COLLEAGUE',
+    ]);
     const isFr = worker.locale === 'fr';
     const quote = isFr ? randomItem(ENDORSEMENT_QUOTES_FR) : randomItem(ENDORSEMENT_QUOTES_EN);
     const author = offPlatform ? null : randomItem(clients.filter((c) => c.id !== worker.id));
@@ -958,17 +1511,29 @@ async function main() {
     const createdAt = daysAgo(randomInt(10, 150));
     const endorsement = await prisma.endorsement.create({
       data: {
-        subjectId: worker.id, authorId: author?.id ?? null, authorName: offPlatform ? randomPersonName().name : null,
-        relationship, quote, rating: randomInt(4, 5), status,
-        reviewedById: reviewedBy?.id ?? null, reviewedAt: reviewedBy ? hoursAfter(createdAt, 24) : null,
-        reviewNote: status === 'REJECTED' ? 'Endorser could not be reached to confirm the relationship.' : null,
+        subjectId: worker.id,
+        authorId: author?.id ?? null,
+        authorName: offPlatform ? randomPersonName().name : null,
+        relationship,
+        quote,
+        rating: randomInt(4, 5),
+        status,
+        reviewedById: reviewedBy?.id ?? null,
+        reviewedAt: reviewedBy ? hoursAfter(createdAt, 24) : null,
+        reviewNote:
+          status === 'REJECTED'
+            ? 'Endorser could not be reached to confirm the relationship.'
+            : null,
         createdAt,
       },
     });
     endorsementCount++;
     if (status === 'APPROVED') {
       await addTrustEvent(worker.id, 'ENDORSEMENT_RECEIVED', 'PROFESSIONAL', 2, {
-        actorId: reviewedBy?.id ?? null, sourceType: 'Endorsement', sourceId: endorsement.id, occurredAt: hoursAfter(createdAt, 24),
+        actorId: reviewedBy?.id ?? null,
+        sourceType: 'Endorsement',
+        sourceId: endorsement.id,
+        occurredAt: hoursAfter(createdAt, 24),
       });
     }
   }
@@ -987,9 +1552,12 @@ async function main() {
     const completionPercent = inProgress ? Math.round(((stepIdx + 1) / steps.length) * 100) : 100;
     await prisma.onboardingProgress.create({
       data: {
-        userId, role, currentStep: steps[stepIdx],
+        userId,
+        role,
+        currentStep: steps[stepIdx],
         data: { stepsCompleted: steps.slice(0, stepIdx + 1) },
-        completionPercent, completedAt: inProgress ? null : daysAgo(randomInt(1, 30)),
+        completionPercent,
+        completedAt: inProgress ? null : daysAgo(randomInt(1, 30)),
       },
     });
   }
@@ -1001,7 +1569,9 @@ async function main() {
   }
   for (const c of clients) await createOnboarding(c.id, 'CLIENT', {});
   for (const b of businesses) await createOnboarding(b.owner.id, 'BUSINESS', {});
-  console.log(`   Onboarding flows: ${workers.length + clients.length + businesses.length} (${inProgressCount} still in progress — autosave demo)\n`);
+  console.log(
+    `   Onboarding flows: ${workers.length + clients.length + businesses.length} (${inProgressCount} still in progress — autosave demo)\n`,
+  );
 
   // ── Phase 6: worker profiles, services, availability, portfolio ─────────
   console.log('🛠️  Building worker profiles...');
@@ -1018,7 +1588,11 @@ async function main() {
     'Petits ou grands travaux, même sérieux. Demandez à mes anciens clients avant de me demander à moi.',
   ];
   const LANDMARK_TEMPLATES = [
-    'Derrière la pharmacie', 'En face du carrefour', 'À côté du marché', 'Près de l\u2019école publique', 'Non loin de la station Total',
+    'Derrière la pharmacie',
+    'En face du carrefour',
+    'À côté du marché',
+    'Près de l\u2019école publique',
+    'Non loin de la station Total',
   ];
 
   async function bumpCategoryWorkerCount(categoryId) {
@@ -1040,19 +1614,30 @@ async function main() {
 
     let coverAssetId = null;
     if (pct(0.55)) {
-      const cover = await createMedia(worker.id, 'WORKER_COVER', coverUrl(worker.id), { visibility: 'PUBLIC' });
+      const cover = await createMedia(worker.id, 'WORKER_COVER', coverUrl(worker.id), {
+        visibility: 'PUBLIC',
+      });
       coverAssetId = cover.id;
     }
 
     const wp = await prisma.workerProfile.create({
       data: {
         userId: worker.id,
-        headline: isFr ? `${primaryCategory.nameFr} professionnel(le)` : `Professional ${primaryCategory.nameEn}`,
+        headline: isFr
+          ? `${primaryCategory.nameFr} professionnel(le)`
+          : `Professional ${primaryCategory.nameEn}`,
         bio: isFr ? randomItem(BIO_FR) : randomItem(BIO_EN),
-        yearsExperience, city: coords.city, area: geo.nameEn,
-        latitude: coords.latitude, longitude: coords.longitude, locationSource: 'HUMAN_INPUT',
-        landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`, locationUpdatedAt: worker.createdAt,
-        geoRegionId: geo.id, coverAssetId, createdAt: worker.createdAt,
+        yearsExperience,
+        city: coords.city,
+        area: geo.nameEn,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        locationSource: 'HUMAN_INPUT',
+        landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`,
+        locationUpdatedAt: worker.createdAt,
+        geoRegionId: geo.id,
+        coverAssetId,
+        createdAt: worker.createdAt,
       },
     });
     workerProfiles.set(worker.id, wp);
@@ -1063,10 +1648,14 @@ async function main() {
     for (const cat of chosenCategories) {
       await prisma.service.create({
         data: {
-          workerProfileId: wp.id, categoryId: cat.id,
+          workerProfileId: wp.id,
+          categoryId: cat.id,
           name: isFr ? `Service de ${cat.nameFr.toLowerCase()}` : `${cat.nameEn} service`,
-          description: isFr ? `Intervention rapide et soignée en ${cat.nameFr.toLowerCase()}.` : `Fast, careful ${cat.nameEn.toLowerCase()} work.`,
-          startingPrice: roundXaf(randomInt(3000, 25000)), isActive: true,
+          description: isFr
+            ? `Intervention rapide et soignée en ${cat.nameFr.toLowerCase()}.`
+            : `Fast, careful ${cat.nameEn.toLowerCase()} work.`,
+          startingPrice: roundXaf(randomInt(3000, 25000)),
+          isActive: true,
         },
       });
       await bumpCategoryWorkerCount(cat.id);
@@ -1075,7 +1664,12 @@ async function main() {
     // Weekly availability — 5 of 7 days.
     for (const day of sample([0, 1, 2, 3, 4, 5, 6], 5)) {
       await prisma.availability.create({
-        data: { workerProfileId: wp.id, dayOfWeek: day, startTime: '08:00', endTime: pct(0.5) ? '17:00' : '18:30' },
+        data: {
+          workerProfileId: wp.id,
+          dayOfWeek: day,
+          startTime: '08:00',
+          endTime: pct(0.5) ? '17:00' : '18:30',
+        },
       });
     }
 
@@ -1083,24 +1677,42 @@ async function main() {
     if (pct(0.15)) {
       await prisma.availabilityException.create({
         data: {
-          workerProfileId: wp.id, date: daysFromNow(randomInt(5, 40)), isAvailable: false,
+          workerProfileId: wp.id,
+          date: daysFromNow(randomInt(5, 40)),
+          isAvailable: false,
           note: isFr ? 'Fête du Travail — fermé' : 'Public holiday — closed',
         },
       });
     }
 
     // Portfolio — the top survey-validated driver of who gets hired (PRO-02).
-    const numPortfolio = randomInt(worker.tierTarget === 'TIER_0' ? 0 : 1, worker.tierTarget === 'TIER_3' ? 5 : 3);
+    const numPortfolio = randomInt(
+      worker.tierTarget === 'TIER_0' ? 0 : 1,
+      worker.tierTarget === 'TIER_3' ? 5 : 3,
+    );
     if (numPortfolio > 0) {
       const doBeforeAfter = pct(0.4);
       const groupKey = doBeforeAfter ? randomUUID() : null;
-      const projectTitle = doBeforeAfter ? (isFr ? 'Rénovation complète' : 'Full renovation') : null;
+      const projectTitle = doBeforeAfter
+        ? isFr
+          ? 'Rénovation complète'
+          : 'Full renovation'
+        : null;
       for (let p = 0; p < numPortfolio; p++) {
-        const media = await createMedia(worker.id, 'PORTFOLIO_IMAGE', portfolioUrl(`${worker.id}-${p}`), { visibility: 'PUBLIC' });
+        const media = await createMedia(
+          worker.id,
+          'PORTFOLIO_IMAGE',
+          portfolioUrl(`${worker.id}-${p}`),
+          { visibility: 'PUBLIC' },
+        );
         await prisma.portfolioItem.create({
           data: {
-            workerProfileId: wp.id, mediaAssetId: media.id, type: 'PHOTO',
-            caption: isFr ? 'Travail terminé pour un client à ' + coords.city : 'Finished work for a client in ' + coords.city,
+            workerProfileId: wp.id,
+            mediaAssetId: media.id,
+            type: 'PHOTO',
+            caption: isFr
+              ? 'Travail terminé pour un client à ' + coords.city
+              : 'Finished work for a client in ' + coords.city,
             groupKey: doBeforeAfter && p < 2 ? groupKey : null,
             projectTitle: doBeforeAfter && p < 2 ? projectTitle : null,
             slot: doBeforeAfter && p === 0 ? 'BEFORE' : doBeforeAfter && p === 1 ? 'AFTER' : null,
@@ -1110,10 +1722,15 @@ async function main() {
       }
       workerPortfolioCount.set(worker.id, numPortfolio);
       markCheckPassed(worker.id, 'PORTFOLIO');
-      await addTrustEvent(worker.id, 'PORTFOLIO_ADDED', 'PROFESSIONAL', 3, { sourceType: 'PortfolioItem', occurredAt: hoursAfter(worker.createdAt, 48) });
+      await addTrustEvent(worker.id, 'PORTFOLIO_ADDED', 'PROFESSIONAL', 3, {
+        sourceType: 'PortfolioItem',
+        occurredAt: hoursAfter(worker.createdAt, 48),
+      });
     }
   }
-  console.log(`   Worker profiles . ${workerProfiles.size} (services, availability, portfolio attached)\n`);
+  console.log(
+    `   Worker profiles . ${workerProfiles.size} (services, availability, portfolio attached)\n`,
+  );
 
   // ── Phase 7: client profiles ──────────────────────────────────────────────
   console.log('🏠 Building client profiles...');
@@ -1123,10 +1740,17 @@ async function main() {
     const coords = coordsNear(geo);
     const cp = await prisma.clientProfile.create({
       data: {
-        userId: user.id, displayName: user.name, city: coords.city, area: geo.nameEn,
-        latitude: coords.latitude, longitude: coords.longitude, locationSource: 'HUMAN_INPUT',
-        landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`, locationUpdatedAt: user.createdAt,
-        geoRegionId: geo.id, createdAt: user.createdAt,
+        userId: user.id,
+        displayName: user.name,
+        city: coords.city,
+        area: geo.nameEn,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        locationSource: 'HUMAN_INPUT',
+        landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`,
+        locationUpdatedAt: user.createdAt,
+        geoRegionId: geo.id,
+        createdAt: user.createdAt,
       },
     });
     clientProfiles.set(user.id, cp);
@@ -1157,7 +1781,9 @@ async function main() {
     `Travail de ${cat.nameFr.toLowerCase()} — ${area}`,
   ];
   function jobTitleAndDescription(cat, geo, isFr) {
-    const title = randomItem(isFr ? JOB_TITLES_FR(cat, geo.nameFr) : JOB_TITLES_EN(cat, geo.nameEn));
+    const title = randomItem(
+      isFr ? JOB_TITLES_FR(cat, geo.nameFr) : JOB_TITLES_EN(cat, geo.nameEn),
+    );
     const description = isFr
       ? `${faker.lorem.sentence()} Zone: ${geo.nameFr}. Merci de proposer un devis clair avant de commencer.`
       : `${faker.lorem.sentence()} Location: ${geo.nameEn}. Please share a clear quote before starting.`;
@@ -1167,21 +1793,33 @@ async function main() {
   function pickPoster() {
     if (pct(0.2)) {
       const b = randomItem(businesses);
-      return { posterId: b.owner.id, businessProfileId: b.profile.id, posterUser: b.owner, isFr: b.owner.locale === 'fr' };
+      return {
+        posterId: b.owner.id,
+        businessProfileId: b.profile.id,
+        posterUser: b.owner,
+        isFr: b.owner.locale === 'fr',
+      };
     }
     const c = randomItem(eligibleClientPosters);
     return { posterId: c.id, businessProfileId: null, posterUser: c, isFr: c.locale === 'fr' };
   }
 
   // Job-lifecycle transition chains, reused across the whole pipeline below.
-  const CHAIN_TO_QUOTED = [[null, 'DRAFT'], ['DRAFT', 'OPEN'], ['OPEN', 'QUOTED']];
+  const CHAIN_TO_QUOTED = [
+    [null, 'DRAFT'],
+    ['DRAFT', 'OPEN'],
+    ['OPEN', 'QUOTED'],
+  ];
   const CHAIN_TO_ACCEPTED = [...CHAIN_TO_QUOTED, ['QUOTED', 'ACCEPTED']];
   const CHAIN_TO_IN_PROGRESS = [...CHAIN_TO_ACCEPTED, ['ACCEPTED', 'IN_PROGRESS']];
   const CHAIN_TO_COMPLETED = [...CHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'COMPLETED']];
   const CHAIN_TO_RELEASED = [...CHAIN_TO_COMPLETED, ['COMPLETED', 'RELEASED']];
   const JOB_CHAINS = {
     DRAFT: [[null, 'DRAFT']],
-    OPEN: [[null, 'DRAFT'], ['DRAFT', 'OPEN']],
+    OPEN: [
+      [null, 'DRAFT'],
+      ['DRAFT', 'OPEN'],
+    ],
     QUOTED: CHAIN_TO_QUOTED,
     ACCEPTED: CHAIN_TO_ACCEPTED,
     IN_PROGRESS: CHAIN_TO_IN_PROGRESS,
@@ -1190,20 +1828,56 @@ async function main() {
     DISPUTED: [...CHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED']],
     CANCELLED: [...CHAIN_TO_ACCEPTED, ['ACCEPTED', 'CANCELLED']],
     REFUNDED: [...CHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED'], ['DISPUTED', 'REFUNDED']],
-    ARCHIVED: [...CHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED'], ['DISPUTED', 'RELEASED'], ['RELEASED', 'ARCHIVED']],
+    ARCHIVED: [
+      ...CHAIN_TO_IN_PROGRESS,
+      ['IN_PROGRESS', 'DISPUTED'],
+      ['DISPUTED', 'RELEASED'],
+      ['RELEASED', 'ARCHIVED'],
+    ],
   };
-  const BCHAIN_TO_PAID = [[null, 'PENDING_PAYMENT'], ['PENDING_PAYMENT', 'PAID']];
+  const BCHAIN_TO_PAID = [
+    [null, 'PENDING_PAYMENT'],
+    ['PENDING_PAYMENT', 'PAID'],
+  ];
   const BCHAIN_TO_ACCEPTED = [...BCHAIN_TO_PAID, ['PAID', 'ACCEPTED']];
   const BCHAIN_TO_IN_PROGRESS = [...BCHAIN_TO_ACCEPTED, ['ACCEPTED', 'IN_PROGRESS']];
   const BCHAIN_TO_COMPLETED = [...BCHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'COMPLETED']];
   const BCHAIN_TO_RELEASED = [...BCHAIN_TO_COMPLETED, ['COMPLETED', 'RELEASED']];
-  const ECHAIN_TO_ACCEPTED = [[null, 'PAID'], ['PAID', 'ACCEPTED']];
+  const ECHAIN_TO_ACCEPTED = [
+    [null, 'PAID'],
+    ['PAID', 'ACCEPTED'],
+  ];
   const ECHAIN_TO_IN_PROGRESS = [...ECHAIN_TO_ACCEPTED, ['ACCEPTED', 'IN_PROGRESS']];
   const ECHAIN_TO_COMPLETED = [...ECHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'COMPLETED']];
-  const ECHAIN_TO_RELEASED = [...ECHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'COMPLETED'], ['COMPLETED', 'RELEASED']];
+  const ECHAIN_TO_RELEASED = [
+    ...ECHAIN_TO_IN_PROGRESS,
+    ['IN_PROGRESS', 'COMPLETED'],
+    ['COMPLETED', 'RELEASED'],
+  ];
 
   // Payment methods are created lazily, the first time a user needs one.
-  const MTN_PREFIXES = new Set(['650', '651', '652', '653', '654', '655', '656', '657', '658', '659', '690', '691', '692', '693', '694', '695', '696', '697', '698', '699']);
+  const MTN_PREFIXES = new Set([
+    '650',
+    '651',
+    '652',
+    '653',
+    '654',
+    '655',
+    '656',
+    '657',
+    '658',
+    '659',
+    '690',
+    '691',
+    '692',
+    '693',
+    '694',
+    '695',
+    '696',
+    '697',
+    '698',
+    '699',
+  ]);
   const paymentMethodCache = new Map();
   async function getPaymentMethod(user) {
     if (paymentMethodCache.has(user.id)) return paymentMethodCache.get(user.id);
@@ -1211,9 +1885,13 @@ async function main() {
     const isMtn = MTN_PREFIXES.has(prefix);
     const pm = await prisma.paymentMethod.create({
       data: {
-        userId: user.id, type: isMtn ? 'MTN_MOMO' : 'ORANGE_MONEY',
+        userId: user.id,
+        type: isMtn ? 'MTN_MOMO' : 'ORANGE_MONEY',
         label: `${isMtn ? 'MTN' : 'Orange'} •••• ${user.phone.slice(-4)}`,
-        phone: user.phone, operator: isMtn ? 'MTN' : 'ORANGE', isDefault: true, isActive: true,
+        phone: user.phone,
+        operator: isMtn ? 'MTN' : 'ORANGE',
+        isDefault: true,
+        isActive: true,
       },
     });
     paymentMethodCache.set(user.id, pm);
@@ -1237,20 +1915,36 @@ async function main() {
   // 32 jobs, spread across the whole lifecycle so the demo shows every
   // state a job can be in, not just the happy path.
   const JOB_STATUS_PLAN = shuffle([
-    ...Array(2).fill('DRAFT'), ...Array(5).fill('OPEN'), ...Array(3).fill('QUOTED'),
-    ...Array(3).fill('ACCEPTED'), ...Array(4).fill('IN_PROGRESS'), ...Array(5).fill('COMPLETED'),
-    ...Array(6).fill('RELEASED'), 'DISPUTED', 'CANCELLED', 'REFUNDED', 'ARCHIVED',
+    ...Array(2).fill('DRAFT'),
+    ...Array(5).fill('OPEN'),
+    ...Array(3).fill('QUOTED'),
+    ...Array(3).fill('ACCEPTED'),
+    ...Array(4).fill('IN_PROGRESS'),
+    ...Array(5).fill('COMPLETED'),
+    ...Array(6).fill('RELEASED'),
+    'DISPUTED',
+    'CANCELLED',
+    'REFUNDED',
+    'ARCHIVED',
   ]);
 
   // Guarantees the 3 flagship profiles clear the TIER_3 volume+rating gate.
   const featuredQueue = shuffle([
-    ...Array(4).fill(featuredWorkers[0]), ...Array(3).fill(featuredWorkers[1]), ...Array(3).fill(featuredWorkers[2]),
+    ...Array(4).fill(featuredWorkers[0]),
+    ...Array(3).fill(featuredWorkers[1]),
+    ...Array(3).fill(featuredWorkers[2]),
   ]);
   let acceptedPendingUsed = false;
   const clientWorkerReleasedPairs = new Set();
 
   const jobsCreated = [];
-  const applicationStatusPool = ['SUBMITTED', 'UNDER_REVIEW', 'SHORTLISTED', 'NOT_SELECTED', 'WITHDRAWN'];
+  const applicationStatusPool = [
+    'SUBMITTED',
+    'UNDER_REVIEW',
+    'SHORTLISTED',
+    'NOT_SELECTED',
+    'WITHDRAWN',
+  ];
 
   for (let i = 0; i < JOB_STATUS_PLAN.length; i++) {
     let finalStatus = JOB_STATUS_PLAN[i];
@@ -1262,9 +1956,19 @@ async function main() {
     // Force the repeat-customer scenario onto two of featuredWorkers[0]'s jobs.
     let forcedWorker = null;
     let poster = pickPoster();
-    if (needsBooking && ['COMPLETED', 'RELEASED'].includes(finalStatus) && featuredQueue[0] === featuredWorkers[0]
-      && clientWorkerReleasedPairs.has(`${repeatClient.id}:${featuredWorkers[0].id}`) === false && pct(0.5)) {
-      poster = { posterId: repeatClient.id, businessProfileId: null, posterUser: repeatClient, isFr: repeatClient.locale === 'fr' };
+    if (
+      needsBooking &&
+      ['COMPLETED', 'RELEASED'].includes(finalStatus) &&
+      featuredQueue[0] === featuredWorkers[0] &&
+      clientWorkerReleasedPairs.has(`${repeatClient.id}:${featuredWorkers[0].id}`) === false &&
+      pct(0.5)
+    ) {
+      poster = {
+        posterId: repeatClient.id,
+        businessProfileId: null,
+        posterUser: repeatClient,
+        isFr: repeatClient.locale === 'fr',
+      };
       forcedWorker = featuredWorkers[0];
     }
 
@@ -1274,18 +1978,36 @@ async function main() {
     const isTeamJob = pct(0.12);
     const publishedAt = finalStatus === 'DRAFT' ? null : daysAgo(randomInt(20, 45));
     const startAt = publishedAt ?? daysAgo(50);
-    const closedAt = ['COMPLETED', 'RELEASED', 'CANCELLED', 'REFUNDED', 'ARCHIVED'].includes(finalStatus) ? hoursAfter(startAt, randomInt(72, 400)) : null;
+    const closedAt = ['COMPLETED', 'RELEASED', 'CANCELLED', 'REFUNDED', 'ARCHIVED'].includes(
+      finalStatus,
+    )
+      ? hoursAfter(startAt, randomInt(72, 400))
+      : null;
 
     const job = await prisma.job.create({
       data: {
-        posterId: poster.posterId, businessProfileId: poster.businessProfileId, categoryId: cat.id,
-        title, description, budgetMin, budgetMax,
+        posterId: poster.posterId,
+        businessProfileId: poster.businessProfileId,
+        categoryId: cat.id,
+        title,
+        description,
+        budgetMin,
+        budgetMax,
         urgency: randomItem(['FLEXIBLE', 'WITHIN_WEEK', 'WITHIN_48_HOURS', 'EMERGENCY']),
-        status: finalStatus, city: coords.city, area: geo.nameEn,
-        latitude: coords.latitude, longitude: coords.longitude, locationSource: 'HUMAN_INPUT',
-        landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`, geoRegionId: geo.id,
-        teamSize: isTeamJob ? randomInt(2, 5) : null, durationDays: isTeamJob ? randomInt(2, 10) : null,
-        publishedAt, statusUpdatedAt: closedAt ?? startAt, closedAt, createdAt: startAt,
+        status: finalStatus,
+        city: coords.city,
+        area: geo.nameEn,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        locationSource: 'HUMAN_INPUT',
+        landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`,
+        geoRegionId: geo.id,
+        teamSize: isTeamJob ? randomInt(2, 5) : null,
+        durationDays: isTeamJob ? randomInt(2, 10) : null,
+        publishedAt,
+        statusUpdatedAt: closedAt ?? startAt,
+        closedAt,
+        createdAt: startAt,
       },
     });
 
@@ -1293,17 +2015,27 @@ async function main() {
     const numPhotos = randomInt(0, 2);
     for (let p = 0; p < numPhotos; p++) {
       const media = await createMedia(poster.posterId, 'JOB_PHOTO', jobPhotoUrl(`${job.id}-${p}`));
-      await prisma.jobPhoto.create({ data: { jobId: job.id, mediaAssetId: media.id, sortOrder: p } });
+      await prisma.jobPhoto.create({
+        data: { jobId: job.id, mediaAssetId: media.id, sortOrder: p },
+      });
     }
 
     const noteMap = {
-      DRAFT: () => 'Draft started', OPEN: () => 'Opened for quotes', QUOTED: () => 'Quotes received',
-      ACCEPTED: () => 'Client accepted a quote', IN_PROGRESS: () => 'Worker started the job',
-      COMPLETED: () => 'Worker marked the job done', RELEASED: () => 'Client confirmed; payout released',
-      DISPUTED: () => 'A dispute was opened', CANCELLED: () => 'Cancelled before payment', REFUNDED: () => 'Refunded to client after dispute',
+      DRAFT: () => 'Draft started',
+      OPEN: () => 'Opened for quotes',
+      QUOTED: () => 'Quotes received',
+      ACCEPTED: () => 'Client accepted a quote',
+      IN_PROGRESS: () => 'Worker started the job',
+      COMPLETED: () => 'Worker marked the job done',
+      RELEASED: () => 'Client confirmed; payout released',
+      DISPUTED: () => 'A dispute was opened',
+      CANCELLED: () => 'Cancelled before payment',
+      REFUNDED: () => 'Refunded to client after dispute',
     };
     await writeJobHistory(job.id, JOB_CHAINS[finalStatus], {
-      actorId: poster.posterId, startAt, noteFor: (s) => (noteMap[s] ? noteMap[s]() : null),
+      actorId: poster.posterId,
+      startAt,
+      noteFor: (s) => (noteMap[s] ? noteMap[s]() : null),
     });
 
     // Applications: every published job attracted some interest.
@@ -1312,28 +2044,57 @@ async function main() {
     let applicantPool = [];
     if (finalStatus !== 'DRAFT') {
       if (needsBooking) {
-        hiredWorker = forcedWorker ?? (featuredQueue.length && ['COMPLETED', 'RELEASED'].includes(finalStatus) ? featuredQueue.shift() : randomItem(bookableWorkers));
+        hiredWorker =
+          forcedWorker ??
+          (featuredQueue.length && ['COMPLETED', 'RELEASED'].includes(finalStatus)
+            ? featuredQueue.shift()
+            : randomItem(bookableWorkers));
       }
-      applicantPool = sample(bookableWorkers.filter((w) => w.id !== hiredWorker?.id), randomInt(1, 3));
+      applicantPool = sample(
+        bookableWorkers.filter((w) => w.id !== hiredWorker?.id),
+        randomInt(1, 3),
+      );
       if (hiredWorker) {
         hiredApplication = await prisma.jobApplication.create({
-          data: { jobId: job.id, workerId: hiredWorker.id, status: 'HIRED', message: faker.lorem.sentence(), statusUpdatedAt: startAt, createdAt: startAt },
+          data: {
+            jobId: job.id,
+            workerId: hiredWorker.id,
+            status: 'HIRED',
+            message: faker.lorem.sentence(),
+            statusUpdatedAt: startAt,
+            createdAt: startAt,
+          },
         });
       }
       for (const w of applicantPool) {
         await prisma.jobApplication.create({
-          data: { jobId: job.id, workerId: w.id, status: randomItem(applicationStatusPool), message: faker.lorem.sentence(), createdAt: hoursAfter(startAt, randomInt(1, 48)) },
+          data: {
+            jobId: job.id,
+            workerId: w.id,
+            status: randomItem(applicationStatusPool),
+            message: faker.lorem.sentence(),
+            createdAt: hoursAfter(startAt, randomInt(1, 48)),
+          },
         });
       }
       if (pct(0.35)) {
         const invitee = randomItem(bookableWorkers);
-        await prisma.jobInvitation.create({
-          data: {
-            jobId: job.id, workerId: invitee.id, invitedById: poster.posterId,
-            status: invitee.id === hiredWorker?.id ? 'ACCEPTED' : randomItem(['PENDING', 'DECLINED', 'EXPIRED']),
-            message: faker.lorem.sentence(), expiresAt: daysFromNow(randomInt(1, 7)), createdAt: hoursAfter(startAt, 6),
-          },
-        }).catch(() => { }); // unique([jobId, workerId]) can collide with an application worker; harmless to skip
+        await prisma.jobInvitation
+          .create({
+            data: {
+              jobId: job.id,
+              workerId: invitee.id,
+              invitedById: poster.posterId,
+              status:
+                invitee.id === hiredWorker?.id
+                  ? 'ACCEPTED'
+                  : randomItem(['PENDING', 'DECLINED', 'EXPIRED']),
+              message: faker.lorem.sentence(),
+              expiresAt: daysFromNow(randomInt(1, 7)),
+              createdAt: hoursAfter(startAt, 6),
+            },
+          })
+          .catch(() => {}); // unique([jobId, workerId]) can collide with an application worker; harmless to skip
       }
     }
 
@@ -1344,12 +2105,18 @@ async function main() {
       const quoter = randomItem(applicantPool.length ? applicantPool : bookableWorkers);
       await prisma.quote.create({
         data: {
-          jobId: job.id, workerId: quoter.id, price: roundXaf(randomInt(budgetMin, budgetMax)),
-          durationValue: randomInt(1, 5), durationUnit: randomItem(['HOUR', 'DAY', 'WEEK']),
+          jobId: job.id,
+          workerId: quoter.id,
+          price: roundXaf(randomInt(budgetMin, budgetMax)),
+          durationValue: randomInt(1, 5),
+          durationUnit: randomItem(['HOUR', 'DAY', 'WEEK']),
           includes: [faker.commerce.productName(), 'Nettoyage post-travaux'],
-          message: faker.lorem.sentence(), status: pct(0.5) ? 'VIEWED' : 'SENT',
-          sentAt: hoursAfter(startAt, 4), viewedAt: pct(0.5) ? hoursAfter(startAt, 20) : null,
-          expiresAt: daysFromNow(5), createdAt: hoursAfter(startAt, 4),
+          message: faker.lorem.sentence(),
+          status: pct(0.5) ? 'VIEWED' : 'SENT',
+          sentAt: hoursAfter(startAt, 4),
+          viewedAt: pct(0.5) ? hoursAfter(startAt, 20) : null,
+          expiresAt: daysFromNow(5),
+          createdAt: hoursAfter(startAt, 4),
         },
       });
     } else if (needsBooking) {
@@ -1357,38 +2124,72 @@ async function main() {
       if (showsRevision) {
         const original = await prisma.quote.create({
           data: {
-            jobId: job.id, workerId: hiredWorker.id, applicationId: hiredApplication.id,
-            price: roundXaf(randomInt(budgetMin, budgetMax) + 15000), durationValue: randomInt(1, 5), durationUnit: 'DAY',
-            includes: [faker.commerce.productName()], message: faker.lorem.sentence(), status: 'DECLINED',
-            sentAt: hoursAfter(startAt, 4), viewedAt: hoursAfter(startAt, 10), respondedAt: hoursAfter(startAt, 14),
-            counterRequestedAt: hoursAfter(startAt, 12), counterMessage: 'Could you come down a little on the price?',
-            counterTargetPrice: roundXaf(randomInt(budgetMin, budgetMax)), supersededAt: hoursAfter(startAt, 16),
-            declineReason: 'Revised after a counter-offer request', createdAt: hoursAfter(startAt, 4),
+            jobId: job.id,
+            workerId: hiredWorker.id,
+            applicationId: hiredApplication.id,
+            price: roundXaf(randomInt(budgetMin, budgetMax) + 15000),
+            durationValue: randomInt(1, 5),
+            durationUnit: 'DAY',
+            includes: [faker.commerce.productName()],
+            message: faker.lorem.sentence(),
+            status: 'DECLINED',
+            sentAt: hoursAfter(startAt, 4),
+            viewedAt: hoursAfter(startAt, 10),
+            respondedAt: hoursAfter(startAt, 14),
+            counterRequestedAt: hoursAfter(startAt, 12),
+            counterMessage: 'Could you come down a little on the price?',
+            counterTargetPrice: roundXaf(randomInt(budgetMin, budgetMax)),
+            supersededAt: hoursAfter(startAt, 16),
+            declineReason: 'Revised after a counter-offer request',
+            createdAt: hoursAfter(startAt, 4),
           },
         });
         acceptedQuote = await prisma.quote.create({
           data: {
-            jobId: job.id, workerId: hiredWorker.id, applicationId: hiredApplication.id, parentQuoteId: original.id,
-            price: roundXaf(randomInt(budgetMin, budgetMax)), durationValue: randomInt(1, 5), durationUnit: 'DAY',
-            includes: [faker.commerce.productName(), faker.commerce.productName()], message: faker.lorem.sentence(),
-            status: 'ACCEPTED', sentAt: hoursAfter(startAt, 16), viewedAt: hoursAfter(startAt, 18),
-            respondedAt: hoursAfter(startAt, 20), createdAt: hoursAfter(startAt, 16),
+            jobId: job.id,
+            workerId: hiredWorker.id,
+            applicationId: hiredApplication.id,
+            parentQuoteId: original.id,
+            price: roundXaf(randomInt(budgetMin, budgetMax)),
+            durationValue: randomInt(1, 5),
+            durationUnit: 'DAY',
+            includes: [faker.commerce.productName(), faker.commerce.productName()],
+            message: faker.lorem.sentence(),
+            status: 'ACCEPTED',
+            sentAt: hoursAfter(startAt, 16),
+            viewedAt: hoursAfter(startAt, 18),
+            respondedAt: hoursAfter(startAt, 20),
+            createdAt: hoursAfter(startAt, 16),
           },
         });
       } else {
         acceptedQuote = await prisma.quote.create({
           data: {
-            jobId: job.id, workerId: hiredWorker.id, applicationId: hiredApplication?.id ?? null,
-            price: roundXaf(randomInt(budgetMin, budgetMax)), durationValue: randomInt(1, 5),
-            durationUnit: randomItem(['HOUR', 'DAY', 'WEEK']), includes: [faker.commerce.productName(), faker.commerce.productName()],
-            message: faker.lorem.sentence(), status: 'ACCEPTED', sentAt: hoursAfter(startAt, 4),
-            viewedAt: hoursAfter(startAt, 8), respondedAt: hoursAfter(startAt, 12), createdAt: hoursAfter(startAt, 4),
+            jobId: job.id,
+            workerId: hiredWorker.id,
+            applicationId: hiredApplication?.id ?? null,
+            price: roundXaf(randomInt(budgetMin, budgetMax)),
+            durationValue: randomInt(1, 5),
+            durationUnit: randomItem(['HOUR', 'DAY', 'WEEK']),
+            includes: [faker.commerce.productName(), faker.commerce.productName()],
+            message: faker.lorem.sentence(),
+            status: 'ACCEPTED',
+            sentAt: hoursAfter(startAt, 4),
+            viewedAt: hoursAfter(startAt, 8),
+            respondedAt: hoursAfter(startAt, 12),
+            createdAt: hoursAfter(startAt, 4),
           },
         });
       }
       if (pct(0.2)) {
-        const media = await createMedia(hiredWorker.id, 'QUOTE_ATTACHMENT', jobPhotoUrl(`quote-${acceptedQuote.id}`));
-        await prisma.quoteAttachment.create({ data: { quoteId: acceptedQuote.id, mediaAssetId: media.id } });
+        const media = await createMedia(
+          hiredWorker.id,
+          'QUOTE_ATTACHMENT',
+          jobPhotoUrl(`quote-${acceptedQuote.id}`),
+        );
+        await prisma.quoteAttachment.create({
+          data: { quoteId: acceptedQuote.id, mediaAssetId: media.id },
+        });
       }
     }
 
@@ -1407,42 +2208,92 @@ async function main() {
       let bookingStatus, bookingChain, escrowStatus, escrowChain;
       if (finalStatus === 'ACCEPTED' && !acceptedPendingUsed) {
         acceptedPendingUsed = true;
-        bookingStatus = 'PENDING_PAYMENT'; bookingChain = [[null, 'PENDING_PAYMENT']];
-        escrowStatus = null; escrowChain = null;
+        bookingStatus = 'PENDING_PAYMENT';
+        bookingChain = [[null, 'PENDING_PAYMENT']];
+        escrowStatus = null;
+        escrowChain = null;
       } else if (finalStatus === 'ACCEPTED') {
-        bookingStatus = 'PAID'; bookingChain = BCHAIN_TO_PAID;
-        escrowStatus = 'PAID'; escrowChain = [[null, 'PAID']];
+        bookingStatus = 'PAID';
+        bookingChain = BCHAIN_TO_PAID;
+        escrowStatus = 'PAID';
+        escrowChain = [[null, 'PAID']];
       } else if (finalStatus === 'IN_PROGRESS') {
-        bookingStatus = 'IN_PROGRESS'; bookingChain = BCHAIN_TO_IN_PROGRESS;
-        escrowStatus = 'IN_PROGRESS'; escrowChain = ECHAIN_TO_IN_PROGRESS;
+        bookingStatus = 'IN_PROGRESS';
+        bookingChain = BCHAIN_TO_IN_PROGRESS;
+        escrowStatus = 'IN_PROGRESS';
+        escrowChain = ECHAIN_TO_IN_PROGRESS;
       } else if (finalStatus === 'COMPLETED') {
-        bookingStatus = 'COMPLETED'; bookingChain = BCHAIN_TO_COMPLETED;
-        escrowStatus = 'COMPLETED'; escrowChain = ECHAIN_TO_COMPLETED;
+        bookingStatus = 'COMPLETED';
+        bookingChain = BCHAIN_TO_COMPLETED;
+        escrowStatus = 'COMPLETED';
+        escrowChain = ECHAIN_TO_COMPLETED;
       } else if (finalStatus === 'RELEASED') {
-        bookingStatus = 'RELEASED'; bookingChain = BCHAIN_TO_RELEASED;
-        escrowStatus = 'RELEASED'; escrowChain = ECHAIN_TO_RELEASED;
+        bookingStatus = 'RELEASED';
+        bookingChain = BCHAIN_TO_RELEASED;
+        escrowStatus = 'RELEASED';
+        escrowChain = ECHAIN_TO_RELEASED;
       } else if (finalStatus === 'DISPUTED') {
-        bookingStatus = 'DISPUTED'; bookingChain = [...BCHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED']];
-        escrowStatus = 'DISPUTED'; escrowChain = [...ECHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED']];
+        bookingStatus = 'DISPUTED';
+        bookingChain = [...BCHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED']];
+        escrowStatus = 'DISPUTED';
+        escrowChain = [...ECHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED']];
       } else if (finalStatus === 'CANCELLED') {
-        bookingStatus = 'CANCELLED'; bookingChain = [[null, 'PENDING_PAYMENT'], ['PENDING_PAYMENT', 'CANCELLED']];
-        escrowStatus = null; escrowChain = null;
+        bookingStatus = 'CANCELLED';
+        bookingChain = [
+          [null, 'PENDING_PAYMENT'],
+          ['PENDING_PAYMENT', 'CANCELLED'],
+        ];
+        escrowStatus = null;
+        escrowChain = null;
       } else if (finalStatus === 'REFUNDED') {
-        bookingStatus = 'REFUNDED'; bookingChain = [...BCHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED'], ['DISPUTED', 'REFUNDED']];
-        escrowStatus = 'REFUNDED'; escrowChain = [...ECHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED'], ['DISPUTED', 'REFUNDED']];
-      } else { // ARCHIVED — dispute resolved in the worker's favour, job archived afterwards
-        bookingStatus = 'RELEASED'; bookingChain = [...BCHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED'], ['DISPUTED', 'RELEASED']];
-        escrowStatus = 'RELEASED'; escrowChain = [...ECHAIN_TO_IN_PROGRESS, ['IN_PROGRESS', 'DISPUTED'], ['DISPUTED', 'RELEASED']];
+        bookingStatus = 'REFUNDED';
+        bookingChain = [
+          ...BCHAIN_TO_IN_PROGRESS,
+          ['IN_PROGRESS', 'DISPUTED'],
+          ['DISPUTED', 'REFUNDED'],
+        ];
+        escrowStatus = 'REFUNDED';
+        escrowChain = [
+          ...ECHAIN_TO_IN_PROGRESS,
+          ['IN_PROGRESS', 'DISPUTED'],
+          ['DISPUTED', 'REFUNDED'],
+        ];
+      } else {
+        // ARCHIVED — dispute resolved in the worker's favour, job archived afterwards
+        bookingStatus = 'RELEASED';
+        bookingChain = [
+          ...BCHAIN_TO_IN_PROGRESS,
+          ['IN_PROGRESS', 'DISPUTED'],
+          ['DISPUTED', 'RELEASED'],
+        ];
+        escrowStatus = 'RELEASED';
+        escrowChain = [
+          ...ECHAIN_TO_IN_PROGRESS,
+          ['IN_PROGRESS', 'DISPUTED'],
+          ['DISPUTED', 'RELEASED'],
+        ];
       }
 
       booking = await prisma.booking.create({
         data: {
-          jobId: job.id, quoteId: acceptedQuote.id, workerId: worker.id, clientId: client.id,
-          agreedPrice, platformFeeBps: PLATFORM_FEE_BPS, platformFeeAmount: feeAmount, workerPayoutAmount: payoutAmount,
-          status: bookingStatus, escrowInitiatedAt: hoursAfter(startAt, 1),
-          completedAt: ['COMPLETED', 'RELEASED', 'DISPUTED', 'REFUNDED', 'ARCHIVED'].includes(finalStatus) ? hoursAfter(startAt, 200) : null,
+          jobId: job.id,
+          quoteId: acceptedQuote.id,
+          workerId: worker.id,
+          clientId: client.id,
+          agreedPrice,
+          platformFeeBps: PLATFORM_FEE_BPS,
+          platformFeeAmount: feeAmount,
+          workerPayoutAmount: payoutAmount,
+          status: bookingStatus,
+          escrowInitiatedAt: hoursAfter(startAt, 1),
+          completedAt: ['COMPLETED', 'RELEASED', 'DISPUTED', 'REFUNDED', 'ARCHIVED'].includes(
+            finalStatus,
+          )
+            ? hoursAfter(startAt, 200)
+            : null,
           releasedAt: bookingStatus === 'RELEASED' ? effClosedAt : null,
-          statusUpdatedAt: effClosedAt, createdAt: startAt,
+          statusUpdatedAt: effClosedAt,
+          createdAt: startAt,
         },
       });
       await writeBookingHistory(booking.id, bookingChain, { actorId: worker.id, startAt });
@@ -1451,8 +2302,13 @@ async function main() {
         const reaches = (state) => escrowChain.some(([, to]) => to === state);
         escrow = await prisma.escrowHold.create({
           data: {
-            bookingId: booking.id, clientId: client.id, workerId: worker.id,
-            amount: agreedPrice, feeAmount, payoutAmount, state: escrowStatus,
+            bookingId: booking.id,
+            clientId: client.id,
+            workerId: worker.id,
+            amount: agreedPrice,
+            feeAmount,
+            payoutAmount,
+            state: escrowStatus,
             campayCollectionRef: `CMP-${randomUUID().slice(0, 12).toUpperCase()}`,
             paidAt: hoursAfter(startAt, 2),
             acceptedAt: reaches('ACCEPTED') ? hoursAfter(startAt, 6) : null,
@@ -1464,7 +2320,10 @@ async function main() {
             updatedAt: effClosedAt,
           },
         });
-        await writeEscrowHistory(escrow.id, escrowChain, { actorId: null, startAt: hoursAfter(startAt, 2) });
+        await writeEscrowHistory(escrow.id, escrowChain, {
+          actorId: null,
+          startAt: hoursAfter(startAt, 2),
+        });
       }
 
       // Money movement — see BALANCE_AFFECTING above for which of these
@@ -1472,33 +2331,51 @@ async function main() {
       const clientPm = await getPaymentMethod(client);
       if (bookingStatus === 'PENDING_PAYMENT') {
         await addTransaction(client.id, 'PAYMENT', 'DEBIT', agreedPrice, {
-          status: 'PENDING', bookingId: booking.id, paymentMethodId: clientPm.id,
+          status: 'PENDING',
+          bookingId: booking.id,
+          paymentMethodId: clientPm.id,
           description: `Payment for job: ${job.title} (awaiting Campay confirmation)`,
           externalReference: `EXT-${randomUUID().slice(0, 10).toUpperCase()}`,
-          createdAt: hoursAfter(startAt, 1), settledAt: null,
+          createdAt: hoursAfter(startAt, 1),
+          settledAt: null,
         });
       } else {
         await addTransaction(client.id, 'PAYMENT', 'DEBIT', agreedPrice, {
-          bookingId: booking.id, escrowHoldId: escrow?.id ?? null, paymentMethodId: clientPm.id,
-          description: `Payment for job: ${job.title}`, campayReference: `CMP-${randomUUID().slice(0, 10).toUpperCase()}`,
-          createdAt: hoursAfter(startAt, 2), settledAt: hoursAfter(startAt, 2),
+          bookingId: booking.id,
+          escrowHoldId: escrow?.id ?? null,
+          paymentMethodId: clientPm.id,
+          description: `Payment for job: ${job.title}`,
+          campayReference: `CMP-${randomUUID().slice(0, 10).toUpperCase()}`,
+          createdAt: hoursAfter(startAt, 2),
+          settledAt: hoursAfter(startAt, 2),
         });
       }
       if (bookingStatus === 'RELEASED') {
         const workerPm = await getPaymentMethod(worker);
         await addTransaction(worker.id, 'ESCROW_RELEASE', 'CREDIT', agreedPrice, {
-          bookingId: booking.id, escrowHoldId: escrow.id, paymentMethodId: workerPm.id,
-          description: `Escrow release for job: ${job.title}`, createdAt: effClosedAt, settledAt: effClosedAt,
+          bookingId: booking.id,
+          escrowHoldId: escrow.id,
+          paymentMethodId: workerPm.id,
+          description: `Escrow release for job: ${job.title}`,
+          createdAt: effClosedAt,
+          settledAt: effClosedAt,
         });
         await addTransaction(worker.id, 'FEE', 'DEBIT', feeAmount, {
-          bookingId: booking.id, escrowHoldId: escrow.id,
-          description: `Platform fee (10%) for job: ${job.title}`, createdAt: effClosedAt, settledAt: effClosedAt,
+          bookingId: booking.id,
+          escrowHoldId: escrow.id,
+          description: `Platform fee (10%) for job: ${job.title}`,
+          createdAt: effClosedAt,
+          settledAt: effClosedAt,
         });
       }
       if (bookingStatus === 'REFUNDED') {
         await addTransaction(client.id, 'REFUND', 'CREDIT', agreedPrice, {
-          bookingId: booking.id, escrowHoldId: escrow.id, paymentMethodId: clientPm.id,
-          description: `Refund for job: ${job.title}`, createdAt: effClosedAt, settledAt: effClosedAt,
+          bookingId: booking.id,
+          escrowHoldId: escrow.id,
+          paymentMethodId: clientPm.id,
+          description: `Refund for job: ${job.title}`,
+          createdAt: effClosedAt,
+          settledAt: effClosedAt,
         });
       }
 
@@ -1507,59 +2384,127 @@ async function main() {
         const disputeOpener = finalStatus === 'ARCHIVED' ? worker : client; // the party who felt wronged
         const otherParty = disputeOpener.id === client.id ? worker : client;
         const disputeStatus = finalStatus === 'DISPUTED' ? 'ESCALATED' : 'RESOLVED';
-        const resolution = finalStatus === 'REFUNDED' ? 'REFUND_TO_CLIENT' : finalStatus === 'ARCHIVED' ? 'RELEASE_TO_WORKER' : null;
-        const faultParty = finalStatus === 'REFUNDED' ? 'WORKER' : finalStatus === 'ARCHIVED' ? 'CLIENT' : 'NONE';
-        const reasonText = finalStatus === 'REFUNDED'
-          ? (poster.isFr ? 'Le travail n\u2019a jamais été terminé comme convenu.' : 'The work was never finished as agreed.')
-          : finalStatus === 'ARCHIVED'
-            ? (poster.isFr ? 'Le client affirme que le travail est incomplet, alors qu\u2019il a été livré.' : 'Client disputed the release, claiming the work was incomplete.')
-            : (poster.isFr ? 'Désaccord sur la qualité du travail livré.' : 'Disagreement over the quality of the delivered work.');
-        const resolutionNote = resolution === 'REFUND_TO_CLIENT'
-          ? 'Worker could not provide evidence the job was completed; escrow returned to the client.'
-          : resolution === 'RELEASE_TO_WORKER'
-            ? 'Client\u2019s complaint did not hold up against the photos and the worker\u2019s account; escrow released.'
-            : null;
+        const resolution =
+          finalStatus === 'REFUNDED'
+            ? 'REFUND_TO_CLIENT'
+            : finalStatus === 'ARCHIVED'
+              ? 'RELEASE_TO_WORKER'
+              : null;
+        const faultParty =
+          finalStatus === 'REFUNDED' ? 'WORKER' : finalStatus === 'ARCHIVED' ? 'CLIENT' : 'NONE';
+        const reasonText =
+          finalStatus === 'REFUNDED'
+            ? poster.isFr
+              ? 'Le travail n\u2019a jamais été terminé comme convenu.'
+              : 'The work was never finished as agreed.'
+            : finalStatus === 'ARCHIVED'
+              ? poster.isFr
+                ? 'Le client affirme que le travail est incomplet, alors qu\u2019il a été livré.'
+                : 'Client disputed the release, claiming the work was incomplete.'
+              : poster.isFr
+                ? 'Désaccord sur la qualité du travail livré.'
+                : 'Disagreement over the quality of the delivered work.';
+        const resolutionNote =
+          resolution === 'REFUND_TO_CLIENT'
+            ? 'Worker could not provide evidence the job was completed; escrow returned to the client.'
+            : resolution === 'RELEASE_TO_WORKER'
+              ? 'Client\u2019s complaint did not hold up against the photos and the worker\u2019s account; escrow released.'
+              : null;
         const dispute = await prisma.dispute.create({
           data: {
-            jobId: job.id, bookingId: booking.id, escrowHoldId: escrow.id, openedById: disputeOpener.id,
-            reason: reasonText, status: disputeStatus, resolution, faultParty, resolutionNote,
-            resolvedById: resolution ? admin.id : null, resolvedAt: resolution ? effClosedAt : null,
+            jobId: job.id,
+            bookingId: booking.id,
+            escrowHoldId: escrow.id,
+            openedById: disputeOpener.id,
+            reason: reasonText,
+            status: disputeStatus,
+            resolution,
+            faultParty,
+            resolutionNote,
+            resolvedById: resolution ? admin.id : null,
+            resolvedAt: resolution ? effClosedAt : null,
             createdAt: hoursAfter(startAt, 210),
           },
         });
-        await prisma.disputeMessage.create({ data: { disputeId: dispute.id, authorId: disputeOpener.id, body: reasonText, createdAt: hoursAfter(startAt, 210) } });
+        await prisma.disputeMessage.create({
+          data: {
+            disputeId: dispute.id,
+            authorId: disputeOpener.id,
+            body: reasonText,
+            createdAt: hoursAfter(startAt, 210),
+          },
+        });
         const replyMsg = await prisma.disputeMessage.create({
           data: {
-            disputeId: dispute.id, authorId: otherParty.id,
-            body: poster.isFr ? 'Je conteste cette version des faits — voici une photo du travail terminé.' : 'I disagree with this account — here is a photo of the finished work.',
+            disputeId: dispute.id,
+            authorId: otherParty.id,
+            body: poster.isFr
+              ? 'Je conteste cette version des faits — voici une photo du travail terminé.'
+              : 'I disagree with this account — here is a photo of the finished work.',
             createdAt: hoursAfter(startAt, 221),
           },
         });
-        const evidenceMedia = await createMedia(otherParty.id, 'DISPUTE_EVIDENCE', jobPhotoUrl(`dispute-${dispute.id}`), { visibility: 'PRIVATE' });
-        await prisma.disputeAttachment.create({ data: { disputeMessageId: replyMsg.id, mediaAssetId: evidenceMedia.id } });
+        const evidenceMedia = await createMedia(
+          otherParty.id,
+          'DISPUTE_EVIDENCE',
+          jobPhotoUrl(`dispute-${dispute.id}`),
+          { visibility: 'PRIVATE' },
+        );
+        await prisma.disputeAttachment.create({
+          data: { disputeMessageId: replyMsg.id, mediaAssetId: evidenceMedia.id },
+        });
         if (resolution) {
-          await prisma.disputeMessage.create({ data: { disputeId: dispute.id, authorId: admin.id, body: resolutionNote, createdAt: effClosedAt } });
+          await prisma.disputeMessage.create({
+            data: {
+              disputeId: dispute.id,
+              authorId: admin.id,
+              body: resolutionNote,
+              createdAt: effClosedAt,
+            },
+          });
         }
         if (finalStatus === 'REFUNDED') {
-          await addTrustEvent(worker.id, 'DISPUTE_UPHELD', 'MARKETPLACE', -20, { actorId: admin.id, sourceType: 'Dispute', sourceId: dispute.id, occurredAt: effClosedAt });
+          await addTrustEvent(worker.id, 'DISPUTE_UPHELD', 'MARKETPLACE', -20, {
+            actorId: admin.id,
+            sourceType: 'Dispute',
+            sourceId: dispute.id,
+            occurredAt: effClosedAt,
+          });
         } else if (finalStatus === 'ARCHIVED') {
-          await addTrustEvent(client.id, 'DISPUTE_LOST', 'MARKETPLACE', -10, { actorId: admin.id, sourceType: 'Dispute', sourceId: dispute.id, occurredAt: effClosedAt });
+          await addTrustEvent(client.id, 'DISPUTE_LOST', 'MARKETPLACE', -10, {
+            actorId: admin.id,
+            sourceType: 'Dispute',
+            sourceId: dispute.id,
+            occurredAt: effClosedAt,
+          });
         }
       }
 
       if (finalStatus === 'CANCELLED') {
-        await addTrustEvent(worker.id, 'JOB_CANCELLED', 'MARKETPLACE', -3, { occurredAt: effClosedAt, sourceType: 'Job', sourceId: job.id });
+        await addTrustEvent(worker.id, 'JOB_CANCELLED', 'MARKETPLACE', -3, {
+          occurredAt: effClosedAt,
+          sourceType: 'Job',
+          sourceId: job.id,
+        });
       }
 
       // Completed-job credit, for every job that genuinely finished —
       // including the ARCHIVED one, whose dispute the client lost.
       if (['COMPLETED', 'RELEASED', 'ARCHIVED'].includes(finalStatus)) {
         recordCompletedJob(worker.id);
-        await addTrustEvent(worker.id, 'JOB_COMPLETED', 'MARKETPLACE', 5, { occurredAt: effClosedAt, sourceType: 'Job', sourceId: job.id });
+        await addTrustEvent(worker.id, 'JOB_COMPLETED', 'MARKETPLACE', 5, {
+          occurredAt: effClosedAt,
+          sourceType: 'Job',
+          sourceId: job.id,
+        });
         if (['COMPLETED', 'RELEASED'].includes(finalStatus)) {
           const pairKey = `${client.id}:${worker.id}`;
           if (clientWorkerReleasedPairs.has(pairKey)) {
-            await addTrustEvent(worker.id, 'REPEAT_CUSTOMER', 'MARKETPLACE', 5, { occurredAt: effClosedAt, sourceType: 'Job', sourceId: job.id });
+            await addTrustEvent(worker.id, 'REPEAT_CUSTOMER', 'MARKETPLACE', 5, {
+              occurredAt: effClosedAt,
+              sourceType: 'Job',
+              sourceId: job.id,
+            });
           }
           clientWorkerReleasedPairs.add(pairKey);
         }
@@ -1570,26 +2515,44 @@ async function main() {
         const rating = featuredWorkers.includes(worker) ? randomInt(4, 5) : randomInt(3, 5);
         const review = await prisma.review.create({
           data: {
-            jobId: job.id, bookingId: booking.id, authorId: client.id, subjectId: worker.id, rating,
+            jobId: job.id,
+            bookingId: booking.id,
+            authorId: client.id,
+            subjectId: worker.id,
+            rating,
             text: poster.isFr ? randomItem(REVIEW_TEXT_FR) : randomItem(REVIEW_TEXT_EN),
-            status: 'PUBLISHED', createdAt: hoursAfter(effClosedAt, 24),
+            status: 'PUBLISHED',
+            createdAt: hoursAfter(effClosedAt, 24),
           },
         });
         allReviews.push({ review, worker, client, job, rating });
         if (pct(0.4)) {
           const media = await createMedia(client.id, 'REVIEW_PHOTO', reviewPhotoUrl(review.id));
-          await prisma.reviewPhoto.create({ data: { reviewId: review.id, mediaAssetId: media.id } });
+          await prisma.reviewPhoto.create({
+            data: { reviewId: review.id, mediaAssetId: media.id },
+          });
         }
         recordRating(worker.id, rating, review.id);
         if (rating >= 4) {
-          await addTrustEvent(worker.id, 'EXCELLENT_REVIEW', 'MARKETPLACE', 4, { sourceType: 'Review', sourceId: review.id, occurredAt: hoursAfter(effClosedAt, 24) });
+          await addTrustEvent(worker.id, 'EXCELLENT_REVIEW', 'MARKETPLACE', 4, {
+            sourceType: 'Review',
+            sourceId: review.id,
+            occurredAt: hoursAfter(effClosedAt, 24),
+          });
         }
         if (pct(0.4)) {
           await prisma.review.create({
             data: {
-              jobId: job.id, bookingId: booking.id, authorId: worker.id, subjectId: client.id, rating: randomInt(4, 5),
-              text: poster.isFr ? 'Client clair et paiement rapide, sans complication.' : 'Clear client, paid promptly, no complications.',
-              status: 'PUBLISHED', createdAt: hoursAfter(effClosedAt, 30),
+              jobId: job.id,
+              bookingId: booking.id,
+              authorId: worker.id,
+              subjectId: client.id,
+              rating: randomInt(4, 5),
+              text: poster.isFr
+                ? 'Client clair et paiement rapide, sans complication.'
+                : 'Clear client, paid promptly, no complications.',
+              status: 'PUBLISHED',
+              createdAt: hoursAfter(effClosedAt, 30),
             },
           });
         }
@@ -1597,12 +2560,23 @@ async function main() {
     }
 
     jobsCreated.push({
-      job, category: cat, geo, poster, hiredWorker, acceptedQuote, finalStatus,
-      startAt, closedAt: closedAt ?? startAt, booking, escrow,
+      job,
+      category: cat,
+      geo,
+      poster,
+      hiredWorker,
+      acceptedQuote,
+      finalStatus,
+      startAt,
+      closedAt: closedAt ?? startAt,
+      booking,
+      escrow,
     });
   }
   console.log(`   Jobs ............ ${jobsCreated.length} across every lifecycle state`);
-  console.log(`   Bookings ........ ${jobsCreated.filter((j) => j.booking).length}, of which ${jobsCreated.filter((j) => j.booking?.status === 'RELEASED').length} released`);
+  console.log(
+    `   Bookings ........ ${jobsCreated.filter((j) => j.booking).length}, of which ${jobsCreated.filter((j) => j.booking?.status === 'RELEASED').length} released`,
+  );
   console.log(`   Reviews ......... ${allReviews.length}\n`);
 
   // ── Phase 9: finalize the Trust Engine ───────────────────────────────────
@@ -1623,12 +2597,18 @@ async function main() {
     await prisma.trustScore.create({
       data: {
         subjectId: user.id,
-        identityScore: clamp(ledger.IDENTITY, 0, 100), professionalScore: clamp(ledger.PROFESSIONAL, 0, 100),
-        marketplaceScore: clamp(ledger.MARKETPLACE, 0, 100), financialScore: clamp(ledger.FINANCIAL, 0, 100),
-        total, suspended: isSuspended, suspendedAt: isSuspended ? NOW : null,
+        identityScore: clamp(ledger.IDENTITY, 0, 100),
+        professionalScore: clamp(ledger.PROFESSIONAL, 0, 100),
+        marketplaceScore: clamp(ledger.MARKETPLACE, 0, 100),
+        financialScore: clamp(ledger.FINANCIAL, 0, 100),
+        total,
+        suspended: isSuspended,
+        suspendedAt: isSuspended ? NOW : null,
         suspensionReason: isSuspended ? 'Confirmed fraudulent identity document (TRU-08).' : null,
-        completedJobs: ledger.completedJobs, averageRating: avgRating != null ? Number(avgRating.toFixed(2)) : null,
-        eventCount: ledger.eventCount, computedAt: NOW,
+        completedJobs: ledger.completedJobs,
+        averageRating: avgRating != null ? Number(avgRating.toFixed(2)) : null,
+        eventCount: ledger.eventCount,
+        computedAt: NOW,
       },
     });
     await prisma.user.update({ where: { id: user.id }, data: { trustScore: total, tier } });
@@ -1645,7 +2625,9 @@ async function main() {
     if (total >= 90) badgeTypes.push('TRUST_SCORE_90');
     if (ledger.completedJobs >= 1) badgeTypes.push('FIRST_JOB');
     if (ledger.completedJobs >= 10) badgeTypes.push('JOBS_10');
-    const approvedEndorsements = await prisma.endorsement.count({ where: { subjectId: user.id, status: 'APPROVED' } });
+    const approvedEndorsements = await prisma.endorsement.count({
+      where: { subjectId: user.id, status: 'APPROVED' },
+    });
     if (approvedEndorsements >= 5) badgeTypes.push('COMMUNITY_ENDORSED');
     for (const type of badgeTypes) {
       await prisma.userBadge.upsert({
@@ -1656,13 +2638,17 @@ async function main() {
     }
     if (isSuspended) suspendedCount++;
   }
-  console.log(`   Trust scores .... ${allIdentities.length} identities (${suspendedCount} suspended for confirmed fraud)`);
+  console.log(
+    `   Trust scores .... ${allIdentities.length} identities (${suspendedCount} suspended for confirmed fraud)`,
+  );
   const tierCounts = { TIER_0: 0, TIER_1: 0, TIER_2: 0, TIER_3: 0 };
   for (const w of workers) {
     const { tier } = suspendedUsers.has(w.id) ? { tier: 'TIER_0' } : deriveTier(ledgerFor(w.id));
     tierCounts[tier]++;
   }
-  console.log(`   Derived worker tiers: T0=${tierCounts.TIER_0} T1=${tierCounts.TIER_1} T2=${tierCounts.TIER_2} T3=${tierCounts.TIER_3}\n`);
+  console.log(
+    `   Derived worker tiers: T0=${tierCounts.TIER_0} T1=${tierCounts.TIER_1} T2=${tierCounts.TIER_2} T3=${tierCounts.TIER_3}\n`,
+  );
 
   // ── Phase 10: messaging ───────────────────────────────────────────────────
   console.log('💬 Creating conversations and messages...');
@@ -1671,11 +2657,34 @@ async function main() {
     const { job, poster, hiredWorker, acceptedQuote, finalStatus, startAt } = jc;
     const posterUser = poster.posterUser;
     const isFr = poster.isFr;
-    const conv = await prisma.conversation.create({ data: { jobId: job.id, createdAt: hoursAfter(startAt, 3) } });
-    await prisma.conversationParticipant.create({ data: { conversationId: conv.id, userId: posterUser.id, role: 'MEMBER', createdAt: hoursAfter(startAt, 3) } });
-    await prisma.conversationParticipant.create({ data: { conversationId: conv.id, userId: hiredWorker.id, role: 'MEMBER', createdAt: hoursAfter(startAt, 3) } });
+    const conv = await prisma.conversation.create({
+      data: { jobId: job.id, createdAt: hoursAfter(startAt, 3) },
+    });
+    await prisma.conversationParticipant.create({
+      data: {
+        conversationId: conv.id,
+        userId: posterUser.id,
+        role: 'MEMBER',
+        createdAt: hoursAfter(startAt, 3),
+      },
+    });
+    await prisma.conversationParticipant.create({
+      data: {
+        conversationId: conv.id,
+        userId: hiredWorker.id,
+        role: 'MEMBER',
+        createdAt: hoursAfter(startAt, 3),
+      },
+    });
     if (finalStatus === 'DISPUTED') {
-      await prisma.conversationParticipant.create({ data: { conversationId: conv.id, userId: admin.id, role: 'OBSERVER', createdAt: hoursAfter(startAt, 215) } });
+      await prisma.conversationParticipant.create({
+        data: {
+          conversationId: conv.id,
+          userId: admin.id,
+          role: 'OBSERVER',
+          createdAt: hoursAfter(startAt, 215),
+        },
+      });
     }
 
     let t = hoursAfter(startAt, 3);
@@ -1683,37 +2692,82 @@ async function main() {
     const send = async (sender, kind, body, metadata = null, withImage = false) => {
       const msg = await prisma.message.create({
         data: {
-          conversationId: conv.id, senderId: sender.id, kind, body, metadata,
-          status: 'READ', deliveredAt: hoursAfter(t, 0.2), readAt: hoursAfter(t, 0.5), createdAt: t,
+          conversationId: conv.id,
+          senderId: sender.id,
+          kind,
+          body,
+          metadata,
+          status: 'READ',
+          deliveredAt: hoursAfter(t, 0.2),
+          readAt: hoursAfter(t, 0.5),
+          createdAt: t,
         },
       });
       if (withImage) {
-        const media = await createMedia(sender.id, 'MESSAGE_IMAGE', messageImageUrl(msg.id), { visibility: 'PRIVATE' });
-        await prisma.messageAttachment.create({ data: { messageId: msg.id, mediaAssetId: media.id } });
+        const media = await createMedia(sender.id, 'MESSAGE_IMAGE', messageImageUrl(msg.id), {
+          visibility: 'PRIVATE',
+        });
+        await prisma.messageAttachment.create({
+          data: { messageId: msg.id, mediaAssetId: media.id },
+        });
       }
       lastMessage = msg;
       t = hoursAfter(t, randomInt(1, 20));
       return msg;
     };
 
-    await send(posterUser, 'TEXT', isFr ? 'Bonjour, je suis intéressé(e) par votre devis.' : 'Hi, I\u2019m interested in your quote.');
+    await send(
+      posterUser,
+      'TEXT',
+      isFr
+        ? 'Bonjour, je suis intéressé(e) par votre devis.'
+        : 'Hi, I\u2019m interested in your quote.',
+    );
     if (acceptedQuote) await send(hiredWorker, 'QUOTE', null, { quoteId: acceptedQuote.id });
-    await send(posterUser, 'TEXT', isFr ? 'Ça marche, on peut commencer quand ?' : 'Sounds good — when can we start?');
-    await send(hiredWorker, 'TEXT', isFr ? 'Je peux venir dès demain matin.' : 'I can come by tomorrow morning.');
-    if (pct(0.5)) await send(posterUser, 'IMAGE', isFr ? 'Voici une photo du problème.' : 'Here\u2019s a photo of the issue.', null, true);
+    await send(
+      posterUser,
+      'TEXT',
+      isFr ? 'Ça marche, on peut commencer quand ?' : 'Sounds good — when can we start?',
+    );
+    await send(
+      hiredWorker,
+      'TEXT',
+      isFr ? 'Je peux venir dès demain matin.' : 'I can come by tomorrow morning.',
+    );
+    if (pct(0.5))
+      await send(
+        posterUser,
+        'IMAGE',
+        isFr ? 'Voici une photo du problème.' : 'Here\u2019s a photo of the issue.',
+        null,
+        true,
+      );
     if (['IN_PROGRESS', 'COMPLETED', 'RELEASED'].includes(finalStatus) && pct(0.5)) {
       await send(hiredWorker, 'LOCATION', null, { lat: job.latitude, lng: job.longitude });
     }
-    await send(hiredWorker, 'TEXT', isFr ? "J'arrive dans 15 minutes." : 'On my way — about 15 minutes out.');
+    await send(
+      hiredWorker,
+      'TEXT',
+      isFr ? "J'arrive dans 15 minutes." : 'On my way — about 15 minutes out.',
+    );
     if (['COMPLETED', 'RELEASED'].includes(finalStatus)) {
       await send(posterUser, 'TEXT', isFr ? 'Merci, super travail !' : 'Thanks, great work!');
     }
     if (finalStatus === 'DISPUTED') {
-      await send(posterUser, 'TEXT', isFr ? 'Je ne suis pas satisfait, il manque du travail.' : 'I\u2019m not satisfied — some of the work is missing.');
+      await send(
+        posterUser,
+        'TEXT',
+        isFr
+          ? 'Je ne suis pas satisfait, il manque du travail.'
+          : 'I\u2019m not satisfied — some of the work is missing.',
+      );
     }
     await prisma.conversation.update({
       where: { id: conv.id },
-      data: { lastMessageAt: t, lastMessagePreview: (lastMessage.body ?? 'Media message').slice(0, 60) },
+      data: {
+        lastMessageAt: t,
+        lastMessagePreview: (lastMessage.body ?? 'Media message').slice(0, 60),
+      },
     });
     conversations.push({ conv, job, posterUser, hiredWorker, finalStatus });
   }
@@ -1722,7 +2776,12 @@ async function main() {
   const refundedThread = conversations.find((c) => c.finalStatus === 'REFUNDED');
   if (refundedThread) {
     await prisma.block.create({
-      data: { blockerId: refundedThread.posterUser.id, blockedId: refundedThread.hiredWorker.id, reason: 'Dispute over unfinished work.', createdAt: NOW },
+      data: {
+        blockerId: refundedThread.posterUser.id,
+        blockedId: refundedThread.hiredWorker.id,
+        reason: 'Dispute over unfinished work.',
+        createdAt: NOW,
+      },
     });
   }
   console.log(`   Conversations ... ${conversations.length}, plus 1 block\n`);
@@ -1737,29 +2796,49 @@ async function main() {
     const reportedAt = hoursAfter(goodReview.review.createdAt, 48);
     const modAction = await prisma.moderationAction.create({
       data: {
-        subjectUserId: goodReview.worker.id, actorId: admin.id, action: 'CONTENT_REMOVED',
-        targetType: 'REVIEW', targetId: goodReview.review.id,
+        subjectUserId: goodReview.worker.id,
+        actorId: admin.id,
+        action: 'CONTENT_REMOVED',
+        targetType: 'REVIEW',
+        targetId: goodReview.review.id,
         reason: 'Review hidden pending an authenticity check.',
-        internalNote: 'Reporter flagged that the author and subject appear to know each other off-platform.',
+        internalNote:
+          'Reporter flagged that the author and subject appear to know each other off-platform.',
         createdAt: hoursAfter(reportedAt, 24),
       },
     });
     await prisma.abuseReport.create({
       data: {
-        reporterId: reporter.id, reportedUserId: goodReview.worker.id, targetType: 'REVIEW', targetId: goodReview.review.id,
-        reason: 'MISLEADING', details: 'This review looks coordinated rather than a genuine client experience.',
-        status: 'ACTIONED', reviewedById: admin.id, reviewNote: 'Hidden pending further verification; not yet a permanent takedown.',
-        reviewedAt: hoursAfter(reportedAt, 24), moderationActionId: modAction.id, createdAt: reportedAt,
+        reporterId: reporter.id,
+        reportedUserId: goodReview.worker.id,
+        targetType: 'REVIEW',
+        targetId: goodReview.review.id,
+        reason: 'MISLEADING',
+        details: 'This review looks coordinated rather than a genuine client experience.',
+        status: 'ACTIONED',
+        reviewedById: admin.id,
+        reviewNote: 'Hidden pending further verification; not yet a permanent takedown.',
+        reviewedAt: hoursAfter(reportedAt, 24),
+        moderationActionId: modAction.id,
+        createdAt: reportedAt,
       },
     });
     await prisma.review.update({
       where: { id: goodReview.review.id },
-      data: { status: 'HIDDEN', hiddenReason: 'Reported as a potentially inauthentic review; under investigation.', moderatedById: admin.id, moderatedAt: hoursAfter(reportedAt, 24) },
+      data: {
+        status: 'HIDDEN',
+        hiddenReason: 'Reported as a potentially inauthentic review; under investigation.',
+        moderatedById: admin.id,
+        moderatedAt: hoursAfter(reportedAt, 24),
+      },
     });
     // REV-03: a hidden review stops counting — the ledger gets the
     // compensating event, and the rating comes back out of the average.
     await addTrustEvent(goodReview.worker.id, 'EXCELLENT_REVIEW_REVOKED', 'MARKETPLACE', -4, {
-      actorId: admin.id, sourceType: 'Review', sourceId: goodReview.review.id, occurredAt: hoursAfter(reportedAt, 24),
+      actorId: admin.id,
+      sourceType: 'Review',
+      sourceId: goodReview.review.id,
+      occurredAt: hoursAfter(reportedAt, 24),
     });
     const l = ledgerFor(goodReview.worker.id);
     l.ratings = l.ratings.filter((r) => r.reviewId !== goodReview.review.id);
@@ -1769,42 +2848,69 @@ async function main() {
   if (conversations.length > 1) {
     const target = conversations[1];
     const reporter = target.posterUser;
-    await prisma.moderationAction.create({
-      data: {
-        subjectUserId: target.hiredWorker.id, actorId: admin.id, action: 'WARN',
-        reason: 'Unprofessional language in chat with a client.', internalNote: 'First offence; formal warning issued.',
-        createdAt: daysAgo(10),
-      },
-    }).then(async (modAction) => {
-      await prisma.abuseReport.create({
+    await prisma.moderationAction
+      .create({
         data: {
-          reporterId: reporter.id, reportedUserId: target.hiredWorker.id, targetType: 'CONVERSATION', targetId: target.conv.id,
-          conversationId: target.conv.id, reason: 'HARASSMENT', details: 'Used inappropriate language after a pricing disagreement.',
-          status: 'ACTIONED', reviewedById: admin.id, reviewNote: 'Warned; no further action needed at this time.',
-          reviewedAt: daysAgo(10), moderationActionId: modAction.id, createdAt: daysAgo(11),
+          subjectUserId: target.hiredWorker.id,
+          actorId: admin.id,
+          action: 'WARN',
+          reason: 'Unprofessional language in chat with a client.',
+          internalNote: 'First offence; formal warning issued.',
+          createdAt: daysAgo(10),
         },
+      })
+      .then(async (modAction) => {
+        await prisma.abuseReport.create({
+          data: {
+            reporterId: reporter.id,
+            reportedUserId: target.hiredWorker.id,
+            targetType: 'CONVERSATION',
+            targetId: target.conv.id,
+            conversationId: target.conv.id,
+            reason: 'HARASSMENT',
+            details: 'Used inappropriate language after a pricing disagreement.',
+            status: 'ACTIONED',
+            reviewedById: admin.id,
+            reviewNote: 'Warned; no further action needed at this time.',
+            reviewedAt: daysAgo(10),
+            moderationActionId: modAction.id,
+            createdAt: daysAgo(11),
+          },
+        });
       });
-    });
   }
 
   // A dismissed report — reviewed, found to need nothing.
   {
     const reporter = randomItem(clients);
-    const reportedUser = randomItem(workers.filter((w) => !suspendedUsers.has(w.id) && w.id !== reporter.id));
+    const reportedUser = randomItem(
+      workers.filter((w) => !suspendedUsers.has(w.id) && w.id !== reporter.id),
+    );
     await prisma.abuseReport.create({
       data: {
-        reporterId: reporter.id, reportedUserId: reportedUser.id, targetType: 'USER', targetId: reportedUser.id,
-        reason: 'OTHER', details: 'Seemed suspicious but I can\u2019t point to anything specific.',
-        status: 'DISMISSED', reviewedById: admin.id, reviewNote: 'No policy violation found.', reviewedAt: daysAgo(3), createdAt: daysAgo(4),
+        reporterId: reporter.id,
+        reportedUserId: reportedUser.id,
+        targetType: 'USER',
+        targetId: reportedUser.id,
+        reason: 'OTHER',
+        details: 'Seemed suspicious but I can\u2019t point to anything specific.',
+        status: 'DISMISSED',
+        reviewedById: admin.id,
+        reviewNote: 'No policy violation found.',
+        reviewedAt: daysAgo(3),
+        createdAt: daysAgo(4),
       },
     });
   }
   console.log('   Moderation cases: 1 review hidden, 1 warning, 1 dismissed report\n');
 
-    // ── Phase 12: Safety & SOS ──────────────────────────────────────────────
+  // ── Phase 12: Safety & SOS ──────────────────────────────────────────────
   console.log('🚨 Creating SOS alerts and emergency contacts...');
 
-  const sosUsers = sample(allIdentities.filter(u => !suspendedUsers.has(u.id)), 6);
+  const sosUsers = sample(
+    allIdentities.filter((u) => !suspendedUsers.has(u.id)),
+    6,
+  );
   for (const user of sosUsers) {
     // Each user has 1-3 emergency contacts
     const numContacts = randomInt(1, 3);
@@ -1815,7 +2921,14 @@ async function main() {
           userId: user.id,
           name,
           phone: uniqueCameroonPhone(),
-          relationship: randomItem(['Brother', 'Sister', 'Spouse', 'Friend', 'Colleague', 'Landlord']),
+          relationship: randomItem([
+            'Brother',
+            'Sister',
+            'Spouse',
+            'Friend',
+            'Colleague',
+            'Landlord',
+          ]),
           email: faker.internet.email({ firstName: name.split(' ')[0] }).toLowerCase(),
           isActive: true,
           createdAt: daysAgo(randomInt(10, 200)),
@@ -1827,13 +2940,16 @@ async function main() {
     if (pct(0.5)) {
       const alertStatus = randomEnum(['ACTIVE', 'RESOLVED', 'FALSE_ALARM']);
       const alertCreatedAt = daysAgo(randomInt(0, 60));
-      const resolvedAt = alertStatus === 'ACTIVE' ? null : hoursAfter(alertCreatedAt, randomInt(2, 48));
+      const resolvedAt =
+        alertStatus === 'ACTIVE' ? null : hoursAfter(alertCreatedAt, randomInt(2, 48));
 
       // Pick a job/booking if they have any
-      const userJobs = jobsCreated.filter(j => j.poster.posterId === user.id || j.hiredWorker?.id === user.id);
+      const userJobs = jobsCreated.filter(
+        (j) => j.poster.posterId === user.id || j.hiredWorker?.id === user.id,
+      );
       const jobRef = userJobs.length ? randomItem(userJobs) : null;
 
-      const alert = await prisma.sosAlert.create({
+      const alert = await prisma.sOSAlert.create({
         data: {
           userId: user.id,
           status: alertStatus,
@@ -1850,7 +2966,12 @@ async function main() {
           bookingId: jobRef?.booking?.id ?? null,
           resolvedById: alertStatus !== 'ACTIVE' ? randomItem([admin, ...agents]).id : null,
           resolvedAt: resolvedAt,
-          resolutionNote: alertStatus === 'RESOLVED' ? 'Contact reached, situation resolved.' : alertStatus === 'FALSE_ALARM' ? 'Triggered by mistake – user confirmed safe.' : null,
+          resolutionNote:
+            alertStatus === 'RESOLVED'
+              ? 'Contact reached, situation resolved.'
+              : alertStatus === 'FALSE_ALARM'
+                ? 'Triggered by mistake – user confirmed safe.'
+                : null,
           createdAt: alertCreatedAt,
           updatedAt: alertCreatedAt,
         },
@@ -1858,18 +2979,20 @@ async function main() {
 
       // Shares to contacts
       const contacts = await prisma.emergencyContact.findMany({ where: { userId: user.id } });
-      for (const contact of sample(contacts, randomInt(1, contacts.length))) {
-        await prisma.sosAlertShare.create({
-          data: {
-            sosAlertId: alert.id,
-            emergencyContactId: contact.id,
-            channel: randomItem(['email', 'sms', 'console']),
-            delivered: pct(0.8),
-            error: pct(0.1) ? 'Phone unreachable' : null,
-            sentAt: hoursAfter(alertCreatedAt, randomInt(0, 3)),
-            createdAt: alertCreatedAt,
-          },
-        });
+      if (contacts.length > 0) {
+        for (const contact of sample(contacts, randomInt(1, contacts.length))) {
+          await prisma.sOSAlertShare.create({
+            data: {
+              sosAlertId: alert.id,
+              emergencyContactId: contact.id,
+              channel: randomItem(['email', 'sms', 'console']),
+              delivered: pct(0.8),
+              error: pct(0.1) ? 'Phone unreachable' : null,
+              sentAt: hoursAfter(alertCreatedAt, randomInt(0, 3)),
+              createdAt: alertCreatedAt,
+            },
+          });
+        }
       }
       // Log status events
       const statusChain = [[null, alertStatus]];
@@ -1877,13 +3000,18 @@ async function main() {
       if (alertStatus === 'FALSE_ALARM') statusChain.push(['ACTIVE', 'FALSE_ALARM']);
       let t = alertCreatedAt;
       for (const [from, to] of statusChain) {
-        await prisma.sosAlertEvent.create({
+        await prisma.sOSAlertEvent.create({
           data: {
             sosAlertId: alert.id,
             fromStatus: from,
             toStatus: to,
             actorId: to !== 'ACTIVE' ? (alert.resolvedById ?? null) : null,
-            note: to === 'RESOLVED' ? 'Safety team resolved' : to === 'FALSE_ALARM' ? 'User confirmed safe – false alarm' : null,
+            note:
+              to === 'RESOLVED'
+                ? 'Safety team resolved'
+                : to === 'FALSE_ALARM'
+                  ? 'User confirmed safe – false alarm'
+                  : null,
             createdAt: t,
           },
         });
@@ -1891,13 +3019,15 @@ async function main() {
       }
     }
   }
-  console.log(`   SOS alerts ...... ${await prisma.sosAlert.count()} (${await prisma.emergencyContact.count()} contacts)`);
+  console.log(
+    `   SOS alerts ...... ${await prisma.sOSAlert.count()} (${await prisma.emergencyContact.count()} contacts)`,
+  );
 
   // ── Phase 13: Live tracking ──────────────────────────────────────────────
   console.log('📍 Creating tracking sessions...');
 
   const trackableBookings = jobsCreated
-    .filter(j => j.booking && ['IN_PROGRESS', 'COMPLETED', 'RELEASED'].includes(j.finalStatus))
+    .filter((j) => j.booking && ['IN_PROGRESS', 'COMPLETED', 'RELEASED'].includes(j.finalStatus))
     .slice(0, 4);
 
   for (const jc of trackableBookings) {
@@ -1937,14 +3067,28 @@ async function main() {
       });
     }
   }
-  console.log(`   Tracking sessions: ${await prisma.trackingSession.count()}, pings: ${await prisma.locationPing.count()}`);
+  console.log(
+    `   Tracking sessions: ${await prisma.trackingSession.count()}, pings: ${await prisma.locationPing.count()}`,
+  );
 
   // ── Phase 14: Notifications ──────────────────────────────────────────────
   console.log('🔔 Creating notifications and preferences...');
 
   // Seed preferences for all users (upsert to avoid duplicates)
   const channels = ['EMAIL', 'WEB_PUSH', 'IN_APP'];
-  const categories = ['SECURITY', 'ACCOUNT', 'JOBS', 'QUOTES', 'MESSAGES', 'PAYMENTS', 'TRUST', 'REVIEWS', 'DISPUTES', 'SAFETY', 'MARKETING'];
+  const categories = [
+    'SECURITY',
+    'ACCOUNT',
+    'JOBS',
+    'QUOTES',
+    'MESSAGES',
+    'PAYMENTS',
+    'TRUST',
+    'REVIEWS',
+    'DISPUTES',
+    'SAFETY',
+    'MARKETING',
+  ];
   for (const user of allIdentities) {
     for (const channel of channels) {
       for (const category of categories) {
@@ -1967,19 +3111,46 @@ async function main() {
 
   // In-app notifications for every user (0-8 each)
   const notificationTemplates = [
-    { category: 'JOBS', title: 'New job posted in your area', body: 'A new job matching your skills is available.' },
+    {
+      category: 'JOBS',
+      title: 'New job posted in your area',
+      body: 'A new job matching your skills is available.',
+    },
     { category: 'QUOTES', title: 'Your quote was viewed', body: 'A client has viewed your quote.' },
-    { category: 'MESSAGES', title: 'New message from client', body: 'You have a new message in your inbox.' },
-    { category: 'PAYMENTS', title: 'Payment received', body: 'Your escrow payment has been released.' },
-    { category: 'TRUST', title: 'Trust Score updated', body: 'Your Trust Score has changed based on recent activity.' },
-    { category: 'REVIEWS', title: 'New review', body: 'A client left a review for your recent job.' },
-    { category: 'DISPUTES', title: 'Dispute updated', body: 'A dispute you are involved in has been updated.' },
+    {
+      category: 'MESSAGES',
+      title: 'New message from client',
+      body: 'You have a new message in your inbox.',
+    },
+    {
+      category: 'PAYMENTS',
+      title: 'Payment received',
+      body: 'Your escrow payment has been released.',
+    },
+    {
+      category: 'TRUST',
+      title: 'Trust Score updated',
+      body: 'Your Trust Score has changed based on recent activity.',
+    },
+    {
+      category: 'REVIEWS',
+      title: 'New review',
+      body: 'A client left a review for your recent job.',
+    },
+    {
+      category: 'DISPUTES',
+      title: 'Dispute updated',
+      body: 'A dispute you are involved in has been updated.',
+    },
     { category: 'SAFETY', title: 'SOS alert resolved', body: 'Your SOS alert has been resolved.' },
   ];
 
   for (const user of sample(allIdentities, 18)) {
     const numNotifs = randomInt(0, 6);
-    const usedTemplates = sample(notificationTemplates, Math.min(numNotifs, notificationTemplates.length));
+    const usedTemplates = sample(
+      notificationTemplates,
+      Math.min(numNotifs, notificationTemplates.length),
+    );
     for (const tmpl of usedTemplates) {
       const createdAt = daysAgo(randomInt(0, 30));
       const readAt = pct(0.6) ? hoursAfter(createdAt, randomInt(1, 48)) : null;
@@ -1999,7 +3170,9 @@ async function main() {
       });
     }
   }
-  console.log(`   Notifications ... ${await prisma.notification.count()} (preferences for ${allIdentities.length} users)`);
+  console.log(
+    `   Notifications ... ${await prisma.notification.count()} (preferences for ${allIdentities.length} users)`,
+  );
 
   // ── Phase 15: Device registrations ──────────────────────────────────────
   console.log('📱 Creating device registrations...');
@@ -2015,7 +3188,13 @@ async function main() {
           endpoint: `https://example.com/push/${randomUUID()}`,
           p256dh: faker.string.alphanumeric(20),
           auth: faker.string.alphanumeric(20),
-          deviceName: randomItem(['Chrome on Mac', 'Firefox on Windows', 'Safari on iPhone', 'Edge on Windows', 'Chrome on Android']),
+          deviceName: randomItem([
+            'Chrome on Mac',
+            'Firefox on Windows',
+            'Safari on iPhone',
+            'Edge on Windows',
+            'Chrome on Android',
+          ]),
           isActive: pct(0.85),
           lastSeenAt: daysAgo(randomInt(0, 5)),
           createdAt: daysAgo(randomInt(10, 100)),
@@ -2033,8 +3212,10 @@ async function main() {
     {
       titleEn: 'Welcome to TrustPro Cameroon!',
       titleFr: 'Bienvenue sur TrustPro Cameroun!',
-      bodyEn: 'We are excited to launch the platform connecting trusted professionals with clients.',
-      bodyFr: 'Nous sommes ravis de lancer la plateforme connectant les professionnels de confiance avec les clients.',
+      bodyEn:
+        'We are excited to launch the platform connecting trusted professionals with clients.',
+      bodyFr:
+        'Nous sommes ravis de lancer la plateforme connectant les professionnels de confiance avec les clients.',
       audience: 'ALL',
       status: 'PUBLISHED',
       publishedAt: daysAgo(30),
@@ -2046,7 +3227,8 @@ async function main() {
       titleEn: 'New Safety Feature: SOS Alerts',
       titleFr: 'Nouvelle fonctionnalité de sécurité: Alertes SOS',
       bodyEn: 'You can now trigger an SOS alert to notify your emergency contacts.',
-      bodyFr: 'Vous pouvez maintenant déclencher une alerte SOS pour informer vos contacts d\'urgence.',
+      bodyFr:
+        "Vous pouvez maintenant déclencher une alerte SOS pour informer vos contacts d'urgence.",
       audience: 'ALL',
       status: 'PUBLISHED',
       publishedAt: daysAgo(15),
@@ -2075,8 +3257,10 @@ async function main() {
     {
       questionEn: 'How does TrustPro verify workers?',
       questionFr: 'Comment TrustPro vérifie-t-il les travailleurs?',
-      answerEn: 'We use a multi-tier verification process including phone, ID, and field verification.',
-      answerFr: 'Nous utilisons un processus de vérification à plusieurs niveaux incluant le téléphone, la pièce d\'identité et la vérification sur le terrain.',
+      answerEn:
+        'We use a multi-tier verification process including phone, ID, and field verification.',
+      answerFr:
+        "Nous utilisons un processus de vérification à plusieurs niveaux incluant le téléphone, la pièce d'identité et la vérification sur le terrain.",
       category: 'verification',
       order: 1,
       isPublished: true,
@@ -2086,8 +3270,10 @@ async function main() {
     {
       questionEn: 'Is my payment secure?',
       questionFr: 'Mon paiement est-il sécurisé?',
-      answerEn: 'Yes, payments are held in escrow and released only when you confirm the job is completed.',
-      answerFr: 'Oui, les paiements sont conservés sous séquestre et ne sont libérés que lorsque vous confirmez que le travail est terminé.',
+      answerEn:
+        'Yes, payments are held in escrow and released only when you confirm the job is completed.',
+      answerFr:
+        'Oui, les paiements sont conservés sous séquestre et ne sont libérés que lorsque vous confirmez que le travail est terminé.',
       category: 'payments',
       order: 2,
       isPublished: true,
@@ -2097,8 +3283,10 @@ async function main() {
     {
       questionEn: 'How do I become a worker?',
       questionFr: 'Comment devenir travailleur?',
-      answerEn: 'Sign up, complete your profile, and pass the verification steps to start receiving job offers.',
-      answerFr: 'Inscrivez-vous, complétez votre profil et passez les étapes de vérification pour commencer à recevoir des offres d\'emploi.',
+      answerEn:
+        'Sign up, complete your profile, and pass the verification steps to start receiving job offers.',
+      answerFr:
+        "Inscrivez-vous, complétez votre profil et passez les étapes de vérification pour commencer à recevoir des offres d'emploi.",
       category: 'onboarding',
       order: 3,
       isPublished: true,
@@ -2117,7 +3305,8 @@ async function main() {
       roleFr: 'Plombier, Douala',
       avatarUrl: avatarUrl(),
       contentEn: 'TrustPro helped me find reliable work. The escrow system gives me peace of mind.',
-      contentFr: 'TrustPro m\'a aidé à trouver un travail fiable. Le système de séquestre me rassure.',
+      contentFr:
+        "TrustPro m'a aidé à trouver un travail fiable. Le système de séquestre me rassure.",
       rating: 4.8,
       order: 1,
       visible: true,
@@ -2127,10 +3316,10 @@ async function main() {
     {
       author: 'Marie Ngono',
       roleEn: 'Business Owner, Yaoundé',
-      roleFr: 'Chef d\'entreprise, Yaoundé',
+      roleFr: "Chef d'entreprise, Yaoundé",
       avatarUrl: avatarUrl(),
       contentEn: 'I have hired several workers through TrustPro and the quality is excellent.',
-      contentFr: 'J\'ai embauché plusieurs travailleurs via TrustPro et la qualité est excellente.',
+      contentFr: "J'ai embauché plusieurs travailleurs via TrustPro et la qualité est excellente.",
       rating: 4.5,
       order: 2,
       visible: true,
@@ -2142,7 +3331,9 @@ async function main() {
     await prisma.testimonial.create({ data: t });
   }
 
-  console.log(`   Admin content .. ${announcements.length} announcements, ${faqs.length} FAQs, ${testimonials.length} testimonials`);
+  console.log(
+    `   Admin content .. ${announcements.length} announcements, ${faqs.length} FAQs, ${testimonials.length} testimonials`,
+  );
 
   // ── Phase 17: Finalize wallet balances ────────────────────────────────────
   console.log('💰 Finalizing wallet balances...');
@@ -2156,7 +3347,14 @@ async function main() {
 
   // ── Phase 18: Additional audit logs ──────────────────────────────────────
   console.log('📜 Creating additional audit logs...');
-  const auditActions = ['JOB_POSTED', 'QUOTE_ACCEPTED', 'ESCROW_RELEASED', 'DISPUTE_RESOLVED', 'PROFILE_UPDATED', 'PASSWORD_CHANGED'];
+  const auditActions = [
+    'JOB_POSTED',
+    'QUOTE_ACCEPTED',
+    'ESCROW_RELEASED',
+    'DISPUTE_RESOLVED',
+    'PROFILE_UPDATED',
+    'PASSWORD_CHANGED',
+  ];
   for (let i = 0; i < 30; i++) {
     const actor = randomItem(allIdentities);
     await prisma.auditLog.create({
@@ -2180,13 +3378,17 @@ async function main() {
   const totalUsers = await prisma.user.count();
   const totalWorkers = await prisma.user.count({ where: { roles: { some: { role: 'WORKER' } } } });
   const totalClients = await prisma.user.count({ where: { roles: { some: { role: 'CLIENT' } } } });
-  const totalBusinesses = await prisma.user.count({ where: { roles: { some: { role: 'BUSINESS' } } } });
+  const totalBusinesses = await prisma.user.count({
+    where: { roles: { some: { role: 'BUSINESS' } } },
+  });
   const totalJobs = await prisma.job.count();
   const totalBookings = await prisma.booking.count();
   const totalReviews = await prisma.review.count();
   const totalMessages = await prisma.message.count();
   const totalTransactions = await prisma.transaction.count();
-  console.log(`👤 Users: ${totalUsers} (Workers: ${totalWorkers}, Clients: ${totalClients}, Businesses: ${totalBusinesses})`);
+  console.log(
+    `👤 Users: ${totalUsers} (Workers: ${totalWorkers}, Clients: ${totalClients}, Businesses: ${totalBusinesses})`,
+  );
   console.log(`📋 Jobs: ${totalJobs}`);
   console.log(`📦 Bookings: ${totalBookings}`);
   console.log(`⭐ Reviews: ${totalReviews}`);
@@ -2194,7 +3396,7 @@ async function main() {
   console.log(`💰 Transactions: ${totalTransactions}`);
   console.log(`🔔 Notifications: ${await prisma.notification.count()}`);
   console.log(`📍 Tracking Sessions: ${await prisma.trackingSession.count()}`);
-  console.log(`🚨 SOS Alerts: ${await prisma.sosAlert.count()}`);
+  console.log(`🚨 SOS Alerts: ${await prisma.sOSAlert.count()}`);
   console.log(`🏷️ Badges awarded: ${await prisma.userBadge.count()}`);
   console.log(`📢 Announcements: ${await prisma.announcement.count()}`);
   console.log(`📖 FAQ: ${await prisma.faq.count()}`);

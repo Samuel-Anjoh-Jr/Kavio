@@ -18,8 +18,20 @@
 
 CREATE EXTENSION IF NOT EXISTS postgis;
 
-CREATE SCHEMA IF NOT EXISTS osm;
-CREATE SCHEMA IF NOT EXISTS geo;
+-- Create schemas if they don't exist using DO blocks
+DO $$ 
+BEGIN
+    CREATE SCHEMA osm;
+EXCEPTION
+    WHEN duplicate_schema THEN RAISE NOTICE 'schema osm already exists';
+END $$;
+
+DO $$ 
+BEGIN
+    CREATE SCHEMA geo;
+EXCEPTION
+    WHEN duplicate_schema THEN RAISE NOTICE 'schema geo already exists';
+END $$;
 
 COMMENT ON SCHEMA osm IS 'OpenStreetMap warehouse. Written only by scripts/ingest-osm.mjs; never by the API.';
 COMMENT ON SCHEMA geo IS 'Reviewed spatial read views and functions. The API''s only spatial surface.';
@@ -32,7 +44,7 @@ COMMENT ON SCHEMA geo IS 'Reviewed spatial read views and functions. The API''s 
 CREATE TYPE "GeoRegionLevel" AS ENUM ('COUNTRY', 'REGION', 'CITY', 'DISTRICT', 'NEIGHBOURHOOD');
 
 -- CreateTable
-CREATE TABLE "GeoRegion" (
+CREATE TABLE IF NOT EXISTS "GeoRegion" (
     "id" UUID NOT NULL,
     "slug" TEXT NOT NULL,
     "nameEn" TEXT NOT NULL,
@@ -51,27 +63,40 @@ CREATE TABLE "GeoRegion" (
 -- Geography columns are added separately: Prisma writes them as `Unsupported`,
 -- and keeping their DDL here (rather than inline above) is a reminder that the
 -- ORM does not manage them.
-ALTER TABLE "GeoRegion" ADD COLUMN "boundary" geography(MultiPolygon, 4326);
-ALTER TABLE "GeoRegion" ADD COLUMN "center" geography(Point, 4326);
+-- Use DO blocks for PostgreSQL versions that don't support IF NOT EXISTS on ADD COLUMN
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "GeoRegion" ADD COLUMN "boundary" geography(MultiPolygon, 4326);
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column boundary already exists in GeoRegion';
+    END;
+END $$;
+
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "GeoRegion" ADD COLUMN "center" geography(Point, 4326);
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column center already exists in GeoRegion';
+    END;
+END $$;
 
 -- CreateIndex
-CREATE UNIQUE INDEX "GeoRegion_slug_key" ON "GeoRegion"("slug");
-
--- CreateIndex
-CREATE INDEX "GeoRegion_level_isActive_idx" ON "GeoRegion"("level", "isActive");
-
--- CreateIndex
-CREATE INDEX "GeoRegion_parentId_idx" ON "GeoRegion"("parentId");
-
--- CreateIndex
-CREATE INDEX "GeoRegion_osmId_idx" ON "GeoRegion"("osmId");
-
--- CreateIndex (GIST — the containment path: "which region is this point in?")
-CREATE INDEX "GeoRegion_boundary_gist" ON "GeoRegion" USING GIST ("boundary");
-CREATE INDEX "GeoRegion_center_gist" ON "GeoRegion" USING GIST ("center");
+CREATE INDEX IF NOT EXISTS "GeoRegion_slug_key" ON "GeoRegion"("slug");
+CREATE INDEX IF NOT EXISTS "GeoRegion_level_isActive_idx" ON "GeoRegion"("level", "isActive");
+CREATE INDEX IF NOT EXISTS "GeoRegion_parentId_idx" ON "GeoRegion"("parentId");
+CREATE INDEX IF NOT EXISTS "GeoRegion_osmId_idx" ON "GeoRegion"("osmId");
+CREATE INDEX IF NOT EXISTS "GeoRegion_boundary_gist" ON "GeoRegion" USING GIST ("boundary");
+CREATE INDEX IF NOT EXISTS "GeoRegion_center_gist" ON "GeoRegion" USING GIST ("center");
 
 -- AddForeignKey
-ALTER TABLE "GeoRegion" ADD CONSTRAINT "GeoRegion_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "GeoRegion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+    ALTER TABLE "GeoRegion" ADD CONSTRAINT "GeoRegion_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "GeoRegion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+    WHEN duplicate_object THEN RAISE NOTICE 'constraint GeoRegion_parentId_fkey already exists';
+END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Operational coordinates on the three profile types.
@@ -82,49 +107,159 @@ ALTER TABLE "GeoRegion" ADD CONSTRAINT "GeoRegion_parentId_fkey" FOREIGN KEY ("p
 -- geometry to disagree with the number a user typed.
 -- ─────────────────────────────────────────────────────────────────────────────
 
-ALTER TABLE "WorkerProfile"
-    ADD COLUMN "landmark" TEXT,
-    ADD COLUMN "locationUpdatedAt" TIMESTAMP(3),
-    ADD COLUMN "geoRegionId" UUID,
-    ADD COLUMN "location" geography(Point, 4326);
+-- Use DO blocks for adding columns to WorkerProfile
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "WorkerProfile" ADD COLUMN "landmark" TEXT;
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column landmark already exists in WorkerProfile';
+    END;
+END $$;
 
-ALTER TABLE "ClientProfile"
-    ADD COLUMN "landmark" TEXT,
-    ADD COLUMN "locationUpdatedAt" TIMESTAMP(3),
-    ADD COLUMN "geoRegionId" UUID,
-    ADD COLUMN "location" geography(Point, 4326);
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "WorkerProfile" ADD COLUMN "locationUpdatedAt" TIMESTAMP(3);
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column locationUpdatedAt already exists in WorkerProfile';
+    END;
+END $$;
 
-ALTER TABLE "BusinessProfile"
-    ADD COLUMN "landmark" TEXT,
-    ADD COLUMN "locationUpdatedAt" TIMESTAMP(3),
-    ADD COLUMN "geoRegionId" UUID,
-    ADD COLUMN "location" geography(Point, 4326);
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "WorkerProfile" ADD COLUMN "geoRegionId" UUID;
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column geoRegionId already exists in WorkerProfile';
+    END;
+END $$;
+
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "WorkerProfile" ADD COLUMN "location" geography(Point, 4326);
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column location already exists in WorkerProfile';
+    END;
+END $$;
+
+-- Use DO blocks for adding columns to ClientProfile
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "ClientProfile" ADD COLUMN "landmark" TEXT;
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column landmark already exists in ClientProfile';
+    END;
+END $$;
+
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "ClientProfile" ADD COLUMN "locationUpdatedAt" TIMESTAMP(3);
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column locationUpdatedAt already exists in ClientProfile';
+    END;
+END $$;
+
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "ClientProfile" ADD COLUMN "geoRegionId" UUID;
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column geoRegionId already exists in ClientProfile';
+    END;
+END $$;
+
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "ClientProfile" ADD COLUMN "location" geography(Point, 4326);
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column location already exists in ClientProfile';
+    END;
+END $$;
+
+-- Use DO blocks for adding columns to BusinessProfile
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "BusinessProfile" ADD COLUMN "landmark" TEXT;
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column landmark already exists in BusinessProfile';
+    END;
+END $$;
+
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "BusinessProfile" ADD COLUMN "locationUpdatedAt" TIMESTAMP(3);
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column locationUpdatedAt already exists in BusinessProfile';
+    END;
+END $$;
+
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "BusinessProfile" ADD COLUMN "geoRegionId" UUID;
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column geoRegionId already exists in BusinessProfile';
+    END;
+END $$;
+
+DO $$ 
+BEGIN
+    BEGIN
+        ALTER TABLE "BusinessProfile" ADD COLUMN "location" geography(Point, 4326);
+    EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column location already exists in BusinessProfile';
+    END;
+END $$;
 
 -- CreateIndex
-CREATE INDEX "WorkerProfile_geoRegionId_idx" ON "WorkerProfile"("geoRegionId");
-CREATE INDEX "ClientProfile_geoRegionId_idx" ON "ClientProfile"("geoRegionId");
-CREATE INDEX "BusinessProfile_geoRegionId_idx" ON "BusinessProfile"("geoRegionId");
+CREATE INDEX IF NOT EXISTS "WorkerProfile_geoRegionId_idx" ON "WorkerProfile"("geoRegionId");
+CREATE INDEX IF NOT EXISTS "ClientProfile_geoRegionId_idx" ON "ClientProfile"("geoRegionId");
+CREATE INDEX IF NOT EXISTS "BusinessProfile_geoRegionId_idx" ON "BusinessProfile"("geoRegionId");
 
 -- CreateIndex (GIST — KNN and radius search, PROMPT 40)
 --
 -- Partial on `location IS NOT NULL`: a profile without coordinates can never
 -- satisfy a proximity query, so indexing it only makes every nearby search
 -- read more pages. Most Client profiles will never set a location at all.
-CREATE INDEX "WorkerProfile_location_gist" ON "WorkerProfile" USING GIST ("location") WHERE "location" IS NOT NULL;
-CREATE INDEX "ClientProfile_location_gist" ON "ClientProfile" USING GIST ("location") WHERE "location" IS NOT NULL;
-CREATE INDEX "BusinessProfile_location_gist" ON "BusinessProfile" USING GIST ("location") WHERE "location" IS NOT NULL;
+CREATE INDEX IF NOT EXISTS "WorkerProfile_location_gist" ON "WorkerProfile" USING GIST ("location") WHERE "location" IS NOT NULL;
+CREATE INDEX IF NOT EXISTS "ClientProfile_location_gist" ON "ClientProfile" USING GIST ("location") WHERE "location" IS NOT NULL;
+CREATE INDEX IF NOT EXISTS "BusinessProfile_location_gist" ON "BusinessProfile" USING GIST ("location") WHERE "location" IS NOT NULL;
 
 -- AddForeignKey
-ALTER TABLE "WorkerProfile" ADD CONSTRAINT "WorkerProfile_geoRegionId_fkey" FOREIGN KEY ("geoRegionId") REFERENCES "GeoRegion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "ClientProfile" ADD CONSTRAINT "ClientProfile_geoRegionId_fkey" FOREIGN KEY ("geoRegionId") REFERENCES "GeoRegion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "BusinessProfile" ADD CONSTRAINT "BusinessProfile_geoRegionId_fkey" FOREIGN KEY ("geoRegionId") REFERENCES "GeoRegion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+    ALTER TABLE "WorkerProfile" ADD CONSTRAINT "WorkerProfile_geoRegionId_fkey" FOREIGN KEY ("geoRegionId") REFERENCES "GeoRegion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+    WHEN duplicate_object THEN RAISE NOTICE 'constraint WorkerProfile_geoRegionId_fkey already exists';
+END $$;
+
+DO $$
+BEGIN
+    ALTER TABLE "ClientProfile" ADD CONSTRAINT "ClientProfile_geoRegionId_fkey" FOREIGN KEY ("geoRegionId") REFERENCES "GeoRegion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+    WHEN duplicate_object THEN RAISE NOTICE 'constraint ClientProfile_geoRegionId_fkey already exists';
+END $$;
+
+DO $$
+BEGIN
+    ALTER TABLE "BusinessProfile" ADD CONSTRAINT "BusinessProfile_geoRegionId_fkey" FOREIGN KEY ("geoRegionId") REFERENCES "GeoRegion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+    WHEN duplicate_object THEN RAISE NOTICE 'constraint BusinessProfile_geoRegionId_fkey already exists';
+END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Keeping `location` in step with the floats.
 --
 -- A trigger rather than a GENERATED column: Prisma has no concept of generated
 -- columns and would report the table as drifted on every check. A trigger is
--- invisible to Prisma and gives the same guarantee — the ORM can write only
+-- invisible to Prisma and gives the same guarantee, the ORM can write only
 -- latitude/longitude, and the geography follows on the same statement.
 -- ─────────────────────────────────────────────────────────────────────────────
 
@@ -145,14 +280,18 @@ $$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION trustpro_sync_location() IS 'Derives the GIST-indexed geography column from the latitude/longitude a form wrote. See migration 20260721171000.';
 
+-- PostgreSQL doesn't support IF NOT EXISTS for triggers. Use DROP IF EXISTS first.
+DROP TRIGGER IF EXISTS "WorkerProfile_sync_location" ON "WorkerProfile";
 CREATE TRIGGER "WorkerProfile_sync_location"
     BEFORE INSERT OR UPDATE OF "latitude", "longitude" ON "WorkerProfile"
     FOR EACH ROW EXECUTE FUNCTION trustpro_sync_location();
 
+DROP TRIGGER IF EXISTS "ClientProfile_sync_location" ON "ClientProfile";
 CREATE TRIGGER "ClientProfile_sync_location"
     BEFORE INSERT OR UPDATE OF "latitude", "longitude" ON "ClientProfile"
     FOR EACH ROW EXECUTE FUNCTION trustpro_sync_location();
 
+DROP TRIGGER IF EXISTS "BusinessProfile_sync_location" ON "BusinessProfile";
 CREATE TRIGGER "BusinessProfile_sync_location"
     BEFORE INSERT OR UPDATE OF "latitude", "longitude" ON "BusinessProfile"
     FOR EACH ROW EXECUTE FUNCTION trustpro_sync_location();
@@ -160,6 +299,8 @@ CREATE TRIGGER "BusinessProfile_sync_location"
 -- Backfill any rows that already carry coordinates from onboarding. The trigger
 -- only fires on write, so without this an existing worker stays invisible to
 -- every proximity query despite having a perfectly good position on file.
+-- The WHERE clause needs to actually match rows; updating latitude to itself is
+-- a no-op that still fires the trigger, but only on rows that have non-null values.
 UPDATE "WorkerProfile" SET "latitude" = "latitude" WHERE "latitude" IS NOT NULL AND "longitude" IS NOT NULL;
 UPDATE "ClientProfile" SET "latitude" = "latitude" WHERE "latitude" IS NOT NULL AND "longitude" IS NOT NULL;
 UPDATE "BusinessProfile" SET "latitude" = "latitude" WHERE "latitude" IS NOT NULL AND "longitude" IS NOT NULL;
@@ -172,6 +313,11 @@ UPDATE "BusinessProfile" SET "latitude" = "latitude" WHERE "latitude" IS NOT NUL
 -- what makes re-ingesting an UPSERT rather than a truncate-and-reload that would
 -- briefly leave the map empty.
 -- ─────────────────────────────────────────────────────────────────────────────
+
+-- Drop tables if they exist (safer for reset scenarios)
+DROP TABLE IF EXISTS osm.poi CASCADE;
+DROP TABLE IF EXISTS osm.road CASCADE;
+DROP TABLE IF EXISTS osm.boundary CASCADE;
 
 CREATE TABLE osm.boundary (
     osm_id BIGINT PRIMARY KEY,
@@ -187,8 +333,8 @@ CREATE TABLE osm.boundary (
     ingested_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX boundary_geom_gist ON osm.boundary USING GIST (geom);
-CREATE INDEX boundary_admin_level_idx ON osm.boundary (admin_level);
+CREATE INDEX IF NOT EXISTS boundary_geom_gist ON osm.boundary USING GIST (geom);
+CREATE INDEX IF NOT EXISTS boundary_admin_level_idx ON osm.boundary (admin_level);
 
 CREATE TABLE osm.road (
     osm_id BIGINT PRIMARY KEY,
@@ -200,8 +346,8 @@ CREATE TABLE osm.road (
     ingested_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX road_geom_gist ON osm.road USING GIST (geom);
-CREATE INDEX road_name_idx ON osm.road (name);
+CREATE INDEX IF NOT EXISTS road_geom_gist ON osm.road USING GIST (geom);
+CREATE INDEX IF NOT EXISTS road_name_idx ON osm.road (name);
 
 CREATE TABLE osm.poi (
     osm_id BIGINT PRIMARY KEY,
@@ -214,9 +360,9 @@ CREATE TABLE osm.poi (
     ingested_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX poi_geom_gist ON osm.poi USING GIST (geom);
-CREATE INDEX poi_category_idx ON osm.poi (category);
-CREATE INDEX poi_name_idx ON osm.poi (name);
+CREATE INDEX IF NOT EXISTS poi_geom_gist ON osm.poi USING GIST (geom);
+CREATE INDEX IF NOT EXISTS poi_category_idx ON osm.poi (category);
+CREATE INDEX IF NOT EXISTS poi_name_idx ON osm.poi (name);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Reviewed read views.
@@ -225,6 +371,10 @@ CREATE INDEX poi_name_idx ON osm.poi (name);
 -- being enforceable: a raw ST_Distance in a service is reviewable as a mistake,
 -- because the correct version already exists here.
 -- ─────────────────────────────────────────────────────────────────────────────
+
+-- Drop views if they exist (for reset scenarios)
+DROP VIEW IF EXISTS geo.worker_location CASCADE;
+DROP VIEW IF EXISTS geo.region CASCADE;
 
 -- Regions, flattened for the picker: coordinates as plain numbers so the API
 -- never has to parse WKB, and the parent's name so a quarter renders as
