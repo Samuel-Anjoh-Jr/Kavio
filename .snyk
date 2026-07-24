@@ -1,0 +1,17 @@
+# Snyk (https://docs.snyk.io/) policy file.
+#
+# `exclude` removes whole files from Snyk Code (SAST) scanning — the only
+# supported way to suppress a Snyk Code finding at the file level (per-issue
+# `ignore` entries are not honoured for Snyk Code). Everything listed here is
+# a literal that never ships or runs against real data: demo/test fixtures,
+# not production secrets.
+version: v1.5.0
+exclude:
+  code:
+    # Local-only demo seed data (bcrypt-hashed before insert; never a real
+    # user's credential and never runs outside `pnpm db:seed`).
+    - packages/database/prisma/seed.mjs
+    # Test fixtures — hardcoded strings here are sample inputs for assertions,
+    # never a credential that guards anything.
+    - '**/*.spec.ts'
+    - '**/*.test.ts'

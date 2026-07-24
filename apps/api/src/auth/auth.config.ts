@@ -4,6 +4,8 @@
  * is discoverable here and tests can drive a config object instead of globals.
  */
 
+import { randomBytes } from 'node:crypto';
+
 /** Parses `15m` / `30d` / `900` (bare seconds) into seconds. */
 export function parseDuration(value: string, fallbackSeconds: number): number {
   const match = /^(\d+)\s*(ms|s|m|h|d)?$/.exec(value.trim());
@@ -78,10 +80,12 @@ export interface JwtConfig {
 /**
  * Dev-only fallback secrets. Booting without real secrets is allowed locally so
  * a fresh clone runs, but it is LOUD, and in production a missing secret is a
- * hard boot failure — never a silent downgrade to a guessable key.
+ * hard boot failure — never a silent downgrade to a guessable key. Generated at
+ * process start rather than hardcoded, so it's never a static guessable value
+ * and never trips secret-scanners; it only needs to be stable within one run.
  */
-const DEV_ACCESS_SECRET = 'trustpro-dev-access-secret-do-not-use-in-production';
-const DEV_REFRESH_SECRET = 'trustpro-dev-refresh-secret-do-not-use-in-production';
+const DEV_ACCESS_SECRET = randomBytes(32).toString('hex');
+const DEV_REFRESH_SECRET = randomBytes(32).toString('hex');
 
 function requireSecret(
   value: string | undefined,
