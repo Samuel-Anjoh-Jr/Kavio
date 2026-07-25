@@ -450,75 +450,96 @@ async function main() {
 
   // ── Phase 0: clear existing data, leaf tables first ─────────────────────
   console.log('🧹 Clearing existing data...');
-  await prisma.$transaction([
-    prisma.locationPing.deleteMany(),
-    prisma.trackingSession.deleteMany(),
-    prisma.sOSAlertEvent.deleteMany(),
-    prisma.sOSAlertShare.deleteMany(),
-    prisma.sOSAlert.deleteMany(),
-    prisma.emergencyContact.deleteMany(),
-    prisma.messageAttachment.deleteMany(),
-    prisma.message.deleteMany(),
-    prisma.conversationParticipant.deleteMany(),
-    prisma.abuseReport.deleteMany(),
-    prisma.moderationAction.deleteMany(),
-    prisma.conversation.deleteMany(),
-    prisma.block.deleteMany(),
-    prisma.reviewPhoto.deleteMany(),
-    prisma.review.deleteMany(),
-    prisma.disputeAttachment.deleteMany(),
-    prisma.disputeMessage.deleteMany(),
-    prisma.dispute.deleteMany(),
-    prisma.escrowStatusEvent.deleteMany(),
-    prisma.transaction.deleteMany(),
-    prisma.escrowHold.deleteMany(),
-    prisma.paymentMethod.deleteMany(),
-    prisma.bookingStatusEvent.deleteMany(),
-    prisma.booking.deleteMany(),
-    prisma.quoteAttachment.deleteMany(),
-    prisma.quote.deleteMany(),
-    prisma.jobInvitation.deleteMany(),
-    prisma.jobApplication.deleteMany(),
-    prisma.jobStatusEvent.deleteMany(),
-    prisma.jobPhoto.deleteMany(),
-    prisma.job.deleteMany(),
-    prisma.wallet.deleteMany(),
-    prisma.portfolioItem.deleteMany(),
-    prisma.availabilityException.deleteMany(),
-    prisma.availability.deleteMany(),
-    prisma.service.deleteMany(),
-    prisma.businessTeamMember.deleteMany(),
-    prisma.businessProfile.deleteMany(),
-    prisma.clientProfile.deleteMany(),
-    prisma.workerProfile.deleteMany(),
-    prisma.onboardingProgress.deleteMany(),
-    prisma.deviceRegistration.deleteMany(),
-    prisma.notification.deleteMany(),
-    prisma.notificationPreference.deleteMany(),
-    prisma.notificationLog.deleteMany(),
-    prisma.userBadge.deleteMany(),
-    prisma.endorsement.deleteMany(),
-    prisma.verificationStageEvent.deleteMany(),
-    prisma.verificationDocument.deleteMany(),
-    prisma.verificationRecord.deleteMany(),
-    prisma.trustScore.deleteMany(),
-    prisma.trustEvent.deleteMany(),
-    prisma.mediaAsset.deleteMany(),
-    prisma.agentInvitation.deleteMany(),
-    prisma.announcement.deleteMany(),
-    prisma.systemSetting.deleteMany(),
-    prisma.auditLog.deleteMany(),
-    prisma.passwordResetToken.deleteMany(),
-    prisma.refreshToken.deleteMany(),
-    prisma.verificationCode.deleteMany(),
-    prisma.userRole.deleteMany(),
-    prisma.user.deleteMany(),
-    prisma.serviceCategory.deleteMany(),
-    prisma.geoRegion.deleteMany(),
-    prisma.tierConfig.deleteMany(),
-    prisma.faq.deleteMany(),
-    prisma.testimonial.deleteMany(),
-  ]);
+
+  // TrustEvent and VerificationStageEvent are enforced append-only at the
+  // database level (see the *_no_delete triggers in their migrations) — the
+  // ledger integrity guarantee that lets a review metric trust what it reads.
+  // A re-seed still needs to actually clear them, so their delete guard is
+  // dropped for the duration of this reset and restored right after,
+  // regardless of outcome.
+  await prisma.$executeRawUnsafe('ALTER TABLE "TrustEvent" DISABLE TRIGGER "TrustEvent_no_delete"');
+  await prisma.$executeRawUnsafe(
+    'ALTER TABLE "VerificationStageEvent" DISABLE TRIGGER "VerificationStageEvent_no_delete"',
+  );
+
+  try {
+    await prisma.$transaction([
+      prisma.locationPing.deleteMany(),
+      prisma.trackingSession.deleteMany(),
+      prisma.sOSAlertEvent.deleteMany(),
+      prisma.sOSAlertShare.deleteMany(),
+      prisma.sOSAlert.deleteMany(),
+      prisma.emergencyContact.deleteMany(),
+      prisma.messageAttachment.deleteMany(),
+      prisma.message.deleteMany(),
+      prisma.conversationParticipant.deleteMany(),
+      prisma.abuseReport.deleteMany(),
+      prisma.moderationAction.deleteMany(),
+      prisma.conversation.deleteMany(),
+      prisma.block.deleteMany(),
+      prisma.reviewPhoto.deleteMany(),
+      prisma.review.deleteMany(),
+      prisma.disputeAttachment.deleteMany(),
+      prisma.disputeMessage.deleteMany(),
+      prisma.dispute.deleteMany(),
+      prisma.escrowStatusEvent.deleteMany(),
+      prisma.transaction.deleteMany(),
+      prisma.escrowHold.deleteMany(),
+      prisma.paymentMethod.deleteMany(),
+      prisma.bookingStatusEvent.deleteMany(),
+      prisma.booking.deleteMany(),
+      prisma.quoteAttachment.deleteMany(),
+      prisma.quote.deleteMany(),
+      prisma.jobInvitation.deleteMany(),
+      prisma.jobApplication.deleteMany(),
+      prisma.jobStatusEvent.deleteMany(),
+      prisma.jobPhoto.deleteMany(),
+      prisma.job.deleteMany(),
+      prisma.wallet.deleteMany(),
+      prisma.portfolioItem.deleteMany(),
+      prisma.availabilityException.deleteMany(),
+      prisma.availability.deleteMany(),
+      prisma.service.deleteMany(),
+      prisma.businessTeamMember.deleteMany(),
+      prisma.businessProfile.deleteMany(),
+      prisma.clientProfile.deleteMany(),
+      prisma.workerProfile.deleteMany(),
+      prisma.onboardingProgress.deleteMany(),
+      prisma.deviceRegistration.deleteMany(),
+      prisma.notification.deleteMany(),
+      prisma.notificationPreference.deleteMany(),
+      prisma.notificationLog.deleteMany(),
+      prisma.userBadge.deleteMany(),
+      prisma.endorsement.deleteMany(),
+      prisma.verificationStageEvent.deleteMany(),
+      prisma.verificationDocument.deleteMany(),
+      prisma.verificationRecord.deleteMany(),
+      prisma.trustScore.deleteMany(),
+      prisma.trustEvent.deleteMany(),
+      prisma.mediaAsset.deleteMany(),
+      prisma.agentInvitation.deleteMany(),
+      prisma.announcement.deleteMany(),
+      prisma.systemSetting.deleteMany(),
+      prisma.auditLog.deleteMany(),
+      prisma.passwordResetToken.deleteMany(),
+      prisma.refreshToken.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.userRole.deleteMany(),
+      prisma.user.deleteMany(),
+      prisma.serviceCategory.deleteMany(),
+      prisma.geoRegion.deleteMany(),
+      prisma.tierConfig.deleteMany(),
+      prisma.faq.deleteMany(),
+      prisma.testimonial.deleteMany(),
+    ]);
+  } finally {
+    await prisma.$executeRawUnsafe(
+      'ALTER TABLE "TrustEvent" ENABLE TRIGGER "TrustEvent_no_delete"',
+    );
+    await prisma.$executeRawUnsafe(
+      'ALTER TABLE "VerificationStageEvent" ENABLE TRIGGER "VerificationStageEvent_no_delete"',
+    );
+  }
   console.log('✅ Cleared.\n');
 
   // ── Phase 1: static / reference data ─────────────────────────────────────
@@ -2980,7 +3001,7 @@ async function main() {
       // Shares to contacts
       const contacts = await prisma.emergencyContact.findMany({ where: { userId: user.id } });
       if (contacts.length > 0) {
-        for (const contact of sample(contacts, randomInt(1, contacts.length))) {
+        for (const contact of sample(contacts, randomInt(1, contacts.length + 1))) {
           await prisma.sOSAlertShare.create({
             data: {
               sosAlertId: alert.id,
