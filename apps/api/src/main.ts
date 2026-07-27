@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './lib/all-exceptions.filter';
@@ -15,6 +16,8 @@ async function bootstrap() {
   // Let RedisModule/QueueModule close their connections cleanly on SIGTERM.
   app.enableShutdownHooks();
 
-  await app.listen(process.env.PORT ?? 4000);
+  const port = process.env.PORT ?? 4000;
+  await app.listen(port);
+  new Logger('Bootstrap').log(`Listening on http://localhost:${port}`);
 }
 void bootstrap();

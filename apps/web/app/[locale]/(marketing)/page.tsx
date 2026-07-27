@@ -112,14 +112,54 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     description: t(`trustEngine.stages.${score}.description`),
   }));
 
-  const portfolio = ['electrician', 'plumber', 'painter', 'welder'].map((trade) => ({
+  // TEMPORARY: Unsplash-hosted photos so the rail shows real trade photography
+  // in dev. This reintroduces the external-host dependency the local SVGs
+  // above were deliberately avoiding — before shipping, download these (or
+  // licensed equivalents) into public/marketing/portfolio/ and point
+  // beforeUrl/afterUrl back at local paths so the landing page never depends
+  // on a live third-party host again.
+  // ex: apps/web/public/marketing/portfolio/electrician-before.jpg
+  // apps/web/public/marketing/portfolio/electrician-after.jpg
+  // apps/web/public/marketing/portfolio/plumber-before.jpg
+  // apps/web/public/marketing/portfolio/plumber-after.jpg
+  // apps/web/public/marketing/portfolio/painter-before.jpg
+  // apps/web/public/marketing/portfolio/painter-after.jpg
+  // apps/web/public/marketing/portfolio/welder-before.jpg
+  // apps/web/public/marketing/portfolio/welder-after.jpg
+
+  const PORTFOLIO_TRADES = ['electrician', 'plumber', 'painter', 'welder'] as const;
+
+  const PORTFOLIO_PHOTOS: Record<
+    (typeof PORTFOLIO_TRADES)[number],
+    { before: string; after: string }
+  > = {
+    electrician: {
+      before: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=640&h=480&fit=crop',
+      after: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=640&h=480&fit=crop',
+    },
+    plumber: {
+      // STAND-IN: original URL 404'd and no verified replacement was found —
+      // reusing the "after" shot for both until a real photo is sourced.
+      before: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
+      after: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
+    },
+    painter: {
+      before: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=640&h=480&fit=crop',
+      after: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=640&h=480&fit=crop',
+    },
+    welder: {
+      // STAND-IN: original "after" URL 404'd and no verified replacement was
+      // found — reusing the "before" shot for both until a real photo is sourced.
+      before: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
+      after: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
+    },
+  };
+
+  const portfolio = PORTFOLIO_TRADES.map((trade) => ({
     trade: t(`portfolio.items.${trade}.trade`),
     caption: t(`portfolio.items.${trade}.caption`),
-    // Locally served placeholders: the landing page must not depend on a live
-    // storage bucket to render, and a broken <img> on the conversion surface is
-    // worse than a plain one.
-    beforeUrl: `/marketing/portfolio/${trade}-before.svg`,
-    afterUrl: `/marketing/portfolio/${trade}-after.svg`,
+    beforeUrl: PORTFOLIO_PHOTOS[trade].before,
+    afterUrl: PORTFOLIO_PHOTOS[trade].after,
   }));
 
   /**

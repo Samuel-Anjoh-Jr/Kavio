@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
+import { JobsBoard } from '@/components/discovery/jobs-board';
 import { buildMetadata } from '@/lib/seo';
 
 /**
@@ -26,8 +27,9 @@ export async function generateMetadata({
 }
 
 /**
- * Posted-jobs browse surface. Open to guests (ACC-01); the job feed itself
- * arrives with the jobs backend in PROMPT 54-57.
+ * Posted-jobs browse surface. Open to guests (ACC-01). The board renders
+ * client-side (`JobsBoard`, `@Public()` on the `jobs` resolver) so this page
+ * stays a plain server component for its metadata.
  */
 export default async function JobsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -49,9 +51,7 @@ export default async function JobsPage({ params }: { params: Promise<{ locale: s
         </Button>
       </div>
 
-      <div className="mt-8 rounded-card border border-dashed border-border bg-surface/50 px-6 py-12 text-center">
-        <p className="text-sm text-muted-foreground">{t('empty')}</p>
-      </div>
+      <JobsBoard />
     </div>
   );
 }

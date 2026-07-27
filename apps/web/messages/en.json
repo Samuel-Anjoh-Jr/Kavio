@@ -353,7 +353,7 @@
     "workersHeading": "Workers near you",
     "workersEmpty": "No workers to show yet. Set your location to see who works near you.",
     "jobsHeading": "Recently posted jobs",
-    "jobsEmpty": "Job posting opens with the jobs module. Post one now and it'll be waiting for the right professional.",
+    "jobsEmpty": "No jobs posted yet in your area. Post one now and it'll be waiting for the right professional.",
     "mapLabel": "Map of workers in this area",
     "mapUnavailable": "The map isn't available right now — the list beside it shows the same workers.",
     "searchThisArea": "Search this area",
@@ -366,11 +366,18 @@
     "recentlyViewed": "Recently viewed",
     "unnamedWorker": "TrustPro professional"
   },
+  "JobCard": {
+    "unnamedJob": "Untitled job",
+    "budgetFrom": "From",
+    "budgetRange": "{min} – {max}",
+    "budgetOnRequest": "Budget on request",
+    "viewJob": "View job"
+  },
   "Jobs": {
     "title": "Posted jobs",
     "subtitle": "Browse what people near you need done.",
     "post": "Post a job",
-    "empty": "No jobs to show yet. Once posting is live, open jobs in your area will appear here.",
+    "empty": "No open jobs in your area right now. Check back soon, or post one yourself.",
     "reportListing": "Report this listing"
   },
   "PostJob": {

@@ -93,6 +93,71 @@ const JOB_FIELDS = `
   createdAt
 `;
 
+export interface JobBoardEntry {
+  id: string;
+  title: string | null;
+  categorySlug: string | null;
+  categoryNameEn: string | null;
+  categoryNameFr: string | null;
+  budgetMin: number | null;
+  budgetMax: number | null;
+  urgency: JobUrgency;
+  city: string | null;
+  area: string | null;
+  photos: JobPhoto[];
+  publishedAt: string | null;
+}
+
+/**
+ * The public job board (JOB-04), trimmed to what a teaser card shows — no
+ * timeline, no application/quote counts, no poster reliability. Those matter
+ * once someone opens the job, not while scanning a rail of them.
+ */
+export const JOBS_QUERY = gql`
+  query Jobs($categoryId: ID, $geoRegionId: ID, $urgency: String, $page: Int, $pageSize: Int) {
+    jobs(
+      categoryId: $categoryId
+      geoRegionId: $geoRegionId
+      urgency: $urgency
+      page: $page
+      pageSize: $pageSize
+    ) {
+      jobs {
+        id
+        title
+        categorySlug
+        categoryNameEn
+        categoryNameFr
+        budgetMin
+        budgetMax
+        urgency
+        city
+        area
+        photos {
+          id
+          url
+          sortOrder
+        }
+        publishedAt
+      }
+      total
+      page
+      pageSize
+      hasMore
+    }
+  }
+`;
+
+export interface JobsQueryResult {
+  jobs: {
+    jobs: JobBoardEntry[];
+    total: number;
+    page: number;
+    pageSize: number;
+    hasMore: boolean;
+  };
+}
+
 /** One job, with its full status timeline — the Job-in-Progress screen (JOB-06). */
 export const JOB_QUERY = gql`
   query Job($id: ID!) {

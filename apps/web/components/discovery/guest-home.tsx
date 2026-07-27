@@ -8,14 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useRequireAuth } from '@/components/auth/require-auth';
 import { emptyRecentWorkers, readRecentWorkers, searchResultToCard } from '@/lib/discovery';
+import type { WorkerCardData } from '@/lib/discovery';
 import { isValidCoordinate } from '@/lib/geo';
 import { SEARCH_WORKERS_QUERY, type SearchWorkersQueryResult } from '@/lib/graphql/discovery';
+import { JOBS_QUERY, type JobsQueryResult } from '@/lib/graphql/jobs';
 import { PAGE_SIZE, serialiseFilters, EMPTY_FILTERS } from '@/lib/search-filters';
 import { cn } from '@/lib/utils';
+import { JobCard, JobCardSkeleton } from './job-card';
 import { LocationSetter } from './location-setter';
 import { SearchBar } from './search-bar';
 import { useBrowsingLocation } from './location-provider';
 import { useDebouncedValue } from './use-debounced-value';
+import { WorkerCard, WorkerCardSkeleton } from './worker-card';
 import { WorkerMap } from './worker-map';
 import { WorkerResults } from './worker-results';
 
@@ -98,6 +102,13 @@ export function GuestHome() {
 
   const result = data?.searchWorkers;
   const workers = useMemo(() => (result?.workers ?? []).map(searchResultToCard), [result?.workers]);
+
+  // The public job board (JOB-04) — a teaser rail, not the full filtered
+  // board that /app/jobs offers, so it asks for a flat recent page only.
+  const { data: jobsData, loading: jobsLoading } = useQuery<JobsQueryResult>(JOBS_QUERY, {
+    variables: { pageSize: 8 },
+  });
+  const jobs = jobsData?.jobs.jobs ?? [];
 
   /** Hands the current exploration off to the full search screen, URL and all. */
   function openFullSearch() {
@@ -197,15 +208,21 @@ export function GuestHome() {
           </div>
         </div>
 
-        <div
-          className={cn(
-            'mt-6',
-            // Side by side from lg; on a phone the toggle above decides, because
-            // a half-height map next to a half-height list is two unusable panes.
-            view === 'map' ? 'lg:grid lg:grid-cols-[1fr_420px] lg:gap-6' : '',
-          )}
-        >
-          {view === 'map' && (
+        {view === 'list' ? (
+          // A horizontal rail rather than a grid: this is a teaser, not the
+          // full search screen ("See all" is one tap away), so it should read
+          // above the fold next to the hero and the jobs rail below it,
+          // instead of pushing both off-screen on a phone.
+          <div className="mt-6">
+            <WorkersRail
+              workers={workers}
+              loading={loading && !result}
+              error={Boolean(error)}
+              onRetry={() => void refetch()}
+            />
+          </div>
+        ) : (
+          <div className="mt-6 lg:grid lg:grid-cols-[1fr_420px] lg:gap-6">
             <WorkerMap
               workers={workers}
               center={origin}
@@ -227,19 +244,19 @@ export function GuestHome() {
                 });
               }}
             />
-          )}
 
-          <div className={view === 'map' ? 'mt-6 lg:mt-0 lg:max-h-[640px] lg:overflow-y-auto' : ''}>
-            <WorkerResults
-              workers={workers}
-              loading={loading && !result}
-              error={Boolean(error)}
-              noProviders={result?.noProviders}
-              onRetry={() => void refetch()}
-              onWidenRadius={(radiusM) => setAreaOverride(origin ? { ...origin, radiusM } : null)}
-            />
+            <div className="mt-6 lg:mt-0 lg:max-h-[640px] lg:overflow-y-auto">
+              <WorkerResults
+                workers={workers}
+                loading={loading && !result}
+                error={Boolean(error)}
+                noProviders={result?.noProviders}
+                onRetry={() => void refetch()}
+                onWidenRadius={(radiusM) => setAreaOverride(origin ? { ...origin, radiusM } : null)}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* (b) posted jobs */}
@@ -256,27 +273,37 @@ export function GuestHome() {
           </Button>
         </div>
 
-        {/* The jobs module is Phase 4 (PROMPTS 54-57). Until it exists this
-            section says so rather than rendering invented job cards — a
-            marketplace that fakes its supply is exactly what this product is
-            positioned against. */}
-        <div className="mt-6 flex flex-col items-center gap-3 rounded-card border border-dashed border-border bg-surface/50 px-6 py-14 text-center">
-          <span className="flex size-16 items-center justify-center rounded-full bg-muted">
-            <Briefcase aria-hidden className="size-8 text-muted-foreground" />
-          </span>
-          <p className="max-w-md text-sm text-muted-foreground">{t('jobsEmpty')}</p>
-          <Button
-            variant="outline"
-            onClick={() =>
-              requireAuth('post_job', () => router.push('/app/jobs/new'), {
-                returnTo: '/app/jobs/new',
-              })
-            }
-          >
-            <Plus aria-hidden />
-            {t('postJob')}
-          </Button>
-        </div>
+        {jobs.length === 0 && !jobsLoading ? (
+          <div className="mt-6 flex flex-col items-center gap-3 rounded-card border border-dashed border-border bg-surface/50 px-6 py-14 text-center">
+            <span className="flex size-16 items-center justify-center rounded-full bg-muted">
+              <Briefcase aria-hidden className="size-8 text-muted-foreground" />
+            </span>
+            <p className="max-w-md text-sm text-muted-foreground">{t('jobsEmpty')}</p>
+            <Button
+              variant="outline"
+              onClick={() =>
+                requireAuth('post_job', () => router.push('/app/jobs/new'), {
+                  returnTo: '/app/jobs/new',
+                })
+              }
+            >
+              <Plus aria-hidden />
+              {t('postJob')}
+            </Button>
+          </div>
+        ) : (
+          // Capped height rather than an open-ended list: this is a teaser
+          // ("See all" routes to the full board at /app/jobs), so it reads as
+          // "here's the start of a list, scroll for more" and stays visible
+          // above the fold alongside the hero and the workers rail.
+          <div className="mt-6 max-h-[420px] overflow-y-auto pb-1">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {jobsLoading && jobs.length === 0
+                ? Array.from({ length: 4 }, (_, index) => <JobCardSkeleton key={index} />)
+                : jobs.map((job) => <JobCard key={job.id} job={job} />)}
+            </div>
+          </div>
+        )}
       </section>
 
       {recent.length > 0 && (
@@ -306,5 +333,69 @@ export function GuestHome() {
         </section>
       )}
     </div>
+  );
+}
+
+/**
+ * The horizontal "Workers near you" teaser (DIS-02, DIS-10) shown in the
+ * guest page's default list mode. Not `WorkerResults`: that component is a
+ * paginated, virtualised grid for the full search screen — this is a fixed
+ * handful of cards meant to be scanned in one horizontal swipe, so the
+ * hero, search bar and the jobs rail below it all stay reachable without a
+ * page scroll.
+ */
+function WorkersRail({
+  workers,
+  loading,
+  error,
+  onRetry,
+}: {
+  workers: WorkerCardData[];
+  loading: boolean;
+  error: boolean;
+  onRetry: () => void;
+}) {
+  const t = useTranslations('Explore');
+  const tSearch = useTranslations('Search');
+
+  if (loading && workers.length === 0) {
+    return (
+      <ul className="flex gap-4 overflow-x-auto pb-2">
+        {Array.from({ length: 4 }, (_, index) => (
+          <li key={index} className="w-72 shrink-0">
+            <WorkerCardSkeleton />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-card border border-dashed border-border bg-surface/50 px-6 py-10 text-center">
+        <p className="text-sm text-muted-foreground">{tSearch('errorBody')}</p>
+        <Button size="sm" variant="outline" onClick={onRetry}>
+          {tSearch('retry')}
+        </Button>
+      </div>
+    );
+  }
+
+  if (workers.length === 0) {
+    return (
+      <p className="rounded-card border border-dashed border-border bg-surface/50 px-6 py-10 text-center text-sm text-muted-foreground">
+        {t('workersEmpty')}
+      </p>
+    );
+  }
+
+  return (
+    <ul className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
+      {workers.map((worker) => (
+        <li key={worker.userId} className="w-72 shrink-0 snap-start">
+          <WorkerCard worker={worker} />
+        </li>
+      ))}
+    </ul>
   );
 }

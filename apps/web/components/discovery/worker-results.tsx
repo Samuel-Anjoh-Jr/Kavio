@@ -1,6 +1,6 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useTranslations } from 'next-intl';
 import { Compass, Loader2, MapPinOff, SearchX, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,28 +26,39 @@ import { useWindowVirtual } from './use-window-virtual';
 /** Estimated card height + gap, for the virtual window. */
 const ROW_HEIGHT = 296;
 
+/** Matches the `@2xl`/`@5xl` container-query breakpoints on the grid below. */
+const TWO_COL_PX = 672;
+const THREE_COL_PX = 1024;
+
 /**
- * Mirrors the grid breakpoints below. The virtualiser needs the column count as
- * a NUMBER — a Tailwind class cannot tell it how many cards are in a row — so
- * the viewport is read directly, as an external store rather than through an
- * effect that would render one wrong frame first.
+ * Column count from the grid's own rendered width, not the viewport.
+ *
+ * This list sits full-width on the search screen but squeezed into a ~420px
+ * sidebar next to the map on the guest explore page — a viewport-width read
+ * would force 3 columns into that sidebar just because the browser window is
+ * wide. A `ResizeObserver` on the actual grid box keeps the column count (and
+ * therefore the virtualiser's row math) honest in both places.
  */
-function subscribeToViewport(listener: () => void): () => void {
-  if (typeof window === 'undefined') return () => {};
-  window.addEventListener('resize', listener);
-  return () => window.removeEventListener('resize', listener);
-}
+function useContainerColumns(ref: RefObject<HTMLElement | null>): number {
+  // One column until the first measurement: the mobile-first layout is the
+  // safe first paint, and the real count arrives before any scrolling can
+  // happen.
+  const [columns, setColumns] = useState(1);
 
-function readColumns(): number {
-  if (typeof window === 'undefined') return 1;
-  const width = window.innerWidth;
-  return width >= 1024 ? 3 : width >= 640 ? 2 : 1;
-}
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
 
-function useColumns(): number {
-  // One column on the server: the mobile-first layout is the safe first paint,
-  // and the real count arrives on hydration before any scrolling can happen.
-  return useSyncExternalStore(subscribeToViewport, readColumns, () => 1);
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      setColumns(width >= THREE_COL_PX ? 3 : width >= TWO_COL_PX ? 2 : 1);
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return columns;
 }
 
 export interface WorkerResultsProps {
@@ -77,7 +88,8 @@ export function WorkerResults({
   onRetry,
 }: WorkerResultsProps) {
   const t = useTranslations('Search');
-  const columns = useColumns();
+  const gridRef = useRef<HTMLDivElement>(null);
+  const columns = useContainerColumns(gridRef);
 
   const { containerRef, start, end, paddingTop, paddingBottom } = useWindowVirtual({
     itemCount: workers.length,
@@ -89,10 +101,12 @@ export function WorkerResults({
   // the shape of the answer makes a slow connection feel like it is working.
   if (loading && workers.length === 0) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }, (_, index) => (
-          <WorkerCardSkeleton key={index} />
-        ))}
+      <div ref={gridRef} className="@container">
+        <div className="grid gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3">
+          {Array.from({ length: 6 }, (_, index) => (
+            <WorkerCardSkeleton key={index} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -120,8 +134,15 @@ export function WorkerResults({
 
   return (
     <>
-      <div ref={containerRef} style={{ paddingTop, paddingBottom }}>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        ref={(node) => {
+          containerRef.current = node;
+          gridRef.current = node;
+        }}
+        className="@container"
+        style={{ paddingTop, paddingBottom }}
+      >
+        <div className="grid gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3">
           {workers.slice(start, end).map((worker) => (
             <WorkerCard key={worker.userId} worker={worker} />
           ))}

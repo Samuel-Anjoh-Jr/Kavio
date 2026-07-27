@@ -353,7 +353,7 @@
     "workersHeading": "Professionnels près de vous",
     "workersEmpty": "Aucun professionnel à afficher. Définissez votre position pour voir qui travaille près de vous.",
     "jobsHeading": "Offres récentes",
-    "jobsEmpty": "La publication d'offres s'ouvrira avec le module des jobs. Publiez la vôtre, elle attendra le bon professionnel.",
+    "jobsEmpty": "Aucune offre publiée pour le moment dans votre zone. Publiez la vôtre, elle attendra le bon professionnel.",
     "mapLabel": "Carte des professionnels de cette zone",
     "mapUnavailable": "La carte n'est pas disponible pour le moment — la liste à côté montre les mêmes professionnels.",
     "searchThisArea": "Chercher dans cette zone",
@@ -366,11 +366,18 @@
     "recentlyViewed": "Consultés récemment",
     "unnamedWorker": "Professionnel TrustPro"
   },
+  "JobCard": {
+    "unnamedJob": "Offre sans titre",
+    "budgetFrom": "À partir de",
+    "budgetRange": "{min} – {max}",
+    "budgetOnRequest": "Budget sur demande",
+    "viewJob": "Voir l'offre"
+  },
   "Jobs": {
     "title": "Missions publiées",
     "subtitle": "Découvrez ce dont les gens près de chez vous ont besoin.",
     "post": "Publier une mission",
-    "empty": "Aucune mission pour le moment. Dès l'ouverture de la publication, les missions de votre zone apparaîtront ici.",
+    "empty": "Aucune mission ouverte dans votre zone pour le moment. Revenez bientôt, ou publiez la vôtre.",
     "reportListing": "Signaler cette annonce"
   },
   "PostJob": {
