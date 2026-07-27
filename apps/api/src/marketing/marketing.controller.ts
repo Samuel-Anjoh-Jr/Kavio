@@ -14,18 +14,22 @@ import { CurrentUser, RequirePermissions } from '../auth/decorators/auth.decorat
 import { ZodValidationPipe } from '../lib/zod-validation.pipe';
 import {
   createFaqSchema,
+  createPortfolioItemSchema,
   createTestimonialSchema,
   reorderSchema,
   updateFaqSchema,
+  updatePortfolioItemSchema,
   updateTestimonialSchema,
   type CreateFaqDto,
+  type CreatePortfolioItemDto,
   type CreateTestimonialDto,
   type ReorderDto,
   type UpdateFaqDto,
+  type UpdatePortfolioItemDto,
   type UpdateTestimonialDto,
 } from './dto/marketing.dto';
 import { MarketingService } from './marketing.service';
-import type { FaqView, TestimonialView } from './models/marketing.model';
+import type { FaqView, PortfolioItemView, TestimonialView } from './models/marketing.model';
 
 /**
  * Marketing-content WRITES (REST, per the DUAL API RULE). Reads — including the
@@ -126,5 +130,44 @@ export class MarketingController {
     @Body(new ZodValidationPipe(reorderSchema)) dto: ReorderDto,
   ): Promise<TestimonialView[]> {
     return this.marketing.reorderTestimonials(dto, actor);
+  }
+
+  // ── Portfolio showcase ─────────────────────────────────────────────────────
+
+  @Post('portfolio')
+  @HttpCode(HttpStatus.CREATED)
+  async createPortfolioItem(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Body(new ZodValidationPipe(createPortfolioItemSchema)) dto: CreatePortfolioItemDto,
+  ): Promise<PortfolioItemView> {
+    return this.marketing.createPortfolioItem(dto, actor);
+  }
+
+  @Patch('portfolio/:id')
+  @HttpCode(HttpStatus.OK)
+  async updatePortfolioItem(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(updatePortfolioItemSchema)) dto: UpdatePortfolioItemDto,
+  ): Promise<PortfolioItemView> {
+    return this.marketing.updatePortfolioItem(id, dto, actor);
+  }
+
+  @Delete('portfolio/:id')
+  @HttpCode(HttpStatus.OK)
+  async deletePortfolioItem(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<{ id: string }> {
+    return this.marketing.deletePortfolioItem(id, actor);
+  }
+
+  @Post('portfolio/reorder')
+  @HttpCode(HttpStatus.OK)
+  async reorderPortfolio(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Body(new ZodValidationPipe(reorderSchema)) dto: ReorderDto,
+  ): Promise<PortfolioItemView[]> {
+    return this.marketing.reorderPortfolio(dto, actor);
   }
 }

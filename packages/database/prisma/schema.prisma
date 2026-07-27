@@ -3464,3 +3464,31 @@ model Testimonial {
 
   @@index([visible, order])
 }
+
+/// A before/after entry in the landing page's Portfolio showcase (SRS §26.2).
+model PortfolioShowcase {
+  id String @id @default(uuid()) @db.Uuid
+
+  tradeEn   String
+  tradeFr   String
+  captionEn String
+  captionFr String
+
+  /// Plain storage/CDN URLs, same shape as Testimonial.avatarUrl — an admin
+  /// pastes a URL rather than this being a MediaAsset relation, so a photo
+  /// can be swapped without an upload round-trip.
+  beforeUrl String
+  afterUrl  String
+
+  /// Admin-chosen display order, ascending.
+  order Int @default(0)
+
+  isPublished Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The public read: what is published, in order. Also serves the admin
+  /// list, which filters on nothing and sorts the same way.
+  @@index([isPublished, order])
+}

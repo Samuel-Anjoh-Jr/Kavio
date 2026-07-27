@@ -96,6 +96,8 @@
   "Auth": {
     "signIn": "Se connecter",
     "signOut": "Se déconnecter",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
     "errors": {
       "INVALID_CREDENTIALS": "Téléphone/e-mail ou mot de passe invalide.",
       "SESSION_EXPIRED": "Votre session a expiré. Reconnectez-vous.",
@@ -159,10 +161,9 @@
         }
       },
       "phoneLabel": "Numéro de téléphone",
-      "phoneHint": "Numéros camerounais uniquement, ex. +237 6XX XX XX XX.",
+      "phoneHint": "Saisissez un numéro valide.",
       "phoneInvalid": "Saisissez un numéro camerounais valide.",
       "emailLabel": "Adresse e-mail",
-      "emailHint": "Les codes de vérification arrivent par e-mail tant que le SMS n'est pas activé : ajoutez-en une.",
       "emailInvalid": "Saisissez une adresse e-mail valide.",
       "passwordLabel": "Mot de passe",
       "passwordHint": "Au moins 8 caractères.",
@@ -2350,17 +2351,22 @@
     "rbacReadOnlyNote": "Cette matrice est déclarée dans le code, car les gardes d'autorisation la lisent depuis là. La rendre modifiable ici permettrait à une seule session admin compromise de s'accorder toutes les capacités. La modifier passe par une revue de code.",
     "marketing": {
       "pageTitle": "Contenu marketing",
-      "pageSubtitle": "La FAQ et les témoignages affichés sur la page d’accueil publique.",
+      "pageSubtitle": "La FAQ, les témoignages et la vitrine portfolio affichés sur la page d’accueil publique.",
       "faqTitle": "FAQ",
       "faqSubtitle": "Questions et réponses de la page d’accueil. Réordonnez avec les flèches.",
       "testimonialsTitle": "Témoignages",
       "testimonialsSubtitle": "Histoires clients du carrousel de la page d’accueil.",
+      "portfolioTitle": "Vitrine portfolio",
+      "portfolioSubtitle": "Les exemples avant/après par métier sur la page d’accueil.",
       "addFaq": "Ajouter une question",
       "editFaq": "Modifier la question",
       "addTestimonial": "Ajouter un témoignage",
       "editTestimonial": "Modifier le témoignage",
+      "addPortfolioItem": "Ajouter un élément",
+      "editPortfolioItem": "Modifier l’élément",
       "faqDialogHint": "Les deux langues sont requises. Les réponses acceptent le Markdown de base.",
       "testimonialDialogHint": "Les deux langues sont requises. La note s’affiche en demi-étoiles.",
+      "portfolioDialogHint": "Les deux langues sont requises. Collez une URL de stockage ou de CDN pour chaque photo.",
       "draft": "Brouillon",
       "hidden": "Masqué",
       "published": "Publié",
@@ -2375,10 +2381,13 @@
       "loadError": "Impossible de charger le contenu marketing. Veuillez réessayer.",
       "loadingFaqs": "Chargement des questions",
       "loadingTestimonials": "Chargement des témoignages",
+      "loadingPortfolio": "Chargement des éléments du portfolio",
       "noFaqs": "Aucune question pour l’instant",
       "noFaqsHint": "Ajoutez votre première question pour alimenter la FAQ de la page d’accueil.",
       "noTestimonials": "Aucun témoignage pour l’instant",
       "noTestimonialsHint": "Ajoutez-en au moins huit pour que le carrousel ne se répète pas visiblement.",
+      "noPortfolioItems": "Aucun élément pour l’instant",
+      "noPortfolioItemsHint": "Ajoutez un exemple avant/après pour alimenter la vitrine de la page d’accueil.",
       "questionEn": "Question (anglais)",
       "questionFr": "Question (français)",
       "answerEn": "Réponse (anglais)",
@@ -2391,7 +2400,13 @@
       "contentEn": "Témoignage (anglais)",
       "contentFr": "Témoignage (français)",
       "rating": "Note (0–5)",
-      "avatarOptional": "URL de l’avatar (facultatif)"
+      "avatarOptional": "URL de l’avatar (facultatif)",
+      "tradeEn": "Métier (anglais)",
+      "tradeFr": "Métier (français)",
+      "captionEn": "Légende (anglais)",
+      "captionFr": "Légende (français)",
+      "beforeUrlLabel": "URL de la photo « avant »",
+      "afterUrlLabel": "URL de la photo « après »"
     }
   },
   "SystemStates": {
@@ -2508,25 +2523,7 @@
       "beforeAlt": "Avant : travaux de {trade}",
       "afterAlt": "Travaux de {trade} terminés",
       "sliderLabel": "Révéler l’avant/après de cette mission de {trade}",
-      "sliderValue": "{percent}% révélé",
-      "items": {
-        "electrician": {
-          "trade": "Électricien",
-          "caption": "Réfection du tableau, Bonapriso"
-        },
-        "plumber": {
-          "trade": "Plombier",
-          "caption": "Rénovation salle de bain, Bastos"
-        },
-        "painter": {
-          "trade": "Peintre",
-          "caption": "Repeinte complète, Akwa"
-        },
-        "welder": {
-          "trade": "Soudeur",
-          "caption": "Portail de sécurité, Bonabéri"
-        }
-      }
+      "sliderValue": "{percent}% révélé"
     },
     "pricing": {
       "heading": "Votre argent est protégé jusqu’à la fin des travaux.",

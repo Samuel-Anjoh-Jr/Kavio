@@ -98,6 +98,38 @@ export const updateTestimonialSchema = z
 
 export type UpdateTestimonialDto = z.infer<typeof updateTestimonialSchema>;
 
+const trade = shortText(80);
+const caption = shortText(200);
+
+export const createPortfolioItemSchema = z.object({
+  tradeEn: trade,
+  tradeFr: trade,
+  captionEn: caption,
+  captionFr: caption,
+  beforeUrl: z.url('Use a valid image URL.').max(500),
+  afterUrl: z.url('Use a valid image URL.').max(500),
+  order: z.number().int().min(0).max(9_999).optional(),
+  isPublished: z.boolean().optional(),
+});
+
+export type CreatePortfolioItemDto = z.infer<typeof createPortfolioItemSchema>;
+
+export const updatePortfolioItemSchema = z
+  .object({
+    tradeEn: trade,
+    tradeFr: trade,
+    captionEn: caption,
+    captionFr: caption,
+    beforeUrl: z.url().max(500),
+    afterUrl: z.url().max(500),
+    order: z.number().int().min(0).max(9_999),
+    isPublished: z.boolean(),
+  })
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, { message: 'Change at least one field.' });
+
+export type UpdatePortfolioItemDto = z.infer<typeof updatePortfolioItemSchema>;
+
 /**
  * Bulk reorder, so an admin drags the list into shape and saves once.
  *

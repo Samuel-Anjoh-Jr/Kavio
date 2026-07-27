@@ -50,9 +50,22 @@ export interface TestimonialEntry {
   visible: boolean;
 }
 
+export interface PortfolioItemEntry {
+  id: string;
+  tradeEn: string;
+  tradeFr: string;
+  captionEn: string;
+  captionFr: string;
+  beforeUrl: string;
+  afterUrl: string;
+  order: number;
+  isPublished: boolean;
+}
+
 export interface MarketingContentQueryResult {
   faqs: FaqEntry[];
   testimonials: TestimonialEntry[];
+  portfolio: PortfolioItemEntry[];
 }
 
 /**
@@ -88,6 +101,17 @@ export const MARKETING_CONTENT_QUERY = gql`
       }
       order
       visible
+    }
+    portfolio {
+      id
+      tradeEn
+      tradeFr
+      captionEn
+      captionFr
+      beforeUrl
+      afterUrl
+      order
+      isPublished
     }
   }
 `;
@@ -127,6 +151,17 @@ export const ADMIN_MARKETING_CONTENT_QUERY = gql`
       order
       visible
     }
+    portfolio(includeUnpublished: true) {
+      id
+      tradeEn
+      tradeFr
+      captionEn
+      captionFr
+      beforeUrl
+      afterUrl
+      order
+      isPublished
+    }
   }
 `;
 
@@ -134,10 +169,15 @@ export const ADMIN_MARKETING_CONTENT_QUERY = gql`
  * Picks the viewer's language out of a bilingual row (`fooEn` / `fooFr`).
  *
  * Accepts the concrete entry types rather than a generic `Record`, so call sites
- * pass a `FaqEntry` or `TestimonialEntry` directly; the string-index read is
- * cast internally, which is the one place that lookup is untyped by necessity.
+ * pass a `FaqEntry`, `TestimonialEntry` or `PortfolioItemEntry` directly; the
+ * string-index read is cast internally, which is the one place that lookup is
+ * untyped by necessity.
  */
-export function localised(row: FaqEntry | TestimonialEntry, field: string, locale: string): string {
+export function localised(
+  row: FaqEntry | TestimonialEntry | PortfolioItemEntry,
+  field: string,
+  locale: string,
+): string {
   const key = `${field}${locale === 'fr' ? 'Fr' : 'En'}`;
   return ((row as unknown as Record<string, unknown>)[key] as string | undefined) ?? '';
 }

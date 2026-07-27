@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { Faq, Prisma, Testimonial } from '@trustpro/database';
+import type { Faq, PortfolioShowcase, Prisma, Testimonial } from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { roleHasPermission } from '../auth/rbac/permissions';
 import { AppException } from '../lib/app-exception';
@@ -7,13 +7,15 @@ import { createLogger, getRequestId } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
   CreateFaqDto,
+  CreatePortfolioItemDto,
   CreateTestimonialDto,
   ReorderDto,
   UpdateFaqDto,
+  UpdatePortfolioItemDto,
   UpdateTestimonialDto,
 } from './dto/marketing.dto';
 import { toStarBreakdown } from './star-rating.util';
-import type { FaqView, TestimonialView } from './models/marketing.model';
+import type { FaqView, PortfolioItemView, TestimonialView } from './models/marketing.model';
 
 const logger = createLogger('marketing');
 
@@ -79,6 +81,23 @@ export class MarketingService {
     });
 
     return rows.map(toTestimonialView);
+  }
+
+  async listPortfolio(options: {
+    includeUnpublished?: boolean;
+    viewer?: AuthenticatedUser;
+  }): Promise<PortfolioItemView[]> {
+    const includeUnpublished = this.resolvePrivilegedView(
+      options.includeUnpublished,
+      options.viewer,
+    );
+
+    const rows = await this.prisma.client.portfolioShowcase.findMany({
+      where: includeUnpublished ? {} : { isPublished: true },
+      orderBy: [{ order: 'asc' }, { id: 'asc' }],
+    });
+
+    return rows.map(toPortfolioItemView);
   }
 
   /**
@@ -247,21 +266,100 @@ export class MarketingService {
     return this.listTestimonials({ includeHidden: true, viewer: actor });
   }
 
+  async createPortfolioItem(
+    dto: CreatePortfolioItemDto,
+    actor: AuthenticatedUser,
+  ): Promise<PortfolioItemView> {
+    const row = await this.prisma.client.portfolioShowcase.create({
+      data: {
+        tradeEn: dto.tradeEn,
+        tradeFr: dto.tradeFr,
+        captionEn: dto.captionEn,
+        captionFr: dto.captionFr,
+        beforeUrl: dto.beforeUrl,
+        afterUrl: dto.afterUrl,
+        order: dto.order ?? (await this.nextOrder('portfolio')),
+        isPublished: dto.isPublished ?? true,
+      },
+    });
+
+    await this.audit(actor, 'marketing.portfolio_item_created', `PortfolioShowcase:${row.id}`, {
+      tradeEn: row.tradeEn,
+    });
+
+    return toPortfolioItemView(row);
+  }
+
+  async updatePortfolioItem(
+    id: string,
+    dto: UpdatePortfolioItemDto,
+    actor: AuthenticatedUser,
+  ): Promise<PortfolioItemView> {
+    await this.requirePortfolioItem(id);
+
+    const row = await this.prisma.client.portfolioShowcase.update({
+      where: { id },
+      data: {
+        ...(dto.tradeEn !== undefined ? { tradeEn: dto.tradeEn } : {}),
+        ...(dto.tradeFr !== undefined ? { tradeFr: dto.tradeFr } : {}),
+        ...(dto.captionEn !== undefined ? { captionEn: dto.captionEn } : {}),
+        ...(dto.captionFr !== undefined ? { captionFr: dto.captionFr } : {}),
+        ...(dto.beforeUrl !== undefined ? { beforeUrl: dto.beforeUrl } : {}),
+        ...(dto.afterUrl !== undefined ? { afterUrl: dto.afterUrl } : {}),
+        ...(dto.order !== undefined ? { order: dto.order } : {}),
+        ...(dto.isPublished !== undefined ? { isPublished: dto.isPublished } : {}),
+      },
+    });
+
+    await this.audit(actor, 'marketing.portfolio_item_updated', `PortfolioShowcase:${id}`, {
+      changed: Object.keys(dto),
+    });
+
+    return toPortfolioItemView(row);
+  }
+
+  async deletePortfolioItem(id: string, actor: AuthenticatedUser): Promise<{ id: string }> {
+    await this.requirePortfolioItem(id);
+    await this.prisma.client.portfolioShowcase.delete({ where: { id } });
+    await this.audit(actor, 'marketing.portfolio_item_deleted', `PortfolioShowcase:${id}`, {});
+    return { id };
+  }
+
+  async reorderPortfolio(dto: ReorderDto, actor: AuthenticatedUser): Promise<PortfolioItemView[]> {
+    await this.prisma.client.$transaction(
+      dto.order.map((entry) =>
+        this.prisma.client.portfolioShowcase.update({
+          where: { id: entry.id },
+          data: { order: entry.order },
+        }),
+      ),
+    );
+
+    await this.audit(actor, 'marketing.portfolio_reordered', null, { count: dto.order.length });
+
+    return this.listPortfolio({ includeUnpublished: true, viewer: actor });
+  }
+
   // ───────────────────────────────────────────────────────────────────────────
   // Internals
   // ───────────────────────────────────────────────────────────────────────────
 
-  private async nextOrder(model: 'faq' | 'testimonial'): Promise<number> {
+  private async nextOrder(model: 'faq' | 'testimonial' | 'portfolio'): Promise<number> {
     const last =
       model === 'faq'
         ? await this.prisma.client.faq.findFirst({
             orderBy: { order: 'desc' },
             select: { order: true },
           })
-        : await this.prisma.client.testimonial.findFirst({
-            orderBy: { order: 'desc' },
-            select: { order: true },
-          });
+        : model === 'testimonial'
+          ? await this.prisma.client.testimonial.findFirst({
+              orderBy: { order: 'desc' },
+              select: { order: true },
+            })
+          : await this.prisma.client.portfolioShowcase.findFirst({
+              orderBy: { order: 'desc' },
+              select: { order: true },
+            });
 
     return (last?.order ?? -1) + 1;
   }
@@ -287,6 +385,20 @@ export class MarketingService {
         HttpStatus.NOT_FOUND,
         'TESTIMONIAL_NOT_FOUND',
         'That testimonial no longer exists.',
+      );
+    }
+  }
+
+  private async requirePortfolioItem(id: string): Promise<void> {
+    const found = await this.prisma.client.portfolioShowcase.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!found) {
+      throw new AppException(
+        HttpStatus.NOT_FOUND,
+        'PORTFOLIO_ITEM_NOT_FOUND',
+        'That portfolio entry no longer exists.',
       );
     }
   }
@@ -340,5 +452,19 @@ function toTestimonialView(row: Testimonial): TestimonialView {
     stars: toStarBreakdown(rating),
     order: row.order,
     visible: row.visible,
+  };
+}
+
+function toPortfolioItemView(row: PortfolioShowcase): PortfolioItemView {
+  return {
+    id: row.id,
+    tradeEn: row.tradeEn,
+    tradeFr: row.tradeFr,
+    captionEn: row.captionEn,
+    captionFr: row.captionFr,
+    beforeUrl: row.beforeUrl,
+    afterUrl: row.afterUrl,
+    order: row.order,
+    isPublished: row.isPublished,
   };
 }

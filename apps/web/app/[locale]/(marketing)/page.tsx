@@ -92,7 +92,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
   const t = await getTranslations('Marketing');
   const format = await getFormatter();
-  const { faqs, testimonials } = await loadMarketingContent();
+  const { faqs, testimonials, portfolio: portfolioRows } = await loadMarketingContent();
 
   const featured = testimonials[0];
 
@@ -112,54 +112,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     description: t(`trustEngine.stages.${score}.description`),
   }));
 
-  // TEMPORARY: Unsplash-hosted photos so the rail shows real trade photography
-  // in dev. This reintroduces the external-host dependency the local SVGs
-  // above were deliberately avoiding — before shipping, download these (or
-  // licensed equivalents) into public/marketing/portfolio/ and point
-  // beforeUrl/afterUrl back at local paths so the landing page never depends
-  // on a live third-party host again.
-  // ex: apps/web/public/marketing/portfolio/electrician-before.jpg
-  // apps/web/public/marketing/portfolio/electrician-after.jpg
-  // apps/web/public/marketing/portfolio/plumber-before.jpg
-  // apps/web/public/marketing/portfolio/plumber-after.jpg
-  // apps/web/public/marketing/portfolio/painter-before.jpg
-  // apps/web/public/marketing/portfolio/painter-after.jpg
-  // apps/web/public/marketing/portfolio/welder-before.jpg
-  // apps/web/public/marketing/portfolio/welder-after.jpg
-
-  const PORTFOLIO_TRADES = ['electrician', 'plumber', 'painter', 'welder'] as const;
-
-  const PORTFOLIO_PHOTOS: Record<
-    (typeof PORTFOLIO_TRADES)[number],
-    { before: string; after: string }
-  > = {
-    electrician: {
-      before: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=640&h=480&fit=crop',
-      after: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=640&h=480&fit=crop',
-    },
-    plumber: {
-      // STAND-IN: original URL 404'd and no verified replacement was found —
-      // reusing the "after" shot for both until a real photo is sourced.
-      before: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
-      after: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
-    },
-    painter: {
-      before: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=640&h=480&fit=crop',
-      after: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=640&h=480&fit=crop',
-    },
-    welder: {
-      // STAND-IN: original "after" URL 404'd and no verified replacement was
-      // found — reusing the "before" shot for both until a real photo is sourced.
-      before: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
-      after: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
-    },
-  };
-
-  const portfolio = PORTFOLIO_TRADES.map((trade) => ({
-    trade: t(`portfolio.items.${trade}.trade`),
-    caption: t(`portfolio.items.${trade}.caption`),
-    beforeUrl: PORTFOLIO_PHOTOS[trade].before,
-    afterUrl: PORTFOLIO_PHOTOS[trade].after,
+  // Admin-managed via /app/admin/marketing (PortfolioShowcase) — already
+  // published-only and in admin-chosen order from the resolver.
+  const portfolio = portfolioRows.map((row) => ({
+    trade: localised(row, 'trade', locale),
+    caption: localised(row, 'caption', locale),
+    beforeUrl: row.beforeUrl,
+    afterUrl: row.afterUrl,
   }));
 
   /**
@@ -170,12 +129,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
    * the page is a manual-action risk, not an SEO win.
    */
   const url = canonicalFor(locale, '/');
-  // The trades the platform is authoritative on, from the same catalogue the
-  // portfolio rail draws — a topical-authority signal for `knowsAbout` (see
+  // The trades the platform is authoritative on, from the same rows the
+  // portfolio rail renders — a topical-authority signal for `knowsAbout` (see
   // structured-data.ts) and the Service categories.
-  const tradeCategories = ['electrician', 'plumber', 'painter', 'welder'].map((trade) =>
-    t(`portfolio.items.${trade}.trade`),
-  );
+  const tradeCategories = portfolio.map((item) => item.trade);
 
   const structuredData = graph([
     organizationNode({
@@ -339,26 +296,30 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
       </section>
 
       {/* ── Portfolio ────────────────────────────────────────────────────── */}
-      <section id="portfolio" className="bg-muted/40 py-24">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 sm:px-6">
-          <Reveal className="flex flex-col gap-3">
-            <h2 className="font-heading text-3xl font-semibold text-foreground sm:text-4xl">
-              {t('portfolio.heading')}
-            </h2>
-            <p className="max-w-2xl text-muted-foreground">{t('portfolio.body')}</p>
-          </Reveal>
-        </div>
-
-        {/* Full-bleed rail: the horizontal scroll reads as "there is more" only
-            if the cards run past the container edge. */}
-        <div className="mt-8 overflow-x-auto pb-4">
-          <div className="mx-auto flex w-max max-w-none gap-6 px-4 sm:px-6">
-            {portfolio.map((item) => (
-              <BeforeAfterCard key={item.trade} {...item} />
-            ))}
+      {/* Admin-managed (PortfolioShowcase); hidden entirely rather than shown
+          empty when nobody has published an entry yet. */}
+      {portfolio.length > 0 && (
+        <section id="portfolio" className="bg-muted/40 py-24">
+          <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 sm:px-6">
+            <Reveal className="flex flex-col gap-3">
+              <h2 className="font-heading text-3xl font-semibold text-foreground sm:text-4xl">
+                {t('portfolio.heading')}
+              </h2>
+              <p className="max-w-2xl text-muted-foreground">{t('portfolio.body')}</p>
+            </Reveal>
           </div>
-        </div>
-      </section>
+
+          {/* Full-bleed rail: the horizontal scroll reads as "there is more" only
+              if the cards run past the container edge. */}
+          <div className="mt-8 overflow-x-auto pb-4">
+            <div className="mx-auto flex w-max max-w-none gap-6 px-4 sm:px-6">
+              {portfolio.map((item) => (
+                <BeforeAfterCard key={item.trade} {...item} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Escrow pricing ───────────────────────────────────────────────── */}
       <section id="pricing" className="px-4 py-24 sm:px-6">

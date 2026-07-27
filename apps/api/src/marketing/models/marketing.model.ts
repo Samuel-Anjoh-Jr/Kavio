@@ -109,3 +109,38 @@ export class TestimonialView {
   @Field({ description: 'False hides it from the marquee.' })
   visible!: boolean;
 }
+
+@ObjectType({
+  description: 'A before/after entry in the landing page Portfolio showcase (SRS §26.2).',
+})
+export class PortfolioItemView {
+  @Field(() => ID)
+  id!: string;
+
+  @Field()
+  tradeEn!: string;
+
+  @Field()
+  tradeFr!: string;
+
+  @Field()
+  captionEn!: string;
+
+  @Field()
+  captionFr!: string;
+
+  @Field()
+  beforeUrl!: string;
+
+  @Field()
+  afterUrl!: string;
+
+  @Field(() => Int, { description: 'Admin-chosen display order, ascending.' })
+  order!: number;
+
+  @Field({
+    description:
+      'False hides it from the public showcase. Unpublished entries are only ever returned to an admin.',
+  })
+  isPublished!: boolean;
+}

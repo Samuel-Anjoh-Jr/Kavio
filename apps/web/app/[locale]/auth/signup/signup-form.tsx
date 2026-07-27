@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/auth/field';
 import { FormBanner } from '@/components/auth/form-banner';
+import { PasswordField } from '@/components/auth/password-field';
 import { Link, useRouter } from '@/i18n/navigation';
 import { ApiError } from '@/lib/api-error';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
@@ -134,7 +135,7 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
         type="tel"
         inputMode="tel"
         autoComplete="tel"
-        placeholder="+237 6XX XX XX XX"
+        placeholder="6XX XX XX XX"
         hint={t('phoneHint')}
         error={errors.phone?.message && t('phoneInvalid')}
         {...register('phone')}
@@ -146,16 +147,12 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
         inputMode="email"
         autoComplete="email"
         placeholder="you@example.com"
-        // Email is optional in the schema but is the ONLY channel that delivers
-        // at launch (SMS deferred), so the hint says so rather than hiding it.
-        hint={t('emailHint')}
         error={errors.email?.message && t('emailInvalid')}
         {...register('email')}
       />
 
-      <Field
+      <PasswordField
         label={t('passwordLabel')}
-        type="password"
         autoComplete="new-password"
         hint={t('passwordHint')}
         error={errors.password?.message && t('passwordInvalid')}

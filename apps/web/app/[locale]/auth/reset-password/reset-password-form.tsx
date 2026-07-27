@@ -6,8 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Field } from '@/components/auth/field';
 import { FormBanner } from '@/components/auth/form-banner';
+import { PasswordField } from '@/components/auth/password-field';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
 import { restPost } from '@/lib/rest-api';
@@ -66,18 +66,16 @@ export function ResetPasswordForm({ token }: { token: string }) {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
       {error && <FormBanner tone="error" message={error} />}
 
-      <Field
+      <PasswordField
         label={t('passwordLabel')}
-        type="password"
         autoComplete="new-password"
         hint={t('passwordHint')}
         error={errors.password?.message && t('passwordInvalid')}
         {...register('password')}
       />
 
-      <Field
+      <PasswordField
         label={t('confirmLabel')}
-        type="password"
         autoComplete="new-password"
         error={errors.confirmPassword?.message && t('mismatch')}
         {...register('confirmPassword')}

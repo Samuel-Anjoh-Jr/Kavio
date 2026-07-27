@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/auth/field';
 import { FormBanner } from '@/components/auth/form-banner';
+import { PasswordField } from '@/components/auth/password-field';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
 import { peekIntent, safeReturnTo } from '@/lib/intent';
@@ -106,9 +107,8 @@ export function LoginForm({ next, gatedAction }: { next: string | null; gatedAct
       />
 
       <div className="flex flex-col gap-2">
-        <Field
+        <PasswordField
           label={t('passwordLabel')}
-          type="password"
           autoComplete="current-password"
           error={errors.password?.message && t('passwordRequired')}
           {...register('password')}

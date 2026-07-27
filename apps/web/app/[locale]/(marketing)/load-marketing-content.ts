@@ -29,7 +29,7 @@ export async function loadMarketingContent(): Promise<MarketingContentQueryResul
     // generation. Bail to empty content instead; ISR fills it in at runtime once
     // the API is reachable (§26.3: builds survive an unavailable backend).
     if (!/^https?:\/\//.test(base)) {
-      return { faqs: [], testimonials: [] };
+      return { faqs: [], testimonials: [], portfolio: [] };
     }
 
     const response = await fetch(`${base}/graphql`, {
@@ -52,7 +52,11 @@ export async function loadMarketingContent(): Promise<MarketingContentQueryResul
     };
     if (json.errors) throw new Error('GraphQL error');
 
-    return { faqs: json.data?.faqs ?? [], testimonials: json.data?.testimonials ?? [] };
+    return {
+      faqs: json.data?.faqs ?? [],
+      testimonials: json.data?.testimonials ?? [],
+      portfolio: json.data?.portfolio ?? [],
+    };
   } catch (error) {
     // console rather than lib/logger: that module is 'use client', and importing
     // it here would drag this server-only file across the boundary.
@@ -66,6 +70,6 @@ export async function loadMarketingContent(): Promise<MarketingContentQueryResul
       }),
     );
 
-    return { faqs: [], testimonials: [] };
+    return { faqs: [], testimonials: [], portfolio: [] };
   }
 }

@@ -17,8 +17,15 @@ import {
 } from '@/components/ui/dialog';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
 import type { ApiError } from '@/lib/api-error';
-import { createFaq, createTestimonial, updateFaq, updateTestimonial } from '@/lib/marketing';
-import type { FaqEntry, TestimonialEntry } from '@/lib/graphql/marketing';
+import {
+  createFaq,
+  createPortfolioItem,
+  createTestimonial,
+  updateFaq,
+  updatePortfolioItem,
+  updateTestimonial,
+} from '@/lib/marketing';
+import type { FaqEntry, PortfolioItemEntry, TestimonialEntry } from '@/lib/graphql/marketing';
 
 /**
  * The create/edit forms for FAQ and testimonials (SRS §26.2; PROMPT 92.1).
@@ -375,6 +382,159 @@ export function TestimonialDialog({
               className="size-4 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
             />
             {t('visible')}
+          </label>
+
+          {banner && (
+            <p role="alert" className="text-sm text-danger">
+              {banner}
+            </p>
+          )}
+
+          <DialogFooter>
+            <Button type="submit" disabled={submitting}>
+              {submitting && <Loader2 className="animate-spin" aria-hidden="true" />}
+              {t('save')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Portfolio showcase ───────────────────────────────────────────────────────
+
+export function PortfolioDialog({
+  item,
+  trigger,
+  onSaved,
+}: {
+  item?: PortfolioItemEntry;
+  trigger: ReactNode;
+  onSaved: () => void;
+}) {
+  const t = useTranslations('Admin.marketing');
+  const [open, setOpen] = useState(false);
+  const { submitting, banner, fields, run } = useSubmit();
+  const ids = useId();
+
+  const [form, setForm] = useState({
+    tradeEn: item?.tradeEn ?? '',
+    tradeFr: item?.tradeFr ?? '',
+    captionEn: item?.captionEn ?? '',
+    captionFr: item?.captionFr ?? '',
+    beforeUrl: item?.beforeUrl ?? '',
+    afterUrl: item?.afterUrl ?? '',
+    isPublished: item?.isPublished ?? true,
+  });
+
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const payload = {
+      tradeEn: form.tradeEn.trim(),
+      tradeFr: form.tradeFr.trim(),
+      captionEn: form.captionEn.trim(),
+      captionFr: form.captionFr.trim(),
+      beforeUrl: form.beforeUrl.trim(),
+      afterUrl: form.afterUrl.trim(),
+      isPublished: form.isPublished,
+    };
+
+    void run(
+      () => (item ? updatePortfolioItem(item.id, payload) : createPortfolioItem(payload)),
+      () => {
+        setOpen(false);
+        onSaved();
+      },
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{item ? t('editPortfolioItem') : t('addPortfolioItem')}</DialogTitle>
+          <DialogDescription>{t('portfolioDialogHint')}</DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={submit} className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Field id={`${ids}-tradeen`} label={t('tradeEn')} error={fields.tradeEn}>
+              <Input
+                id={`${ids}-tradeen`}
+                value={form.tradeEn}
+                onChange={(e) => set('tradeEn', e.target.value)}
+                aria-invalid={Boolean(fields.tradeEn)}
+                required
+              />
+            </Field>
+            <Field id={`${ids}-tradefr`} label={t('tradeFr')} error={fields.tradeFr}>
+              <Input
+                id={`${ids}-tradefr`}
+                value={form.tradeFr}
+                onChange={(e) => set('tradeFr', e.target.value)}
+                aria-invalid={Boolean(fields.tradeFr)}
+                required
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field id={`${ids}-capen`} label={t('captionEn')} error={fields.captionEn}>
+              <Input
+                id={`${ids}-capen`}
+                value={form.captionEn}
+                onChange={(e) => set('captionEn', e.target.value)}
+                aria-invalid={Boolean(fields.captionEn)}
+                required
+              />
+            </Field>
+            <Field id={`${ids}-capfr`} label={t('captionFr')} error={fields.captionFr}>
+              <Input
+                id={`${ids}-capfr`}
+                value={form.captionFr}
+                onChange={(e) => set('captionFr', e.target.value)}
+                aria-invalid={Boolean(fields.captionFr)}
+                required
+              />
+            </Field>
+          </div>
+
+          <Field id={`${ids}-before`} label={t('beforeUrlLabel')} error={fields.beforeUrl}>
+            <Input
+              id={`${ids}-before`}
+              type="url"
+              value={form.beforeUrl}
+              onChange={(e) => set('beforeUrl', e.target.value)}
+              aria-invalid={Boolean(fields.beforeUrl)}
+              placeholder="https://…"
+              required
+            />
+          </Field>
+          <Field id={`${ids}-after`} label={t('afterUrlLabel')} error={fields.afterUrl}>
+            <Input
+              id={`${ids}-after`}
+              type="url"
+              value={form.afterUrl}
+              onChange={(e) => set('afterUrl', e.target.value)}
+              aria-invalid={Boolean(fields.afterUrl)}
+              placeholder="https://…"
+              required
+            />
+          </Field>
+
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input
+              type="checkbox"
+              checked={form.isPublished}
+              onChange={(e) => set('isPublished', e.target.checked)}
+              className="size-4 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            {t('published')}
           </label>
 
           {banner && (

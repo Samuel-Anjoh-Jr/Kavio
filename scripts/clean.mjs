@@ -19,8 +19,17 @@ const targets = [
 
 function killProcesses() {
   const isWindows = process.platform === 'win32';
+
+  // Excludes the current PID: this script itself runs under node (or is
+  // invoked via `bun run`, which forks a node process), so an unfiltered
+  // `taskkill /IM node.exe` kills the process running the cleanup and aborts
+  // it before the file removal below ever runs. pkill has no equivalent
+  // filter, so the POSIX branch just accepts "no matching process" as normal.
   const commands = isWindows
-    ? ['taskkill /F /IM node.exe /T', 'taskkill /F /IM bun.exe /T']
+    ? [
+        `taskkill /F /IM node.exe /T /FI "PID ne ${process.pid}"`,
+        `taskkill /F /IM bun.exe /T /FI "PID ne ${process.pid}"`,
+      ]
     : ['pkill -f node', 'pkill -f bun'];
 
   for (const cmd of commands) {

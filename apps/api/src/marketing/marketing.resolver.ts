@@ -2,7 +2,7 @@ import { Args, Query, Resolver } from '@nestjs/graphql';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser, Public } from '../auth/decorators/auth.decorators';
 import { MarketingService } from './marketing.service';
-import { FaqView, TestimonialView } from './models/marketing.model';
+import { FaqView, PortfolioItemView, TestimonialView } from './models/marketing.model';
 
 /**
  * Marketing-content READS (GraphQL, per the DUAL API RULE). Writes are REST.
@@ -48,5 +48,21 @@ export class MarketingResolver {
     includeHidden?: boolean,
   ): Promise<TestimonialView[]> {
     return this.marketing.listTestimonials({ includeHidden, viewer });
+  }
+
+  @Public()
+  @Query(() => [PortfolioItemView], {
+    description:
+      'The landing page Portfolio showcase, published entries in admin-chosen order (SRS §26.2).',
+  })
+  async portfolio(
+    @CurrentUser() viewer: AuthenticatedUser | undefined,
+    @Args('includeUnpublished', {
+      nullable: true,
+      description: 'Admin only — includes drafts.',
+    })
+    includeUnpublished?: boolean,
+  ): Promise<PortfolioItemView[]> {
+    return this.marketing.listPortfolio({ includeUnpublished, viewer });
   }
 }

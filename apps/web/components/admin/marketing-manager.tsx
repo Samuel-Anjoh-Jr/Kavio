@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import {
   ArrowDown,
   ArrowUp,
+  Images,
   Loader2,
   MessageSquareQuote,
   Pencil,
@@ -22,16 +23,19 @@ import {
   ADMIN_MARKETING_CONTENT_QUERY,
   type FaqEntry,
   type MarketingContentQueryResult,
+  type PortfolioItemEntry,
   type TestimonialEntry,
 } from '@/lib/graphql/marketing';
 import {
   deleteFaq,
+  deletePortfolioItem,
   deleteTestimonial,
   moveWithin,
   reorderFaqs,
+  reorderPortfolio,
   reorderTestimonials,
 } from '@/lib/marketing';
-import { FaqDialog, TestimonialDialog } from './marketing-dialogs';
+import { FaqDialog, PortfolioDialog, TestimonialDialog } from './marketing-dialogs';
 
 /**
  * The marketing-content console (SRS §26.2; PROMPT 92.1).
@@ -54,6 +58,7 @@ export function MarketingManager() {
 
   const faqs = [...(data?.faqs ?? [])].sort((a, b) => a.order - b.order);
   const testimonials = [...(data?.testimonials ?? [])].sort((a, b) => a.order - b.order);
+  const portfolio = [...(data?.portfolio ?? [])].sort((a, b) => a.order - b.order);
 
   return (
     <div className="flex flex-col gap-12">
@@ -67,6 +72,12 @@ export function MarketingManager() {
         testimonials={testimonials}
         loading={loading && !data}
         loadFailed={Boolean(error) && testimonials.length === 0}
+        onChanged={() => void refetch()}
+      />
+      <PortfolioPanel
+        items={portfolio}
+        loading={loading && !data}
+        loadFailed={Boolean(error) && portfolio.length === 0}
         onChanged={() => void refetch()}
       />
     </div>
@@ -264,6 +275,111 @@ function TestimonialPanel({
                 }
                 onDelete={async () => {
                   await deleteTestimonial(testimonial.id);
+                  onChanged();
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function PortfolioPanel({
+  items,
+  loading,
+  loadFailed,
+  onChanged,
+}: {
+  items: PortfolioItemEntry[];
+  loading: boolean;
+  loadFailed: boolean;
+  onChanged: () => void;
+}) {
+  const t = useTranslations('Admin.marketing');
+
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-heading text-lg font-semibold text-foreground">
+            {t('portfolioTitle')}
+          </h3>
+          <p className="text-sm text-muted-foreground">{t('portfolioSubtitle')}</p>
+        </div>
+        <PortfolioDialog
+          onSaved={onChanged}
+          trigger={
+            <Button size="sm" variant="accent">
+              <Plus aria-hidden="true" />
+              {t('addPortfolioItem')}
+            </Button>
+          }
+        />
+      </div>
+
+      {loading ? (
+        <ListSkeleton rows={4} label={t('loadingPortfolio')} />
+      ) : loadFailed ? (
+        <p className="rounded-card border border-border bg-surface p-6 text-sm text-muted-foreground">
+          {t('loadError')}
+        </p>
+      ) : items.length === 0 ? (
+        <EmptyState
+          variant="inline"
+          icon={<Images aria-hidden="true" />}
+          title={t('noPortfolioItems')}
+          description={t('noPortfolioItemsHint')}
+        />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {items.map((item, index) => (
+            <li
+              key={item.id}
+              className="flex items-start gap-3 rounded-card border border-border bg-surface p-4"
+            >
+              <ReorderButtons
+                index={index}
+                total={items.length}
+                onMove={async (direction) => {
+                  const order = moveWithin(items, item.id, direction);
+                  if (order) {
+                    await reorderPortfolio(order);
+                    onChanged();
+                  }
+                }}
+              />
+
+              {/* eslint-disable-next-line @next/next/no-img-element -- storage URL, varies per deployment */}
+              <img
+                src={item.afterUrl}
+                alt=""
+                className="size-14 shrink-0 rounded-image object-cover"
+              />
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium text-foreground">{item.tradeEn}</span>
+                  {!item.isPublished && <StatusBadge tone="neutral" size="sm" label={t('draft')} />}
+                </div>
+                <p className="mt-0.5 truncate text-sm text-muted-foreground">{item.captionEn}</p>
+              </div>
+
+              <RowActions
+                editDialog={
+                  <PortfolioDialog
+                    item={item}
+                    onSaved={onChanged}
+                    trigger={
+                      <Button size="icon" variant="ghost" aria-label={t('edit')}>
+                        <Pencil aria-hidden="true" />
+                      </Button>
+                    }
+                  />
+                }
+                onDelete={async () => {
+                  await deletePortfolioItem(item.id);
                   onChanged();
                 }}
               />

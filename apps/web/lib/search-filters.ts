@@ -12,7 +12,7 @@
  * state from the identical parser.
  */
 
-import { clampRadius, DEFAULT_RADIUS_M, isValidCoordinate } from './geo';
+import { clampRadius, DEFAULT_RADIUS_M, isValidCoordinate } from './geo-core';
 
 export type VerificationTier = 'TIER_0' | 'TIER_1' | 'TIER_2' | 'TIER_3';
 

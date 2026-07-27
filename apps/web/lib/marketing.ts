@@ -1,7 +1,7 @@
 'use client';
 
 import { restDelete, restPatch, restPost } from '@/lib/rest-api';
-import type { FaqEntry, TestimonialEntry } from '@/lib/graphql/marketing';
+import type { FaqEntry, PortfolioItemEntry, TestimonialEntry } from '@/lib/graphql/marketing';
 
 /**
  * Marketing-content WRITES (DUAL API RULE; SRS §26.2). Reads are GraphQL
@@ -79,6 +79,38 @@ export function deleteTestimonial(id: string): Promise<{ id: string }> {
 
 export function reorderTestimonials(order: ReorderEntry[]): Promise<TestimonialEntry[]> {
   return restPost<TestimonialEntry[]>('admin/marketing/testimonials/reorder', { order });
+}
+
+// ── Portfolio showcase ───────────────────────────────────────────────────────
+
+export interface PortfolioItemInput {
+  tradeEn: string;
+  tradeFr: string;
+  captionEn: string;
+  captionFr: string;
+  beforeUrl: string;
+  afterUrl: string;
+  order?: number;
+  isPublished?: boolean;
+}
+
+export function createPortfolioItem(input: PortfolioItemInput): Promise<PortfolioItemEntry> {
+  return restPost<PortfolioItemEntry>('admin/marketing/portfolio', input);
+}
+
+export function updatePortfolioItem(
+  id: string,
+  input: Partial<PortfolioItemInput>,
+): Promise<PortfolioItemEntry> {
+  return restPatch<PortfolioItemEntry>(`admin/marketing/portfolio/${id}`, input);
+}
+
+export function deletePortfolioItem(id: string): Promise<{ id: string }> {
+  return restDelete<{ id: string }>(`admin/marketing/portfolio/${id}`);
+}
+
+export function reorderPortfolio(order: ReorderEntry[]): Promise<PortfolioItemEntry[]> {
+  return restPost<PortfolioItemEntry[]>('admin/marketing/portfolio/reorder', { order });
 }
 
 /**

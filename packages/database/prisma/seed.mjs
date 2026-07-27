@@ -531,6 +531,7 @@ async function main() {
       prisma.tierConfig.deleteMany(),
       prisma.faq.deleteMany(),
       prisma.testimonial.deleteMany(),
+      prisma.portfolioShowcase.deleteMany(),
     ]);
   } finally {
     await prisma.$executeRawUnsafe(
@@ -3352,8 +3353,66 @@ async function main() {
     await prisma.testimonial.create({ data: t });
   }
 
+  // Same copy the landing page previously hardcoded, now admin-editable rows.
+  // Local SVG placeholders (root-relative, resolved against the web app's own
+  // origin) rather than a live third-party host — an admin swaps in real
+  // photos through /app/admin/marketing whenever they're ready.
+  const portfolioItems = [
+    {
+      tradeEn: 'Electrician',
+      tradeFr: 'Électricien',
+      captionEn: 'Panel rewire, Bonapriso',
+      captionFr: 'Réfection du tableau, Bonapriso',
+      beforeUrl: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=640&h=480&fit=crop',
+      afterUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=640&h=480&fit=crop',
+      order: 0,
+      isPublished: true,
+      createdAt: daysAgo(60),
+      updatedAt: daysAgo(60),
+    },
+    {
+      tradeEn: 'Plumber',
+      tradeFr: 'Plombier',
+      captionEn: 'Bathroom refit, Bastos',
+      captionFr: 'Rénovation salle de bain, Bastos',
+      beforeUrl: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
+      afterUrl: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
+      order: 1,
+      isPublished: true,
+      createdAt: daysAgo(60),
+      updatedAt: daysAgo(60),
+    },
+    {
+      tradeEn: 'Painter',
+      tradeFr: 'Peintre',
+      captionEn: 'Full repaint, Akwa',
+      captionFr: 'Repeinte complète, Akwa',
+      beforeUrl: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=640&h=480&fit=crop',
+      afterUrl: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=640&h=480&fit=crop',
+      order: 2,
+      isPublished: true,
+      createdAt: daysAgo(60),
+      updatedAt: daysAgo(60),
+    },
+    {
+      tradeEn: 'Welder',
+      tradeFr: 'Soudeur',
+      captionEn: 'Security gate, Bonabéri',
+      captionFr: 'Portail de sécurité, Bonabéri',
+      beforeUrl: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
+      afterUrl: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
+      order: 3,
+      isPublished: true,
+      createdAt: daysAgo(60),
+      updatedAt: daysAgo(60),
+    },
+  ];
+  for (const item of portfolioItems) {
+    await prisma.portfolioShowcase.create({ data: item });
+  }
+
   console.log(
-    `   Admin content .. ${announcements.length} announcements, ${faqs.length} FAQs, ${testimonials.length} testimonials`,
+    `   Admin content .. ${announcements.length} announcements, ${faqs.length} FAQs, ${testimonials.length} testimonials, ${portfolioItems.length} portfolio items`,
   );
 
   // ── Phase 17: Finalize wallet balances ────────────────────────────────────
@@ -3422,6 +3481,7 @@ async function main() {
   console.log(`📢 Announcements: ${await prisma.announcement.count()}`);
   console.log(`📖 FAQ: ${await prisma.faq.count()}`);
   console.log(`📝 Testimonials: ${await prisma.testimonial.count()}`);
+  console.log(`🖼️  Portfolio showcase: ${await prisma.portfolioShowcase.count()}`);
   console.log(`📜 Audit Logs: ${await prisma.auditLog.count()}`);
   console.log(`🔑 Refresh Tokens: ${await prisma.refreshToken.count()}`);
   console.log(`🔐 Password Reset Tokens: ${await prisma.passwordResetToken.count()}`);

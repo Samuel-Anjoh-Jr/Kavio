@@ -110,8 +110,14 @@ export function GuestHome() {
   });
   const jobs = jobsData?.jobs.jobs ?? [];
 
-  /** Hands the current exploration off to the full search screen, URL and all. */
-  function openFullSearch() {
+  /**
+   * Hands the current exploration off to the full search screen, URL and all.
+   * A real href (not a router.push in an onClick) so the "see all" control is a
+   * genuine link: cursor shows a pointer, and middle-click / right-click-open-in-
+   * new-tab work like any other link. The search bar's Enter-to-submit still
+   * navigates imperatively via router.push using this same href.
+   */
+  const fullSearchHref = useMemo(() => {
     const querystring = serialiseFilters({
       ...EMPTY_FILTERS,
       query: debouncedQuery.trim() || null,
@@ -120,7 +126,11 @@ export function GuestHome() {
       longitude: origin?.longitude ?? null,
       radiusM: origin?.radiusM ?? EMPTY_FILTERS.radiusM,
     });
-    router.push(querystring ? `/app/search?${querystring}` : '/app/search');
+    return querystring ? `/app/search?${querystring}` : '/app/search';
+  }, [debouncedQuery, categorySlug, origin]);
+
+  function openFullSearch() {
+    router.push(fullSearchHref);
   }
 
   return (
@@ -201,9 +211,11 @@ export function GuestHome() {
               ))}
             </div>
 
-            <Button variant="ghost" size="sm" onClick={openFullSearch}>
-              {t('seeAll')}
-              <ArrowRight aria-hidden />
+            <Button variant="ghost" size="sm" asChild>
+              <Link href={fullSearchHref}>
+                {t('seeAll')}
+                <ArrowRight aria-hidden />
+              </Link>
             </Button>
           </div>
         </div>
@@ -226,7 +238,7 @@ export function GuestHome() {
             <WorkerMap
               workers={workers}
               center={origin}
-              className="h-[420px] w-full lg:h-[640px]"
+              className="h-105 w-full lg:h-160"
               onSelectWorker={(userId) => router.push(`/app/workers/${userId}`)}
               onSearchArea={(viewport) => {
                 // The map reports where the user looked; PostGIS still decides
@@ -245,7 +257,7 @@ export function GuestHome() {
               }}
             />
 
-            <div className="mt-6 lg:mt-0 lg:max-h-[640px] lg:overflow-y-auto">
+            <div className="mt-6 lg:mt-0 lg:max-h-160 lg:overflow-y-auto">
               <WorkerResults
                 workers={workers}
                 loading={loading && !result}
@@ -296,7 +308,7 @@ export function GuestHome() {
           // ("See all" routes to the full board at /app/jobs), so it reads as
           // "here's the start of a list, scroll for more" and stays visible
           // above the fold alongside the hero and the workers rail.
-          <div className="mt-6 max-h-[420px] overflow-y-auto pb-1">
+          <div className="mt-6 max-h-105 overflow-y-auto pb-1">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {jobsLoading && jobs.length === 0
                 ? Array.from({ length: 4 }, (_, index) => <JobCardSkeleton key={index} />)

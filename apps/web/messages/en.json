@@ -96,6 +96,8 @@
   "Auth": {
     "signIn": "Sign in",
     "signOut": "Sign out",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "errors": {
       "INVALID_CREDENTIALS": "Invalid phone/email or password.",
       "SESSION_EXPIRED": "Your session expired. Sign in again.",
@@ -159,10 +161,9 @@
         }
       },
       "phoneLabel": "Phone number",
-      "phoneHint": "Cameroon numbers only, e.g. +237 6XX XX XX XX.",
+      "phoneHint": "Enter a valid number.",
       "phoneInvalid": "Enter a valid Cameroon phone number.",
       "emailLabel": "Email address",
-      "emailHint": "We send verification codes by email while SMS is being set up, so please add one.",
       "emailInvalid": "Enter a valid email address.",
       "passwordLabel": "Password",
       "passwordHint": "At least 8 characters.",
@@ -2350,17 +2351,22 @@
     "rbacReadOnlyNote": "This matrix is declared in code, because the authorisation guards read it from there. Making it editable here would let one compromised admin session grant itself every capability. Changing it is a reviewed code change.",
     "marketing": {
       "pageTitle": "Marketing content",
-      "pageSubtitle": "The FAQ and testimonials shown on the public landing page.",
+      "pageSubtitle": "The FAQ, testimonials and portfolio showcase shown on the public landing page.",
       "faqTitle": "FAQ",
       "faqSubtitle": "Questions and answers on the landing page. Drag order with the arrows.",
       "testimonialsTitle": "Testimonials",
       "testimonialsSubtitle": "Customer stories in the landing-page marquee.",
+      "portfolioTitle": "Portfolio showcase",
+      "portfolioSubtitle": "The before/after trade examples on the landing page.",
       "addFaq": "Add question",
       "editFaq": "Edit question",
       "addTestimonial": "Add testimonial",
       "editTestimonial": "Edit testimonial",
+      "addPortfolioItem": "Add portfolio item",
+      "editPortfolioItem": "Edit portfolio item",
       "faqDialogHint": "Both languages are required. Answers support basic Markdown.",
       "testimonialDialogHint": "Both languages are required. Rating renders with half-stars.",
+      "portfolioDialogHint": "Both languages are required. Paste a storage or CDN URL for each photo.",
       "draft": "Draft",
       "hidden": "Hidden",
       "published": "Published",
@@ -2375,10 +2381,13 @@
       "loadError": "We couldn’t load marketing content. Please try again.",
       "loadingFaqs": "Loading FAQ entries",
       "loadingTestimonials": "Loading testimonials",
+      "loadingPortfolio": "Loading portfolio items",
       "noFaqs": "No FAQ entries yet",
       "noFaqsHint": "Add your first question to populate the landing-page FAQ.",
       "noTestimonials": "No testimonials yet",
       "noTestimonialsHint": "Add at least eight so the marquee doesn’t visibly repeat.",
+      "noPortfolioItems": "No portfolio items yet",
+      "noPortfolioItemsHint": "Add a before/after example to populate the landing-page showcase.",
       "questionEn": "Question (English)",
       "questionFr": "Question (French)",
       "answerEn": "Answer (English)",
@@ -2391,7 +2400,13 @@
       "contentEn": "Testimonial (English)",
       "contentFr": "Testimonial (French)",
       "rating": "Rating (0–5)",
-      "avatarOptional": "Avatar URL (optional)"
+      "avatarOptional": "Avatar URL (optional)",
+      "tradeEn": "Trade (English)",
+      "tradeFr": "Trade (French)",
+      "captionEn": "Caption (English)",
+      "captionFr": "Caption (French)",
+      "beforeUrlLabel": "Before photo URL",
+      "afterUrlLabel": "After photo URL"
     }
   },
   "SystemStates": {
@@ -2508,25 +2523,7 @@
       "beforeAlt": "Before: {trade} work",
       "afterAlt": "Finished {trade} work",
       "sliderLabel": "Reveal the before and after for this {trade} job",
-      "sliderValue": "{percent}% revealed",
-      "items": {
-        "electrician": {
-          "trade": "Electrician",
-          "caption": "Panel rewire, Bonapriso"
-        },
-        "plumber": {
-          "trade": "Plumber",
-          "caption": "Bathroom refit, Bastos"
-        },
-        "painter": {
-          "trade": "Painter",
-          "caption": "Full repaint, Akwa"
-        },
-        "welder": {
-          "trade": "Welder",
-          "caption": "Security gate, Bonabéri"
-        }
-      }
+      "sliderValue": "{percent}% revealed"
     },
     "pricing": {
       "heading": "Your money is protected until the work is done.",
