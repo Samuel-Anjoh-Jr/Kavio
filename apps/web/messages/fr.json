@@ -1760,6 +1760,18 @@
         "denied": "Le push est bloqué. Autorisez les notifications dans les réglages du navigateur.",
         "unconfigured": "Les notifications push ne sont pas disponibles pour le moment.",
         "enableFailed": "Nous n’avons pas pu activer le push. Veuillez réessayer."
+      },
+      "sound": {
+        "title": "Sons de notification",
+        "body": "Choisissez un son par catégorie pour quand TrustPro est ouvert. Les notifications en arrière-plan utilisent toujours le son de votre appareil — aucun navigateur ne permet à un site de le changer.",
+        "note": "Les sons ne jouent que lorsque TrustPro est ouvert dans un onglet. « Par défaut » laisse le choix à votre appareil.",
+        "options": {
+          "default": "Par défaut (appareil)",
+          "chime": "Carillon",
+          "alert": "Alerte",
+          "pulse": "Pulsation",
+          "silent": "Silencieux"
+        }
       }
     },
     "auth": {

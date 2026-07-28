@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { NotificationCategory, NotificationChannel } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel, Role } from '@trustpro/database';
 
 /**
  * Notification Center READ models (NOT-02). GraphQL, per the DUAL API RULE —
@@ -33,6 +33,23 @@ export class NotificationView {
 
   @Field(() => Boolean, { description: 'Drives the Important filter.' })
   important!: boolean;
+
+  @Field(() => Role, {
+    nullable: true,
+    description:
+      'Which role this notice is ABOUT, when known (e.g. a worker invitation is WORKER-relevant). ' +
+      'The client switches active role to this before navigating if the viewer is in a different ' +
+      'one. Null for identity-level notices where no role is more "correct" than another.',
+  })
+  relevantRole!: Role | null;
+
+  @Field(() => String, {
+    nullable: true,
+    description:
+      'The sound to play if this notice arrives while the app is open in a tab. Background push ' +
+      'always plays the device default — no browser lets a site choose that.',
+  })
+  soundKey!: string | null;
 
   @Field(() => Date, { nullable: true })
   readAt!: Date | null;
@@ -80,6 +97,18 @@ export class NotificationChannelStatusView {
   available!: boolean;
 }
 
+@ObjectType({
+  description:
+    "One category's custom sound override (NOT-02). A category with no row here uses its default.",
+})
+export class NotificationSoundPreferenceView {
+  @Field(() => NotificationCategory)
+  category!: NotificationCategory;
+
+  @Field(() => String)
+  soundKey!: string;
+}
+
 @ObjectType({ description: "The preferences screen's full state (NOT-02)." })
 export class NotificationSettingsView {
   @Field(() => [NotificationPreferenceView])
@@ -94,4 +123,9 @@ export class NotificationSettingsView {
     description: 'Whether this identity has at least one live web-push subscription.',
   })
   pushSubscribed!: boolean;
+
+  @Field(() => [NotificationSoundPreferenceView], {
+    description: 'Custom sound overrides, one row per category that has one.',
+  })
+  soundPreferences!: NotificationSoundPreferenceView[];
 }

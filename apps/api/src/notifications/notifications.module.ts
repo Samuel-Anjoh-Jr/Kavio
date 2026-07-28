@@ -10,6 +10,7 @@ import { NotificationDashboardService } from './notification-dashboard.service';
 import { NotificationDeliveryProcessor } from './notification-delivery.processor';
 import { NotificationDispatcher } from './notification-dispatcher.service';
 import { NotificationPreferenceService } from './notification-preference.service';
+import { NotificationSoundPreferenceService } from './notification-sound-preference.service';
 import { NOTIFICATION_CHANNEL_PRIORITY, getChannelPriority } from './notification.config';
 import { NotificationsController } from './notifications.controller';
 import { EmailProvider } from './providers/email.provider';
@@ -40,8 +41,9 @@ import { WebPushProvider } from './providers/web-push.provider';
     { provide: EmailProvider, useFactory: () => new EmailProvider(process.env) },
     {
       provide: WebPushProvider,
-      useFactory: (prisma: PrismaService) => new WebPushProvider(prisma, process.env),
-      inject: [PrismaService],
+      useFactory: (prisma: PrismaService, sounds: NotificationSoundPreferenceService) =>
+        new WebPushProvider(prisma, sounds, process.env),
+      inject: [PrismaService, NotificationSoundPreferenceService],
     },
     { provide: SmsProvider, useFactory: () => new SmsProvider(process.env) },
     // IN_APP takes no env: the inbox is a database write, so there is no
@@ -50,6 +52,7 @@ import { WebPushProvider } from './providers/web-push.provider';
     { provide: NOTIFICATION_CHANNEL_PRIORITY, useFactory: () => getChannelPriority(process.env) },
     NotificationProviderRegistry,
     NotificationPreferenceService,
+    NotificationSoundPreferenceService,
     NotificationDispatcher,
     NotificationDeliveryProcessor,
     DeviceRegistrationService,
@@ -58,6 +61,11 @@ import { WebPushProvider } from './providers/web-push.provider';
     NotificationCenterService,
     NotificationCenterResolver,
   ],
-  exports: [NotificationDispatcher, NotificationPreferenceService, NotificationProviderRegistry],
+  exports: [
+    NotificationDispatcher,
+    NotificationPreferenceService,
+    NotificationSoundPreferenceService,
+    NotificationProviderRegistry,
+  ],
 })
 export class NotificationsModule {}

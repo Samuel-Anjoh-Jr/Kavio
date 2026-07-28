@@ -140,6 +140,7 @@ export class DisputesService {
         jobId: booking.jobId,
         openedById: user.id,
         otherPartyId,
+        otherPartyRole: openerRole === 'CLIENT' ? 'WORKER' : 'CLIENT',
         requestId,
       }),
     );

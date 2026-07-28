@@ -1,6 +1,7 @@
 import { NotificationCategory, NotificationChannel, NotificationStatus } from '@trustpro/database';
 import type { Job } from 'bullmq';
 import { NotificationDeliveryProcessor } from './notification-delivery.processor';
+import type { NotificationSoundPreferenceService } from './notification-sound-preference.service';
 import { EmailProvider } from './providers/email.provider';
 import { InAppProvider } from './providers/in-app.provider';
 import { NotificationProviderRegistry } from './providers/provider.registry';
@@ -9,6 +10,11 @@ import { WebPushProvider } from './providers/web-push.provider';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { QueueService } from '../queue/queue.service';
 import type { NotificationDeliveryJob } from './notification.types';
+
+/** A sound service stub — these tests exercise delivery, not sound resolution. */
+const sounds = {
+  resolve: jest.fn().mockResolvedValue('default'),
+} as unknown as NotificationSoundPreferenceService;
 
 function makeJob(overrides: Partial<NotificationDeliveryJob> = {}): Job<NotificationDeliveryJob> {
   return {
@@ -50,9 +56,9 @@ function makeProcessor(env: NodeJS.ProcessEnv = { NOTIFICATIONS_EMAIL_PROVIDER: 
   const email = new EmailProvider(env);
   const registry = new NotificationProviderRegistry(
     email,
-    new WebPushProvider(prisma, env),
+    new WebPushProvider(prisma, sounds, env),
     new SmsProvider(env),
-    new InAppProvider(prisma),
+    new InAppProvider(prisma, sounds),
   );
 
   const registerWorker = jest.fn();

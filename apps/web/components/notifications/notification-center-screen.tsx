@@ -9,6 +9,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RequireAuthNotice } from '@/components/messaging/require-auth-notice';
+import { useToast } from '@/components/ui/use-toast';
 import { formatDateTime } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 import {
@@ -18,6 +19,7 @@ import {
   NOTIFICATION_FILTERS,
   type NotificationFilter,
 } from '@/lib/notifications';
+import { navigateToNotification } from '@/lib/notification-navigation';
 import {
   NOTIFICATIONS_QUERY,
   type NotificationsQueryResult,
@@ -44,9 +46,11 @@ const TONE_DOT: Record<string, string> = {
  */
 export function NotificationCenterScreen() {
   const t = useTranslations('Notifications');
+  const tRoles = useTranslations('Roles');
   const locale = useLocale();
   const router = useRouter();
-  const { status } = useSession();
+  const { data: session, status, update } = useSession();
+  const { toast } = useToast();
 
   const [filter, setFilter] = useState<NotificationFilter>('ALL');
 
@@ -66,9 +70,17 @@ export function NotificationCenterScreen() {
         await markNotificationRead(notification.id).catch(() => undefined);
         void refetch();
       }
-      if (notification.url) router.push(notification.url.replace(/^\/[a-z]{2}(?=\/)/, ''));
+      await navigateToNotification({
+        notification,
+        activeRole: session?.user?.activeRole,
+        roles: session?.user?.roles,
+        refreshSession: update,
+        navigate: (path) => router.push(path),
+        onRoleSwitched: (role) =>
+          toast({ title: tRoles('switched', { role: tRoles(`names.${role}`) }) }),
+      });
     },
-    [refetch, router],
+    [refetch, router, session, update, toast, tRoles],
   );
 
   const onMarkAll = useCallback(async () => {

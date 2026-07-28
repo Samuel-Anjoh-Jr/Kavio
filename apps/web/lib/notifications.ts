@@ -73,3 +73,21 @@ export function setNotificationPreference(input: {
 }): Promise<{ channel: NotificationChannel; category: string; enabled: boolean }> {
   return restPatch('notifications/preferences', input);
 }
+
+/**
+ * The fixed sound keys the API understands (see apps/api/src/notifications/
+ * notification-sound.ts). Only ever plays while TrustPro is open in a tab —
+ * no browser lets a site choose the sound for a BACKGROUND push notification,
+ * so "Default" here really means "let the device pick", the same as leaving
+ * it unset.
+ */
+export const NOTIFICATION_SOUND_KEYS = ['default', 'chime', 'alert', 'pulse', 'silent'] as const;
+
+export type NotificationSoundKey = (typeof NOTIFICATION_SOUND_KEYS)[number];
+
+export function setNotificationSoundPreference(input: {
+  category: NotificationCategory;
+  soundKey: NotificationSoundKey;
+}): Promise<{ category: string; soundKey: string }> {
+  return restPatch('notifications/sound-preferences', input);
+}

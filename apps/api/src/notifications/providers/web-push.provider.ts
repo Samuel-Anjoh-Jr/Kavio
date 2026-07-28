@@ -3,7 +3,11 @@ import { NotificationChannel } from '@trustpro/database';
 import webpush from 'web-push';
 import { createLogger } from '../../lib/logger';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getAppBaseUrl } from '../notification.config';
+import { extractRelevantRole, resolveDeepLink } from '../notification-links';
+import { NotificationSoundPreferenceService } from '../notification-sound-preference.service';
 import type {
+  DeliveryContext,
   NotificationChannelProvider,
   RecipientContext,
   RenderedMessage,
@@ -35,6 +39,7 @@ export class WebPushProvider implements NotificationChannelProvider {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly sounds: NotificationSoundPreferenceService,
     env: NodeJS.ProcessEnv = process.env,
   ) {
     if (env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
@@ -62,7 +67,7 @@ export class WebPushProvider implements NotificationChannelProvider {
     return recipient.userId;
   }
 
-  async send(userId: string, message: RenderedMessage): Promise<void> {
+  async send(userId: string, message: RenderedMessage, context?: DeliveryContext): Promise<void> {
     if (message.channel !== 'WEB_PUSH') {
       throw new Error(`WebPushProvider received a ${message.channel} message`);
     }
@@ -81,10 +86,38 @@ export class WebPushProvider implements NotificationChannelProvider {
       return;
     }
 
+    // The template's own `url` wins when it set one (e.g. the SOS map link);
+    // otherwise the same resolver the in-app inbox and the delivery log agree
+    // on. Without this a push notification's click always landed on the app
+    // home screen regardless of what it was about.
+    const url =
+      message.content.url ??
+      resolveDeepLink(context?.templateKey ?? '', context?.metadata, getAppBaseUrl()) ??
+      undefined;
+
+    // Collapses repeats of the same subject (several messages in one thread,
+    // repeated pings about one dispute) into a single tray entry instead of a
+    // stack. Falls back to the category so at least same-kind notices collapse.
+    const meta = context?.metadata as
+      { conversationId?: unknown; disputeId?: unknown; jobId?: unknown } | undefined;
+    const tag =
+      firstString(meta?.conversationId, meta?.disputeId, meta?.jobId) ??
+      context?.category ??
+      undefined;
+
+    const relevantRole = extractRelevantRole(context?.metadata) ?? undefined;
+
+    const soundKey = context
+      ? await this.sounds.resolve(context.userId, context.category)
+      : undefined;
+
     const payload = JSON.stringify({
       title: message.content.title,
       body: message.content.body,
-      ...(message.content.url ? { url: message.content.url } : {}),
+      ...(url ? { url } : {}),
+      ...(tag ? { tag } : {}),
+      ...(relevantRole ? { relevantRole } : {}),
+      ...(soundKey ? { soundKey } : {}),
     });
 
     let delivered = 0;
@@ -129,6 +162,14 @@ export class WebPushProvider implements NotificationChannelProvider {
       throw new Error(`Web push failed for all ${transientFailures} device(s)`);
     }
   }
+}
+
+/** The first value that is a non-empty string, or undefined. */
+function firstString(...values: unknown[]): string | undefined {
+  for (const value of values) {
+    if (typeof value === 'string' && value.length > 0) return value;
+  }
+  return undefined;
 }
 
 /** Logs only the endpoint host, never the full subscription URL (it is a secret). */

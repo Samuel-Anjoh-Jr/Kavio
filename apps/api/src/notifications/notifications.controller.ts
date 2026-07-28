@@ -18,7 +18,9 @@ import { NOTIFICATION_REQUESTED, NotificationRequestedEvent } from './events/not
 import { testDispatchSchema, type TestDispatchDto } from './dto/test-dispatch.dto';
 import {
   updateNotificationPreferenceSchema,
+  updateNotificationSoundSchema,
   type UpdateNotificationPreferenceDto,
+  type UpdateNotificationSoundDto,
 } from './dto/notification-center.dto';
 import { NotificationCenterService } from './notification-center.service';
 
@@ -67,6 +69,17 @@ export class NotificationsController {
     dto: UpdateNotificationPreferenceDto,
   ) {
     return this.center.setPreference(user, dto.channel, dto.category, dto.enabled);
+  }
+
+  /** Sets one category's custom notification sound (NOT-02). */
+  @Patch('sound-preferences')
+  @HttpCode(HttpStatus.OK)
+  async setSoundPreference(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(updateNotificationSoundSchema))
+    dto: UpdateNotificationSoundDto,
+  ) {
+    return this.center.setSoundPreference(user, dto.category, dto.soundKey);
   }
 
   // Public only because it 404s outside development (see the guard below); a

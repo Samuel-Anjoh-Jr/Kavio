@@ -1,3 +1,5 @@
+import { Role } from '@trustpro/database';
+
 /**
  * Where a notification takes you when it is clicked (NOT-02, P77/P78).
  *
@@ -22,6 +24,23 @@ interface LinkMetadata {
   bookingId?: unknown;
   quoteId?: unknown;
   alertId?: unknown;
+  relevantRole?: unknown;
+}
+
+/**
+ * Reads a validated `relevantRole` off event metadata — the role this
+ * notification is ABOUT, when its emitter knows one (a worker invitation is
+ * inherently WORKER-relevant). Shared by the in-app and web-push providers so
+ * the inbox row and the push payload always agree. Returns null for anything
+ * else: identity-level notices (security, verification, trust) are the same
+ * regardless of the viewer's active role, and an unrecognised value must never
+ * break delivery over a typo.
+ */
+export function extractRelevantRole(metadata: Record<string, unknown> | undefined): Role | null {
+  const value = (metadata as LinkMetadata | undefined)?.relevantRole;
+  return typeof value === 'string' && (Object.values(Role) as string[]).includes(value)
+    ? (value as Role)
+    : null;
 }
 
 /**
@@ -46,6 +65,7 @@ const TEMPLATE_SURFACE: Record<string, string> = {
   'job.invitation_received': '/app/jobs',
   'job.application_status_changed': '/app/jobs',
   'job.matched': '/app/jobs',
+  'job.cancelled': '/app/jobs',
   'quote.received': '/app/quotes',
   'quote.accepted': '/app/quotes',
   'quote.declined': '/app/quotes',
@@ -55,6 +75,9 @@ const TEMPLATE_SURFACE: Record<string, string> = {
   'payment.failed': '/app/wallet',
   'escrow.released': '/app/wallet',
   'escrow.refunded': '/app/wallet',
+  'escrow.work_accepted': '/app/wallet',
+  'escrow.work_started': '/app/wallet',
+  'escrow.work_completed': '/app/wallet',
   'dispute.opened': '/app/disputes',
   'dispute.resolved': '/app/disputes',
   'message.received': '/app/messages',
@@ -79,10 +102,27 @@ function fromMetadata(templateKey: string, meta: LinkMetadata): string | null {
       const disputeId = id(meta.disputeId);
       return disputeId ? `/app/disputes/${disputeId}` : null;
     }
+    // Every template below shares one destination: the job the event is about.
+    // Quotes have no detail screen of their own (QTE-04), and money events are
+    // about ONE booking's escrow — in both cases the job screen is where the
+    // record actually lives (components/transactions/escrow-timeline.tsx links
+    // every row back to its job the same way).
     case 'job.application_received':
     case 'job.invitation_received':
     case 'job.application_status_changed':
-    case 'job.matched': {
+    case 'job.matched':
+    case 'job.cancelled':
+    case 'quote.received':
+    case 'quote.accepted':
+    case 'quote.declined':
+    case 'quote.counter_requested':
+    case 'payment.required':
+    case 'payment.received':
+    case 'escrow.work_accepted':
+    case 'escrow.work_started':
+    case 'escrow.work_completed':
+    case 'escrow.released':
+    case 'escrow.refunded': {
       const jobId = id(meta.jobId);
       return jobId ? `/app/jobs/${jobId}` : null;
     }

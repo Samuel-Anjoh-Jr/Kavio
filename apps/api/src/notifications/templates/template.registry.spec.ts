@@ -167,6 +167,8 @@ function sampleVariables(key: string): Record<string, unknown> {
         status: 'SHORTLISTED',
         statusLabelKey: 'Jobs.applicationStatus.SHORTLISTED',
       };
+    case 'job.cancelled':
+      return { jobTitle: 'Fix a leaking kitchen tap' };
     case 'quote.received':
       return { jobTitle: 'Fix a leaking kitchen tap', price: 25000 };
     case 'quote.accepted':
@@ -183,6 +185,12 @@ function sampleVariables(key: string): Record<string, unknown> {
       return { amount: 25000 };
     case 'payment.received':
       return { jobTitle: 'Fix a leaking kitchen tap', amount: 25000 };
+    case 'escrow.work_accepted':
+      return { jobTitle: 'Fix a leaking kitchen tap' };
+    case 'escrow.work_started':
+      return { jobTitle: 'Fix a leaking kitchen tap' };
+    case 'escrow.work_completed':
+      return { jobTitle: 'Fix a leaking kitchen tap' };
     case 'escrow.released':
       return { jobTitle: 'Fix a leaking kitchen tap', amount: 22500 };
     case 'escrow.refunded':

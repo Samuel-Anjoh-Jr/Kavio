@@ -1,10 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { Bell } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import { playNotificationSound } from '@/lib/notification-sound';
 import {
   UNREAD_NOTIFICATIONS_QUERY,
   type UnreadNotificationsQueryResult,
@@ -13,21 +15,37 @@ import {
 /**
  * The header notification bell with an unread badge (NOT-02).
  *
- * Polls on a gentle interval rather than opening a socket: the count is not
- * time-critical the way a live chat is, and a lightweight poll is cheaper than a
- * dedicated connection on a low-end phone. Push and the socket-driven inbox carry
- * the urgent path; this is the ambient "you have things waiting" signal.
+ * Polls on a gentle interval as the baseline: the count is not time-critical
+ * the way a live chat is, and a lightweight poll is cheaper than a dedicated
+ * connection on a low-end phone. On top of that, this is also the one place
+ * that listens for `trustpro:notification-push` — the window event
+ * service-worker-register.tsx fires the instant a push arrives while the tab
+ * is open — so the badge updates immediately instead of waiting out the poll,
+ * and the notification's sound (if any) plays right here.
  */
 export function NotificationBell() {
   const t = useTranslations('Notifications');
   const { status } = useSession();
 
-  const { data } = useQuery<UnreadNotificationsQueryResult>(UNREAD_NOTIFICATIONS_QUERY, {
+  const { data, refetch } = useQuery<UnreadNotificationsQueryResult>(UNREAD_NOTIFICATIONS_QUERY, {
     fetchPolicy: 'cache-and-network',
     errorPolicy: 'all',
     skip: status !== 'authenticated',
     pollInterval: 60_000,
   });
+
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+
+    const onPush = (event: Event) => {
+      const detail = (event as CustomEvent<{ soundKey?: string }>).detail;
+      playNotificationSound(detail?.soundKey);
+      void refetch();
+    };
+
+    window.addEventListener('trustpro:notification-push', onPush);
+    return () => window.removeEventListener('trustpro:notification-push', onPush);
+  }, [status, refetch]);
 
   if (status !== 'authenticated') return null;
 

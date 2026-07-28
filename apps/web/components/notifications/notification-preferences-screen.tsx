@@ -10,10 +10,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
 import { RequireAuthNotice } from '@/components/messaging/require-auth-notice';
 import {
+  NOTIFICATION_SOUND_KEYS,
   PREFERENCE_CATEGORIES,
   PREFERENCE_CHANNELS,
   setNotificationPreference,
+  setNotificationSoundPreference,
+  type NotificationSoundKey,
 } from '@/lib/notifications';
+import { playNotificationSound } from '@/lib/notification-sound';
 import { disableWebPush, enableWebPush, pushPermission, pushSupport } from '@/lib/web-push';
 import {
   NOTIFICATION_SETTINGS_QUERY,
@@ -158,6 +162,89 @@ export function NotificationPreferencesScreen() {
       )}
 
       <p className="text-xs text-muted-foreground">{t('settings.securityNote')}</p>
+
+      <SoundPreferences
+        soundPreferences={settings?.soundPreferences ?? []}
+        onChanged={() => void refetch()}
+      />
+    </div>
+  );
+}
+
+/**
+ * Per-category custom sound (NOT-02). Only ever plays while TrustPro is open
+ * in a tab — no browser lets a site choose the sound for a BACKGROUND push
+ * notification, so a category left unset (or set to "Default") just gets
+ * whatever the device already plays for every other notification.
+ */
+function SoundPreferences({
+  soundPreferences,
+  onChanged,
+}: {
+  soundPreferences: Array<{ category: NotificationCategory; soundKey: string }>;
+  onChanged: () => void;
+}) {
+  const t = useTranslations('Notifications');
+  const { toast } = useToast();
+  const [pending, setPending] = useState<Set<NotificationCategory>>(new Set());
+  const [overrides, setOverrides] = useState<
+    Partial<Record<NotificationCategory, NotificationSoundKey>>
+  >({});
+
+  const soundFor = (category: NotificationCategory): NotificationSoundKey => {
+    const override = overrides[category];
+    if (override) return override;
+    const row = soundPreferences.find((p) => p.category === category);
+    return (row?.soundKey as NotificationSoundKey) ?? 'default';
+  };
+
+  async function onSelect(category: NotificationCategory, soundKey: NotificationSoundKey) {
+    setOverrides((prev) => ({ ...prev, [category]: soundKey }));
+    setPending((prev) => new Set(prev).add(category));
+    playNotificationSound(soundKey);
+    try {
+      await setNotificationSoundPreference({ category, soundKey });
+      onChanged();
+    } catch {
+      toast({ variant: 'danger', title: t('settings.saveFailed') });
+    } finally {
+      setPending((prev) => {
+        const copy = new Set(prev);
+        copy.delete(category);
+        return copy;
+      });
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
+      <div>
+        <p className="text-sm font-medium text-foreground">{t('settings.sound.title')}</p>
+        <p className="text-sm text-muted-foreground">{t('settings.sound.body')}</p>
+      </div>
+      <ul className="flex flex-col divide-y divide-border">
+        {PREFERENCE_CATEGORIES.map((category) => (
+          <li key={category} className="flex items-center justify-between gap-3 py-2">
+            <span className="text-sm text-foreground">{t(`settings.category.${category}`)}</span>
+            <select
+              value={soundFor(category)}
+              disabled={pending.has(category)}
+              onChange={(event) =>
+                void onSelect(category, event.target.value as NotificationSoundKey)
+              }
+              className="rounded-button border border-input bg-background px-2 py-1.5 text-sm text-foreground disabled:opacity-50"
+              aria-label={`${t('settings.sound.title')} – ${t(`settings.category.${category}`)}`}
+            >
+              {NOTIFICATION_SOUND_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {t(`settings.sound.options.${key}`)}
+                </option>
+              ))}
+            </select>
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-muted-foreground">{t('settings.sound.note')}</p>
     </div>
   );
 }
