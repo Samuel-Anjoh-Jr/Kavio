@@ -3,6 +3,7 @@ import { MediaVisibility, QuoteStatus } from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { PlatformSettingsService } from '../settings/platform-settings.service';
 import type { WorkerPreviewView } from '../jobs/models/job.model';
 import type { BookingView, QuoteInboxView, QuoteView } from './models/quote.model';
 
@@ -19,6 +20,7 @@ export class QuotesReadService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly settings: PlatformSettingsService,
   ) {}
 
   /** One quote. Visible to the worker who sent it or the client it was sent to. */
@@ -37,7 +39,8 @@ export class QuotesReadService {
       return null;
     }
     const previews = await this.workerPreviews([quote.workerId]);
-    return this.mapQuote(quote, previews);
+    const feeBps = await this.settings.platformFeeBps();
+    return this.mapQuote(quote, previews, feeBps);
   }
 
   /** The worker's Sent / Drafts inbox (QTE-04). */
@@ -48,7 +51,8 @@ export class QuotesReadService {
       include: this.quoteInclude(),
     });
     const previews = await this.workerPreviews([user.id]);
-    const views = await Promise.all(quotes.map((q) => this.mapQuote(q, previews)));
+    const feeBps = await this.settings.platformFeeBps();
+    const views = await Promise.all(quotes.map((q) => this.mapQuote(q, previews, feeBps)));
     return {
       sent: views.filter((v) => v.status !== QuoteStatus.DRAFT),
       drafts: views.filter((v) => v.status === QuoteStatus.DRAFT),
@@ -74,7 +78,8 @@ export class QuotesReadService {
       include: this.quoteInclude(),
     });
     const previews = await this.workerPreviews(quotes.map((q) => q.workerId));
-    return Promise.all(quotes.map((q) => this.mapQuote(q, previews)));
+    const feeBps = await this.settings.platformFeeBps();
+    return Promise.all(quotes.map((q) => this.mapQuote(q, previews, feeBps)));
   }
 
   /**
@@ -95,7 +100,8 @@ export class QuotesReadService {
       include: this.quoteInclude(),
     });
     const previews = await this.workerPreviews(quotes.map((q) => q.workerId));
-    return Promise.all(quotes.map((q) => this.mapQuote(q, previews)));
+    const feeBps = await this.settings.platformFeeBps();
+    return Promise.all(quotes.map((q) => this.mapQuote(q, previews, feeBps)));
   }
 
   /** Both parties' bookings (QTE-04, PAY-01). */
@@ -158,6 +164,7 @@ export class QuotesReadService {
       }>;
     },
     previews: Map<string, WorkerPreviewView>,
+    feeBps: number,
   ): Promise<QuoteView> {
     const attachments = await Promise.all(
       quote.attachments.map(async (a) => ({
@@ -177,6 +184,7 @@ export class QuotesReadService {
       includes: quote.includes,
       message: quote.message,
       status: quote.status,
+      platformFeeBps: feeBps,
       attachments,
       worker: previews.get(quote.workerId) ?? null,
       parentQuoteId: quote.parentQuoteId,

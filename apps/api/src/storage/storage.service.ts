@@ -9,16 +9,23 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { del as vercelBlobDel, head as vercelBlobHead, put as vercelBlobPut } from '@vercel/blob';
 import { MediaVisibility, type MediaAssetKind } from '@trustpro/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { detectMimeTypes } from './file-signature.util';
 import {
   getS3Config,
+  getSupabaseStorageConfig,
+  getVercelBlobConfig,
   isKycKind,
   isS3Configured,
+  isSupabaseStorageConfigured,
+  isVercelBlobConfigured,
   UPLOAD_POLICIES,
   type S3Config,
+  type SupabaseStorageConfig,
+  type VercelBlobConfig,
 } from './storage.config';
 
 const logger = createLogger('storage');
@@ -32,38 +39,65 @@ export interface StoredObject {
   checksum: string;
 }
 
+/** Which backend actually holds the bytes, decided once at startup. */
+type StorageDriver = 's3' | 'vercel-blob' | 'supabase' | 'local';
+
 /**
  * Object storage for portfolio media, KYC documents and business papers.
  *
- * Falls back to local disk when S3 is not configured, mirroring the notification
- * module's console provider: a developer without AWS credentials can still run
- * onboarding end to end, and the swap is invisible to every call site.
+ * S3 (or an S3-compatible bucket) is the primary, full-featured driver — it is
+ * the only one with customer-managed KMS keys for KYC media. When it is not
+ * configured, two simpler managed stores are tried in turn (Vercel Blob, then
+ * Supabase Storage) before falling all the way back to local disk. That order
+ * — three real, network-reachable drivers before the disk — mirrors the
+ * notification module's console provider: a developer or a small deployment
+ * without AWS credentials still gets a REAL object store with almost no setup,
+ * and local disk stays what it always was, a last resort for a laptop with
+ * none of the three configured. The swap is invisible to every call site.
  */
 @Injectable()
 export class StorageService implements OnModuleInit {
-  private readonly config: S3Config = getS3Config();
-  private readonly useS3 = isS3Configured(this.config);
+  private readonly s3Config: S3Config = getS3Config();
+  private readonly vercelBlobConfig: VercelBlobConfig = getVercelBlobConfig();
+  private readonly supabaseConfig: SupabaseStorageConfig = getSupabaseStorageConfig();
+
+  private readonly driver: StorageDriver = isS3Configured(this.s3Config)
+    ? 's3'
+    : isVercelBlobConfigured(this.vercelBlobConfig)
+      ? 'vercel-blob'
+      : isSupabaseStorageConfigured(this.supabaseConfig)
+        ? 'supabase'
+        : 'local';
+
   private client?: S3Client;
 
   /** Where the local driver writes. Never served directly by the API. */
   private readonly localRoot = join(process.cwd(), '.uploads');
 
   onModuleInit(): void {
-    if (!this.useS3) {
-      logger.warn('S3 is not configured — uploads fall back to local disk (development only)');
+    if (this.driver === 'local') {
+      logger.warn(
+        'No object storage configured (S3, Vercel Blob, Supabase Storage) — ' +
+          'uploads fall back to local disk (development only)',
+      );
+      return;
+    }
+
+    if (this.driver !== 's3') {
+      logger.info(`Object storage driver: ${this.driver}`);
       return;
     }
 
     this.client = new S3Client({
-      region: this.config.region,
-      ...(this.config.endpoint
+      region: this.s3Config.region,
+      ...(this.s3Config.endpoint
         ? // Custom endpoints (MinIO, R2, Spaces) need path-style addressing;
           // virtual-host style assumes an AWS-shaped DNS name.
-          { endpoint: this.config.endpoint, forcePathStyle: true }
+          { endpoint: this.s3Config.endpoint, forcePathStyle: true }
         : {}),
       credentials: {
-        accessKeyId: this.config.accessKeyId,
-        secretAccessKey: this.config.secretAccessKey,
+        accessKeyId: this.s3Config.accessKeyId,
+        secretAccessKey: this.s3Config.secretAccessKey,
       },
     });
   }
@@ -132,35 +166,53 @@ export class StorageService implements OnModuleInit {
     const s3Key = `${policy.prefix}/${ownerId}/${randomUUID()}${extensionFor(detected)}`;
     const checksum = createHash('sha256').update(file.buffer).digest('hex');
 
-    if (this.useS3 && this.client) {
-      // Customer-managed keys for identity documents where one is configured, so
-      // access to every ID we hold can be revoked with a single key action
-      // (NFR-SEC-04). S3-managed AES256 everywhere else — and for KYC too when
-      // no key is set, because unencrypted is never the fallback.
-      const useKms = isKycKind(kind) && Boolean(this.config.kmsKeyId);
+    switch (this.driver) {
+      case 's3': {
+        // Customer-managed keys for identity documents where one is configured, so
+        // access to every ID we hold can be revoked with a single key action
+        // (NFR-SEC-04). S3-managed AES256 everywhere else — and for KYC too when
+        // no key is set, because unencrypted is never the fallback.
+        const useKms = isKycKind(kind) && Boolean(this.s3Config.kmsKeyId);
 
-      await this.client.send(
-        new PutObjectCommand({
-          Bucket: this.config.bucket,
-          Key: s3Key,
-          Body: file.buffer,
-          ContentType: detected,
-          // Encryption at rest for KYC media is a hard requirement (NFR-SEC).
-          // Applied to every object rather than only private ones — there is no
-          // benefit to leaving portfolio images unencrypted.
-          ...(useKms
-            ? { ServerSideEncryption: 'aws:kms' as const, SSEKMSKeyId: this.config.kmsKeyId }
-            : { ServerSideEncryption: 'AES256' as const }),
-        }),
-      );
-    } else {
-      const target = join(this.localRoot, s3Key);
-      await mkdir(dirname(target), { recursive: true });
-      await writeFile(target, file.buffer);
+        await this.client!.send(
+          new PutObjectCommand({
+            Bucket: this.s3Config.bucket,
+            Key: s3Key,
+            Body: file.buffer,
+            ContentType: detected,
+            // Encryption at rest for KYC media is a hard requirement (NFR-SEC).
+            // Applied to every object rather than only private ones — there is no
+            // benefit to leaving portfolio images unencrypted.
+            ...(useKms
+              ? { ServerSideEncryption: 'aws:kms' as const, SSEKMSKeyId: this.s3Config.kmsKeyId }
+              : { ServerSideEncryption: 'AES256' as const }),
+          }),
+        );
+        break;
+      }
+      case 'vercel-blob':
+        await vercelBlobPut(s3Key, file.buffer, {
+          access: policy.visibility === MediaVisibility.PUBLIC ? 'public' : 'private',
+          contentType: detected,
+          token: this.vercelBlobConfig.token,
+          // The key already carries a UUID, so there is nothing to disambiguate
+          // and no risk in reusing the exact pathname we generated.
+          addRandomSuffix: false,
+        });
+        break;
+      case 'supabase':
+        await this.supabasePut(s3Key, file.buffer, detected);
+        break;
+      case 'local': {
+        const target = join(this.localRoot, s3Key);
+        await mkdir(dirname(target), { recursive: true });
+        await writeFile(target, file.buffer);
+        break;
+      }
     }
 
     logger.info('Object stored', {
-      result: { ownerId, kind, sizeBytes: file.size, driver: this.useS3 ? 's3' : 'local' },
+      result: { ownerId, kind, sizeBytes: file.size, driver: this.driver },
     });
 
     return {
@@ -181,13 +233,24 @@ export class StorageService implements OnModuleInit {
    * user's tidying up.
    */
   async remove(s3Key: string): Promise<void> {
-    if (this.useS3 && this.client) {
-      await this.client.send(new DeleteObjectCommand({ Bucket: this.config.bucket, Key: s3Key }));
-    } else {
-      await rm(join(this.localRoot, s3Key), { force: true });
+    switch (this.driver) {
+      case 's3':
+        await this.client!.send(
+          new DeleteObjectCommand({ Bucket: this.s3Config.bucket, Key: s3Key }),
+        );
+        break;
+      case 'vercel-blob':
+        await vercelBlobDel(s3Key, { token: this.vercelBlobConfig.token });
+        break;
+      case 'supabase':
+        await this.supabaseDelete(s3Key);
+        break;
+      case 'local':
+        await rm(join(this.localRoot, s3Key), { force: true });
+        break;
     }
 
-    logger.info('Object removed', { result: { driver: this.useS3 ? 's3' : 'local' } });
+    logger.info('Object removed', { result: { driver: this.driver } });
   }
 
   /**
@@ -198,21 +261,108 @@ export class StorageService implements OnModuleInit {
    * than waiting for some previously-issued link to expire.
    */
   async urlFor(s3Key: string, visibility: MediaVisibility): Promise<string | null> {
-    if (!this.useS3 || !this.client) {
-      // The local driver has no HTTP surface on purpose: dev uploads are
-      // verifiable on disk, and inventing one would be a route to secure later.
+    switch (this.driver) {
+      case 'local':
+        // The local driver has no HTTP surface on purpose: dev uploads are
+        // verifiable on disk, and inventing one would be a route to secure later.
+        return null;
+
+      case 's3': {
+        if (visibility === MediaVisibility.PUBLIC && this.s3Config.publicUrl) {
+          return `${this.s3Config.publicUrl.replace(/\/$/, '')}/${s3Key}`;
+        }
+        return getSignedUrl(
+          this.client!,
+          new GetObjectCommand({ Bucket: this.s3Config.bucket, Key: s3Key }),
+          { expiresIn: this.s3Config.signedUrlTtlSeconds },
+        );
+      }
+
+      case 'vercel-blob': {
+        if (visibility !== MediaVisibility.PUBLIC) {
+          // Vercel Blob has no server-mediated, browser-fetchable signed-URL
+          // primitive for PRIVATE objects — same "no HTTP surface" limitation
+          // as local disk. Storing KYC media on this driver still enforces
+          // isolation-by-key; it just cannot hand the browser a temporary link.
+          return null;
+        }
+        // The public URL is deterministic from the pathname + store, but the
+        // store id lives inside the token in a form the SDK does not expose —
+        // head() is the documented way to resolve it without guessing at the
+        // wire format.
+        const result = await vercelBlobHead(s3Key, { token: this.vercelBlobConfig.token });
+        return result.url;
+      }
+
+      case 'supabase':
+        return this.supabaseUrlFor(s3Key, visibility);
+    }
+  }
+
+  private supabaseObjectUrl(s3Key: string): string {
+    return `${this.supabaseConfig.url}/storage/v1/object/${this.supabaseConfig.bucket}/${s3Key}`;
+  }
+
+  private async supabasePut(s3Key: string, buffer: Buffer, contentType: string): Promise<void> {
+    const res = await fetch(this.supabaseObjectUrl(s3Key), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.supabaseConfig.serviceRoleKey}`,
+        apikey: this.supabaseConfig.serviceRoleKey,
+        'Content-Type': contentType,
+      },
+      // Buffer's ArrayBufferLike generic does not satisfy BodyInit/BlobPart
+      // directly; copying into a plain Uint8Array does.
+      body: new Blob([Uint8Array.from(buffer)]),
+    });
+    if (!res.ok) {
+      throw new Error(`Supabase Storage upload failed (${res.status}): ${await res.text()}`);
+    }
+  }
+
+  private async supabaseDelete(s3Key: string): Promise<void> {
+    const res = await fetch(this.supabaseObjectUrl(s3Key), {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${this.supabaseConfig.serviceRoleKey}`,
+        apikey: this.supabaseConfig.serviceRoleKey,
+      },
+    });
+    if (!res.ok && res.status !== 404) {
+      throw new Error(`Supabase Storage delete failed (${res.status}): ${await res.text()}`);
+    }
+  }
+
+  /**
+   * PUBLIC objects resolve to Supabase's stable public URL with no round trip.
+   * PRIVATE objects need a signed URL minted per request — the bucket itself
+   * is never made public, so a leaked object key alone grants nothing.
+   */
+  private async supabaseUrlFor(s3Key: string, visibility: MediaVisibility): Promise<string | null> {
+    if (visibility === MediaVisibility.PUBLIC) {
+      return `${this.supabaseConfig.url}/storage/v1/object/public/${this.supabaseConfig.bucket}/${s3Key}`;
+    }
+
+    const res = await fetch(
+      `${this.supabaseConfig.url}/storage/v1/object/sign/${this.supabaseConfig.bucket}/${s3Key}`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.supabaseConfig.serviceRoleKey}`,
+          apikey: this.supabaseConfig.serviceRoleKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ expiresIn: this.supabaseConfig.signedUrlTtlSeconds }),
+      },
+    );
+
+    if (!res.ok) {
+      logger.warn('Supabase Storage signing failed', { payload: { status: res.status } });
       return null;
     }
 
-    if (visibility === MediaVisibility.PUBLIC && this.config.publicUrl) {
-      return `${this.config.publicUrl.replace(/\/$/, '')}/${s3Key}`;
-    }
-
-    return getSignedUrl(
-      this.client,
-      new GetObjectCommand({ Bucket: this.config.bucket, Key: s3Key }),
-      { expiresIn: this.config.signedUrlTtlSeconds },
-    );
+    const { signedURL } = (await res.json()) as { signedURL: string };
+    return `${this.supabaseConfig.url}/storage/v1${signedURL}`;
   }
 }
 

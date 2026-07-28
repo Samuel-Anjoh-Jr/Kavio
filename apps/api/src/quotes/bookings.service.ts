@@ -6,6 +6,7 @@ import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { JobsService } from '../jobs/jobs.service';
+import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { computeFeeSplit } from './booking-fee.model';
 import {
   ESCROW_INITIATION_REQUESTED,
@@ -66,6 +67,7 @@ export class BookingsService {
     private readonly prisma: PrismaService,
     private readonly events: EventEmitter2,
     private readonly jobs: JobsService,
+    private readonly settings: PlatformSettingsService,
   ) {}
 
   /**
@@ -110,7 +112,8 @@ export class BookingsService {
       );
     }
 
-    const split = computeFeeSplit(quote.price);
+    const feeBps = await this.settings.platformFeeBps();
+    const split = computeFeeSplit(quote.price, feeBps);
     const clientId = user.id;
     const requestId = getRequestId();
 

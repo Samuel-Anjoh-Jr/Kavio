@@ -37,9 +37,12 @@ export function isCampayLive(config: CampayConfig = getCampayConfig()): boolean 
 }
 
 /**
- * The platform service fee in basis points (SRS §15.1 "~10%, admin configurable").
- * 1000 bps = 10%. Read from the environment so it is tunable without a deploy;
- * the split maths itself lives in the shared, tested `computeFeeSplit`.
+ * The platform service fee in basis points (SRS §15.1 "~10%, admin configurable"),
+ * read from the environment. This is the FLOOR default: `PlatformSettingsService
+ * .platformFeeBps()` is what call sites actually use, and falls back to this
+ * value when no admin has ever set `platform.feePercent` (or the stored value is
+ * out of range). The split maths itself lives in the shared, tested
+ * `computeFeeSplit`.
  */
 export function getPlatformFeeBps(): number {
   const raw = Number(process.env.PLATFORM_FEE_BPS ?? 1000);

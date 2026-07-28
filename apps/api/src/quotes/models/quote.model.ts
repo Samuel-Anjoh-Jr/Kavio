@@ -48,6 +48,13 @@ export class QuoteView {
   @Field(() => QuoteStatus)
   status!: QuoteStatus;
 
+  @Field(() => Int, {
+    description:
+      'The current platform escrow fee, in basis points (admin-configurable, PAY-01). ' +
+      'Lets the accept screen preview the exact split before a booking snapshots it.',
+  })
+  platformFeeBps!: number;
+
   @Field(() => [QuoteAttachmentView])
   attachments!: QuoteAttachmentView[];
 
