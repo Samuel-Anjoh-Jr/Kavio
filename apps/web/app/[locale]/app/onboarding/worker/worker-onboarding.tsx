@@ -9,7 +9,7 @@ import { LocationFields } from '@/components/onboarding/location-fields';
 import { MediaUpload } from '@/components/onboarding/media-upload';
 import { OnboardingShell } from '@/components/onboarding/onboarding-shell';
 import { useOnboarding } from '@/components/onboarding/use-onboarding';
-import { ONBOARDING_STEPS, readStep } from '@/lib/onboarding';
+import { ONBOARDING_STEPS, readStep, resolveInitialStep } from '@/lib/onboarding';
 import type {
   AvailabilitySlot,
   LocationValue,
@@ -35,7 +35,7 @@ export function WorkerOnboarding({ initial }: { initial: OnboardingState }) {
   const t = useTranslations('Onboarding.worker');
   const tShared = useTranslations('Onboarding');
   const { state, status, error, save, complete } = useOnboarding('WORKER', initial);
-  const [activeStep, setActiveStep] = useState(state.currentStep || 'services');
+  const [activeStep, setActiveStep] = useState(resolveInitialStep('WORKER', state.currentStep));
   const [completing, setCompleting] = useState(false);
 
   const services = readStep<ServiceEntry[]>(state.data, 'services', []);
@@ -162,7 +162,9 @@ export function WorkerOnboarding({ initial }: { initial: OnboardingState }) {
             kind="SELFIE"
             capture="user"
             label={t('steps.identity.selfie')}
-            hint={identity.selfieAssetId ? t('steps.identity.uploaded') : t('steps.identity.selfieHint')}
+            hint={
+              identity.selfieAssetId ? t('steps.identity.uploaded') : t('steps.identity.selfieHint')
+            }
             onUploaded={(result) =>
               save('identity', { identity: { ...identity, selfieAssetId: result.id } })
             }
@@ -171,7 +173,10 @@ export function WorkerOnboarding({ initial }: { initial: OnboardingState }) {
       )}
 
       {activeStep === 'location' && (
-        <LocationFields value={location} onChange={(next) => save('location', { location: next })} />
+        <LocationFields
+          value={location}
+          onChange={(next) => save('location', { location: next })}
+        />
       )}
     </OnboardingShell>
   );
@@ -230,11 +235,7 @@ function ServicesStep({
         </div>
       ))}
 
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => onChange([...services, { name: '' }])}
-      >
+      <Button type="button" variant="outline" onClick={() => onChange([...services, { name: '' }])}>
         <Plus aria-hidden />
         {t('add')}
       </Button>

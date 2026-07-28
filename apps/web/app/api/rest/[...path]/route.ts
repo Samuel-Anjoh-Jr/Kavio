@@ -12,13 +12,39 @@ import { getApiBaseUrl } from '@/lib/auth-api';
  * would let a single XSS reach every authenticated endpoint in the system. New
  * surfaces are added here deliberately, which is the point.
  */
-const ALLOWED_PREFIXES = ['auth/', 'onboarding/', 'uploads', 'geo/'] as const;
+const ALLOWED_PREFIXES = [
+  'admin',
+  'auth',
+  'businesses',
+  'conversations',
+  'disputes',
+  'emergency-contacts',
+  'geo',
+  'jobs',
+  'messaging',
+  'notifications',
+  'onboarding',
+  'payment-methods',
+  'quotes',
+  'reports',
+  'reviews',
+  'sos',
+  'tracking',
+  'uploads',
+  'verifications',
+] as const;
 
 /** Methods a proxied write may use. GET is excluded: reads belong to GraphQL. */
 const ALLOWED_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE']);
 
+/**
+ * Matches a whole leading segment, never a bare string prefix: `startsWith`
+ * alone would let "uploads-evil" through on the strength of "uploads". The
+ * allowlist names RESOURCE ROOTS; the API's own RBAC guards still authorise
+ * every individual call behind them.
+ */
 function isAllowed(path: string): boolean {
-  return ALLOWED_PREFIXES.some((prefix) => path === prefix || path.startsWith(prefix));
+  return ALLOWED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
 async function proxy(request: Request, segments: string[]): Promise<Response> {

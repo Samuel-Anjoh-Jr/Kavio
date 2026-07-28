@@ -20,12 +20,53 @@
 
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { randomInt, randomUUID } from 'crypto';
-import bcrypt from 'bcrypt';
+import { randomBytes, randomInt, randomUUID, scrypt } from 'crypto';
 
 const prisma = new PrismaClient();
 
 const DEFAULT_PASSWORD = 'TrustPro2026!';
+
+// ─────────────────────────────────────────────────────────────────────────
+// Password hashing — MUST match apps/api/src/lib/password.util.ts exactly.
+//
+// The API verifies `scrypt$N$r$p$salt$key` and returns false for anything
+// else, so a seed that wrote bcrypt hashes produced a database where every
+// demo account silently failed to log in. Keeping the same format (and the
+// same OWASP cost parameters) here is what makes the seeded accounts real
+// credentials rather than decoration.
+// ─────────────────────────────────────────────────────────────────────────
+const SCRYPT_N = 32768;
+const SCRYPT_R = 8;
+const SCRYPT_P = 1;
+const SCRYPT_KEY_BYTES = 64;
+const SCRYPT_SALT_BYTES = 16;
+const SCRYPT_MAX_MEM = 128 * SCRYPT_N * SCRYPT_R * 2;
+
+function hashPassword(plain) {
+  const salt = randomBytes(SCRYPT_SALT_BYTES);
+
+  return new Promise((resolve, reject) => {
+    scrypt(
+      plain.normalize('NFKC'),
+      salt,
+      SCRYPT_KEY_BYTES,
+      { N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P, maxmem: SCRYPT_MAX_MEM },
+      (error, derivedKey) =>
+        error
+          ? reject(error)
+          : resolve(
+              [
+                'scrypt',
+                SCRYPT_N,
+                SCRYPT_R,
+                SCRYPT_P,
+                salt.toString('base64'),
+                derivedKey.toString('base64'),
+              ].join('$'),
+            ),
+    );
+  });
+}
 const NOW = new Date();
 const PLATFORM_FEE_BPS = 1000; // 10%, mirrors the seeded SystemSetting below
 
@@ -446,7 +487,7 @@ async function createMedia(
 // ═════════════════════════════════════════════════════════════════════════
 async function main() {
   console.log('🌱 Seeding TrustPro Cameroon demo database...\n');
-  const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+  const passwordHash = await hashPassword(DEFAULT_PASSWORD);
 
   // ── Phase 0: clear existing data, leaf tables first ─────────────────────
   console.log('🧹 Clearing existing data...');
@@ -612,54 +653,53 @@ async function main() {
   }
 
   // SystemSetting — admin-tunable switches/thresholds, never secrets.
+  //
+  // The KEYS must match SETTING_REGISTRY in apps/api/src/admin/admin-ops.service.ts.
+  // The admin console lists the registry and joins stored rows onto it by key, so
+  // a row whose key is not in the registry is simply never shown — the settings
+  // screen rendered every value as "unset" while the table looked fully seeded.
   const SYSTEM_SETTINGS = [
     {
-      key: 'platform_fee_bps',
-      value: PLATFORM_FEE_BPS,
+      key: 'platform.feePercent',
+      value: PLATFORM_FEE_BPS / 100,
       category: 'payments',
-      description: 'Platform fee in basis points (10%)',
+      description: 'Platform service fee taken at escrow release, as a percentage.',
     },
     {
-      key: 'trust_score_thresholds',
-      value: { 25: 25, 50: 50, 75: 75, 90: 90 },
-      category: 'trust',
-      description: 'Trust Score badge thresholds',
-    },
-    {
-      key: 'sms_enabled',
-      value: false,
-      category: 'notifications',
-      description: 'Enable SMS delivery (MTN/Orange). Off at launch — email/console only.',
-    },
-    {
-      key: 'min_withdrawal_xaf',
+      key: 'platform.minPayoutXaf',
       value: 2000,
       category: 'payments',
-      description: 'Minimum wallet withdrawal amount, in XAF',
+      description: 'Smallest withdrawal a worker may request, in whole XAF.',
     },
     {
-      key: 'escrow_auto_release_days',
-      value: 5,
-      category: 'payments',
-      description: 'Days after COMPLETED before escrow auto-releases if the client is silent',
+      key: 'notifications.smsEnabled',
+      value: false,
+      category: 'notifications',
+      description: 'Master switch for the (deferred) SMS channel. OFF at launch.',
     },
     {
-      key: 'support_email',
-      value: 'support@trustpro.cm',
-      category: 'general',
-      description: 'Public support contact email',
+      key: 'notifications.digestHourUtc',
+      value: 6,
+      category: 'notifications',
+      description: 'Hour of day, UTC, at which digest notifications are sent.',
     },
     {
-      key: 'support_phone',
-      value: '+237699000000',
-      category: 'general',
-      description: 'Public support contact phone',
+      key: 'moderation.autoSuspendReportThreshold',
+      value: 3,
+      category: 'moderation',
+      description: 'Open reports about one account before it is escalated in the risk monitor.',
     },
     {
-      key: 'job_posting_min_tier',
-      value: 'TIER_0',
-      category: 'jobs',
-      description: 'Minimum verification tier required to post a job',
+      key: 'discovery.defaultRadiusKm',
+      value: 10,
+      category: 'discovery',
+      description: 'Default search radius when a visitor has set no distance filter.',
+    },
+    {
+      key: 'verification.fieldVisitRequiredTier',
+      value: 'TIER_3',
+      category: 'verification',
+      description: 'Tier at which a physical field visit becomes mandatory.',
     },
   ];
   for (const s of SYSTEM_SETTINGS) {
@@ -876,6 +916,19 @@ async function main() {
       markCheckPassed(user.id, 'PHONE');
       await addTrustEvent(user.id, 'PHONE_VERIFIED', 'IDENTITY', 5, {
         occurredAt: phoneVerifiedAt,
+      });
+      /**
+       * The tier the API ENFORCES is derived from VerificationRecord rows, not
+       * from User.tier. Without a PHONE record every identity derived back to
+       * TIER_0 — so seeded profiles displayed "Field Verified" while the posting
+       * gate refused them for an unverified phone. A phone check carries no
+       * documents, hence the empty docKinds.
+       */
+      await createVerificationRecord(user.id, 'PHONE', {
+        status: 'VERIFIED',
+        stage: 'APPROVED',
+        submittedAt: phoneVerifiedAt,
+        docKinds: [],
       });
     }
     return user;
@@ -1248,7 +1301,7 @@ async function main() {
     const { name, isMale } = randomPersonName();
     const locale = pct(0.55) ? 'fr' : 'en';
     const createdAt = daysAgo(randomInt(5, 300));
-    const phoneVerified = i < 10; // 10 of 12 verified enough to post jobs (JOB-01 tier gate)
+    const phoneVerified = i < 10;
     const client = await createIdentity({
       email: `client${i + 1}@example.com`,
       phone: uniqueCameroonPhone(),
@@ -1261,9 +1314,36 @@ async function main() {
     await addRole(client.id, 'CLIENT', true);
     client.locale = locale;
     client.isMale = isMale;
+
+    /**
+     * Posting a job is gated at TIER_2 (MIN_POSTING_TIER in
+     * apps/api/src/jobs/job-posting-gate.service.ts): PHONE *and* ID_APPROVED,
+     * plus the tier's score floor. A phone number alone is NOT enough, so a
+     * seed that stopped at phone verification produced a demo database in which
+     * no client could publish anything — every "Post a job" ended on the
+     * verification wall. The first few clients therefore clear ID review too.
+     */
+    if (i < 6) {
+      const reviewer = randomItem(agents);
+      await createVerificationRecord(client.id, 'ID_APPROVED', {
+        status: 'VERIFIED',
+        stage: 'APPROVED',
+        reviewerId: reviewer.id,
+        submittedAt: hoursAfter(createdAt, 24),
+      });
+      markCheckPassed(client.id, 'ID_APPROVED');
+      await addTrustEvent(client.id, 'ID_VERIFIED', 'IDENTITY', 10, {
+        actorId: reviewer.id,
+        sourceType: 'VerificationRecord',
+        occurredAt: hoursAfter(createdAt, 96),
+      });
+    }
+
     clients.push(client);
   }
-  console.log(`   Clients ......... ${clients.length}`);
+  console.log(
+    `   Clients ......... ${clients.length} (6 ID-verified, i.e. able to post jobs at Tier 2)`,
+  );
 
   // — Businesses —
   const BUSINESS_NAMES = [
@@ -1563,21 +1643,58 @@ async function main() {
 
   // ── Phase 5: onboarding autosave state (ACC-10) ──────────────────────────
   console.log('📝 Creating onboarding progress...');
+  // The step KEYS must match apps/api/src/onboarding/onboarding.steps.ts and
+  // apps/web/lib/onboarding.ts exactly. A key that exists in neither leaves the
+  // wizard on a step it has no panel and no `steps.<key>.*` translation for.
   const ONBOARDING_STEPS = {
-    WORKER: ['basic_info', 'category_selection', 'pricing', 'location', 'portfolio', 'review'],
-    CLIENT: ['basic_info', 'location', 'review'],
-    BUSINESS: ['company_info', 'registration', 'location', 'team', 'review'],
+    WORKER: ['services', 'availability', 'portfolio', 'identity', 'location'],
+    CLIENT: ['profile', 'location'],
+    BUSINESS: ['company', 'documents', 'team'],
   };
-  async function createOnboarding(userId, role, { inProgress = false } = {}) {
+
+  /**
+   * The saved payload is keyed BY STEP, in the shape each step's Zod schema
+   * accepts, because that is what the server reads back to decide which steps
+   * are complete. A bag of step names would leave every step "unstarted" no
+   * matter what completionPercent claims.
+   */
+  function onboardingDataFor(role, user, steps) {
+    const city = randomItem(['Douala', 'Yaoundé']);
+    const all = {
+      services: [
+        { name: 'General repairs', description: 'Callouts across the city.', startingPrice: 15000 },
+      ],
+      availability: [
+        { dayOfWeek: 1, startTime: '08:00', endTime: '17:00' },
+        { dayOfWeek: 3, startTime: '08:00', endTime: '17:00' },
+      ],
+      portfolio: [{ mediaAssetId: randomUUID(), caption: 'Recent job', type: 'PHOTO' }],
+      identity: { idFrontAssetId: randomUUID(), selfieAssetId: randomUUID() },
+      profile: { displayName: user.name ?? 'TrustPro user' },
+      company: { name: user.name ?? 'TrustPro Services', city },
+      documents: { registrationAssetId: randomUUID() },
+      team: [{ name: 'Team member', role: 'STAFF', accessLevel: 'VIEW_ONLY' }],
+      location: { city, source: 'HUMAN_INPUT' },
+    };
+
+    return Object.fromEntries(steps.filter((step) => step in all).map((step) => [step, all[step]]));
+  }
+
+  async function createOnboarding(user, role, { inProgress = false } = {}) {
     const steps = ONBOARDING_STEPS[role];
-    const stepIdx = inProgress ? randomInt(1, steps.length - 2) : steps.length - 1;
-    const completionPercent = inProgress ? Math.round(((stepIdx + 1) / steps.length) * 100) : 100;
+    // Stop short of the last step while in progress; otherwise finish the run.
+    const stepIdx = inProgress ? randomInt(0, steps.length - 1) : steps.length - 1;
+    const reached = steps.slice(0, stepIdx + 1);
+    const completionPercent = inProgress ? Math.round((reached.length / steps.length) * 100) : 100;
+
     await prisma.onboardingProgress.create({
       data: {
-        userId,
+        userId: user.id,
         role,
         currentStep: steps[stepIdx],
-        data: { stepsCompleted: steps.slice(0, stepIdx + 1) },
+        // Only the steps actually reached carry data, so an in-progress row
+        // resumes with earlier answers filled in and the rest still blank.
+        data: onboardingDataFor(role, user, inProgress ? reached : steps),
         completionPercent,
         completedAt: inProgress ? null : daysAgo(randomInt(1, 30)),
       },
@@ -1587,10 +1704,10 @@ async function main() {
   for (const w of workers) {
     const inProgress = w.tierTarget === 'TIER_0' && pct(0.4);
     if (inProgress) inProgressCount++;
-    await createOnboarding(w.id, 'WORKER', { inProgress });
+    await createOnboarding(w, 'WORKER', { inProgress });
   }
-  for (const c of clients) await createOnboarding(c.id, 'CLIENT', {});
-  for (const b of businesses) await createOnboarding(b.owner.id, 'BUSINESS', {});
+  for (const c of clients) await createOnboarding(c, 'CLIENT', {});
+  for (const b of businesses) await createOnboarding(b.owner, 'BUSINESS', {});
   console.log(
     `   Onboarding flows: ${workers.length + clients.length + businesses.length} (${inProgressCount} still in progress — autosave demo)\n`,
   );
@@ -3363,7 +3480,8 @@ async function main() {
       tradeFr: 'Électricien',
       captionEn: 'Panel rewire, Bonapriso',
       captionFr: 'Réfection du tableau, Bonapriso',
-      beforeUrl: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=640&h=480&fit=crop',
+      beforeUrl:
+        'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=640&h=480&fit=crop',
       afterUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=640&h=480&fit=crop',
       order: 0,
       isPublished: true,
@@ -3375,7 +3493,8 @@ async function main() {
       tradeFr: 'Plombier',
       captionEn: 'Bathroom refit, Bastos',
       captionFr: 'Rénovation salle de bain, Bastos',
-      beforeUrl: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
+      beforeUrl:
+        'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
       afterUrl: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=640&h=480&fit=crop',
       order: 1,
       isPublished: true,
@@ -3399,7 +3518,8 @@ async function main() {
       tradeFr: 'Soudeur',
       captionEn: 'Security gate, Bonabéri',
       captionFr: 'Portail de sécurité, Bonabéri',
-      beforeUrl: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
+      beforeUrl:
+        'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
       afterUrl: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=640&h=480&fit=crop',
       order: 3,
       isPublished: true,

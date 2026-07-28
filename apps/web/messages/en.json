@@ -264,7 +264,7 @@
     "viewBreakdown": "View your Trust Score",
     "tier": {
       "TIER_0": "Basic Profile",
-      "TIER_1": "ID Submitted",
+      "TIER_1": "Phone Verified",
       "TIER_2": "Verified Professional",
       "TIER_3": "Field Verified"
     },
@@ -378,8 +378,7 @@
     "title": "Posted jobs",
     "subtitle": "Browse what people near you need done.",
     "post": "Post a job",
-    "empty": "No open jobs in your area right now. Check back soon, or post one yourself.",
-    "reportListing": "Report this listing"
+    "empty": "No open jobs in your area right now. Check back soon, or post one yourself."
   },
   "PostJob": {
     "title": "Describe your job",
@@ -1232,6 +1231,7 @@
     "confirmRelease": "Confirm & release payment",
     "leaveReview": "Leave a review",
     "reportProblem": "Report a problem",
+    "reportListing": "Report this listing",
     "releaseHint": "Confirming completion releases the escrow to the worker, minus the platform fee.",
     "messagingSoon": "Messaging arrives soon.",
     "startedToast": "Job marked in progress.",

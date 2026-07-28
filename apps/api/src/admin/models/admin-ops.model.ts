@@ -123,7 +123,14 @@ export class SystemSettingView {
   @Field(() => String)
   key!: string;
 
-  @Field(() => GraphQLJSON)
+  /**
+   * Null when the setting has never been overridden — the registry lists every
+   * known setting, while the table holds only what an admin has changed, so
+   * "no stored row" is an ordinary state and not an error. Declaring this
+   * non-nullable made a single un-overridden setting fail the WHOLE query,
+   * blanking the settings screen.
+   */
+  @Field(() => GraphQLJSON, { nullable: true })
   value!: unknown;
 
   @Field(() => String)

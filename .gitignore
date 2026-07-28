@@ -38,3 +38,10 @@ next-env.d.ts
 # generated GraphQL SDL (code-first: schema.prisma-style source of truth is the
 # decorated resolvers, so the emitted SDL is a build artefact)
 apps/api/src/graphql/schema.gql
+
+# local Redis artifacts (created when redis-server runs from the repo root)
+dump.rdb
+appendonlydir/
+
+# browser-audit screenshots
+.demo-audit/

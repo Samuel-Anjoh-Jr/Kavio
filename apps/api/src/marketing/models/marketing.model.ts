@@ -113,7 +113,7 @@ export class TestimonialView {
 @ObjectType({
   description: 'A before/after entry in the landing page Portfolio showcase (SRS §26.2).',
 })
-export class PortfolioItemView {
+export class PortfolioShowcaseView {
   @Field(() => ID)
   id!: string;
 

@@ -264,7 +264,7 @@
     "viewBreakdown": "Voir votre Score de Confiance",
     "tier": {
       "TIER_0": "Profil de base",
-      "TIER_1": "Pièce d’identité soumise",
+      "TIER_1": "Téléphone vérifié",
       "TIER_2": "Professionnel vérifié",
       "TIER_3": "Vérifié sur le terrain"
     },
@@ -378,8 +378,7 @@
     "title": "Missions publiées",
     "subtitle": "Découvrez ce dont les gens près de chez vous ont besoin.",
     "post": "Publier une mission",
-    "empty": "Aucune mission ouverte dans votre zone pour le moment. Revenez bientôt, ou publiez la vôtre.",
-    "reportListing": "Signaler cette annonce"
+    "empty": "Aucune mission ouverte dans votre zone pour le moment. Revenez bientôt, ou publiez la vôtre."
   },
   "PostJob": {
     "title": "Décrivez votre mission",
@@ -1232,6 +1231,7 @@
     "confirmRelease": "Confirmer et libérer le paiement",
     "leaveReview": "Laisser un avis",
     "reportProblem": "Signaler un problème",
+    "reportListing": "Signaler cette annonce",
     "releaseHint": "Confirmer la fin libère le séquestre au professionnel, déduction faite des frais.",
     "messagingSoon": "La messagerie arrive bientôt.",
     "startedToast": "Mission marquée en cours.",

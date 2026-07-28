@@ -76,6 +76,7 @@ interface UploadedPhoto {
 
 export function PostJobStepper() {
   const t = useTranslations('PostJob');
+  const tLocation = useTranslations('Location');
   const locale = useLocale();
   const router = useRouter();
   const requireAuth = useRequireAuth();
@@ -401,7 +402,19 @@ export function PostJobStepper() {
             <ReviewRow label={t('urgencyLabel')} value={t(`urgency.${draft.urgency}`)} />
             <ReviewRow
               label={t('locationLabel')}
-              value={jobLocation?.landmark || jobLocation?.label || t('notSet')}
+              value={
+                jobLocation?.landmark ||
+                jobLocation?.label ||
+                // A pin with no landmark and no reverse-geocoded label is still
+                // a location — falling straight through to "Not set" contradicted
+                // the Location step, which had already confirmed "Location set".
+                (jobLocation
+                  ? tLocation('coordinates', {
+                      latitude: jobLocation.latitude.toFixed(4),
+                      longitude: jobLocation.longitude.toFixed(4),
+                    })
+                  : t('notSet'))
+              }
             />
             <ReviewRow
               label={t('budgetLabel')}
