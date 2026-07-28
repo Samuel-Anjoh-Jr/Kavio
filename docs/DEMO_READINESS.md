@@ -82,6 +82,71 @@ Verified" / "Téléphone vérifié".
 
 ---
 
+## The trust model, as it now behaves
+
+This changed materially after the first pass. Three rules:
+
+**1. Workers earn discovery; clients owe nothing.**
+A worker profile appears in search, explore and the map tiles only once the
+identity has verified a contact channel (phone **or** email) *and* had an ID
+approved. Everyone else keeps a private profile and simply does not appear.
+Clients have no KYC at all — they browse, hire, pay escrow and review freely.
+The asymmetry is the product: you are trusting the person who comes to your
+house, not the person who opens the door.
+
+The gate lives in the `search.searchable_worker` view, so every reader inherits
+it and none can forget it. Of 21 active seeded workers, 11 are discoverable.
+
+**2. Hiring and advertising are different acts.**
+Publishing now carries a visibility:
+
+| | Who | Verification | Fee | On the board? |
+| --- | --- | --- | --- | --- |
+| `DIRECT` | Any client | None | None | No |
+| `PUBLIC` | Verified business only | Owner ID **+** RCCM | Flat, admin-set | Yes |
+
+The gate had to sit on visibility rather than on job creation: a Quote requires
+a Job, and a Job must be OPEN before it can be quoted on, so gating creation
+would have stopped clients hiring anyone at all. `job:create` therefore remains
+on both roles and the reason is recorded in `permissions.ts`.
+
+**3. Ranking gives everyone a turn.**
+Scores are floored into bands. A band still beats the band below it, so a
+clearly better worker still wins — but inside a band the order is a hash of
+(worker, viewer). One visitor sees a stable order across refreshes and paging;
+two visitors see different workers first. Without this the same handful sat on
+top of every search forever and nobody below could earn the jobs that would
+raise their score.
+
+**Verified end to end:** a verified business publishes PUBLIC (200) and the job
+appears on the board; a client publishing PUBLIC is refused (403,
+`BUSINESS_VERIFICATION_REQUIRED`) while publishing DIRECT succeeds (200) and
+correctly stays off the board.
+
+### Settings that are now live
+
+`SystemSetting` was admin-writable but nothing read it — every "setting" was
+decoration. `PlatformSettingsService` is the runtime reader (cached, invalidated
+on save). Two new keys, both editable in **Admin → Settings**:
+
+- `verification.contactChannel` — `PHONE` | `EMAIL` | `EITHER`. **Seeded to
+  `EMAIL`**, because SMS is a paid aggregator you have not connected and email
+  is the channel that actually delivers a code today. Flip it the day SMS goes
+  live; no code change.
+- `jobs.postingFeeXaf` — flat charge to publish. Seeded to `0`. The fee is
+  frozen onto the job at publish time, so changing it later never restates what
+  past posters were charged.
+
+### Payments without Campay
+
+With no `CAMPAY_*` credentials there is no operator prompt and no webhook, so
+escrow used to sit `PENDING` forever and every state past it — release, payout,
+dispute, refund — was unreachable in dev. A stub initiation now drives the
+ordinary reconciliation path: the *same* code a live webhook triggers, not a
+parallel one that could drift. Inert the moment real credentials exist.
+
+---
+
 ## Before you demo — please do these
 
 **Run the production build, not `pnpm dev`.**
@@ -115,10 +180,11 @@ test on the venue network first.
 
 | Role | Account | Notes |
 | --- | --- | --- |
-| Client (can post jobs) | `client1@example.com` … `client6@example.com` | Tier 2, ID-verified |
-| Client (shows the gate) | `client11@example.com` | Tier 0 — good for showing the anti-lure wall |
-| Worker | `worker2@example.com` | Tier 3, high Trust Score |
-| Business | `business1@example.com` | Team seats populated |
+| **Verified business (posts to the board)** | `business1@example.com`, `business2@example.com` | Owner ID **and** RCCM approved — the only accounts that can publish a public vacancy |
+| Business, not yet verified | `business3@example.com` | Shows the "get verified as a business" wall |
+| Client | `client1@example.com` … `client6@example.com` | No KYC needed. Hires directly, pays escrow, reviews |
+| Worker (visible in search) | `worker14@example.com`, `worker18@example.com` | Contact-verified + ID-approved |
+| Worker (hidden from search) | `worker1@example.com`, `worker7@example.com` | Not yet ID-approved — shows the discovery gate |
 | Field agent | `agent.douala@trustpro.cm` | Verification queue |
 | Admin | `admin@trustpro.cm` | **2FA — code prints to the API terminal** |
 
@@ -127,14 +193,58 @@ test on the venue network first.
 1. Landing page (EN), scroll the Trust Engine ladder → switch to FR mid-scroll.
 2. Explore workers as a **guest** — no account — open a full worker profile
    (Trust Score ring, verified checks, portfolio, reviews).
-3. Click *Request a quote* → hits the login wall → sign in → **the intent
+3. **Refresh the search in a second browser profile.** Different visitor,
+   different workers on top, same order on every refresh — the ranking gives
+   everyone a turn instead of crowning the same few forever.
+4. Click *Request a quote* → hits the login wall → sign in → **the intent
    resumes**.
-4. Post a job end to end as `client1@example.com` (4-step wizard, autosave,
-   XAF budget) → published.
-5. Optional contrast: try it as `client11@example.com` to show the
-   "Verify your identity to post a job" gate — that *is* the moat.
-6. Finish in the admin console: KPIs, escrow held/released, disputes, SOS
-   alerts, fraud & risk, and the audit log.
+5. Hire as `client1@example.com` — no KYC, straight to quote and escrow. This
+   is the client story: trust is demanded of the person entering your home, not
+   of the person opening the door.
+6. Switch to `business1@example.com` and post a **public vacancy** to the job
+   board. Then try the same as a client and hit
+   *"Get verified as a business to post job vacancies"* — that contrast **is**
+   the moat.
+7. Finish in the admin console: KPIs, escrow held/released, disputes, SOS
+   alerts, fraud & risk, the audit log, and **Settings → the posting fee and
+   contact channel are live switches**, not decoration.
+
+---
+
+## Still outstanding from the product rework
+
+The trust/visibility/ranking model above is **built and verified end to end**.
+These items from the same brief are **not done yet** — recorded here so nothing
+is lost, roughly in the order I would take them:
+
+1. **Worker dashboard verification banner.** A worker whose contact is
+   unverified should see a banner that sends an OTP inline (button → the banner
+   becomes a code input), then advances to an "verify your ID" CTA pointing at
+   the verification page. *Backend is ready — the OTP endpoint and the gate both
+   exist; this is the UI.*
+2. **Signup role choice.** Signup still asks "find work / hire". It should not:
+   one identity holds both roles and switches between them. Removing the
+   question also removes the wrong mental model it plants.
+3. **"Are you a business?" hint.** A client browsing workers should see a
+   prompt to get verified as a business, routing into the selfie + ID + RCCM
+   upload. *The refusal message and step codes already come back from the API;
+   what is missing is the entry point and the upload screen.*
+4. **Posting fee in the UI.** `jobs.postingFeeXaf` is read, frozen onto the job
+   and admin-editable, but the publish step does not yet show the amount, and
+   `0` should read as **"Free"** rather than "FCFA 0".
+5. **Location pickers.** Job location already stores a pin, reverse-geocodes to
+   quarter + town and renders on the board ("Odza, Yaoundé"). Missing: an
+   explicit *use my current location* / *drag pin* control on job creation, an
+   *open in maps* button everywhere a job is shown including for guests, and an
+   editable worker-profile location with free-text extra detail.
+6. **Fuzzy search on the remaining bars.** Worker search is genuinely
+   typo-tolerant (`pg_trgm` + `unaccent`, threshold 0.2, matching service names
+   and EN/FR category names — "plombri" finds plumbers). The **job board** and
+   **admin** search inputs have not been audited and probably do plain matching.
+
+Two things from the brief were already true and needed no work: **service
+categories are fully admin-configurable** (CRUD, retire/restore, reorder in
+Admin → Categories), and worker search was already fuzzy.
 
 ---
 
