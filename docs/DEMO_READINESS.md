@@ -292,10 +292,26 @@ admin-configurable** (CRUD, retire/restore, reorder).
   not part of the client render. `suppressHydrationWarning` on `<body>` does
   **not** clear it; the fix likely means moving the theme script out of the
   hydrated tree.
-- **One API test is flaky in a slow environment**:
-  `queue.service.integration.spec.ts` ("retries a thrown job") times out at
-  20 s against a local Redis. Unrelated to any change here; 671 of 672 API
-  tests and all 112 web tests pass.
+
+---
+
+## Tests
+
+**672 / 672 API and 112 / 112 web pass**, including with the API dev server
+running.
+
+The queue integration test used to fail here and I wrote it off as "flaky in a
+slow environment". It was not. `queue.service.integration.spec.ts` enqueues onto
+the REAL `notifications` queue, and a BullMQ queue is just a set of Redis keys —
+so the API's own notifications worker, running locally against the same Redis,
+was a competing consumer rather than a bystander. It took the test's job first,
+and the test's worker waited out its 20 s for a `completed` event that had
+already gone somewhere else. That failed only when a dev server happened to be
+up, which is what made it look like timing. It is now pinned to its own Redis
+database (`TEST_REDIS_DB`, default 15), so a running app, a second test run or a
+colleague's local stack cannot reach its jobs. Confirmed by reproducing the
+failure deterministically with the API running, then passing three consecutive
+runs under the same conditions.
 
 ---
 
