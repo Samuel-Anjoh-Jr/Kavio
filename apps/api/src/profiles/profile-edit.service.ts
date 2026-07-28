@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { LocationSource } from '@trustpro/database';
+import { ReverseGeocodeService } from '../geo/reverse-geocode.service';
 import { MediaAssetKind } from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { createLogger } from '../lib/logger';
@@ -34,7 +36,51 @@ export class ProfileEditService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ownership: ProfileOwnershipService,
+    private readonly reverseGeocode: ReverseGeocodeService,
   ) {}
+
+  /**
+   * Turns a dropped pin into a stored place.
+   *
+   * The quarter and town come from reverse-geocoding, never from the request:
+   * clients filter on `area`, so letting a worker type it would let them appear
+   * in a neighbourhood they do not work in. A human-placed pin still wins over
+   * an auto-detected fix, which is what `source` records.
+   */
+  private async resolveLocation(input: {
+    latitude: number;
+    longitude: number;
+    source?: LocationSource;
+    landmark?: string | null;
+  }) {
+    const place = await this.reverseGeocode.resolve({
+      latitude: input.latitude,
+      longitude: input.longitude,
+    });
+
+    return {
+      latitude: input.latitude,
+      longitude: input.longitude,
+      locationSource: input.source ?? LocationSource.HUMAN_INPUT,
+      geoRegionId: place.regionId,
+      landmark: input.landmark ?? null,
+      ...(place.city ? { city: place.city } : {}),
+      ...(place.locality ? { area: place.locality } : {}),
+    };
+  }
+
+  /** Explicitly "I would rather not say" — every derived field goes with it. */
+  private clearedLocation() {
+    return {
+      latitude: null,
+      longitude: null,
+      locationSource: null,
+      geoRegionId: null,
+      landmark: null,
+      city: null,
+      area: null,
+    };
+  }
 
   async updateWorkerProfile(user: AuthenticatedUser, dto: UpdateWorkerProfileDto) {
     const profile = await this.ownership.requireWorkerProfile(user.id);
@@ -48,6 +94,15 @@ export class ProfileEditService {
       );
     }
 
+    // Resolved before the write so a failing geocode never leaves the profile
+    // half-updated with coordinates but no place name.
+    const locationData =
+      dto.location === undefined
+        ? {}
+        : dto.location === null
+          ? this.clearedLocation()
+          : await this.resolveLocation(dto.location);
+
     const updated = await this.prisma.client.workerProfile.update({
       where: { id: profile.id },
       data: {
@@ -55,6 +110,7 @@ export class ProfileEditService {
         ...(dto.bio !== undefined ? { bio: dto.bio } : {}),
         ...(dto.yearsExperience !== undefined ? { yearsExperience: dto.yearsExperience } : {}),
         ...(dto.coverAssetId !== undefined ? { coverAssetId: dto.coverAssetId } : {}),
+        ...locationData,
       },
       select: {
         id: true,
@@ -62,6 +118,9 @@ export class ProfileEditService {
         bio: true,
         yearsExperience: true,
         coverAssetId: true,
+        city: true,
+        area: true,
+        landmark: true,
       },
     });
 

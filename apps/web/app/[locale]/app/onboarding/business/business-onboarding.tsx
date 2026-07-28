@@ -8,7 +8,7 @@ import { Field } from '@/components/auth/field';
 import { MediaUpload } from '@/components/onboarding/media-upload';
 import { OnboardingShell } from '@/components/onboarding/onboarding-shell';
 import { useOnboarding } from '@/components/onboarding/use-onboarding';
-import { ONBOARDING_STEPS, readStep } from '@/lib/onboarding';
+import { ONBOARDING_STEPS, readStep, resolveInitialStep } from '@/lib/onboarding';
 import type { OnboardingState, TeamMemberEntry } from '@/lib/onboarding';
 
 interface CompanyValue {
@@ -40,7 +40,7 @@ export function BusinessOnboarding({ initial }: { initial: OnboardingState }) {
   const t = useTranslations('Onboarding.business');
   const tShared = useTranslations('Onboarding');
   const { state, status, error, save, complete } = useOnboarding('BUSINESS', initial);
-  const [activeStep, setActiveStep] = useState(state.currentStep || 'company');
+  const [activeStep, setActiveStep] = useState(resolveInitialStep('BUSINESS', state.currentStep));
   const [completing, setCompleting] = useState(false);
 
   const company = readStep<CompanyValue>(state.data, 'company', {});
@@ -238,8 +238,7 @@ export function BusinessOnboarding({ initial }: { initial: OnboardingState }) {
                           i === index
                             ? {
                                 ...entry,
-                                accessLevel: event.target
-                                  .value as TeamMemberEntry['accessLevel'],
+                                accessLevel: event.target.value as TeamMemberEntry['accessLevel'],
                               }
                             : entry,
                         ),

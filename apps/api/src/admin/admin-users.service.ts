@@ -54,11 +54,43 @@ export class AdminUsersService {
     private readonly events: EventEmitter2,
   ) {}
 
+  /**
+   * Ids whose NAME is a fuzzy match for the query (ADM-02).
+   *
+   * Substring matching alone fails the case this search actually gets used for:
+   * an admin working from a phone call has heard a name, not read it. "Ngono"
+   * typed as "Ngonno" returns nothing from a LIKE, which reads as "no such
+   * account" rather than "close, try again". pg_trgm — already installed for
+   * worker search — answers the same question tolerantly, and unaccent means an
+   * admin who cannot easily type "é" still finds "Aurélie".
+   *
+   * Returned as an id list rather than folded into the Prisma filter because
+   * Prisma cannot express the `%` operator; the ids then ride the primary key.
+   * Bounded, so a one-letter query cannot drag the whole table back.
+   */
+  private async fuzzyNameMatches(query: string): Promise<string[]> {
+    const rows = await this.prisma.client.$queryRaw<Array<{ id: string }>>`
+      SELECT "id"
+      FROM "User"
+      WHERE search.immutable_unaccent("name") % search.immutable_unaccent(${query})
+      ORDER BY similarity(search.immutable_unaccent("name"), search.immutable_unaccent(${query})) DESC
+      LIMIT 200
+    `;
+    return rows.map((row) => row.id);
+  }
+
   /** The admin directory: search, filter, page (ADM-02). */
   async listUsers(dto: ListUsersDto): Promise<AdminUserPageView> {
     const started = Date.now();
     const take = Math.min(dto.limit ?? 20, MAX_PAGE);
     const skip = dto.offset ?? 0;
+
+    // Only worth a round trip once the query is long enough to be a name rather
+    // than a keystroke; below that, trigram similarity is noise.
+    const fuzzyIds =
+      dto.query && dto.query.trim().length >= 3
+        ? await this.fuzzyNameMatches(dto.query.trim())
+        : [];
 
     const where: Prisma.UserWhereInput = {
       // DELETED accounts are excluded rather than shown greyed out: the row is a
@@ -76,6 +108,10 @@ export class AdminUsersService {
               { name: { contains: dto.query, mode: 'insensitive' } },
               { email: { contains: dto.query, mode: 'insensitive' } },
               { phone: { contains: dto.query } },
+              // Typo tolerance, on top of — never instead of — exact matching:
+              // an admin who types an email in full must still get that row
+              // first, and trigram similarity would not guarantee it.
+              ...(fuzzyIds.length > 0 ? [{ id: { in: fuzzyIds } }] : []),
             ],
           }
         : {}),

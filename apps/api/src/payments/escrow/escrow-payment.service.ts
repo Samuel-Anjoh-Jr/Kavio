@@ -1,9 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BookingStatus, TransactionStatus, TransactionType } from '@trustpro/database';
 import { randomUUID } from 'node:crypto';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { AppException } from '../../lib/app-exception';
 import { createLogger, getRequestId } from '../../lib/logger';
+import { CAMPAY_STUB_SETTLED } from '../payments.events';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CampayService } from '../campay/campay.service';
 import { LedgerService } from '../ledger.service';
@@ -43,6 +45,7 @@ export class EscrowPaymentService {
     private readonly campay: CampayService,
     private readonly ledger: LedgerService,
     private readonly methods: PaymentMethodsService,
+    private readonly events: EventEmitter2,
   ) {}
 
   async payBooking(
@@ -140,6 +143,12 @@ export class EscrowPaymentService {
     logger.info('Booking payment initiated', {
       payload: { bookingId: booking.id, reference: initiation.reference, live: this.campay.live },
     });
+
+    // No credentials means no operator prompt and no webhook, so settle now
+    // through the ordinary reconciliation path (see CAMPAY_STUB_SETTLED).
+    if (!this.campay.live) {
+      this.events.emit(CAMPAY_STUB_SETTLED, { externalReference });
+    }
 
     return {
       transactionId: txn.id,

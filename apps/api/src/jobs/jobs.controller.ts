@@ -23,9 +23,11 @@ import {
 import {
   createJobSchema,
   patchJobSchema,
+  publishJobSchema,
   transitionJobSchema,
   type CreateJobDto,
   type PatchJobDto,
+  type PublishJobDto,
   type TransitionJobDto,
 } from './dto/job.dto';
 import { InvitationsService } from './invitations.service';
@@ -40,8 +42,9 @@ import { JobsService } from './jobs.service';
  *   job:apply       — apply to a job, respond to an invitation (Worker)
  *
  * Posting is gated TWICE: once here by `job:create` (are you a role that hires?)
- * and again inside publish() by the Tier 2+ verification gate (have you proven
- * who you are?). The two are different questions and both must pass.
+ * and again inside publish(), but only for a PUBLIC listing — a DIRECT
+ * engagement with a worker the client already chose needs no verification,
+ * while putting a vacancy on the open board needs a verified business.
  */
 @Controller('jobs')
 export class JobsController {
@@ -87,8 +90,9 @@ export class JobsController {
   async publish(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(publishJobSchema)) dto: PublishJobDto,
   ) {
-    return this.jobs.publish(user, id);
+    return this.jobs.publish(user, id, dto.visibility);
   }
 
   /**

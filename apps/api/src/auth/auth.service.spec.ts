@@ -65,7 +65,8 @@ describe('AuthService.signUp', () => {
       role: Role.WORKER,
       status: UserStatus.PENDING,
     });
-    // Phone is normalised to E.164 and the initial role is active + pending.
+    // Phone is normalised to E.164. BOTH trading roles are granted — one person
+    // is routinely both — and the intent only decides which one starts ACTIVE.
     // No password was supplied, so the identity is OTP-only for now.
     expect(create).toHaveBeenCalledWith({
       data: {
@@ -74,7 +75,12 @@ describe('AuthService.signUp', () => {
         passwordHash: null,
         passwordUpdatedAt: null,
         status: UserStatus.PENDING,
-        roles: { create: { role: Role.WORKER, isActive: true } },
+        roles: {
+          create: [
+            { role: Role.CLIENT, isActive: false },
+            { role: Role.WORKER, isActive: true },
+          ],
+        },
       },
       select: { id: true, phone: true, status: true },
     });
@@ -98,7 +104,12 @@ describe('AuthService.signUp', () => {
         passwordHash: null,
         passwordUpdatedAt: null,
         status: UserStatus.PENDING,
-        roles: { create: { role: Role.CLIENT, isActive: true } },
+        roles: {
+          create: [
+            { role: Role.CLIENT, isActive: true },
+            { role: Role.WORKER, isActive: false },
+          ],
+        },
       },
       select: { id: true, phone: true, status: true },
     });

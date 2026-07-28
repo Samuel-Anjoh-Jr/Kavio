@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { OpenInMaps } from '@/components/discovery/open-in-maps';
 import { useQuery } from '@apollo/client/react';
 import { useSession } from 'next-auth/react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -150,10 +151,15 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
           {job.title || t('untitled')}
         </h1>
         {(job.landmark || job.area || job.city) && (
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <MapPin aria-hidden className="size-4" />
-            {job.landmark || [job.area, job.city].filter(Boolean).join(', ')}
-          </p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <MapPin aria-hidden className="size-4" />
+              {job.landmark || [job.area, job.city].filter(Boolean).join(', ')}
+            </p>
+            {/* Guests get this too: deciding whether a job is worth the trip is
+                exactly the question a stranger has before signing up. */}
+            <OpenInMaps area={job.area} city={job.city} landmark={job.landmark} />
+          </div>
         )}
         <p className="font-numeric text-sm text-muted-foreground">{budget}</p>
       </div>

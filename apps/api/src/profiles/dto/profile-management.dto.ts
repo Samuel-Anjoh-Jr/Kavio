@@ -1,4 +1,4 @@
-import { PortfolioItemType, PortfolioSlot } from '@trustpro/database';
+import { LocationSource, PortfolioItemType, PortfolioSlot } from '@trustpro/database';
 import { z } from 'zod';
 
 /**
@@ -150,6 +150,23 @@ export type SetAvailabilityExceptionDto = z.infer<typeof setAvailabilityExceptio
 // Profile details (PRO-07)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Where the worker works, as they set it themselves (PRO-07, DIS-04).
+ *
+ * The quarter and town are NOT accepted from the client: they are
+ * reverse-geocoded from the pin server-side, so the area a client filters on is
+ * always the area the coordinates actually fall in and cannot be typed into
+ * something more flattering. `landmark` is the worker's own words — "behind
+ * Total Bonapriso" — which is how an address is really given here, and it is
+ * additional to the resolved place rather than a substitute for it.
+ */
+const workerLocationSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  source: z.enum(LocationSource).optional(),
+  landmark: z.string().trim().max(160, 'Keep the landmark under 160 characters.').nullish(),
+});
+
 export const updateWorkerProfileSchema = z
   .object({
     headline: z.string().trim().max(120, 'Keep the headline under 120 characters.').nullish(),
@@ -161,6 +178,8 @@ export const updateWorkerProfileSchema = z
       .max(70, 'Check that number of years.')
       .nullish(),
     coverAssetId: z.uuid().nullish(),
+    /** Null clears the location entirely — "I would rather not say where". */
+    location: workerLocationSchema.nullish(),
   })
   .refine((value) => Object.keys(value).length > 0, { message: 'Change at least one field.' });
 

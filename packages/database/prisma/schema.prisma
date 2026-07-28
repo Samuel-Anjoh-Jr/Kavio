@@ -1572,6 +1572,19 @@ model GeoRegion {
 /// state table gives Accepted → Refunded and Disputed → Refunded as real exits,
 /// and a money state the enum cannot express is a state the escrow module would
 /// have to invent a second time in Phase 5.
+/// Who a published job is visible to (JOB-01).
+///
+/// The two are different products sharing one lifecycle. DIRECT is a private
+/// engagement a client opens with a worker they already chose — it never
+/// appears on the job board, so it carries no lure risk and needs no
+/// verification or fee. PUBLIC is a broadcast vacancy on the board, which is
+/// exactly the surface a fake-job lure abuses, so it is gated on a verified
+/// business and carries the posting fee.
+enum JobVisibility {
+  DIRECT
+  PUBLIC
+}
+
 enum JobStatus {
   DRAFT
   OPEN
@@ -1666,6 +1679,15 @@ model Job {
 
   urgency JobUrgency @default(FLEXIBLE)
   status  JobStatus  @default(DRAFT)
+
+  /// DIRECT by default: the safe thing to be is invisible. A job only reaches
+  /// the public board when a verified business explicitly publishes it there.
+  visibility JobVisibility @default(DIRECT)
+
+  /// What publishing this job to the board actually cost, in whole XAF, frozen
+  /// at publish time. Kept on the row rather than read from the live setting so
+  /// that changing the fee never rewrites what past posters were charged.
+  postingFeeXaf Int @default(0)
 
   /// See WorkerProfile's location block — identical rules, same trigger.
   city           String?

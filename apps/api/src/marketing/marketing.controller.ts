@@ -29,7 +29,7 @@ import {
   type UpdateTestimonialDto,
 } from './dto/marketing.dto';
 import { MarketingService } from './marketing.service';
-import type { FaqView, PortfolioItemView, TestimonialView } from './models/marketing.model';
+import type { FaqView, PortfolioShowcaseView, TestimonialView } from './models/marketing.model';
 
 /**
  * Marketing-content WRITES (REST, per the DUAL API RULE). Reads — including the
@@ -139,7 +139,7 @@ export class MarketingController {
   async createPortfolioItem(
     @CurrentUser() actor: AuthenticatedUser,
     @Body(new ZodValidationPipe(createPortfolioItemSchema)) dto: CreatePortfolioItemDto,
-  ): Promise<PortfolioItemView> {
+  ): Promise<PortfolioShowcaseView> {
     return this.marketing.createPortfolioItem(dto, actor);
   }
 
@@ -149,7 +149,7 @@ export class MarketingController {
     @CurrentUser() actor: AuthenticatedUser,
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body(new ZodValidationPipe(updatePortfolioItemSchema)) dto: UpdatePortfolioItemDto,
-  ): Promise<PortfolioItemView> {
+  ): Promise<PortfolioShowcaseView> {
     return this.marketing.updatePortfolioItem(id, dto, actor);
   }
 
@@ -167,7 +167,7 @@ export class MarketingController {
   async reorderPortfolio(
     @CurrentUser() actor: AuthenticatedUser,
     @Body(new ZodValidationPipe(reorderSchema)) dto: ReorderDto,
-  ): Promise<PortfolioItemView[]> {
+  ): Promise<PortfolioShowcaseView[]> {
     return this.marketing.reorderPortfolio(dto, actor);
   }
 }

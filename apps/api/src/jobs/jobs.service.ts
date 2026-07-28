@@ -1,6 +1,12 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { JobStatus, LocationSource, MediaAssetKind, Prisma } from '@trustpro/database';
+import {
+  JobStatus,
+  JobVisibility,
+  LocationSource,
+  MediaAssetKind,
+  Prisma,
+} from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { BusinessAccessService } from '../business/business-access.service';
 import { AppException } from '../lib/app-exception';
@@ -236,12 +242,19 @@ export class JobsService {
   }
 
   /**
-   * Publishes a draft (JOB-01, JOB-02). The Tier 2+ gate runs first — a
-   * sub-Tier-2 poster gets the unlock steps, not a job. Then the draft is
-   * checked for the minimum a live job needs, and moved DRAFT → OPEN.
+   * Publishes a draft (JOB-01, JOB-02), at a chosen visibility.
+   *
+   * DIRECT is the default and needs nothing: it is how a client with no
+   * verification hires a worker they already picked. PUBLIC puts the job on the
+   * board, which requires a verified business and charges the posting fee —
+   * the gate returns the unlock steps rather than a bare refusal.
    */
-  async publish(user: AuthenticatedUser, jobId: string): Promise<JobRow> {
-    await this.gate.assertCanPost(user.id);
+  async publish(
+    user: AuthenticatedUser,
+    jobId: string,
+    visibility: JobVisibility = JobVisibility.DIRECT,
+  ): Promise<JobRow> {
+    const eligibility = await this.gate.assertCanPublish(user.id, visibility);
 
     const job = await this.prisma.client.job.findFirst({
       where: { id: jobId, posterId: user.id },
@@ -284,6 +297,18 @@ export class JobsService {
       );
     }
 
+    // Recorded BEFORE the transition so a published row is never briefly on the
+    // board without the visibility and price it was published under.
+    await this.prisma.client.job.update({
+      where: { id: job.id },
+      data: {
+        visibility,
+        // Frozen here: a later change to the fee must not restate what this
+        // poster was charged. DIRECT engagements are never charged.
+        postingFeeXaf: visibility === JobVisibility.PUBLIC ? eligibility.feeXaf : 0,
+      },
+    });
+
     const updated = await this.applyTransition(
       { id: job.id, posterId: job.posterId, status: job.status, publishedAt: null },
       JobStatus.OPEN,
@@ -302,7 +327,14 @@ export class JobsService {
       }),
     );
 
-    logger.info('Job published', { payload: { jobId: job.id, posterId: user.id } });
+    logger.info('Job published', {
+      payload: {
+        jobId: job.id,
+        posterId: user.id,
+        visibility,
+        feeXaf: visibility === JobVisibility.PUBLIC ? eligibility.feeXaf : 0,
+      },
+    });
     return this.mapRow(updated);
   }
 

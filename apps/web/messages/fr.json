@@ -170,7 +170,8 @@
       "passwordInvalid": "Utilisez au moins 8 caractères.",
       "submit": "Créer le compte",
       "submitting": "Création de votre compte…",
-      "haveAccount": "Vous avez déjà un compte ?"
+      "haveAccount": "Vous avez déjà un compte ?",
+      "bothRolesNote": "Un seul compte, les deux côtés. Recrutez aujourd’hui et proposez vos propres compétences demain — changez quand vous voulez, sans revérification."
     },
     "login": {
       "title": "Bon retour",
@@ -264,7 +265,7 @@
     "viewBreakdown": "Voir votre Score de Confiance",
     "tier": {
       "TIER_0": "Profil de base",
-      "TIER_1": "Pièce d’identité soumise",
+      "TIER_1": "Téléphone vérifié",
       "TIER_2": "Professionnel vérifié",
       "TIER_3": "Vérifié sur le terrain"
     },
@@ -378,8 +379,7 @@
     "title": "Missions publiées",
     "subtitle": "Découvrez ce dont les gens près de chez vous ont besoin.",
     "post": "Publier une mission",
-    "empty": "Aucune mission ouverte dans votre zone pour le moment. Revenez bientôt, ou publiez la vôtre.",
-    "reportListing": "Signaler cette annonce"
+    "empty": "Aucune mission ouverte dans votre zone pour le moment. Revenez bientôt, ou publiez la vôtre."
   },
   "PostJob": {
     "title": "Décrivez votre mission",
@@ -433,7 +433,15 @@
     "postFailed": "Impossible de publier votre annonce. Veuillez réessayer.",
     "back": "Retour",
     "next": "Suivant",
-    "autosaved": "Brouillon enregistré"
+    "autosaved": "Brouillon enregistré",
+    "postingFeeFree": "Gratuit",
+    "postingFeeLabel": "Frais de publication",
+    "postingFeeValue": "{amount} FCFA",
+    "visibilityHeading": "Qui doit voir cette offre ?",
+    "visibilityDirectTitle": "Uniquement le professionnel que je choisis",
+    "visibilityDirectBody": "Reste privé. Vous invitez un professionnel et ne recevez que ses devis.",
+    "visibilityPublicTitle": "Publier sur le tableau public",
+    "visibilityPublicBody": "Tout professionnel vérifié peut la voir et postuler."
   },
   "Home": {
     "title": "Votre espace TrustPro",
@@ -910,7 +918,8 @@
       "positionUnavailable": "Nous n'avons pas pu obtenir votre position. Placez plutôt un point ci-dessous.",
       "timeout": "Cela a pris trop de temps. Réessayez, ou placez un point ci-dessous.",
       "unknown": "Une erreur est survenue lors de la localisation. Placez plutôt un point ci-dessous."
-    }
+    },
+    "openInMaps": "Ouvrir dans Maps"
   },
   "Search": {
     "title": "Trouver un professionnel",
@@ -1232,6 +1241,7 @@
     "confirmRelease": "Confirmer et libérer le paiement",
     "leaveReview": "Laisser un avis",
     "reportProblem": "Signaler un problème",
+    "reportListing": "Signaler cette annonce",
     "releaseHint": "Confirmer la fin libère le séquestre au professionnel, déduction faite des frais.",
     "messagingSoon": "La messagerie arrive bientôt.",
     "startedToast": "Mission marquée en cours.",
@@ -2312,6 +2322,7 @@
       "notifications": "Notifications",
       "moderation": "Modération",
       "discovery": "Découverte",
+      "jobs": "Emplois",
       "verification": "Vérification",
       "general": "Général"
     },
@@ -2657,5 +2668,24 @@
   },
   "Breadcrumbs": {
     "home": "Accueil"
+  },
+  "WorkerVerificationBanner": {
+    "heading": "Votre profil n’est pas encore visible",
+    "body": "Les clients ne voient que les professionnels ayant confirmé un contact et fait valider une pièce d’identité. Deux étapes et vous êtes référencé(e).",
+    "sendCodeEmail": "Envoyez-moi un code à {destination}",
+    "sendCodePhone": "Envoyez-moi un code par SMS au {destination}",
+    "noDestination": "Ajoutez d’abord une adresse e-mail ou un numéro de téléphone à votre profil.",
+    "codeSent": "Nous avons envoyé un code à 6 chiffres à {destination}.",
+    "codeLabel": "Code de vérification",
+    "codePlaceholder": "Code à 6 chiffres",
+    "verify": "Vérifier",
+    "resend": "Renvoyer le code",
+    "contactDone": "Contact confirmé. Il reste une étape.",
+    "verifyIdCta": "Vérifier votre pièce d’identité"
+  },
+  "BusinessUpgradeHint": {
+    "heading": "Vous êtes une entreprise ?",
+    "body": "Faites-vous vérifier avec votre pièce d’identité et votre registre de commerce (RCCM) pour publier des offres sur le tableau public, au lieu de contacter les professionnels un par un.",
+    "cta": "Se faire vérifier comme entreprise"
   }
 }

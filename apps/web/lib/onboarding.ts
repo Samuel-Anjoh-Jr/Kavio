@@ -14,6 +14,21 @@ export const ONBOARDING_STEPS: Record<OnboardingRole, string[]> = {
   BUSINESS: ['company', 'documents', 'team'],
 };
 
+/**
+ * Resolves the step a wizard should open on, given whatever the server last
+ * stored as `currentStep`.
+ *
+ * A stored step is only trusted when it is still one of the role's steps. A row
+ * written before the step list changed — or by any other producer — would
+ * otherwise select a step the wizard has no panel and no `steps.<key>.*`
+ * translations for, which renders an empty body and throws MISSING_MESSAGE
+ * rather than simply resuming where the user left off.
+ */
+export function resolveInitialStep(role: OnboardingRole, currentStep: string | undefined): string {
+  const steps = ONBOARDING_STEPS[role];
+  return currentStep && steps.includes(currentStep) ? currentStep : steps[0]!;
+}
+
 export interface OnboardingUnlock {
   key: string;
   threshold: number;

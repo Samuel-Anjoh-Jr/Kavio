@@ -63,6 +63,15 @@ export const SETTING_REGISTRY: Record<string, { category: string; description: s
     category: 'verification',
     description: 'Tier at which a physical field visit becomes mandatory.',
   },
+  'verification.contactChannel': {
+    category: 'verification',
+    description:
+      'Which contact a worker must verify before their profile is public: PHONE, EMAIL, or EITHER. EMAIL while SMS is deferred.',
+  },
+  'jobs.postingFeeXaf': {
+    category: 'jobs',
+    description: 'Flat charge to publish a job, in whole XAF. 0 makes posting free.',
+  },
 };
 
 /**
@@ -407,6 +416,11 @@ export class AdminOpsService {
       key,
       value: value as Prisma.InputJsonValue,
     });
+
+    // PlatformSettingsService caches reads, so it has to hear about the write
+    // immediately — otherwise the console shows "saved" while the platform keeps
+    // acting on the previous value until the TTL lapses.
+    this.events.emit('admin.setting.updated', { key });
 
     logger.info('Platform setting updated', { result: { key } });
 

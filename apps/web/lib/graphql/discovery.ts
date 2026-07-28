@@ -82,6 +82,7 @@ export const SEARCH_WORKERS_QUERY = gql`
     $sort: String
     $limit: Int
     $offset: Int
+    $viewerSeed: String
   ) {
     searchWorkers(
       query: $query
@@ -101,6 +102,7 @@ export const SEARCH_WORKERS_QUERY = gql`
       sort: $sort
       limit: $limit
       offset: $offset
+      viewerSeed: $viewerSeed
     ) {
       workers {
         workerProfileId

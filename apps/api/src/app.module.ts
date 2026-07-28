@@ -10,6 +10,7 @@ import { GqlThrottlerGuard } from './lib/gql-throttler.guard';
 import { RequestIdMiddleware } from './lib/request-id.middleware';
 import { RequestLoggerMiddleware } from './lib/request-logger.middleware';
 import { PrismaModule } from './prisma/prisma.module';
+import { SettingsModule } from './settings/settings.module';
 import { RedisModule } from './redis/redis.module';
 import { REDIS_CLIENT } from './redis/redis.constants';
 import { QueueModule } from './queue/queue.module';
@@ -45,6 +46,7 @@ import { AdminModule } from './admin/admin.module';
 @Module({
   imports: [
     PrismaModule,
+    SettingsModule,
     RedisModule,
     QueueModule,
     RealtimeModule,

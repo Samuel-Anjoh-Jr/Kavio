@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -13,7 +13,6 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { ApiError } from '@/lib/api-error';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
 import { restPost } from '@/lib/rest-api';
-import { cn } from '@/lib/utils';
 
 /**
  * Sign-up (ACC-04). Captures role INTENT in plain language rather than a role
@@ -22,6 +21,10 @@ import { cn } from '@/lib/utils';
  */
 const schema = z
   .object({
+    /**
+     * Still sent, but no longer ASKED: it only picks which home the new account
+     * lands on. Both roles are granted server-side either way.
+     */
     roleIntent: z.enum(['find_work', 'hire']),
     phone: z.string().trim().min(1),
     email: z.string().trim().email().optional().or(z.literal('')),
@@ -48,17 +51,13 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
 
   const {
     register,
-    control,
     handleSubmit,
-    setValue,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { roleIntent: defaultIntent, phone: '', email: '', password: '', website: '' },
   });
-
-  const roleIntent = useWatch({ control, name: 'roleIntent' });
 
   async function onSubmit(values: FormValues) {
     setBanner(null);
@@ -105,30 +104,18 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
       {banner && <FormBanner tone="error" message={banner.message} requestId={banner.requestId} />}
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="mb-3 text-sm font-medium text-foreground">{t('intentLegend')}</legend>
-        <div className="grid grid-cols-2 gap-3">
-          {(['find_work', 'hire'] as const).map((intent) => (
-            <button
-              key={intent}
-              type="button"
-              onClick={() => setValue('roleIntent', intent, { shouldValidate: true })}
-              aria-pressed={roleIntent === intent}
-              className={cn(
-                'rounded-card border px-4 py-4 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                roleIntent === intent
-                  ? 'border-primary bg-primary/5 text-foreground'
-                  : 'border-input bg-surface text-muted-foreground hover:bg-muted',
-              )}
-            >
-              <span className="block font-medium text-foreground">
-                {t(`intent.${intent}.title`)}
-              </span>
-              <span className="mt-1 block text-xs">{t(`intent.${intent}.description`)}</span>
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      {/*
+        No "are you a worker or a client?" question.
+        One identity holds BOTH roles from the moment it is created and switches
+        between them freely, because tier and Trust Score belong to the person,
+        not the role. Asking here would plant the opposite idea — that the
+        choice is binding — and then every worker who needs a roof fixed, and
+        every client who turns out to have a skill worth selling, would have to
+        be told they were wrong.
+      */}
+      <p className="rounded-card border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+        {t('bothRolesNote')}
+      </p>
 
       <Field
         label={t('phoneLabel')}

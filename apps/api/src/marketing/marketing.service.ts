@@ -15,7 +15,7 @@ import type {
   UpdateTestimonialDto,
 } from './dto/marketing.dto';
 import { toStarBreakdown } from './star-rating.util';
-import type { FaqView, PortfolioItemView, TestimonialView } from './models/marketing.model';
+import type { FaqView, PortfolioShowcaseView, TestimonialView } from './models/marketing.model';
 
 const logger = createLogger('marketing');
 
@@ -86,7 +86,7 @@ export class MarketingService {
   async listPortfolio(options: {
     includeUnpublished?: boolean;
     viewer?: AuthenticatedUser;
-  }): Promise<PortfolioItemView[]> {
+  }): Promise<PortfolioShowcaseView[]> {
     const includeUnpublished = this.resolvePrivilegedView(
       options.includeUnpublished,
       options.viewer,
@@ -97,7 +97,7 @@ export class MarketingService {
       orderBy: [{ order: 'asc' }, { id: 'asc' }],
     });
 
-    return rows.map(toPortfolioItemView);
+    return rows.map(toPortfolioShowcaseView);
   }
 
   /**
@@ -269,7 +269,7 @@ export class MarketingService {
   async createPortfolioItem(
     dto: CreatePortfolioItemDto,
     actor: AuthenticatedUser,
-  ): Promise<PortfolioItemView> {
+  ): Promise<PortfolioShowcaseView> {
     const row = await this.prisma.client.portfolioShowcase.create({
       data: {
         tradeEn: dto.tradeEn,
@@ -287,14 +287,14 @@ export class MarketingService {
       tradeEn: row.tradeEn,
     });
 
-    return toPortfolioItemView(row);
+    return toPortfolioShowcaseView(row);
   }
 
   async updatePortfolioItem(
     id: string,
     dto: UpdatePortfolioItemDto,
     actor: AuthenticatedUser,
-  ): Promise<PortfolioItemView> {
+  ): Promise<PortfolioShowcaseView> {
     await this.requirePortfolioItem(id);
 
     const row = await this.prisma.client.portfolioShowcase.update({
@@ -315,7 +315,7 @@ export class MarketingService {
       changed: Object.keys(dto),
     });
 
-    return toPortfolioItemView(row);
+    return toPortfolioShowcaseView(row);
   }
 
   async deletePortfolioItem(id: string, actor: AuthenticatedUser): Promise<{ id: string }> {
@@ -325,7 +325,10 @@ export class MarketingService {
     return { id };
   }
 
-  async reorderPortfolio(dto: ReorderDto, actor: AuthenticatedUser): Promise<PortfolioItemView[]> {
+  async reorderPortfolio(
+    dto: ReorderDto,
+    actor: AuthenticatedUser,
+  ): Promise<PortfolioShowcaseView[]> {
     await this.prisma.client.$transaction(
       dto.order.map((entry) =>
         this.prisma.client.portfolioShowcase.update({
@@ -455,7 +458,7 @@ function toTestimonialView(row: Testimonial): TestimonialView {
   };
 }
 
-function toPortfolioItemView(row: PortfolioShowcase): PortfolioItemView {
+function toPortfolioShowcaseView(row: PortfolioShowcase): PortfolioShowcaseView {
   return {
     id: row.id,
     tradeEn: row.tradeEn,
