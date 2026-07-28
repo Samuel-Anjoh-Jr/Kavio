@@ -2,9 +2,12 @@
 
 A full browser pass over the running platform (production build, real API,
 freshly seeded PostGIS database), driven with Playwright as a live visitor
-rather than through unit tests. **106 route loads** across guest, client,
-worker, business, admin and agent, in EN and FR, at desktop, mobile (390×844)
-and dark-mode viewports.
+rather than through unit tests, across guest, client, worker, business, admin
+and agent, in EN and FR, at desktop, mobile (390×844) and dark-mode viewports.
+
+Run twice: **106 route loads** on the first pass (the bug hunt below), and
+**76 more** re-audited after the trust/visibility/ranking rework, since that
+change touched what every one of those pages is allowed to show.
 
 Screenshots of the end state are in `docs/demo-audit/`.
 
@@ -22,6 +25,7 @@ Screenshots of the end state are in `docs/demo-audit/`.
 | Horizontal overflow on mobile | — | **0 / 106** |
 | Post a job, end to end | ❌ 404 | ✅ published |
 | Sign up → OTP → signed in | ❌ | ✅ |
+| **Re-audit after the rework** | — | **0 / 76** with an HTTP error, error state, console error or mobile overflow |
 
 ---
 
