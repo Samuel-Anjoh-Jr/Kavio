@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { ArrowRight, Briefcase, List, Map as MapIcon, Plus } from 'lucide-react';
@@ -14,6 +14,7 @@ import { SEARCH_WORKERS_QUERY, type SearchWorkersQueryResult } from '@/lib/graph
 import { JOBS_QUERY, type JobsQueryResult } from '@/lib/graphql/jobs';
 import { PAGE_SIZE, serialiseFilters, EMPTY_FILTERS } from '@/lib/search-filters';
 import { cn } from '@/lib/utils';
+import { getViewerSeed } from '@/lib/viewer-seed';
 import { JobCard, JobCardSkeleton } from './job-card';
 import { LocationSetter } from './location-setter';
 import { SearchBar } from './search-bar';
@@ -83,8 +84,13 @@ export function GuestHome() {
   // (DIS-10). localStorage is an external store, read as one.
   const recent = useSyncExternalStore(NO_SUBSCRIBE, readRecentWorkers, emptyRecentWorkers);
 
+  // Read once on mount: localStorage is unavailable during SSR, and
+  // recomputing per render would reshuffle results under the visitor.
+  const [viewerSeed, setViewerSeed] = useState('');
+  useEffect(() => setViewerSeed(getViewerSeed()), []);
+
   const variables = useMemo(() => {
-    const base: Record<string, unknown> = { limit: PAGE_SIZE, offset: 0 };
+    const base: Record<string, unknown> = { limit: PAGE_SIZE, offset: 0, viewerSeed };
     if (debouncedQuery.trim()) base.query = debouncedQuery.trim();
     if (categorySlug) base.categorySlug = categorySlug;
     if (origin && isValidCoordinate(origin.latitude, origin.longitude)) {
@@ -93,7 +99,7 @@ export function GuestHome() {
       base.radiusM = origin.radiusM;
     }
     return base;
-  }, [debouncedQuery, categorySlug, origin]);
+  }, [debouncedQuery, categorySlug, origin, viewerSeed]);
 
   const { data, loading, error, refetch } = useQuery<SearchWorkersQueryResult>(
     SEARCH_WORKERS_QUERY,

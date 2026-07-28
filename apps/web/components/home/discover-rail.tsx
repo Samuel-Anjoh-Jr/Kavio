@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { getViewerSeed } from '@/lib/viewer-seed';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
@@ -42,15 +43,20 @@ export function DiscoverRail({ limit = 3 }: { limit?: number }) {
     [location],
   );
 
+  // Read once on mount: localStorage is unavailable during SSR, and
+  // recomputing per render would reshuffle results under the visitor.
+  const [viewerSeed, setViewerSeed] = useState('');
+  useEffect(() => setViewerSeed(getViewerSeed()), []);
+
   const variables = useMemo(() => {
-    const base: Record<string, unknown> = { limit, offset: 0 };
+    const base: Record<string, unknown> = { limit, offset: 0, viewerSeed };
     if (origin && isValidCoordinate(origin.latitude, origin.longitude)) {
       base.latitude = origin.latitude;
       base.longitude = origin.longitude;
       base.radiusM = origin.radiusM;
     }
     return base;
-  }, [limit, origin]);
+  }, [limit, origin, viewerSeed]);
 
   const { data, loading } = useQuery<SearchWorkersQueryResult>(SEARCH_WORKERS_QUERY, {
     variables,

@@ -701,6 +701,25 @@ async function main() {
       category: 'verification',
       description: 'Tier at which a physical field visit becomes mandatory.',
     },
+    {
+      // EMAIL, not PHONE: SMS is a paid aggregator that is not connected, so
+      // email is the channel that actually delivers a code today. An operator
+      // flips this the day SMS goes live, with no code change.
+      key: 'verification.contactChannel',
+      value: 'EMAIL',
+      category: 'verification',
+      description:
+        'Which contact a worker must verify before their profile is public: PHONE, EMAIL, or EITHER. EMAIL while SMS is deferred.',
+    },
+    {
+      // Free at launch. Seeded explicitly rather than left unset so the admin
+      // console shows the switch, and so the job board renders "Free" from real
+      // data instead of from a default nobody can see.
+      key: 'jobs.postingFeeXaf',
+      value: 0,
+      category: 'jobs',
+      description: 'Flat charge to publish a job, in whole XAF. 0 makes posting free.',
+    },
   ];
   for (const s of SYSTEM_SETTINGS) {
     await prisma.systemSetting.create({ data: s });
@@ -1373,6 +1392,28 @@ async function main() {
     let verifiedAt = null;
     if (verified) {
       verifiedAt = hoursAfter(createdAt, 24 * 14);
+
+      /**
+       * The owner's own ID, approved, IN ADDITION to the company's registration.
+       * Publishing a PUBLIC vacancy requires both (see JobPostingGateService):
+       * a company letterhead is not identity, so neither check substitutes for
+       * the other. Without this the seeded "verified" businesses could not post
+       * anything and the job board would be unreachable through the product.
+       */
+      await createVerificationRecord(owner.id, 'ID_APPROVED', {
+        status: 'VERIFIED',
+        stage: 'APPROVED',
+        reviewerId: admin.id,
+        submittedAt: hoursAfter(createdAt, 24 * 8),
+        reviewedAt: hoursAfter(createdAt, 24 * 9),
+      });
+      markCheckPassed(owner.id, 'ID_APPROVED');
+      await addTrustEvent(owner.id, 'ID_VERIFIED', 'IDENTITY', 10, {
+        actorId: admin.id,
+        sourceType: 'VerificationRecord',
+        occurredAt: hoursAfter(createdAt, 24 * 9),
+      });
+
       await createVerificationRecord(owner.id, 'BUSINESS_REGISTRATION', {
         status: 'VERIFIED',
         stage: 'APPROVED',
@@ -1929,9 +1970,23 @@ async function main() {
     return { title, description };
   }
 
-  function pickPoster() {
-    if (pct(0.2)) {
-      const b = randomItem(businesses);
+  // Only a VERIFIED business may publish to the open board, so only their jobs
+  // can legitimately be PUBLIC. Drawing business posters from this subset (and
+  // often enough to matter) is what gives the demo a job board with something
+  // on it; drawing from all four would seed public jobs their posters could not
+  // have created through the product.
+  const boardEligibleBusinesses = businesses.filter((b) => b.profile.verified);
+
+  /**
+   * `stillRecruiting` marks a job that is OPEN or QUOTED — one a worker could
+   * still answer. Those are the jobs that belong on the public board, so they
+   * are drawn from verified businesses almost always; a board with one listing
+   * on it reads as broken rather than as new.
+   */
+  function pickPoster(stillRecruiting = false) {
+    const businessChance = stillRecruiting ? 0.85 : 0.3;
+    if (boardEligibleBusinesses.length > 0 && pct(businessChance)) {
+      const b = randomItem(boardEligibleBusinesses);
       return {
         posterId: b.owner.id,
         businessProfileId: b.profile.id,
@@ -2055,8 +2110,8 @@ async function main() {
   // state a job can be in, not just the happy path.
   const JOB_STATUS_PLAN = shuffle([
     ...Array(2).fill('DRAFT'),
-    ...Array(5).fill('OPEN'),
-    ...Array(3).fill('QUOTED'),
+    ...Array(8).fill('OPEN'),
+    ...Array(4).fill('QUOTED'),
     ...Array(3).fill('ACCEPTED'),
     ...Array(4).fill('IN_PROGRESS'),
     ...Array(5).fill('COMPLETED'),
@@ -2094,7 +2149,7 @@ async function main() {
 
     // Force the repeat-customer scenario onto two of featuredWorkers[0]'s jobs.
     let forcedWorker = null;
-    let poster = pickPoster();
+    let poster = pickPoster(['OPEN', 'QUOTED'].includes(finalStatus));
     if (
       needsBooking &&
       ['COMPLETED', 'RELEASED'].includes(finalStatus) &&
@@ -2134,6 +2189,14 @@ async function main() {
         budgetMax,
         urgency: randomItem(['FLEXIBLE', 'WITHIN_WEEK', 'WITHIN_48_HOURS', 'EMERGENCY']),
         status: finalStatus,
+        /**
+         * Only a verified business advertises on the open board; a client's job
+         * is a DIRECT engagement with a worker they chose. Seeding every job
+         * PUBLIC would show a board no client could actually have posted to,
+         * and seeding every job DIRECT would leave the board empty.
+         */
+        visibility: finalStatus !== 'DRAFT' && poster.businessProfileId ? 'PUBLIC' : 'DIRECT',
+        postingFeeXaf: 0,
         city: coords.city,
         area: geo.nameEn,
         latitude: coords.latitude,
