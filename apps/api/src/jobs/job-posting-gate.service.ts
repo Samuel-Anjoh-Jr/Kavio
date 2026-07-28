@@ -1,130 +1,150 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { VerificationTier } from '@trustpro/database';
+import { JobVisibility, VerificationCheckType, VerificationStatus } from '@trustpro/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
-import { evaluateGate, type UnmetRequirement } from '../trust/tier.model';
-import { TierService, tierRank } from '../trust/tier.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { PlatformSettingsService } from '../settings/platform-settings.service';
 
 const logger = createLogger('jobs.posting-gate');
-
-/** The tier a poster must have reached to publish a job (JOB-01). */
-export const MIN_POSTING_TIER: VerificationTier = VerificationTier.TIER_2;
 
 /** i18n key prefix for the unlock-step copy. The web catalogue owns EN/FR. */
 const REQUIREMENT_KEY_PREFIX = 'Jobs.postingRequirement';
 
-/** One concrete thing a sub-Tier-2 poster must do before they can post. */
+/** One concrete thing an unverified poster must do before the board opens. */
 export interface PostingUnlockStep {
-  readonly kind: UnmetRequirement['kind'];
-  readonly checkType?: UnmetRequirement['checkType'];
+  readonly kind: 'CHECK' | 'BUSINESS_PROFILE';
+  readonly checkType?: VerificationCheckType;
   /** Stable key for the localized instruction line. */
   readonly messageKey: string;
-  readonly required: number | string;
-  readonly current: number | string;
 }
 
 export interface PostingEligibility {
   readonly allowed: boolean;
-  readonly currentTier: VerificationTier;
-  readonly requiredTier: VerificationTier;
+  /** True once the identity owns a staff-approved business. */
+  readonly businessVerified: boolean;
+  /** Flat charge to publish, in whole XAF. 0 means free, and is shown as free. */
+  readonly feeXaf: number;
   /** Empty when allowed; the exact missing steps otherwise (JOB-01 anti-lure). */
   readonly steps: readonly PostingUnlockStep[];
 }
 
 /**
- * The Tier 2+ posting gate (JOB-01), the marketplace's central anti-lure control.
+ * The gate on PUBLIC job listings (JOB-01), the marketplace's anti-lure control.
  *
- * Fake-job lures are the classic attack on a services marketplace: a throwaway
- * account posts "urgent, will pay double" to harvest contacts or worse. Requiring
- * an APPROVED government ID (Tier 2) before a job can go live raises the cost of
- * that from free to "submit your real identity to human review", which is the
- * whole point — and it applies identically to an individual Client and a Business
- * owner, because a company letterhead is not identity.
+ * ── What is gated, and what deliberately is not ─────────────────────────────
  *
- * The tier is DERIVED FRESH here, never read from the JWT claim. A token minted
- * before an ID was approved still says Tier 1, and a token minted before an ID
- * was found fraudulent still says Tier 2 — posting is exactly the decision where
- * a stale claim is worth a database read to get right.
+ * Only publishing to the public job BOARD is gated. A client with no
+ * verification at all still creates jobs, invites a worker they picked, receives
+ * quotes, pays into escrow and reviews — that is a DIRECT engagement, and it
+ * carries no lure risk because the client chose the counterparty rather than
+ * broadcasting to strangers.
  *
- * When the gate refuses, it does not just say no: it returns the EXACT remaining
- * steps (JOB-01 "shown exactly which verification steps unlock posting"), as
- * codes the web layer renders in EN/FR, so the wall doubles as the on-ramp.
+ * A PUBLIC listing is the opposite shape: one post, many strangers answering it.
+ * That is precisely the surface a fake-job lure abuses ("urgent, pay double",
+ * harvesting contacts), so it requires a business whose registration document
+ * and owner's ID a human has approved. A company letterhead is not identity,
+ * which is why BOTH checks are required and neither substitutes for the other.
+ *
+ * ── Why business verification rather than a Tier ────────────────────────────
+ *
+ * This used to demand Tier 2 of any poster. But a tier is a property of a
+ * PERSON, and what the board needs to know is that a BUSINESS exists and is
+ * registered — the RCCM is the fact that makes a vacancy credible. The
+ * BusinessProfile.verified flag is set only by the registration-approval
+ * listener, never by an owner edit, so it cannot be self-granted.
+ *
+ * When the gate refuses, it returns the EXACT remaining steps as codes the web
+ * layer renders in EN/FR, so the wall doubles as the on-ramp.
  */
 @Injectable()
 export class JobPostingGateService {
-  constructor(private readonly tiers: TierService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly settings: PlatformSettingsService,
+  ) {}
 
   /** Computes eligibility without throwing — the read behind the "can I post?" UI. */
   async check(userId: string): Promise<PostingEligibility> {
-    const [input, gates] = await Promise.all([
-      this.tiers.derivationInputFor(userId),
-      this.tiers.getGates(),
+    const [business, idApproved, feeXaf] = await Promise.all([
+      this.prisma.client.businessProfile.findUnique({
+        where: { ownerId: userId },
+        select: { verified: true },
+      }),
+      this.prisma.client.verificationRecord.findFirst({
+        where: {
+          subjectId: userId,
+          checkType: VerificationCheckType.ID_APPROVED,
+          status: VerificationStatus.VERIFIED,
+        },
+        select: { id: true },
+      }),
+      this.settings.jobPostingFeeXaf(),
     ]);
 
-    const derived = await this.tiers.deriveFor(userId);
-    const allowed = tierRank(derived.tier) >= tierRank(MIN_POSTING_TIER);
+    const businessVerified = business?.verified === true;
+    const steps: PostingUnlockStep[] = [];
 
-    if (allowed) {
-      return {
-        allowed: true,
-        currentTier: derived.tier,
-        requiredTier: MIN_POSTING_TIER,
-        steps: [],
-      };
+    // Order matters: this list is rendered as a checklist top to bottom, and
+    // identity comes before the company because a registration document is
+    // reviewed against the person presenting it.
+    if (!idApproved) {
+      steps.push({
+        kind: 'CHECK',
+        checkType: VerificationCheckType.ID_APPROVED,
+        messageKey: `${REQUIREMENT_KEY_PREFIX}.ID_APPROVED`,
+      });
     }
 
-    // Evaluate the Tier 2 gate itself — NOT deriveFor's `unmet`, which only
-    // covers the very next rung. A Tier 0 user needs the Tier 1 AND Tier 2
-    // requirements laid out, so the steps come from the target gate directly.
-    const targetGate = gates.find((gate) => gate.tier === MIN_POSTING_TIER);
-    const unmet = targetGate ? evaluateGate(targetGate, input) : [];
+    if (!business) {
+      steps.push({
+        kind: 'BUSINESS_PROFILE',
+        messageKey: `${REQUIREMENT_KEY_PREFIX}.BUSINESS_PROFILE`,
+      });
+    } else if (!businessVerified) {
+      steps.push({
+        kind: 'CHECK',
+        checkType: VerificationCheckType.BUSINESS_REGISTRATION,
+        messageKey: `${REQUIREMENT_KEY_PREFIX}.BUSINESS_REGISTRATION`,
+      });
+    }
 
     return {
-      allowed: false,
-      currentTier: derived.tier,
-      requiredTier: MIN_POSTING_TIER,
-      steps: unmet.map(toStep),
+      allowed: businessVerified && Boolean(idApproved),
+      businessVerified,
+      feeXaf,
+      steps,
     };
   }
 
   /**
-   * Asserts the caller may post, or throws a 403 whose body carries the unlock
-   * steps. A guided detour, not a dead end (JOB-01).
+   * Asserts the caller may publish at this visibility, or throws a 403 whose
+   * body carries the unlock steps. A guided detour, not a dead end (JOB-01).
+   *
+   * A DIRECT publish is always allowed: it is how an unverified client hires.
    */
-  async assertCanPost(userId: string): Promise<void> {
+  async assertCanPublish(userId: string, visibility: JobVisibility): Promise<PostingEligibility> {
     const eligibility = await this.check(userId);
 
-    if (eligibility.allowed) {
-      return;
+    if (visibility === JobVisibility.DIRECT || eligibility.allowed) {
+      return eligibility;
     }
 
-    logger.info('Job posting blocked below Tier 2', {
+    logger.info('Public job listing blocked — business not verified', {
       payload: {
         userId,
-        currentTier: eligibility.currentTier,
+        businessVerified: eligibility.businessVerified,
         missing: eligibility.steps.map((step) => step.checkType ?? step.kind),
       },
     });
 
     throw new AppException(
       HttpStatus.FORBIDDEN,
-      'POSTING_TIER_REQUIRED',
-      'Verify your identity to post a job. This keeps fake jobs off TrustPro.',
+      'BUSINESS_VERIFICATION_REQUIRED',
+      'Get verified as a business to post job vacancies. This keeps fake jobs off TrustPro.',
       {
         // The client renders these as a checklist; the codes key the EN/FR copy.
         verification: eligibility.steps.map((step) => step.messageKey),
       },
     );
   }
-}
-
-function toStep(unmet: UnmetRequirement): PostingUnlockStep {
-  const suffix = unmet.kind === 'CHECK' ? (unmet.checkType ?? 'CHECK') : unmet.kind;
-  return {
-    kind: unmet.kind,
-    checkType: unmet.checkType,
-    messageKey: `${REQUIREMENT_KEY_PREFIX}.${suffix}`,
-    required: unmet.required,
-    current: unmet.current,
-  };
 }

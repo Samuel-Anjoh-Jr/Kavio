@@ -1,9 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TransactionStatus, TransactionType } from '@trustpro/database';
 import { randomUUID } from 'node:crypto';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { AppException } from '../../lib/app-exception';
 import { createLogger, getRequestId } from '../../lib/logger';
+import { CAMPAY_STUB_SETTLED } from '../payments.events';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CampayService } from '../campay/campay.service';
 import { LedgerService } from '../ledger.service';
@@ -41,6 +43,7 @@ export class WalletService {
     private readonly campay: CampayService,
     private readonly ledger: LedgerService,
     private readonly methods: PaymentMethodsService,
+    private readonly events: EventEmitter2,
   ) {}
 
   /** Add money to the wallet (PAY-05). Credited on the confirmed webhook. */
@@ -79,6 +82,11 @@ export class WalletService {
     logger.info('Wallet deposit initiated', {
       payload: { userId: user.id, reference: initiation.reference },
     });
+
+    // Stub mode: nothing will ever confirm this. Settle it the normal way.
+    if (!this.campay.live) {
+      this.events.emit(CAMPAY_STUB_SETTLED, { externalReference });
+    }
 
     return {
       transactionId: txn.id,
@@ -153,6 +161,11 @@ export class WalletService {
     logger.info('Wallet withdrawal initiated', {
       payload: { userId: user.id, reference },
     });
+
+    // Stub mode: nothing will ever confirm this. Settle it the normal way.
+    if (!this.campay.live) {
+      this.events.emit(CAMPAY_STUB_SETTLED, { externalReference });
+    }
 
     return {
       transactionId: txn.id,

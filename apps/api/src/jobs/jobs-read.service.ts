@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JobStatus, JobUrgency, MediaVisibility, Prisma } from '@trustpro/database';
+import { JobStatus, JobUrgency, JobVisibility, MediaVisibility, Prisma } from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
@@ -118,6 +118,11 @@ export class JobsReadService {
 
     const where: Prisma.JobWhereInput = {
       status: JobStatus.OPEN,
+      // The board is PUBLIC listings only. A DIRECT engagement is an open job
+      // too — a client hiring one worker they chose — but it was never
+      // advertised, and putting it here would expose a private arrangement to
+      // every visitor and invite quotes nobody asked for.
+      visibility: JobVisibility.PUBLIC,
       ...(filter.categoryId ? { categoryId: filter.categoryId } : {}),
       ...(filter.geoRegionId ? { geoRegionId: filter.geoRegionId } : {}),
       ...(filter.urgency ? { urgency: filter.urgency as Prisma.JobWhereInput['urgency'] } : {}),

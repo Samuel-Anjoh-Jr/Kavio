@@ -83,6 +83,12 @@ export class SearchResolver {
     sort?: string,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
     @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    @Args('viewerSeed', {
+      nullable: true,
+      description:
+        'Stable per-device key. Equally-ranked workers are shuffled by it, so one visitor sees a consistent order across refreshes while different visitors see different workers first.',
+    })
+    viewerSeed?: string,
   ): Promise<WorkerSearchResultView> {
     return this.search.searchWorkers({
       query,
@@ -97,6 +103,7 @@ export class SearchResolver {
       minTier,
       minRating,
       verifiedOnly,
+      viewerSeed,
       availableDay,
       availableTime,
       availableDate,

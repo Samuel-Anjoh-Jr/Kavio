@@ -97,6 +97,15 @@ const WORKER: Permission[] = [
 /**
  * A Business owner hires like a Client and additionally runs the company
  * profile and its team — it is a superset, not a parallel universe.
+ *
+ * Note that `job:create` sits on BOTH roles, and deliberately so. A Job is the
+ * container an engagement lives in — a Quote cannot exist without one — so a
+ * client hiring a single worker they picked still creates a job. What separates
+ * the two is not creating a job but ADVERTISING one: publishing at PUBLIC
+ * visibility puts a vacancy on the open board, and that is gated on a verified
+ * business inside JobPostingGateService, not here. Encoding it as a permission
+ * would be wrong twice over — the answer depends on live verification state
+ * rather than on the role, and it would take direct hiring away from clients.
  */
 const BUSINESS: Permission[] = [...CLIENT, 'business:manage', 'business:team_manage'];
 

@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { TransactionStatus, TransactionType } from '@trustpro/database';
 import { AppException } from '../../lib/app-exception';
 import { createLogger, getRequestId } from '../../lib/logger';
@@ -9,6 +9,7 @@ import { normaliseCampayStatus, type SettlementOutcome } from '../campay/campay.
 import { EscrowService } from '../escrow/escrow.service';
 import { LedgerService } from '../ledger.service';
 import { PAYMENT_FAILED, PaymentFailedEvent } from '../events/payment.events';
+import { CAMPAY_STUB_SETTLED, type CampayStubSettledEvent } from '../payments.events';
 import type { CampayWebhookDto } from './dto/campay-webhook.dto';
 
 const logger = createLogger('campay-webhook');
@@ -97,6 +98,30 @@ export class CampayWebhookService {
       reason: status.reason,
       source: 'reconcile',
     });
+  }
+
+  /**
+   * Settles a stub-mode transaction the moment it is written (dev and CI only).
+   *
+   * Deliberately routed through `reconcile` rather than settling directly: the
+   * stub must exercise the same path a live webhook does, or the one flow that
+   * never runs in development is the one that runs in production. If Campay is
+   * live this listener never fires, because the event is never emitted.
+   */
+  @OnEvent(CAMPAY_STUB_SETTLED)
+  async onStubSettled(event: CampayStubSettledEvent): Promise<void> {
+    try {
+      const result = await this.reconcile(event.externalReference);
+      logger.info('Stub payment auto-settled', {
+        payload: { externalReference: event.externalReference, handled: result.handled },
+      });
+    } catch (error) {
+      // A dev convenience must never take down the request that triggered it.
+      logger.warn('Stub auto-settle failed', {
+        payload: { externalReference: event.externalReference },
+        result: String(error),
+      });
+    }
   }
 
   /** Reconcile every pending transaction older than `olderThanMs`. Admin-triggered. */

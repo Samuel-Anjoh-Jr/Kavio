@@ -18,6 +18,20 @@ const logger = createLogger('search');
 /** Engineering standard: a search slower than this is a bug, not a busy moment. */
 const SLOW_QUERY_MS = 300;
 
+/**
+ * How close two composite scores must be to count as a tie.
+ *
+ * Scores are floored to a multiple of this before ranking, and everyone inside
+ * a band is shuffled per viewer. Wider bands spread exposure further down the
+ * list; narrower bands hew closer to a strict ranking. 0.05 on a [0,1] score
+ * means roughly twenty bands — enough that a clearly better worker still wins,
+ * small enough that near-equals genuinely rotate.
+ */
+const FAIRNESS_BAND = 0.05;
+
+/** Longest viewer seed we will hash. Anything longer is a client bug or abuse. */
+const MAX_SEED_LENGTH = 128;
+
 export interface WorkerSearchQuery {
   query?: string | null;
   latitude?: number | null;
@@ -37,6 +51,12 @@ export interface WorkerSearchQuery {
   sort?: string | null;
   limit?: number | null;
   offset?: number | null;
+  /**
+   * Stable per-device key used to shuffle equally-ranked workers. Bounded and
+   * stripped here rather than trusted: it reaches a hash function in SQL, and
+   * an unbounded client-supplied string has no business doing that.
+   */
+  viewerSeed?: string | null;
 }
 
 export interface SearchWorker {
@@ -136,6 +156,7 @@ export class SearchService {
     const offset = clampOffset(query.offset);
     const sort = normaliseSort(query.sort);
     const weights = weightsFor(origin !== null);
+    const viewerSeed = this.normaliseViewerSeed(query.viewerSeed);
 
     const categoryId = await this.resolveCategoryId(query);
     const priceRange = this.normalisePriceRange(query.minPrice, query.maxPrice);
@@ -165,7 +186,9 @@ export class SearchService {
         ${weights.trust}::real,
         ${sort}::text,
         ${limit}::integer,
-        ${offset}::integer
+        ${offset}::integer,
+        ${viewerSeed}::text,
+        ${FAIRNESS_BAND}::real
       )
     `;
 
@@ -286,6 +309,18 @@ export class SearchService {
     }
 
     return trimmed.slice(0, MAX_QUERY_LENGTH);
+  }
+
+  /**
+   * Bounds and sanitises the per-viewer shuffle key.
+   *
+   * An empty seed is a legitimate answer, not a failure: it means "rank
+   * strictly", which is what a crawler or a server-side render without a device
+   * id should get. Non-alphanumerics are stripped so the value that reaches
+   * hashtext() is a plain token regardless of what the client sent.
+   */
+  private normaliseViewerSeed(raw: string | null | undefined): string {
+    return (raw ?? '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, MAX_SEED_LENGTH);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { JobStatus, JobUrgency, LocationSource } from '@trustpro/database';
+import { JobStatus, JobVisibility, JobUrgency, LocationSource } from '@trustpro/database';
 import { z } from 'zod';
 
 /**
@@ -135,3 +135,17 @@ export const transitionJobSchema = z.object({
 });
 
 export type TransitionJobDto = z.infer<typeof transitionJobSchema>;
+
+/**
+ * How a draft should be published.
+ *
+ * DIRECT is the default because it is the safe answer: a client hiring one
+ * worker they already chose never needs the board, and defaulting to PUBLIC
+ * would put private engagements in front of strangers. PUBLIC is the gated,
+ * fee-carrying option.
+ */
+export const publishJobSchema = z.object({
+  visibility: z.enum([JobVisibility.DIRECT, JobVisibility.PUBLIC]).default(JobVisibility.DIRECT),
+});
+
+export type PublishJobDto = z.infer<typeof publishJobSchema>;
