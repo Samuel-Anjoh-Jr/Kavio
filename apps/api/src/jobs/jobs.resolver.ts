@@ -1,8 +1,10 @@
 import { Args, ID, Int, Query, Resolver } from '@nestjs/graphql';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser, Public, RequirePermissions } from '../auth/decorators/auth.decorators';
+import { JobPostingGateService } from './job-posting-gate.service';
 import { JobsReadService } from './jobs-read.service';
 import { JobApplicationView, JobInvitationView, JobListView, JobView } from './models/job.model';
+import { JobPostingEligibilityView } from './models/posting-eligibility.model';
 
 /**
  * Job READS (GraphQL, per the DUAL API RULE). Writes are on JobsController.
@@ -15,7 +17,30 @@ import { JobApplicationView, JobInvitationView, JobListView, JobView } from './m
  */
 @Resolver()
 export class JobsResolver {
-  constructor(private readonly read: JobsReadService) {}
+  constructor(
+    private readonly read: JobsReadService,
+    private readonly gate: JobPostingGateService,
+  ) {}
+
+  @Query(() => JobPostingEligibilityView, {
+    description:
+      'Whether the signed-in identity may publish a PUBLIC vacancy, and the flat fee it would cost (JOB-01, ADM-07).',
+  })
+  async jobPostingEligibility(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<JobPostingEligibilityView> {
+    const eligibility = await this.gate.check(user.id);
+    return {
+      allowed: eligibility.allowed,
+      businessVerified: eligibility.businessVerified,
+      feeXaf: eligibility.feeXaf,
+      steps: eligibility.steps.map((step) => ({
+        kind: step.kind,
+        checkType: step.checkType ?? null,
+        messageKey: step.messageKey,
+      })),
+    };
+  }
 
   @Public()
   @Query(() => JobView, {

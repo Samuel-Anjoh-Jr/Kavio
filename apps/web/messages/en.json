@@ -170,7 +170,8 @@
       "passwordInvalid": "Use at least 8 characters.",
       "submit": "Create account",
       "submitting": "Creating your account…",
-      "haveAccount": "Already have an account?"
+      "haveAccount": "Already have an account?",
+      "bothRolesNote": "One account, both sides. Hire someone today and offer your own skills tomorrow — switch whenever you like, without verifying again."
     },
     "login": {
       "title": "Welcome back",
@@ -432,7 +433,15 @@
     "postFailed": "We could not post your job. Please try again.",
     "back": "Back",
     "next": "Next",
-    "autosaved": "Draft saved"
+    "autosaved": "Draft saved",
+    "postingFeeFree": "Free",
+    "postingFeeLabel": "Posting fee",
+    "postingFeeValue": "FCFA {amount}",
+    "visibilityHeading": "Who should see this job?",
+    "visibilityDirectTitle": "Just the worker I choose",
+    "visibilityDirectBody": "Stays private. You invite a worker and take quotes from them alone.",
+    "visibilityPublicTitle": "Post to the public job board",
+    "visibilityPublicBody": "Any verified worker can see it and apply."
   },
   "Home": {
     "title": "Your TrustPro home",
@@ -2658,5 +2667,24 @@
   },
   "Breadcrumbs": {
     "home": "Home"
+  },
+  "WorkerVerificationBanner": {
+    "heading": "Your profile is not visible yet",
+    "body": "Clients only see workers who have confirmed a contact and had an ID approved. Two steps and you are listed.",
+    "sendCodeEmail": "Email me a code at {destination}",
+    "sendCodePhone": "Text me a code at {destination}",
+    "noDestination": "Add an email address or phone number to your profile first.",
+    "codeSent": "We sent a 6-digit code to {destination}.",
+    "codeLabel": "Verification code",
+    "codePlaceholder": "6-digit code",
+    "verify": "Verify",
+    "resend": "Send it again",
+    "contactDone": "Contact confirmed. One step left.",
+    "verifyIdCta": "Verify your ID"
+  },
+  "BusinessUpgradeHint": {
+    "heading": "Are you a business?",
+    "body": "Get verified with your ID and your business registration (RCCM) to post job vacancies on the open board, instead of contacting workers one at a time.",
+    "cta": "Get verified as a business"
   }
 }

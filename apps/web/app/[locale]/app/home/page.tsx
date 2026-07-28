@@ -13,6 +13,8 @@ import { auth } from '@/auth';
 import { redirect, Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { TierBadge } from '@/components/trust/tier-badge';
+import { BusinessUpgradeHint } from '@/components/business/business-upgrade-hint';
+import { WorkerVerificationBanner } from '@/components/verification/worker-verification-banner';
 import { TrustScoreRing } from '@/components/trust/trust-score-ring';
 import { DiscoverRail } from '@/components/home/discover-rail';
 import { HomeSection, PendingPanel } from '@/components/home/home-primitives';
@@ -148,6 +150,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
+      {/* Only the WORKER role: a client is not gated on any of this, and
+          showing them a verification wall would be a lie about what we ask of
+          them. The banner hides itself once the profile is listable. */}
+      {roleKey === 'WORKER' && <WorkerVerificationBanner />}
+
       {roleKey === 'WORKER' && <WorkerHome userId={userId} />}
       {roleKey === 'CLIENT' && <ClientHome />}
       {roleKey === 'BUSINESS' && <BusinessHome />}
@@ -249,6 +256,10 @@ async function ClientHome() {
       >
         <DiscoverRail />
       </HomeSection>
+
+      {/* The on-ramp to the job board. Hides itself once the identity can
+          already post, so a verified business never sees it. */}
+      <BusinessUpgradeHint />
 
       <HomeSection title={t('client.jobsHeading')}>
         <div className="grid gap-4 sm:grid-cols-2">

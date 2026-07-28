@@ -195,3 +195,32 @@ export interface MyJobsQueryResult {
     hasMore: boolean;
   };
 }
+
+/**
+ * Whether the viewer may publish a PUBLIC vacancy and what it costs (JOB-01).
+ * Read up front so the fee and the remaining steps are an invitation rather
+ * than a refusal discovered at the end of a four-step form.
+ */
+export const JOB_POSTING_ELIGIBILITY_QUERY = gql`
+  query JobPostingEligibility {
+    jobPostingEligibility {
+      allowed
+      businessVerified
+      feeXaf
+      steps {
+        kind
+        checkType
+        messageKey
+      }
+    }
+  }
+`;
+
+export interface JobPostingEligibilityResult {
+  jobPostingEligibility: {
+    allowed: boolean;
+    businessVerified: boolean;
+    feeXaf: number;
+    steps: Array<{ kind: string; checkType: string | null; messageKey: string }>;
+  };
+}

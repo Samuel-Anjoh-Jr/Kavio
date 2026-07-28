@@ -10,6 +10,7 @@ import { VerificationNotificationListener } from './verification-notification.li
 import { VerificationPipelineService } from './verification-pipeline.service';
 import { VerificationResolver } from './verification.resolver';
 import { VerificationReviewService } from './verification-review.service';
+import { DiscoveryStatusService } from './discovery-status.service';
 import { VerificationService } from './verification.service';
 
 /**
@@ -31,6 +32,7 @@ import { VerificationService } from './verification.service';
   imports: [PrismaModule, TrustModule],
   controllers: [VerificationController, FoundingProfessionalController],
   providers: [
+    DiscoveryStatusService,
     VerificationService,
     VerificationReviewService,
     VerificationPipelineService,

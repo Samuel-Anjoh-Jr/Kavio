@@ -278,3 +278,39 @@ export interface OnboardingQueryResult {
     unlocks: OnboardingUnlock[];
   };
 }
+
+/**
+ * Why the signed-in worker's profile is or is not publicly listable (TRU-05).
+ * One query, because the dashboard banner is a single decision — hide it, ask
+ * for a code, or ask for an ID — and three separate reads could disagree
+ * mid-render about which step the worker is on.
+ */
+export const MY_DISCOVERY_STATUS_QUERY = gql`
+  query MyDiscoveryStatus {
+    myDiscoveryStatus {
+      requiredChannel
+      phoneVerified
+      emailVerified
+      contactVerified
+      idVerified
+      discoverable
+      otpDestination
+      otpChannel
+    }
+  }
+`;
+
+export interface MyDiscoveryStatus {
+  requiredChannel: 'PHONE' | 'EMAIL' | 'EITHER';
+  phoneVerified: boolean;
+  emailVerified: boolean;
+  contactVerified: boolean;
+  idVerified: boolean;
+  discoverable: boolean;
+  otpDestination: string | null;
+  otpChannel: 'PHONE' | 'EMAIL' | null;
+}
+
+export interface MyDiscoveryStatusQueryResult {
+  myDiscoveryStatus: MyDiscoveryStatus;
+}

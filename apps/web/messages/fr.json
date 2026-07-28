@@ -170,7 +170,8 @@
       "passwordInvalid": "Utilisez au moins 8 caractères.",
       "submit": "Créer le compte",
       "submitting": "Création de votre compte…",
-      "haveAccount": "Vous avez déjà un compte ?"
+      "haveAccount": "Vous avez déjà un compte ?",
+      "bothRolesNote": "Un seul compte, les deux côtés. Recrutez aujourd’hui et proposez vos propres compétences demain — changez quand vous voulez, sans revérification."
     },
     "login": {
       "title": "Bon retour",
@@ -432,7 +433,15 @@
     "postFailed": "Impossible de publier votre annonce. Veuillez réessayer.",
     "back": "Retour",
     "next": "Suivant",
-    "autosaved": "Brouillon enregistré"
+    "autosaved": "Brouillon enregistré",
+    "postingFeeFree": "Gratuit",
+    "postingFeeLabel": "Frais de publication",
+    "postingFeeValue": "{amount} FCFA",
+    "visibilityHeading": "Qui doit voir cette offre ?",
+    "visibilityDirectTitle": "Uniquement le professionnel que je choisis",
+    "visibilityDirectBody": "Reste privé. Vous invitez un professionnel et ne recevez que ses devis.",
+    "visibilityPublicTitle": "Publier sur le tableau public",
+    "visibilityPublicBody": "Tout professionnel vérifié peut la voir et postuler."
   },
   "Home": {
     "title": "Votre espace TrustPro",
@@ -2658,5 +2667,24 @@
   },
   "Breadcrumbs": {
     "home": "Accueil"
+  },
+  "WorkerVerificationBanner": {
+    "heading": "Votre profil n’est pas encore visible",
+    "body": "Les clients ne voient que les professionnels ayant confirmé un contact et fait valider une pièce d’identité. Deux étapes et vous êtes référencé(e).",
+    "sendCodeEmail": "Envoyez-moi un code à {destination}",
+    "sendCodePhone": "Envoyez-moi un code par SMS au {destination}",
+    "noDestination": "Ajoutez d’abord une adresse e-mail ou un numéro de téléphone à votre profil.",
+    "codeSent": "Nous avons envoyé un code à 6 chiffres à {destination}.",
+    "codeLabel": "Code de vérification",
+    "codePlaceholder": "Code à 6 chiffres",
+    "verify": "Vérifier",
+    "resend": "Renvoyer le code",
+    "contactDone": "Contact confirmé. Il reste une étape.",
+    "verifyIdCta": "Vérifier votre pièce d’identité"
+  },
+  "BusinessUpgradeHint": {
+    "heading": "Vous êtes une entreprise ?",
+    "body": "Faites-vous vérifier avec votre pièce d’identité et votre registre de commerce (RCCM) pour publier des offres sur le tableau public, au lieu de contacter les professionnels un par un.",
+    "cta": "Se faire vérifier comme entreprise"
   }
 }

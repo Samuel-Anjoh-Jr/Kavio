@@ -40,10 +40,29 @@ import { SessionService } from './session.service';
 const logger = createLogger('auth');
 
 /** Maps the guest-facing intent to the identity's initial role grant. */
+/**
+ * Which role a new identity starts ACTIVE in. Both are granted either way — see
+ * the note in `signUp` — so this only decides which home they land on.
+ */
 const INTENT_TO_ROLE: Record<RoleIntent, Role> = {
   find_work: Role.WORKER,
   hire: Role.CLIENT,
 };
+
+/**
+ * Every new identity holds BOTH trading roles from the start.
+ *
+ * One person is routinely both: a plumber needs a roof fixed, and a client
+ * discovers they have a skill worth advertising. Making the second role
+ * something you apply for later would mean a second signup and, worse, would
+ * imply the verification travels with the role — it does not. Tier and Trust
+ * Score belong to the IDENTITY, which is exactly why switching costs nothing.
+ *
+ * Being a WORKER on paper grants no visibility on its own: the discovery gate
+ * still requires a confirmed contact and an approved ID before the profile is
+ * listed, so this is not a way to appear in search without verifying.
+ */
+const SIGNUP_ROLES: readonly Role[] = [Role.CLIENT, Role.WORKER];
 
 export interface SignUpResult {
   userId: string;
@@ -106,7 +125,12 @@ export class AuthService {
             passwordHash,
             passwordUpdatedAt: passwordHash ? new Date() : null,
             status: UserStatus.PENDING,
-            roles: { create: { role, isActive: true } },
+            roles: {
+              create: SIGNUP_ROLES.map((granted) => ({
+                role: granted,
+                isActive: granted === role,
+              })),
+            },
           },
           select: { id: true, phone: true, status: true },
         });
@@ -204,10 +228,25 @@ export class AuthService {
     await this.otp.verify({ userId: user.id, purpose: dto.purpose, code: dto.code });
 
     if (dto.purpose === VerificationPurpose.PHONE_VERIFICATION) {
+      /**
+       * Mark the channel that was ACTUALLY proven, not the one the purpose is
+       * named after.
+       *
+       * SMS is a paid aggregator that is not connected, so most of these codes
+       * are delivered to an email address and the identifier is an email.
+       * Stamping `phoneVerifiedAt` regardless would record a phone as confirmed
+       * that nobody ever proved control of — and the discovery gate, which
+       * accepts either channel, would then be passing on that false record.
+       */
+      const verifiedField =
+        identifier.kind === 'email'
+          ? { emailVerifiedAt: new Date() }
+          : { phoneVerifiedAt: new Date() };
+
       await this.prisma.client.user.update({
         where: { id: user.id },
         data: {
-          phoneVerifiedAt: new Date(),
+          ...verifiedField,
           // Only PENDING is promoted: a SUSPENDED account must never be
           // resurrected by verifying a code.
           ...(user.status === UserStatus.PENDING ? { status: UserStatus.ACTIVE } : {}),

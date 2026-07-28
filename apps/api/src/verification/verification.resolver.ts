@@ -8,6 +8,8 @@ import {
   VerificationQueueGroupEnum,
   type VerificationQueueGroup,
 } from './verification.model';
+import { DiscoveryStatusService } from './discovery-status.service';
+import { MyDiscoveryStatusView } from './models/discovery-status.model';
 import { VerificationPipelineService } from './verification-pipeline.service';
 import { VerificationService } from './verification.service';
 import {
@@ -30,7 +32,16 @@ export class VerificationResolver {
   constructor(
     private readonly verification: VerificationService,
     private readonly pipeline: VerificationPipelineService,
+    private readonly discoveryStatus: DiscoveryStatusService,
   ) {}
+
+  @Query(() => MyDiscoveryStatusView, {
+    description:
+      'Why the signed-in worker’s profile is or is not publicly listable (TRU-05). Drives the dashboard verification banner.',
+  })
+  async myDiscoveryStatus(@CurrentUser() user: AuthenticatedUser): Promise<MyDiscoveryStatusView> {
+    return this.discoveryStatus.forUser(user.id);
+  }
 
   @Query(() => [VerificationRecordView], {
     description:

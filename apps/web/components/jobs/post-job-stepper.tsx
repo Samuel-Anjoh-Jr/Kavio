@@ -39,6 +39,10 @@ import {
   SERVICE_CATEGORIES_QUERY,
   type ServiceCategoriesQueryResult,
 } from '@/lib/graphql/discovery';
+import {
+  JOB_POSTING_ELIGIBILITY_QUERY,
+  type JobPostingEligibilityResult,
+} from '@/lib/graphql/jobs';
 import { restPatch, restPost, type UploadResult } from '@/lib/rest-api';
 import { cn } from '@/lib/utils';
 
@@ -53,10 +57,12 @@ import { cn } from '@/lib/utils';
  * decision, not merely the URL.
  *
  * ── Two gates, surfaced honestly ─────────────────────────────────────────────
- * Posting is gated by role (job:create) and again by the Tier 2+ verification
- * gate inside publish() (JOB-01). The 403 that gate throws carries the exact
- * steps the poster still needs; this screen turns that refusal into a checklist
- * with a route to verification rather than a dead wall (the anti-lure control).
+ * Anyone may create and publish a DIRECT job — that is how a client hires the
+ * worker they already chose. Putting a vacancy on the PUBLIC board is the gated
+ * act (JOB-01), and only a verified business may do it. Eligibility is read up
+ * front so the choice and its fee are offered rather than discovered: the 403
+ * still carries the exact remaining steps, and this screen renders them as a
+ * checklist with a route to verification rather than a dead wall.
  */
 
 const STEPS = ['details', 'location', 'budget', 'review'] as const;
@@ -77,6 +83,15 @@ interface UploadedPhoto {
 export function PostJobStepper() {
   const t = useTranslations('PostJob');
   const tLocation = useTranslations('Location');
+  // Read up front, not on refusal: the fee and the remaining steps belong in
+  // front of the poster while they still have a choice to make.
+  const { data: eligibilityData } = useQuery<JobPostingEligibilityResult>(
+    JOB_POSTING_ELIGIBILITY_QUERY,
+    { fetchPolicy: 'cache-and-network' },
+  );
+  const eligibility = eligibilityData?.jobPostingEligibility;
+  const canPostPublicly = eligibility?.allowed === true;
+  const [publishPublicly, setPublishPublicly] = useState(false);
   const locale = useLocale();
   const router = useRouter();
   const requireAuth = useRequireAuth();
@@ -213,7 +228,10 @@ export function PostJobStepper() {
         update({ jobId });
       }
 
-      await restPost(`jobs/${jobId}/publish`);
+      await restPost(`jobs/${jobId}/publish`, {
+        // DIRECT unless a verified business explicitly chose the open board.
+        visibility: canPostPublicly && publishPublicly ? 'PUBLIC' : 'DIRECT',
+      });
       clearJobDraft();
       setPost({ kind: 'posted', jobId });
       router.push(`/app/jobs/${jobId}`);
@@ -425,6 +443,50 @@ export function PostJobStepper() {
               value={t('photoCount', { count: draft.photoAssetIds.length })}
             />
           </dl>
+
+          {canPostPublicly && (
+            <div className="rounded-card border border-border bg-surface p-4">
+              <p className="font-medium text-foreground">{t('visibilityHeading')}</p>
+              <div className="mt-3 flex flex-col gap-2">
+                {([false, true] as const).map((isPublic) => (
+                  <button
+                    key={String(isPublic)}
+                    type="button"
+                    onClick={() => setPublishPublicly(isPublic)}
+                    aria-pressed={publishPublicly === isPublic}
+                    className={cn(
+                      'rounded-input border px-4 py-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      publishPublicly === isPublic
+                        ? 'border-primary bg-primary/5'
+                        : 'border-input bg-surface hover:bg-muted',
+                    )}
+                  >
+                    <span className="block font-medium text-foreground">
+                      {isPublic ? t('visibilityPublicTitle') : t('visibilityDirectTitle')}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {isPublic ? t('visibilityPublicBody') : t('visibilityDirectBody')}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {publishPublicly && (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {t('postingFeeLabel')}:{' '}
+                  <span className="font-medium text-foreground">
+                    {/* 0 reads as "Free", never as "FCFA 0" — a price of zero
+                        stated as a number still reads as a charge. */}
+                    {eligibility && eligibility.feeXaf > 0
+                      ? t('postingFeeValue', {
+                          amount: new Intl.NumberFormat(locale).format(eligibility.feeXaf),
+                        })
+                      : t('postingFeeFree')}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
 
           {post.kind === 'gated' && (
             <div className="rounded-card border border-warning/30 bg-warning/10 p-4">
