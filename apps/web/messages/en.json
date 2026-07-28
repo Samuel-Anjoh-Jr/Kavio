@@ -918,7 +918,8 @@
       "positionUnavailable": "We couldn't get a location fix. Drop a pin below instead.",
       "timeout": "That took too long. Try again, or drop a pin below.",
       "unknown": "Something went wrong getting your location. Drop a pin below instead."
-    }
+    },
+    "openInMaps": "Open in maps"
   },
   "Search": {
     "title": "Find a worker",

@@ -1,5 +1,7 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
+
 /**
  * A stable, anonymous per-device key used to shuffle equally-ranked workers
  * (DIS-04 fair ranking).
@@ -45,4 +47,23 @@ export function getViewerSeed(): string {
   } catch {
     return '';
   }
+}
+
+/**
+ * The seed as a React hook.
+ *
+ * `useSyncExternalStore` rather than `useState` + `useEffect`: the seed lives in
+ * localStorage, which is an external store, and reading it in an effect means a
+ * second render on every mount plus a hydration mismatch to paper over. The
+ * server snapshot is the empty seed, so the first paint ranks strictly and the
+ * shuffle appears once the browser takes over.
+ *
+ * The value never changes for the lifetime of the tab — it is minted once and
+ * reused — so `subscribe` has nothing to listen for and returns a no-op
+ * unsubscribe.
+ */
+const noopSubscribe = () => () => {};
+
+export function useViewerSeed(): string {
+  return useSyncExternalStore(noopSubscribe, getViewerSeed, () => '');
 }

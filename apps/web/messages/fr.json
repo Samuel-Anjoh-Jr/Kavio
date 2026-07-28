@@ -918,7 +918,8 @@
       "positionUnavailable": "Nous n'avons pas pu obtenir votre position. Placez plutôt un point ci-dessous.",
       "timeout": "Cela a pris trop de temps. Réessayez, ou placez un point ci-dessous.",
       "unknown": "Une erreur est survenue lors de la localisation. Placez plutôt un point ci-dessous."
-    }
+    },
+    "openInMaps": "Ouvrir dans Maps"
   },
   "Search": {
     "title": "Trouver un professionnel",

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { GeoModule } from '../geo/geo.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageModule } from '../storage/storage.module';
@@ -26,7 +27,7 @@ import { WorkerServicesService } from './worker-services.service';
  *   TrustModule    the first portfolio item is a scored trust event (§21.5)
  */
 @Module({
-  imports: [PrismaModule, StorageModule, CatalogModule, TrustModule],
+  imports: [PrismaModule, StorageModule, CatalogModule, TrustModule, GeoModule],
   controllers: [ProfilesController],
   providers: [
     ProfileOwnershipService,

@@ -5,9 +5,10 @@ freshly seeded PostGIS database), driven with Playwright as a live visitor
 rather than through unit tests, across guest, client, worker, business, admin
 and agent, in EN and FR, at desktop, mobile (390×844) and dark-mode viewports.
 
-Run twice: **106 route loads** on the first pass (the bug hunt below), and
-**76 more** re-audited after the trust/visibility/ranking rework, since that
-change touched what every one of those pages is allowed to show.
+Run three times: **106 route loads** on the first pass (the bug hunt below),
+**76** after the trust/visibility/ranking rework, and **41** after the UI work
+that completed it. Each rework changed what these pages are allowed to show, so
+a clean bill of health measured before it does not carry over.
 
 Screenshots of the end state are in `docs/demo-audit/`.
 
@@ -25,7 +26,8 @@ Screenshots of the end state are in `docs/demo-audit/`.
 | Horizontal overflow on mobile | — | **0 / 106** |
 | Post a job, end to end | ❌ 404 | ✅ published |
 | Sign up → OTP → signed in | ❌ | ✅ |
-| **Re-audit after the rework** | — | **0 / 76** with an HTTP error, error state, console error or mobile overflow |
+| Re-audit after the model rework | — | **0 / 76** clean |
+| **Re-audit after the UI work** | — | **0 / 41** with an HTTP error, error state, console error or mobile overflow |
 
 ---
 
@@ -209,46 +211,73 @@ test on the venue network first.
    board. Then try the same as a client and hit
    *"Get verified as a business to post job vacancies"* — that contrast **is**
    the moat.
-7. Finish in the admin console: KPIs, escrow held/released, disputes, SOS
+7. Sign in as `worker1@example.com` — an unverified worker — to show the
+   **verification banner**: it names why the profile is invisible and sends the
+   code inline, no page change.
+8. Finish in the admin console: KPIs, escrow held/released, disputes, SOS
    alerts, fraud & risk, the audit log, and **Settings → the posting fee and
-   contact channel are live switches**, not decoration.
+   contact channel are live switches**, not decoration. Search the account
+   directory with a deliberate typo ("Fatimattou") to show it still lands.
 
 ---
 
-## Still outstanding from the product rework
+## The product rework, completed
 
-The trust/visibility/ranking model above is **built and verified end to end**.
-These items from the same brief are **not done yet** — recorded here so nothing
-is lost, roughly in the order I would take them:
+Everything from the brief is now built and verified. What each piece does:
 
-1. **Worker dashboard verification banner.** A worker whose contact is
-   unverified should see a banner that sends an OTP inline (button → the banner
-   becomes a code input), then advances to an "verify your ID" CTA pointing at
-   the verification page. *Backend is ready — the OTP endpoint and the gate both
-   exist; this is the UI.*
-2. **Signup role choice.** Signup still asks "find work / hire". It should not:
-   one identity holds both roles and switches between them. Removing the
-   question also removes the wrong mental model it plants.
-3. **"Are you a business?" hint.** A client browsing workers should see a
-   prompt to get verified as a business, routing into the selfie + ID + RCCM
-   upload. *The refusal message and step codes already come back from the API;
-   what is missing is the entry point and the upload screen.*
-4. **Posting fee in the UI.** `jobs.postingFeeXaf` is read, frozen onto the job
-   and admin-editable, but the publish step does not yet show the amount, and
-   `0` should read as **"Free"** rather than "FCFA 0".
-5. **Location pickers.** Job location already stores a pin, reverse-geocodes to
-   quarter + town and renders on the board ("Odza, Yaoundé"). Missing: an
-   explicit *use my current location* / *drag pin* control on job creation, an
-   *open in maps* button everywhere a job is shown including for guests, and an
-   editable worker-profile location with free-text extra detail.
-6. **Fuzzy search on the remaining bars.** Worker search is genuinely
-   typo-tolerant (`pg_trgm` + `unaccent`, threshold 0.2, matching service names
-   and EN/FR category names — "plombri" finds plumbers). The **job board** and
-   **admin** search inputs have not been audited and probably do plain matching.
+**Worker verification banner.** A worker who fails the discovery gate is
+invisible in search, and from their side an empty inbox looks exactly like a
+quiet market. The dashboard now names the reason and does the next step in
+place: the button *becomes* the code input (requesting a code and typing it back
+are two halves of one thought; a page navigation between them is where people
+drop out), then advances to the ID step, which does navigate because uploading a
+document is a real task.
 
-Two things from the brief were already true and needed no work: **service
-categories are fully admin-configurable** (CRUD, retire/restore, reorder in
-Admin → Categories), and worker search was already fuzzy.
+**Verification marks the channel actually proven.** A bug found while wiring the
+banner: `PHONE_VERIFICATION` stamped `phoneVerifiedAt` unconditionally — even
+when the code went to an email, which is *most* of them since SMS is not
+connected. A phone nobody had proved control of was being recorded as verified,
+and the discovery gate was passing on that record. It now marks whichever
+channel the identifier belongs to.
+
+**Signup asks one question fewer.** The "find work / hire" choice is gone. Every
+identity holds **both** trading roles from creation, because one person is
+routinely both — and asking up front plants the idea that the choice binds. It
+does not: tier and Trust Score belong to the identity, which is exactly why
+switching costs nothing. Holding the WORKER role grants no visibility on its
+own; the discovery gate still applies.
+
+**"Are you a business?" on-ramp.** Someone browsing workers may be a company
+that would rather post one vacancy than contact fifteen people, and previously
+they could only discover posting existed by failing at it. The hint offers the
+RCCM route and hides itself once the identity can post.
+
+**Posting fee, shown before the act.** Eligible posters choose visibility on the
+review step and see what it costs. A fee of `0` renders as **"Free"** — a price
+of zero stated as a number still reads as a charge.
+
+**Location.** Job location already stored a pin and reverse-geocoded to quarter
++ town. Added: **Open in maps** wherever a job is shown, guests included, and an
+**editable worker profile location**. The maps link is built from the place NAME,
+never the coordinates — and the coordinates are deliberately not on the public
+read at all. A job's pin is very often somebody's home, and the board is
+browsable with no account; "Akwa, Douala" gets a stranger to the right
+neighbourhood, which is all they need to decide whether to quote. On the worker
+profile the quarter and town are reverse-geocoded server-side rather than
+accepted from the client, so a worker cannot type themselves into a
+neighbourhood they do not work in; `landmark` is their own words, in addition.
+
+**Typo-tolerant search everywhere.** Worker search already was. The admin
+account directory was not — it used substring matching, so an admin working from
+a phone call who heard "Ngono" and typed "Ngonno" got "no such account" rather
+than "close, try again". It now also matches on trigram similarity, on top of
+(never instead of) exact matching, so a full email still returns its row first.
+Verified: "Fatimatu" and "Fatimattou" both find *Fatimatou Wandji*. A trigram
+index was added to keep it off a sequential scan. The job board has no search
+bar to fix — it filters by category and region.
+
+Already true before this work, and left alone: **service categories are fully
+admin-configurable** (CRUD, retire/restore, reorder).
 
 ---
 

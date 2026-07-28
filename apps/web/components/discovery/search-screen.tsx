@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getViewerSeed } from '@/lib/viewer-seed';
+import { useViewerSeed } from '@/lib/viewer-seed';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
@@ -87,10 +87,7 @@ export function SearchScreen({ initialFilters }: { initialFilters: SearchFilters
     router.replace(querystring ? `/app/search?${querystring}` : '/app/search', { scroll: false });
   }, [filters, router]);
 
-  // Read once on mount: localStorage is unavailable during SSR, and
-  // recomputing per render would reshuffle results under the visitor.
-  const [viewerSeed, setViewerSeed] = useState('');
-  useEffect(() => setViewerSeed(getViewerSeed()), []);
+  const viewerSeed = useViewerSeed();
 
   const variables = useMemo(
     () => ({ ...toSearchVariables(filters), viewerSeed }),

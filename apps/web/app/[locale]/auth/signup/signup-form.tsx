@@ -51,9 +51,7 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
 
   const {
     register,
-    control,
     handleSubmit,
-    setValue,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
