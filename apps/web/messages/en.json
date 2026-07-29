@@ -1760,6 +1760,18 @@
         "denied": "Push is blocked. Allow notifications in your browser settings to turn it on.",
         "unconfigured": "Push notifications are not available right now.",
         "enableFailed": "We could not enable push. Please try again."
+      },
+      "sound": {
+        "title": "Notification sounds",
+        "body": "Pick a sound per category for when TrustPro is open. Background notifications always use your device's own sound — no browser lets a website change that.",
+        "note": "Sounds only play while TrustPro is open in a tab. \"Default\" leaves it to your device.",
+        "options": {
+          "default": "Default (device)",
+          "chime": "Chime",
+          "alert": "Alert",
+          "pulse": "Pulse",
+          "silent": "Silent"
+        }
       }
     },
     "auth": {

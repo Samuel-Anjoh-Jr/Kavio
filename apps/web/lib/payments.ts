@@ -54,11 +54,12 @@ export const PAYMENT_METHOD_KINDS: readonly PaymentMethodKind[] = [
  * The ~10% platform fee, shown BEFORE payment (PAY-02, §15.1).
  *
  * The authoritative fee is snapshotted server-side onto the booking at
- * acceptance (booking-fee.model.ts); this mirror lets the accept screen show
- * the split a beat before the booking exists, so the number is never a surprise
- * at the moment money moves. Whole XAF — no minor unit.
+ * acceptance (booking-fee.model.ts) and is admin-configurable; a quote carries
+ * the CURRENT rate as `platformFeeBps` so this preview matches what
+ * acceptance will actually charge. `PLATFORM_FEE_BPS_FALLBACK` is only the
+ * ~10% shown before that field has loaded. Whole XAF — no minor unit.
  */
-export const PLATFORM_FEE_RATE = 0.1;
+export const PLATFORM_FEE_BPS_FALLBACK = 1000;
 
 export interface FeeBreakdown {
   price: number;
@@ -66,8 +67,11 @@ export interface FeeBreakdown {
   workerPayout: number;
 }
 
-export function estimateFee(price: number): FeeBreakdown {
-  const fee = Math.round(price * PLATFORM_FEE_RATE);
+export function estimateFee(
+  price: number,
+  feeBps: number = PLATFORM_FEE_BPS_FALLBACK,
+): FeeBreakdown {
+  const fee = Math.round((price * feeBps) / 10_000);
   return { price, fee, workerPayout: price - fee };
 }
 

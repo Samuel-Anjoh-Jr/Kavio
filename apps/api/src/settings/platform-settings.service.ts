@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
+import { getPlatformFeeBps } from '../payments/payments.config';
 
 const logger = createLogger('settings');
 
@@ -33,6 +34,13 @@ export const SETTING_KEYS = {
   contactChannel: 'verification.contactChannel',
   /** Flat charge to publish a job, in whole XAF. 0 means posting is free. */
   jobPostingFeeXaf: 'jobs.postingFeeXaf',
+  /**
+   * Platform escrow fee, stored as a PERCENTAGE (e.g. 10 for 10%) because that
+   * is what the admin console's settings form shows an operator — the same
+   * registry key ('platform.feePercent') has always accepted this shape, this
+   * is simply the first code path that reads it back.
+   */
+  platformFeePercent: 'platform.feePercent',
 } as const;
 
 interface CacheEntry {
@@ -88,6 +96,23 @@ export class PlatformSettingsService {
       return 0;
     }
     return Math.floor(parsed);
+  }
+
+  /**
+   * The platform escrow fee, in basis points (PAY-01, SRS §15.1 "~10%, admin
+   * configurable"). Reads the admin-set percentage and converts to bps; an
+   * operator who has never touched the setting — or entered something out of
+   * range — gets the env-configured `PLATFORM_FEE_BPS` default rather than a
+   * broken booking, same "typo in a settings row must not take down signup"
+   * rule as `contactChannel` above.
+   */
+  async platformFeeBps(): Promise<number> {
+    const value = await this.read(SETTING_KEYS.platformFeePercent);
+    const percent = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+      return getPlatformFeeBps();
+    }
+    return Math.round(percent * 100);
   }
 
   /**

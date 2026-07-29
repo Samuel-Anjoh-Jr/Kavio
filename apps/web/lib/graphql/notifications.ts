@@ -21,6 +21,9 @@ export type NotificationCategory =
   | 'SAFETY'
   | 'MARKETING';
 
+/** A role a notification can be ABOUT. Mirrors the API's Role enum (a subset — never AGENT/ADMIN here). */
+export type NotificationRelevantRole = 'WORKER' | 'CLIENT' | 'BUSINESS' | null;
+
 export interface AppNotification {
   id: string;
   category: NotificationCategory;
@@ -29,6 +32,8 @@ export interface AppNotification {
   body: string;
   url: string | null;
   important: boolean;
+  relevantRole: NotificationRelevantRole;
+  soundKey: string | null;
   readAt: string | null;
   createdAt: string;
 }
@@ -44,6 +49,8 @@ export const NOTIFICATIONS_QUERY = gql`
         body
         url
         important
+        relevantRole
+        soundKey
         readAt
         createdAt
       }
@@ -84,6 +91,11 @@ export interface NotificationChannelStatus {
   available: boolean;
 }
 
+export interface NotificationSoundPreferenceCell {
+  category: NotificationCategory;
+  soundKey: string;
+}
+
 export const NOTIFICATION_SETTINGS_QUERY = gql`
   query MyNotificationSettings {
     myNotificationSettings {
@@ -97,6 +109,10 @@ export const NOTIFICATION_SETTINGS_QUERY = gql`
         available
       }
       pushSubscribed
+      soundPreferences {
+        category
+        soundKey
+      }
     }
   }
 `;
@@ -106,5 +122,6 @@ export interface NotificationSettingsQueryResult {
     preferences: NotificationPreferenceCell[];
     channels: NotificationChannelStatus[];
     pushSubscribed: boolean;
+    soundPreferences: NotificationSoundPreferenceCell[];
   };
 }

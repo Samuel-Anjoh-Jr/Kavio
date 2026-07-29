@@ -59,6 +59,11 @@ export interface TemplateVariablesMap {
    * value; `statusLabelKey` keys the localized chip copy in the web catalogue.
    */
   'job.application_status_changed': { jobTitle: string; status: string; statusLabelKey: string };
+  /**
+   * The poster cancelled a job before hiring anyone (JOB-05). Sent to every
+   * worker who had a live (sent/viewed) quote on it — their offer is now moot.
+   */
+  'job.cancelled': { jobTitle: string };
   /** A worker sent the client a quote (QTE-01). */
   'quote.received': { jobTitle: string; price: number };
   /** The client accepted the worker's quote — a booking now exists (QTE-03). */
@@ -75,6 +80,12 @@ export interface TemplateVariablesMap {
   'payment.required': { amount: number };
   /** Escrow funded; the worker can begin (PAY-01). */
   'payment.received': { jobTitle: string; amount: number };
+  /** The worker acknowledged the funded escrow (PAY-01, "work can start soon"). */
+  'escrow.work_accepted': { jobTitle: string };
+  /** The worker started the job (PAY-01, JOB-06). */
+  'escrow.work_started': { jobTitle: string };
+  /** The worker marked the job done; the client's confirmation releases payment (PAY-01, JOB-07). */
+  'escrow.work_completed': { jobTitle: string };
   /** Escrow released to the worker's wallet, minus the fee (PAY-01). */
   'escrow.released': { jobTitle: string; amount: number };
   /** Escrow refunded to the client's wallet (PAY-01). */
@@ -1002,6 +1013,45 @@ const jobApplicationStatusChanged: TemplateDefinition<'job.application_status_ch
   },
 };
 
+const jobCancelled: TemplateDefinition<'job.cancelled'> = {
+  key: 'job.cancelled',
+  category: NotificationCategory.JOBS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'A job you quoted was cancelled',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'The client cancelled this job before hiring.',
+          heading: 'Job cancelled',
+          bodyHtml: paragraphs(
+            `The client cancelled "${escapeHtml(v.jobTitle)}" before hiring anyone.`,
+            'Your quote on it no longer applies. There is nothing further to do.',
+          ),
+        }),
+        text: `"${v.jobTitle}" was cancelled by the client before hiring anyone. Your quote no longer applies.`,
+      }),
+      fr: (v) => ({
+        subject: 'Un job que vous avez chiffré a été annulé',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Le client a annulé ce job avant d’embaucher.',
+          heading: 'Job annulé',
+          bodyHtml: paragraphs(
+            `Le client a annulé « ${escapeHtml(v.jobTitle)} » avant d’embaucher qui que ce soit.`,
+            'Votre devis ne s’applique plus. Il n’y a rien d’autre à faire.',
+          ),
+        }),
+        text: `« ${v.jobTitle} » a été annulé par le client avant toute embauche. Votre devis ne s'applique plus.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Job cancelled', body: `"${v.jobTitle}" was cancelled by the client.` }),
+      fr: (v) => ({ title: 'Job annulé', body: `« ${v.jobTitle} » a été annulé par le client.` }),
+    },
+  },
+};
+
 const quoteReceived: TemplateDefinition<'quote.received'> = {
   key: 'quote.received',
   category: NotificationCategory.QUOTES,
@@ -1280,6 +1330,124 @@ const paymentReceived: TemplateDefinition<'payment.received'> = {
       fr: (v) => ({
         title: 'Paiement sécurisé',
         body: `« ${v.jobTitle} » — vous pouvez commencer.`,
+      }),
+    },
+  },
+};
+
+const escrowWorkAccepted: TemplateDefinition<'escrow.work_accepted'> = {
+  key: 'escrow.work_accepted',
+  category: NotificationCategory.JOBS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your worker accepted the job',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Work will begin soon.',
+          heading: 'Job accepted',
+          bodyHtml: paragraphs(
+            `The worker acknowledged "${escapeHtml(v.jobTitle)}" and will begin soon.`,
+          ),
+        }),
+        text: `The worker acknowledged "${v.jobTitle}" and will begin soon.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre prestataire a accepté le job',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Le travail va bientôt commencer.',
+          heading: 'Job accepté',
+          bodyHtml: paragraphs(
+            `Le prestataire a confirmé « ${escapeHtml(v.jobTitle)} » et va bientôt commencer.`,
+          ),
+        }),
+        text: `Le prestataire a confirmé « ${v.jobTitle} » et va bientôt commencer.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Job accepted', body: `Your worker accepted "${v.jobTitle}".` }),
+      fr: (v) => ({ title: 'Job accepté', body: `Votre prestataire a accepté « ${v.jobTitle} ».` }),
+    },
+  },
+};
+
+const escrowWorkStarted: TemplateDefinition<'escrow.work_started'> = {
+  key: 'escrow.work_started',
+  category: NotificationCategory.JOBS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Work has started',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Your worker started the job.',
+          heading: 'Work started',
+          bodyHtml: paragraphs(`The worker started "${escapeHtml(v.jobTitle)}".`),
+        }),
+        text: `The worker started "${v.jobTitle}".`,
+      }),
+      fr: (v) => ({
+        subject: 'Le travail a commencé',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Votre prestataire a commencé le job.',
+          heading: 'Travail commencé',
+          bodyHtml: paragraphs(`Le prestataire a commencé « ${escapeHtml(v.jobTitle)} ».`),
+        }),
+        text: `Le prestataire a commencé « ${v.jobTitle} ».`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Work started', body: `Your worker started "${v.jobTitle}".` }),
+      fr: (v) => ({
+        title: 'Travail commencé',
+        body: `Votre prestataire a commencé « ${v.jobTitle} ».`,
+      }),
+    },
+  },
+};
+
+const escrowWorkCompleted: TemplateDefinition<'escrow.work_completed'> = {
+  key: 'escrow.work_completed',
+  category: NotificationCategory.JOBS,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your worker marked the job done',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Confirm to release payment.',
+          heading: 'Job marked done',
+          bodyHtml: paragraphs(
+            `The worker marked "${escapeHtml(v.jobTitle)}" as done.`,
+            'Review the work and confirm completion on TrustPro to release payment from escrow.',
+          ),
+        }),
+        text: `The worker marked "${v.jobTitle}" as done. Review and confirm completion on TrustPro to release payment.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre prestataire a marqué le job comme terminé',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Confirmez pour libérer le paiement.',
+          heading: 'Job marqué terminé',
+          bodyHtml: paragraphs(
+            `Le prestataire a marqué « ${escapeHtml(v.jobTitle)} » comme terminé.`,
+            'Vérifiez le travail et confirmez sur TrustPro pour libérer le paiement du séquestre.',
+          ),
+        }),
+        text: `Le prestataire a marqué « ${v.jobTitle} » comme terminé. Vérifiez et confirmez sur TrustPro pour libérer le paiement.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'Job marked done',
+        body: `Confirm "${v.jobTitle}" to release payment.`,
+      }),
+      fr: (v) => ({
+        title: 'Job marqué terminé',
+        body: `Confirmez « ${v.jobTitle} » pour libérer le paiement.`,
       }),
     },
   },
@@ -1795,12 +1963,16 @@ const TEMPLATES: TemplateMap = {
   'job.application_received': jobApplicationReceived,
   'job.invitation_received': jobInvitationReceived,
   'job.application_status_changed': jobApplicationStatusChanged,
+  'job.cancelled': jobCancelled,
   'quote.received': quoteReceived,
   'quote.accepted': quoteAccepted,
   'quote.declined': quoteDeclined,
   'quote.counter_requested': quoteCounterRequested,
   'payment.required': paymentRequired,
   'payment.received': paymentReceived,
+  'escrow.work_accepted': escrowWorkAccepted,
+  'escrow.work_started': escrowWorkStarted,
+  'escrow.work_completed': escrowWorkCompleted,
   'escrow.released': escrowReleased,
   'escrow.refunded': escrowRefunded,
   'payment.failed': paymentFailed,

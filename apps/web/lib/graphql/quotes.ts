@@ -26,6 +26,8 @@ export interface Quote {
   includes: string[];
   message: string | null;
   status: QuoteStatus;
+  /** Current admin-configured platform fee, in basis points (PAY-01). */
+  platformFeeBps: number;
   attachments: QuoteAttachment[];
   worker: WorkerPreview | null;
   parentQuoteId: string | null;
@@ -62,6 +64,7 @@ const QUOTE_FIELDS = `
   includes
   message
   status
+  platformFeeBps
   attachments {
     id
     url

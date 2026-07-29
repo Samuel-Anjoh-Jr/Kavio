@@ -67,7 +67,7 @@ function AcceptDialog({ quote, onDone }: { quote: Quote; onDone: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
 
-  const fee = estimateFee(quote.price);
+  const fee = estimateFee(quote.price, quote.platformFeeBps);
 
   async function accept() {
     setBusy(true);

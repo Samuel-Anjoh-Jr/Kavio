@@ -100,6 +100,9 @@ importers:
       '@trustpro/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@vercel/blob':
+        specifier: ^2.6.1
+        version: 2.6.1
       bullmq:
         specifier: ^5.80.9
         version: 5.80.9
@@ -213,8 +216,8 @@ importers:
         specifier: ^0.14.5
         version: 0.14.5(@apollo/client@4.2.7(graphql-ws@6.0.8(graphql@17.0.2)(ws@8.21.1))(graphql@17.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(rxjs@7.8.2)(subscriptions-transport-ws@0.11.0(graphql@17.0.2)))(@types/react@19.2.17)(graphql@17.0.2)(next@16.2.11(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(rxjs@7.8.2)
       '@hookform/resolvers':
-        specifier: ^5.4.0
-        version: 5.4.0(react-hook-form@7.82.0(react@19.2.4))
+        specifier: ^5.5.7
+        version: 5.5.7(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.21.0)(react-hook-form@7.82.0(react@19.2.4))(zod@4.4.3)
       '@radix-ui/react-dialog':
         specifier: ^1.1.19
         version: 1.1.19(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -928,10 +931,83 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@hookform/resolvers@5.4.0':
-    resolution: {integrity: sha512-EIsqr/t/qbinPIhGjMdtvutIN1Kk4uwbROE9/UQ93CAVGR7GkA7Y92+fX80OzXi/OB67jVFYwKGO1WzkxmkFZw==}
+  '@hookform/resolvers@5.5.7':
+    resolution: {integrity: sha512-CyPCYV8/KlXfEXLWj8HHHhVsR/IZ6Ckm3b/a4fWtO/lRnRK1huqncb8LlAWrmpPRsse5glF5aVuDRMHEr3UGag==}
     peerDependencies:
+      '@sinclair/typebox': '>=0.25.24'
+      '@standard-schema/spec': ^1.0.0
+      '@typeschema/main': '>=0.13.7'
+      '@vinejs/vine': ^2.0.0 || ^3.0.0
+      ajv: ^8.12.0
+      ajv-errors: ^3.0.0
+      ajv-formats: ^2.1.1
+      arktype: ^2.0.0
+      ata-validator: ^0.7.0
+      class-transformer: '>=0.4.0'
+      class-validator: '>=0.12.0'
+      computed-types: ^1.0.0
+      effect: ^3.10.3
+      fluentvalidation-ts: ^3.0.0
+      fp-ts: ^2.7.0
+      io-ts: ^2.0.0
+      joi: ^17.0.0
+      nope-validator: '>=0.12.0'
       react-hook-form: ^7.55.0
+      superstruct: '>=0.12.0'
+      typanion: ^3.3.2
+      valibot: '>=0.31.0 || ^1.0.0-beta.4 || ^1.0.0-rc'
+      vest: '>=3.0.0'
+      yup: ^1.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@sinclair/typebox':
+        optional: true
+      '@standard-schema/spec':
+        optional: true
+      '@typeschema/main':
+        optional: true
+      '@vinejs/vine':
+        optional: true
+      ajv:
+        optional: true
+      ajv-errors:
+        optional: true
+      ajv-formats:
+        optional: true
+      arktype:
+        optional: true
+      ata-validator:
+        optional: true
+      class-transformer:
+        optional: true
+      class-validator:
+        optional: true
+      computed-types:
+        optional: true
+      effect:
+        optional: true
+      fluentvalidation-ts:
+        optional: true
+      fp-ts:
+        optional: true
+      io-ts:
+        optional: true
+      joi:
+        optional: true
+      nope-validator:
+        optional: true
+      superstruct:
+        optional: true
+      typanion:
+        optional: true
+      valibot:
+        optional: true
+      vest:
+        optional: true
+      yup:
+        optional: true
+      zod:
+        optional: true
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -2902,6 +2978,21 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@vercel/blob@2.6.1':
+    resolution: {integrity: sha512-KTJytw85j1XQBxjN5d6UXI7fIWNQe1jotn4nWN+0hePqLs+Qi1B3jHdQcSKFGF0m2rsy9uhPT6GOXMtHe3qNzg==}
+    engines: {node: '>=20.0.0'}
+
+  '@vercel/cli-config@0.2.1':
+    resolution: {integrity: sha512-RhfyXmRLHdbnry8RJqHDc+5rGxMZ0bu+fpysZjtv3bE+BubpuwxTancHOKiH5zKQREsdwFVr3mOI2kOvxlOyxA==}
+
+  '@vercel/cli-exec@1.0.0':
+    resolution: {integrity: sha512-kQF8LGie/Hbdq9/psJxLE7owRTcqMQMhgybU04gCeR7cbQAr5t8OrjefDNColJv1QSSucFt4pLwRiARVmlOnug==}
+    engines: {node: '>= 18'}
+
+  '@vercel/oidc@3.8.1':
+    resolution: {integrity: sha512-ufdalm2MWOYksyj8KVpWjoOFPJO6zoYpuyvIggIQ2bB0CFCjTCiTkGXHqAKwG77GVRjOaN3/8S5ITlZpXWmqOw==}
+    engines: {node: '>= 20'}
+
   '@vitest/expect@4.1.10':
     resolution: {integrity: sha512-YsCn+qAk1GWjQOWFEsEcL2gNQ0zmVmQu3T03qP6UyjhtmdtwtbuI+DASn/7iQB3HGTXkdBwGddzxPlmiql5vlA==}
 
@@ -4344,6 +4435,10 @@ packages:
     resolution: {integrity: sha512-wa56o2/ElJMYqjCjGkXri7it5FbebW5usLw/nPmCMs5DeZ7eziSYZhSmPRn0txqeW4LnAmQQU7FgqLpsEFKM4A==}
     engines: {node: '>= 0.4'}
 
+  is-buffer@2.0.5:
+    resolution: {integrity: sha512-i2R6zNFDwgEHJyQUtJEk0XFi1i0dPFn/oqjK3/vPCcDeJvW5NQ83V8QbicfF1SupOaB0h8ntgBC2YiE7dfyctQ==}
+    engines: {node: '>=4'}
+
   is-bun-module@2.0.0:
     resolution: {integrity: sha512-gNCGbnnnnFAUGKeZ9PdbyeGYJqewpmc2aKHUEMO5nQPWU9lOmv7jcmQIv+qHD8fXW6W7qfuCwX4rY9LNRjXrkQ==}
 
@@ -4402,6 +4497,9 @@ packages:
   is-negative-zero@2.0.3:
     resolution: {integrity: sha512-5KoIu2Ngpyek75jXodFvnafB6DJgr3u8uuK0LEZJjrU19DrMD3EVERaR8sjz8CCGgpZvxPl9SuE1GMVPFHx1mw==}
     engines: {node: '>= 0.4'}
+
+  is-node-process@1.2.0:
+    resolution: {integrity: sha512-Vg4o6/fqPxIjtxgUH5QLJhwZ7gW5diGCVlXpuUfELC62CuxM1iHcRe51f2W1FDy04Ai4KJkagKjx3XaqyfRKXw==}
 
   is-number-object@1.1.1:
     resolution: {integrity: sha512-lZhclumE1G6VYD8VHe35wFaIif+CTy5SJIi5+3y4psDgWu4wPDoBhF8NxUOinEc7pHgiTsT6MaBb92rKhhD+Xw==}
@@ -4633,6 +4731,9 @@ packages:
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
+
+  jose@5.10.0:
+    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
   jose@6.2.3:
     resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
@@ -5205,6 +5306,10 @@ packages:
   ora@5.4.1:
     resolution: {integrity: sha512-5b6Y85tPxZZ7QytO+BQzysW31HJku27cRIlkbAXaNx+BdcVi+LlRFmVXzeF6a7JCwJpyw5c4b+YSVImQIrBpuQ==}
     engines: {node: '>=10'}
+
+  os-paths@4.4.0:
+    resolution: {integrity: sha512-wrAwOeXp1RRMFfQY8Sy7VaGVmPocaLwSFOYCGKSyo8qmJ+/yaafCl5BCA1IQZWqFSRBrKDYFeR9d/VyQzfH/jg==}
+    engines: {node: '>= 6.0'}
 
   own-keys@1.0.1:
     resolution: {integrity: sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg==}
@@ -5894,6 +5999,10 @@ packages:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
 
+  throttleit@2.1.0:
+    resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
+    engines: {node: '>=18'}
+
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
 
@@ -6088,6 +6197,10 @@ packages:
 
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
+
+  undici@6.28.0:
+    resolution: {integrity: sha512-LIY910g9TI13YS95lrMFrs8Rm/u/irgHeTWoKCoteeJ04CUJ92eEfj0rVn+7VKMPBpUPiUoBKfhNyLI23EE/KA==}
+    engines: {node: '>=18.17'}
 
   universalify@2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
@@ -6339,6 +6452,14 @@ packages:
       utf-8-validate:
         optional: true
 
+  xdg-app-paths@5.5.1:
+    resolution: {integrity: sha512-hI3flOB4PLZIy5prbtTpirobtPE2ZtZ52szO+2mM9Efp6ErM398La+C1lIpNWDfNoQk+6Lsi6nMcCwVB7pxeMQ==}
+    engines: {node: '>= 6.0'}
+
+  xdg-portable@7.3.0:
+    resolution: {integrity: sha512-sqMMuL1rc0FmMBOzCpd0yuy9trqF2yTTVe+E9ogwCSWQCdDEtQUwrZPT6AxqtsFGRNxycgncbP/xmOOSPw5ZUw==}
+    engines: {node: '>= 6.0'}
+
   xmlhttprequest-ssl@2.1.2:
     resolution: {integrity: sha512-TEU+nJVUUnA4CYJFLvK5X9AOeH4KvDvhIfm0vV1GaQRtchnG0hgK5p8hw/xjv8cunWYCsiPCSDzObPyhEwq3KQ==}
     engines: {node: '>=0.4.0'}
@@ -6385,6 +6506,9 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
+
+  zod@4.1.11:
+    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
 
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
@@ -7148,10 +7272,17 @@ snapshots:
     dependencies:
       graphql: 17.0.2
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.82.0(react@19.2.4))':
+  '@hookform/resolvers@5.5.7(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.21.0)(react-hook-form@7.82.0(react@19.2.4))(zod@4.4.3)':
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.82.0(react@19.2.4)
+    optionalDependencies:
+      '@sinclair/typebox': 0.34.52
+      '@standard-schema/spec': 1.1.0
+      ajv: 8.20.0
+      ajv-formats: 2.1.1(ajv@8.20.0)
+      effect: 3.21.0
+      zod: 4.4.3
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -9026,6 +9157,30 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.12.2':
     optional: true
 
+  '@vercel/blob@2.6.1':
+    dependencies:
+      '@vercel/oidc': 3.8.1
+      async-retry: 1.3.3
+      is-buffer: 2.0.5
+      is-node-process: 1.2.0
+      throttleit: 2.1.0
+      undici: 6.28.0
+
+  '@vercel/cli-config@0.2.1':
+    dependencies:
+      xdg-app-paths: 5.5.1
+      zod: 4.1.11
+
+  '@vercel/cli-exec@1.0.0':
+    dependencies:
+      execa: 5.1.1
+
+  '@vercel/oidc@3.8.1':
+    dependencies:
+      '@vercel/cli-config': 0.2.1
+      '@vercel/cli-exec': 1.0.0
+      jose: 5.10.0
+
   '@vitest/expect@4.1.10':
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -9988,7 +10143,7 @@ snapshots:
       '@next/eslint-plugin-next': 16.2.10
       eslint: 9.39.5(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5(jiti@2.7.0))
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5(jiti@2.7.0))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.5(jiti@2.7.0))
       eslint-plugin-react: 7.37.5(eslint@9.39.5(jiti@2.7.0))
@@ -10015,7 +10170,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5(jiti@2.7.0)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3
@@ -10030,14 +10185,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.14.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)):
+  eslint-module-utils@2.14.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5(jiti@2.7.0)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       eslint: 9.39.5(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5(jiti@2.7.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -10056,7 +10211,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.5(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0))
+      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5(jiti@2.7.0))
       hasown: 2.0.4
       is-core-module: 2.16.2
       is-glob: 4.0.3
@@ -10705,6 +10860,8 @@ snapshots:
       call-bound: 1.0.4
       has-tostringtag: 1.0.2
 
+  is-buffer@2.0.5: {}
+
   is-bun-module@2.0.0:
     dependencies:
       semver: 7.8.5
@@ -10757,6 +10914,8 @@ snapshots:
   is-map@2.0.3: {}
 
   is-negative-zero@2.0.3: {}
+
+  is-node-process@1.2.0: {}
 
   is-number-object@1.1.1:
     dependencies:
@@ -11183,6 +11342,8 @@ snapshots:
       - ts-node
 
   jiti@2.7.0: {}
+
+  jose@5.10.0: {}
 
   jose@6.2.3: {}
 
@@ -11696,6 +11857,8 @@ snapshots:
       log-symbols: 4.1.0
       strip-ansi: 6.0.1
       wcwidth: 1.0.1
+
+  os-paths@4.4.0: {}
 
   own-keys@1.0.1:
     dependencies:
@@ -12455,6 +12618,8 @@ snapshots:
       glob: 7.2.3
       minimatch: 3.1.5
 
+  throttleit@2.1.0: {}
+
   tinybench@2.9.0: {}
 
   tinyexec@1.2.4: {}
@@ -12661,6 +12826,8 @@ snapshots:
   undici-types@6.21.0: {}
 
   undici-types@7.18.2: {}
+
+  undici@6.28.0: {}
 
   universalify@2.0.1: {}
 
@@ -12937,6 +13104,15 @@ snapshots:
 
   ws@8.21.1: {}
 
+  xdg-app-paths@5.5.1:
+    dependencies:
+      os-paths: 4.4.0
+      xdg-portable: 7.3.0
+
+  xdg-portable@7.3.0:
+    dependencies:
+      os-paths: 4.4.0
+
   xmlhttprequest-ssl@2.1.2: {}
 
   xss@1.0.15:
@@ -12972,5 +13148,7 @@ snapshots:
   zod-validation-error@4.0.2(zod@4.4.3):
     dependencies:
       zod: 4.4.3
+
+  zod@4.1.11: {}
 
   zod@4.4.3: {}

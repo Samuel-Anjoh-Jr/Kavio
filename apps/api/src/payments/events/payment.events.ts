@@ -5,6 +5,9 @@
  */
 
 export const PAYMENT_RECEIVED = 'payment.received';
+export const ESCROW_WORK_ACCEPTED = 'escrow.work_accepted';
+export const ESCROW_WORK_STARTED = 'escrow.work_started';
+export const ESCROW_WORK_COMPLETED = 'escrow.work_completed';
 export const ESCROW_RELEASED = 'escrow.released';
 export const ESCROW_REFUNDED = 'escrow.refunded';
 export const PAYMENT_FAILED = 'payment.failed';
@@ -32,6 +35,33 @@ export class PaymentReceivedEvent {
     this.clientId = init.clientId;
     this.workerId = init.workerId;
     this.amount = init.amount;
+    this.requestId = init.requestId;
+  }
+}
+
+/**
+ * The worker's own escrow-lifecycle moves (PAID → ACCEPTED → IN_PROGRESS →
+ * COMPLETED) — the CLIENT is the one who wants to hear about each, since the
+ * worker already knows what they just did (SRS §21.3 job progress).
+ */
+export class EscrowWorkProgressEvent {
+  readonly bookingId: string;
+  readonly jobId: string;
+  readonly workerId: string;
+  readonly clientId: string;
+  readonly requestId?: string;
+
+  constructor(init: {
+    bookingId: string;
+    jobId: string;
+    workerId: string;
+    clientId: string;
+    requestId?: string;
+  }) {
+    this.bookingId = init.bookingId;
+    this.jobId = init.jobId;
+    this.workerId = init.workerId;
+    this.clientId = init.clientId;
     this.requestId = init.requestId;
   }
 }
@@ -119,6 +149,8 @@ export class DisputeOpenedEvent {
   readonly openedById: string;
   /** The party who did NOT open it — the one to notify. */
   readonly otherPartyId: string;
+  /** Which role `otherPartyId` holds on this booking (CLIENT or WORKER). */
+  readonly otherPartyRole: 'CLIENT' | 'WORKER';
   readonly requestId?: string;
 
   constructor(init: {
@@ -127,6 +159,7 @@ export class DisputeOpenedEvent {
     jobId: string;
     openedById: string;
     otherPartyId: string;
+    otherPartyRole: 'CLIENT' | 'WORKER';
     requestId?: string;
   }) {
     this.disputeId = init.disputeId;
@@ -134,6 +167,7 @@ export class DisputeOpenedEvent {
     this.jobId = init.jobId;
     this.openedById = init.openedById;
     this.otherPartyId = init.otherPartyId;
+    this.otherPartyRole = init.otherPartyRole;
     this.requestId = init.requestId;
   }
 }

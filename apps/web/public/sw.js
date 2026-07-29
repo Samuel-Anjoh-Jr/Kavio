@@ -183,22 +183,41 @@ self.addEventListener('push', (event) => {
     body: payload.body || '',
     icon: payload.icon || '/window.svg',
     badge: payload.badge || '/window.svg',
-    // The deep link travels in `data` so the click handler can read it. Defaults
-    // to the app home so a click is never a dead end.
-    data: { url: payload.url || '/app/home' },
+    // The deep link and the role it's about travel in `data` so the click
+    // handler can read them. Defaults to the app home so a click is never a
+    // dead end.
+    data: { url: payload.url || '/app/home', relevantRole: payload.relevantRole || null },
     // Collapse repeats of the same subject (e.g. several messages in one thread)
     // into one notification rather than stacking them.
     tag: payload.tag || undefined,
     renotify: Boolean(payload.tag),
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    Promise.all([
+      self.registration.showNotification(title, options),
+      // Relay the raw payload to any open tab — that's the ONLY place a custom
+      // sound can actually play (no browser lets a site pick the OS push
+      // sound), and it also lets an open Notification Center refresh its
+      // badge the instant this arrives rather than waiting for the next poll.
+      relayToOpenClients(payload),
+    ]),
+  );
 });
+
+async function relayToOpenClients(payload) {
+  const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  for (const client of clientList) {
+    client.postMessage({ type: 'notification-push', payload });
+  }
+}
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const target = (event.notification.data && event.notification.data.url) || '/app/home';
+  const data = event.notification.data || {};
+  const target = data.url || '/app/home';
+  const relevantRole = data.relevantRole || null;
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
@@ -206,11 +225,13 @@ self.addEventListener('notificationclick', (event) => {
       // does not pile up duplicate tabs.
       for (const client of clientList) {
         if (client.url.includes('/app') && 'focus' in client) {
-          client.postMessage({ type: 'notification-click', url: target });
+          client.postMessage({ type: 'notification-click', url: target, relevantRole });
           return client.focus();
         }
       }
-      // Otherwise open a fresh tab at the deep link.
+      // Otherwise open a fresh tab at the deep link. Role-switching only
+      // applies to an already-open session; a fresh tab's own load picks up
+      // whatever role is already active server-side.
       if (self.clients.openWindow) {
         return self.clients.openWindow(target);
       }

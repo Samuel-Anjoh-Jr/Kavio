@@ -16,9 +16,13 @@ import { LedgerService } from '../ledger.service';
 import {
   ESCROW_REFUNDED,
   ESCROW_RELEASED,
+  ESCROW_WORK_ACCEPTED,
+  ESCROW_WORK_COMPLETED,
+  ESCROW_WORK_STARTED,
   PAYMENT_RECEIVED,
   EscrowRefundedEvent,
   EscrowReleasedEvent,
+  EscrowWorkProgressEvent,
   PaymentReceivedEvent,
 } from '../events/payment.events';
 import {
@@ -29,6 +33,13 @@ import {
 } from './escrow-lifecycle.model';
 
 const logger = createLogger('escrow');
+
+/** Which event name (if any) a work-progress state transition notifies on. */
+const WORK_PROGRESS_EVENT_BY_STATE: Partial<Record<EscrowState, string>> = {
+  [EscrowState.ACCEPTED]: ESCROW_WORK_ACCEPTED,
+  [EscrowState.IN_PROGRESS]: ESCROW_WORK_STARTED,
+  [EscrowState.COMPLETED]: ESCROW_WORK_COMPLETED,
+};
 
 /** The shape every transition needs. Loaded once, passed to `applyTransition`. */
 export interface HoldContext {
@@ -505,7 +516,21 @@ export class EscrowService {
   }
 
   private emitFor(hold: HoldContext, to: EscrowState, requestId?: string): void {
-    if (to === EscrowState.RELEASED) {
+    const workProgressEventName = WORK_PROGRESS_EVENT_BY_STATE[to];
+    if (workProgressEventName) {
+      // The worker's own moves (acknowledge, start, mark done) — the client is
+      // the one who did not just do this and wants to know (SRS §21.3).
+      this.events.emit(
+        workProgressEventName,
+        new EscrowWorkProgressEvent({
+          bookingId: hold.bookingId,
+          jobId: hold.jobId,
+          workerId: hold.workerId,
+          clientId: hold.clientId,
+          requestId,
+        }),
+      );
+    } else if (to === EscrowState.RELEASED) {
       this.events.emit(
         ESCROW_RELEASED,
         new EscrowReleasedEvent({

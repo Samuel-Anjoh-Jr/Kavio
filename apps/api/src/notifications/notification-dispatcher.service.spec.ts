@@ -3,6 +3,7 @@ import { NotificationRequestedEvent } from './events/notification.events';
 import { getChannelPriority } from './notification.config';
 import { NotificationDispatcher } from './notification-dispatcher.service';
 import { NotificationPreferenceService } from './notification-preference.service';
+import type { NotificationSoundPreferenceService } from './notification-sound-preference.service';
 import { EmailProvider } from './providers/email.provider';
 import { InAppProvider } from './providers/in-app.provider';
 import { NotificationProviderRegistry } from './providers/provider.registry';
@@ -11,6 +12,11 @@ import { WebPushProvider } from './providers/web-push.provider';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { QueueService } from '../queue/queue.service';
 import type { NotificationDeliveryJob } from './notification.types';
+
+/** A sound service stub — these tests exercise channel selection, not sound resolution. */
+const sounds = {
+  resolve: jest.fn().mockResolvedValue('default'),
+} as unknown as NotificationSoundPreferenceService;
 
 const USER = {
   id: '11111111-1111-4111-8111-111111111111',
@@ -93,9 +99,9 @@ function makeHarness(
 
   const registry = new NotificationProviderRegistry(
     new EmailProvider(env),
-    new WebPushProvider(prisma, env),
+    new WebPushProvider(prisma, sounds, env),
     new SmsProvider(env),
-    new InAppProvider(prisma),
+    new InAppProvider(prisma, sounds),
   );
 
   const dispatcher = new NotificationDispatcher(

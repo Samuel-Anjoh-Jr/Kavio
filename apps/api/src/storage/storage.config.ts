@@ -200,3 +200,50 @@ export function getS3Config(): S3Config {
 export function isS3Configured(config: S3Config): boolean {
   return Boolean(config.bucket && config.accessKeyId && config.secretAccessKey);
 }
+
+/**
+ * Vercel Blob — a zero-config object store for teams already deploying on
+ * Vercel who would rather not stand up an S3-compatible bucket.
+ */
+export interface VercelBlobConfig {
+  token: string;
+}
+
+export function getVercelBlobConfig(): VercelBlobConfig {
+  return {
+    token: process.env.BLOB_READ_WRITE_TOKEN ?? '',
+  };
+}
+
+export function isVercelBlobConfigured(config: VercelBlobConfig): boolean {
+  return Boolean(config.token);
+}
+
+/**
+ * Supabase Storage — the other "simpler tool" fallback, for teams already on
+ * Supabase for auth/DB who would rather not manage a separate S3 bucket.
+ * Uses the service role key so the API can write PRIVATE objects (KYC docs)
+ * as well as PUBLIC ones, the same split S3 makes by bucket policy.
+ */
+export interface SupabaseStorageConfig {
+  url: string;
+  serviceRoleKey: string;
+  bucket: string;
+  /** How long a signed URL for a PRIVATE object stays valid. */
+  signedUrlTtlSeconds: number;
+}
+
+export function getSupabaseStorageConfig(): SupabaseStorageConfig {
+  return {
+    url: (process.env.SUPABASE_URL ?? '').replace(/\/+$/, ''),
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+    bucket: process.env.SUPABASE_STORAGE_BUCKET ?? '',
+    signedUrlTtlSeconds: Number(
+      process.env.SUPABASE_SIGNED_URL_TTL_SECONDS ?? process.env.S3_SIGNED_URL_TTL_SECONDS ?? 300,
+    ),
+  };
+}
+
+export function isSupabaseStorageConfigured(config: SupabaseStorageConfig): boolean {
+  return Boolean(config.url && config.serviceRoleKey && config.bucket);
+}

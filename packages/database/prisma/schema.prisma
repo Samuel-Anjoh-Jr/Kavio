@@ -162,6 +162,7 @@ model User {
 
   // In-app notification inbox (PROMPT 78; NOT-02).
   notifications Notification[]
+  notificationSoundPreferences NotificationSoundPreference[]
 
   // Moderation (ADM-08). One identity is the subject of some actions and, when it
   // holds the ADMIN role, the actor on others.
@@ -403,6 +404,21 @@ model Notification {
   /// safety, disputes and security matter at a glance; marketing does not.
   important Boolean @default(false)
 
+  /// Which role this notification is ABOUT, when the emitting listener knows
+  /// (a worker invitation is inherently WORKER-relevant). Null for identity-level
+  /// notices (security, verification, trust) that are the same regardless of the
+  /// viewer's active role. Lets the client auto-switch active role before
+  /// navigating, so a Worker-side notice opened while the session is in Client
+  /// mode still lands the viewer where the content actually makes sense.
+  relevantRole Role?
+
+  /// The sound to play when this notification arrives while the app is open in a
+  /// tab (see notification-sound.ts). Resolved once at write time from the
+  /// recipient's per-category preference, or the category's default. Background
+  /// push notifications ignore this — no current browser lets a site choose the
+  /// OS notification sound, so those always play the device default.
+  soundKey String?
+
   readAt DateTime?
 
   /// Ids the surface needs to render context (jobId, disputeId…). Never secrets.
@@ -418,6 +434,24 @@ model Notification {
   @@index([userId, readAt])
   /// The Important filter.
   @@index([userId, important, createdAt])
+}
+
+/// Per-user, per-category notification sound override (see notification-sound.ts
+/// for the fixed key set). A missing row means "use the category's default
+/// sound" — the same opt-out shape as NotificationPreference, so a user who has
+/// never touched sound settings still gets sensible per-category sounds.
+model NotificationSoundPreference {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @db.Uuid
+  category  NotificationCategory
+  soundKey  String
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@index([userId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

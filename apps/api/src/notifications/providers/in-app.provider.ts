@@ -3,7 +3,8 @@ import { NotificationChannel, Prisma } from '@trustpro/database';
 import { createLogger } from '../../lib/logger';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAppBaseUrl, isImportantCategory } from '../notification.config';
-import { resolveDeepLink } from '../notification-links';
+import { extractRelevantRole, resolveDeepLink } from '../notification-links';
+import { NotificationSoundPreferenceService } from '../notification-sound-preference.service';
 import type {
   DeliveryContext,
   NotificationChannelProvider,
@@ -31,7 +32,10 @@ export class InAppProvider implements NotificationChannelProvider {
   readonly channel = NotificationChannel.IN_APP;
   readonly providerName = 'in-app';
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sounds: NotificationSoundPreferenceService,
+  ) {}
 
   /** Always available — the inbox has no external dependency to be down. */
   isEnabled(): boolean {
@@ -55,6 +59,8 @@ export class InAppProvider implements NotificationChannelProvider {
     }
 
     const url = resolveDeepLink(context.templateKey, context.metadata, getAppBaseUrl());
+    const relevantRole = extractRelevantRole(context.metadata);
+    const soundKey = await this.sounds.resolve(userId, context.category);
 
     await this.prisma.client.notification.create({
       data: {
@@ -67,6 +73,14 @@ export class InAppProvider implements NotificationChannelProvider {
         // resolver's answer otherwise. Both are normalised to an app path.
         url: message.content.url ?? url,
         important: isImportantCategory(context.category),
+        // The role this notice is ABOUT, when its emitter knows — lets the
+        // client auto-switch active role before navigating (see
+        // apps/web/lib/notification-navigation.ts). Null for identity-level
+        // notices where no role is more "correct" than another.
+        relevantRole,
+        // Resolved once at write time so the inbox row and the push payload
+        // that (may have) accompanied it agree on the same sound.
+        soundKey,
         metadata: (context.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
       },
       select: { id: true },

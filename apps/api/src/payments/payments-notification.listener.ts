@@ -11,12 +11,16 @@ import {
   DISPUTE_RESOLVED,
   ESCROW_REFUNDED,
   ESCROW_RELEASED,
+  ESCROW_WORK_ACCEPTED,
+  ESCROW_WORK_COMPLETED,
+  ESCROW_WORK_STARTED,
   PAYMENT_FAILED,
   PAYMENT_RECEIVED,
   DisputeOpenedEvent,
   DisputeResolvedEvent,
   EscrowRefundedEvent,
   EscrowReleasedEvent,
+  EscrowWorkProgressEvent,
   PaymentFailedEvent,
   PaymentReceivedEvent,
 } from './events/payment.events';
@@ -46,6 +50,39 @@ export class PaymentsNotificationListener {
         userId: event.workerId,
         templateKey: 'payment.received',
         variables: { jobTitle: await this.jobTitle(event.jobId), amount: event.amount },
+        metadata: this.jobLink(event.jobId, 'WORKER'),
+        requestId: event.requestId,
+      }),
+    );
+  }
+
+  @OnEvent(ESCROW_WORK_ACCEPTED)
+  async onWorkAccepted(event: EscrowWorkProgressEvent): Promise<void> {
+    await this.notifyClientOfProgress(event, 'escrow.work_accepted');
+  }
+
+  @OnEvent(ESCROW_WORK_STARTED)
+  async onWorkStarted(event: EscrowWorkProgressEvent): Promise<void> {
+    await this.notifyClientOfProgress(event, 'escrow.work_started');
+  }
+
+  @OnEvent(ESCROW_WORK_COMPLETED)
+  async onWorkCompleted(event: EscrowWorkProgressEvent): Promise<void> {
+    await this.notifyClientOfProgress(event, 'escrow.work_completed');
+  }
+
+  /** The three work-progress notices share one shape: tell the CLIENT what the worker just did. */
+  private async notifyClientOfProgress(
+    event: EscrowWorkProgressEvent,
+    templateKey: 'escrow.work_accepted' | 'escrow.work_started' | 'escrow.work_completed',
+  ): Promise<void> {
+    this.events.emit(
+      NOTIFICATION_REQUESTED,
+      new NotificationRequestedEvent({
+        userId: event.clientId,
+        templateKey,
+        variables: { jobTitle: await this.jobTitle(event.jobId) },
+        metadata: this.jobLink(event.jobId, 'CLIENT'),
         requestId: event.requestId,
       }),
     );
@@ -59,6 +96,7 @@ export class PaymentsNotificationListener {
         userId: event.workerId,
         templateKey: 'escrow.released',
         variables: { jobTitle: await this.jobTitle(event.jobId), amount: event.payoutAmount },
+        metadata: this.jobLink(event.jobId, 'WORKER'),
         requestId: event.requestId,
       }),
     );
@@ -72,6 +110,7 @@ export class PaymentsNotificationListener {
         userId: event.clientId,
         templateKey: 'escrow.refunded',
         variables: { jobTitle: await this.jobTitle(event.jobId), amount: event.amount },
+        metadata: this.jobLink(event.jobId, 'CLIENT'),
         requestId: event.requestId,
       }),
     );
@@ -106,6 +145,7 @@ export class PaymentsNotificationListener {
           disputeId: event.disputeId,
           jobId: event.jobId,
           deepLink: `/app/disputes/${event.disputeId}`,
+          relevantRole: event.otherPartyRole,
         },
         requestId: event.requestId,
       }),
@@ -157,7 +197,11 @@ export class PaymentsNotificationListener {
   @OnEvent(DISPUTE_RESOLVED)
   async onDisputeResolved(event: DisputeResolvedEvent): Promise<void> {
     const jobTitle = await this.jobTitle(event.jobId);
-    for (const userId of [event.clientId, event.workerId]) {
+    const recipients: Array<{ userId: string; role: 'CLIENT' | 'WORKER' }> = [
+      { userId: event.clientId, role: 'CLIENT' },
+      { userId: event.workerId, role: 'WORKER' },
+    ];
+    for (const { userId, role } of recipients) {
       this.events.emit(
         NOTIFICATION_REQUESTED,
         new NotificationRequestedEvent({
@@ -168,11 +212,17 @@ export class PaymentsNotificationListener {
             disputeId: event.disputeId,
             jobId: event.jobId,
             deepLink: `/app/disputes/${event.disputeId}`,
+            relevantRole: role,
           },
           requestId: event.requestId,
         }),
       );
     }
+  }
+
+  /** jobId + a deep link back to it, tagged with which role the recipient hears this as. */
+  private jobLink(jobId: string, relevantRole: 'CLIENT' | 'WORKER'): Record<string, unknown> {
+    return { jobId, deepLink: `/app/jobs/${jobId}`, relevantRole };
   }
 
   private async jobTitle(jobId: string): Promise<string> {

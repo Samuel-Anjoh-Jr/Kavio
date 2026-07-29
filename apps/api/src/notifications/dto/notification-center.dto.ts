@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { NotificationCategory, NotificationChannel } from '@trustpro/database';
+import { NOTIFICATION_SOUND_KEYS } from '../notification-sound';
 
 /**
  * Notification Center WRITE DTOs (NOT-02, SET-02). Validated with Zod before the
@@ -26,3 +27,13 @@ export const updateNotificationPreferenceSchema = z
   .strict();
 
 export type UpdateNotificationPreferenceDto = z.infer<typeof updateNotificationPreferenceSchema>;
+
+/** Sets one category's custom sound (NOT-02). See notification-sound.ts for the fixed key set. */
+export const updateNotificationSoundSchema = z
+  .object({
+    category: z.nativeEnum(NotificationCategory),
+    soundKey: z.enum(NOTIFICATION_SOUND_KEYS),
+  })
+  .strict();
+
+export type UpdateNotificationSoundDto = z.infer<typeof updateNotificationSoundSchema>;

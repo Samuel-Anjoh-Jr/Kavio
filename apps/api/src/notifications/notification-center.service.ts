@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationChannel, Prisma } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel, Prisma } from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationPreferenceService } from './notification-preference.service';
+import { NotificationSoundPreferenceService } from './notification-sound-preference.service';
 import { NotificationProviderRegistry } from './providers/provider.registry';
 import type { NotificationFeedView, NotificationSettingsView } from './models/notification.model';
 
@@ -27,6 +28,7 @@ export class NotificationCenterService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly preferences: NotificationPreferenceService,
+    private readonly sounds: NotificationSoundPreferenceService,
     private readonly providers: NotificationProviderRegistry,
   ) {}
 
@@ -70,6 +72,8 @@ export class NotificationCenterService {
           body: true,
           url: true,
           important: true,
+          relevantRole: true,
+          soundKey: true,
           readAt: true,
           createdAt: true,
         },
@@ -93,9 +97,9 @@ export class NotificationCenterService {
     });
   }
 
-  /** The preferences screen's full state: the grid, channel availability, push status. */
+  /** The preferences screen's full state: the grid, channel availability, push status, sounds. */
   async settings(user: AuthenticatedUser): Promise<NotificationSettingsView> {
-    const [rows, pushDevices] = await Promise.all([
+    const [rows, pushDevices, soundPreferences] = await Promise.all([
       this.prisma.client.notificationPreference.findMany({
         where: { userId: user.id },
         select: { channel: true, category: true, enabled: true },
@@ -104,6 +108,7 @@ export class NotificationCenterService {
       this.prisma.client.deviceRegistration.count({
         where: { userId: user.id, isActive: true },
       }),
+      this.sounds.list(user.id),
     ]);
 
     return {
@@ -116,6 +121,7 @@ export class NotificationCenterService {
         available: this.providers.isChannelEnabled(channel),
       })),
       pushSubscribed: pushDevices > 0,
+      soundPreferences,
     };
   }
 
@@ -169,5 +175,14 @@ export class NotificationCenterService {
     });
 
     return { channel, category, enabled };
+  }
+
+  /** Sets one category's custom sound override (NOT-02). */
+  async setSoundPreference(
+    user: AuthenticatedUser,
+    category: NotificationCategory,
+    soundKey: string,
+  ): Promise<{ category: NotificationCategory; soundKey: string }> {
+    return this.sounds.setPreference(user.id, category, soundKey);
   }
 }
