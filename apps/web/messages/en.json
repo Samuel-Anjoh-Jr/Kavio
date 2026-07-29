@@ -183,6 +183,7 @@
       "passwordLabel": "Password",
       "passwordRequired": "Enter your password.",
       "forgotPassword": "Forgot your password?",
+      "sessionExpired": "Your session timed out. Sign in again to pick up right where you left off.",
       "submitting": "Signing you in…",
       "useCode": "Sign in with a code instead",
       "noAccount": "New to Kavio?",
