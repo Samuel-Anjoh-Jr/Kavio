@@ -99,10 +99,17 @@ export class JobsController {
    * A lifecycle transition (JOB-05). The service decides whether this caller is
    * the poster or the hired worker and whether the state machine permits the
    * move; an illegal one is a 409, not a silent no-op.
+   *
+   * Deliberately NOT gated by `job:manage_own` (poster-only) — this is the one
+   * multi-actor endpoint in the controller. ACCEPTED→IN_PROGRESS and
+   * IN_PROGRESS→COMPLETED are WORKER moves (job-lifecycle.model.ts), and
+   * `job:manage_own` is never granted to the WORKER role, so that gate made
+   * every worker-driven transition unreachable. Authentication alone (via the
+   * global JwtAuthGuard) plus the service's own resolveActorRole +
+   * isTransitionAllowedFor check is the real, fine-grained authorization here.
    */
   @Post(':id/transition')
   @HttpCode(HttpStatus.OK)
-  @RequirePermissions('job:manage_own')
   async transition(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', new ParseUUIDPipe()) id: string,

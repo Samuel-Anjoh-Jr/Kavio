@@ -29,9 +29,10 @@ import { restPost } from '@/lib/rest-api';
  *
  * Accepting is the money moment, so the fee is shown BEFORE it (PAY-02): the
  * dialog lays out price, the ~10% platform fee and what the worker receives, so
- * the ~10% is never a surprise sprung at payment. Accepting creates the booking
- * and initiates escrow (the entry point for PAY-01), then routes to the wallet
- * where the funds are visibly held.
+ * the ~10% is never a surprise sprung at payment. Accepting only creates the
+ * booking (PENDING_PAYMENT) — the API deliberately does not auto-charge, so
+ * this routes to the wallet where funding escrow is its own explicit action
+ * (see PayNowDialog in escrow-timeline.tsx, the entry point for PAY-01).
  */
 export function QuoteClientActions({ quote, onChanged }: { quote: Quote; onChanged: () => void }) {
   const t = useTranslations('Quotes');

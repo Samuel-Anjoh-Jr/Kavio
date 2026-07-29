@@ -15,6 +15,7 @@ import { getApiBaseUrl } from '@/lib/auth-api';
 const ALLOWED_PREFIXES = [
   'admin',
   'auth',
+  'bookings',
   'businesses',
   'conversations',
   'disputes',
@@ -31,6 +32,7 @@ const ALLOWED_PREFIXES = [
   'sos',
   'tracking',
   'uploads',
+  'wallet',
   'verifications',
 ] as const;
 
