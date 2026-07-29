@@ -321,6 +321,7 @@
     "search": "Rechercher",
     "account": "Compte",
     "home": "Mon espace",
+    "saved": "Favoris",
     "signIn": "Se connecter",
     "signOut": "Se déconnecter",
     "messages": "Messages",
@@ -1013,10 +1014,19 @@
     "less": "Moins",
     "save": "Enregistrer {name}",
     "unsave": "Retirer {name} des favoris",
+    "saveFailed": "Impossible d'enregistrer ce professionnel. Veuillez réessayer.",
+    "unsaveFailed": "Impossible de retirer ce professionnel. Veuillez réessayer.",
     "distance": {
       "metres": "{value} m",
       "kilometres": "{value} km"
     }
+  },
+  "SavedWorkers": {
+    "title": "Favoris",
+    "subtitle": "Les profils que vous avez enregistrés, au même endroit.",
+    "emptyTitle": "Aucun professionnel enregistré",
+    "emptyBody": "Touchez le signet sur une fiche professionnel pour l'ajouter ici.",
+    "emptyAction": "Parcourir les professionnels"
   },
   "Profile": {
     "unnamed": "Professionnel TrustPro",

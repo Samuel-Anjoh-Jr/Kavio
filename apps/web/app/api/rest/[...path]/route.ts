@@ -20,6 +20,7 @@ const ALLOWED_PREFIXES = [
   'conversations',
   'disputes',
   'emergency-contacts',
+  'favorites',
   'geo',
   'jobs',
   'messaging',

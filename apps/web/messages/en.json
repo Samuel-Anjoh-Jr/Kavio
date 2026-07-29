@@ -321,6 +321,7 @@
     "search": "Search",
     "account": "Account",
     "home": "My home",
+    "saved": "Saved workers",
     "signIn": "Sign in",
     "signOut": "Sign out",
     "messages": "Messages",
@@ -1013,10 +1014,19 @@
     "less": "Less",
     "save": "Save {name}",
     "unsave": "Remove {name} from saved",
+    "saveFailed": "Could not save that worker. Please try again.",
+    "unsaveFailed": "Could not remove that worker. Please try again.",
     "distance": {
       "metres": "{value} m",
       "kilometres": "{value} km"
     }
+  },
+  "SavedWorkers": {
+    "title": "Saved workers",
+    "subtitle": "Profiles you've bookmarked, in one place.",
+    "emptyTitle": "No saved workers yet",
+    "emptyBody": "Tap the bookmark on a worker card to shortlist them here.",
+    "emptyAction": "Browse workers"
   },
   "Profile": {
     "unnamed": "TrustPro professional",

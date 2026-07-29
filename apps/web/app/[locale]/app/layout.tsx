@@ -10,6 +10,7 @@ import { AppHeader } from '@/components/nav/app-header';
 import { AppBottomNav } from '@/components/nav/app-bottom-nav';
 import { RoleTransition } from '@/components/nav/role-transition';
 import { LocationProvider } from '@/components/discovery/location-provider';
+import { FavoritesProvider } from '@/components/discovery/favorites-provider';
 import { SPLASH_SPECS, splashHref, splashMedia } from '@/lib/pwa/splash-screens';
 
 /**
@@ -99,21 +100,27 @@ export default async function AppLayout({
           holding their own copy is how a feed and a search end up disagreeing
           about where the user is. */}
       <LocationProvider>
-        <div className="flex min-h-dvh flex-col">
-          <AppHeader />
-          {/* Sits between header and content so it displaces the page rather
-              than covering it — an indicator that overlaps what it is warning
-              you about is a poor warning (SYS-02). */}
-          <OfflineIndicator />
-          <main id="main" className="flex-1">
-            {/* Animates the whole surface when the active role changes (ACC-07). */}
-            <RoleTransition>
-              <PageTransition>{children}</PageTransition>
-            </RoleTransition>
-          </main>
-          <AppBottomNav />
-        </div>
-        <InstallPrompt />
+        {/* Saved workers are shared by every worker card (DIS-02), so the
+            provider sits at the shell too — same reasoning as LocationProvider
+            above. It also owns replaying a guest's save after they return
+            from login (ACC-02). */}
+        <FavoritesProvider>
+          <div className="flex min-h-dvh flex-col">
+            <AppHeader />
+            {/* Sits between header and content so it displaces the page rather
+                than covering it — an indicator that overlaps what it is warning
+                you about is a poor warning (SYS-02). */}
+            <OfflineIndicator />
+            <main id="main" className="flex-1">
+              {/* Animates the whole surface when the active role changes (ACC-07). */}
+              <RoleTransition>
+                <PageTransition>{children}</PageTransition>
+              </RoleTransition>
+            </main>
+            <AppBottomNav />
+          </div>
+          <InstallPrompt />
+        </FavoritesProvider>
       </LocationProvider>
     </MotionProvider>
   );
