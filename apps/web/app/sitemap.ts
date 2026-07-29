@@ -24,7 +24,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/', priority: 1, frequency: 'daily' },
     { path: '/app/explore', priority: 0.9, frequency: 'daily' },
     { path: '/app/jobs', priority: 0.8, frequency: 'daily' },
-    { path: '/app/businesses', priority: 0.6, frequency: 'weekly' },
     { path: '/legal/terms', priority: 0.3, frequency: 'monthly' },
     { path: '/legal/privacy', priority: 0.3, frequency: 'monthly' },
     { path: '/legal/refunds', priority: 0.3, frequency: 'monthly' },

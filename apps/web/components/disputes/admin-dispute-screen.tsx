@@ -28,8 +28,7 @@ import {
   isEscrowFrozen,
   type DisputeResolution,
 } from '@/lib/disputes';
-import { DISPUTE_QUERY, type DisputeQueryResult } from '@/lib/graphql/disputes';
-import { ESCROW_QUERY, type EscrowQueryResult } from '@/lib/graphql/payments';
+import { ADMIN_DISPUTE_QUERY, type AdminDisputeQueryResult } from '@/lib/graphql/disputes';
 import { ME_QUERY, type MeQueryResult } from '@/lib/graphql/documents';
 import { restPost } from '@/lib/rest-api';
 import { DisputeThread, FrozenBanner } from './dispute-thread';
@@ -48,7 +47,7 @@ export function AdminDisputeScreen({ disputeId }: { disputeId: string }) {
   const t = useTranslations('Disputes');
   const locale = useLocale();
 
-  const { data, loading, error, refetch } = useQuery<DisputeQueryResult>(DISPUTE_QUERY, {
+  const { data, loading, error, refetch } = useQuery<AdminDisputeQueryResult>(ADMIN_DISPUTE_QUERY, {
     variables: { id: disputeId },
     fetchPolicy: 'cache-and-network',
     errorPolicy: 'all',
@@ -56,14 +55,7 @@ export function AdminDisputeScreen({ disputeId }: { disputeId: string }) {
   });
   const { data: meData } = useQuery<MeQueryResult>(ME_QUERY);
 
-  const dispute = data?.dispute;
-
-  const { data: escrowData } = useQuery<EscrowQueryResult>(ESCROW_QUERY, {
-    variables: { bookingId: dispute?.bookingId ?? '' },
-    skip: !dispute?.bookingId,
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all',
-  });
+  const dispute = data?.adminDispute;
 
   const viewerId = meData?.me?.id ?? null;
 
@@ -74,7 +66,7 @@ export function AdminDisputeScreen({ disputeId }: { disputeId: string }) {
       <Card className="mx-auto max-w-2xl">
         <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
           <p className="text-sm text-muted-foreground">
-            {error ? t('admin.loadError') : t('notFound')}
+            {error ? t('admin.detailLoadError') : t('notFound')}
           </p>
           <Button variant="outline" onClick={() => void refetch()}>
             {t('retry')}
@@ -106,7 +98,7 @@ export function AdminDisputeScreen({ disputeId }: { disputeId: string }) {
           )}
         </div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-          {t('admin.title')}
+          {dispute.jobTitle ? t('admin.titleForJob', { job: dispute.jobTitle }) : t('admin.title')}
         </h1>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
           <Link href={`/app/jobs/${dispute.jobId}`} className="text-primary hover:underline">
@@ -118,7 +110,7 @@ export function AdminDisputeScreen({ disputeId }: { disputeId: string }) {
         </div>
       </div>
 
-      <FrozenBanner frozen={frozen} heldAmount={escrowData?.escrow?.amount ?? null} />
+      <FrozenBanner frozen={frozen} heldAmount={dispute.escrowAmount ?? null} />
 
       {resolved && (
         <div className="rounded-card border border-success/25 bg-success/10 p-4">

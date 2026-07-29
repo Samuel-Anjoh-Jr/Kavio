@@ -1505,11 +1505,13 @@
     },
     "admin": {
       "title": "Resolve dispute",
+      "titleForJob": "Resolve dispute — {job}",
       "queueTitle": "Disputes",
       "queueSubtitle": "Review and resolve disputes. Each one has frozen a client’s escrow until you decide.",
       "backToQueue": "Back to the queue",
       "filterAll": "All",
       "loadError": "We could not load the dispute queue.",
+      "detailLoadError": "We could not load this dispute.",
       "empty": "No disputes in this lane.",
       "messageCount": "{count, plural, =0 {No messages} one {# message} other {# messages}}",
       "resolveHeading": "Resolution",

@@ -1505,11 +1505,13 @@
     },
     "admin": {
       "title": "Régler le litige",
+      "titleForJob": "Régler le litige — {job}",
       "queueTitle": "Litiges",
       "queueSubtitle": "Examinez et réglez les litiges. Chacun a gelé le séquestre d’un client jusqu’à votre décision.",
       "backToQueue": "Retour à la file",
       "filterAll": "Tous",
       "loadError": "Impossible de charger la file des litiges.",
+      "detailLoadError": "Impossible de charger ce litige.",
       "empty": "Aucun litige dans cette file.",
       "messageCount": "{count, plural, =0 {Aucun message} one {# message} other {# messages}}",
       "resolveHeading": "Résolution",

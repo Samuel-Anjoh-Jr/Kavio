@@ -195,7 +195,7 @@ export function ConversationScreen({ conversationId }: { conversationId: string 
     <div className="flex h-[calc(100dvh-4rem)] flex-col">
       {/* Header */}
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
-        <Button asChild variant="ghost" size="icon" className="md:hidden">
+        <Button asChild variant="ghost" size="icon" className="xl:hidden">
           <Link href="/app/messages" aria-label={t('backToInbox')}>
             <ArrowLeft aria-hidden />
           </Link>

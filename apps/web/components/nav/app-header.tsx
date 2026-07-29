@@ -47,7 +47,7 @@ export function AppHeader() {
           TrustPro
         </Link>
 
-        <nav aria-label={t('primary')} className="hidden items-center gap-1 md:flex">
+        <nav aria-label={t('primary')} className="hidden items-center gap-1 xl:flex">
           <HeaderLink href="/app/explore" active={pathname.startsWith('/app/explore')}>
             {t('explore')}
           </HeaderLink>
@@ -65,7 +65,7 @@ export function AppHeader() {
           <Link
             href="/app/explore"
             aria-label={t('search')}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-button text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-button text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden"
           >
             <Search aria-hidden />
           </Link>

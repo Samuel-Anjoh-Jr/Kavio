@@ -67,6 +67,76 @@ export interface DisputeQueryResult {
 }
 
 /**
+ * The admin dispute workspace (ADM-05). Admin-gated, NOT party-scoped — an
+ * admin resolving a case is not one of its two sides, unlike `dispute` above.
+ * Mirrors payments.resolver.ts#adminDispute / AdminDisputeView.
+ */
+export interface DisputeHistoryEntry {
+  kind: string;
+  labelKey: string;
+  actorId: string | null;
+  escrowState: string | null;
+  note: string | null;
+  occurredAt: string;
+}
+
+export interface AdminDisputeDetail extends DisputeDetail {
+  clientId: string;
+  workerId: string;
+  jobTitle: string | null;
+  faultParty: 'CLIENT' | 'NONE' | 'WORKER';
+  resolvedAt: string | null;
+  escrowAmount: number | null;
+  escrowState: string | null;
+  history: DisputeHistoryEntry[];
+}
+
+export const ADMIN_DISPUTE_QUERY = gql`
+  query AdminDispute($id: ID!) {
+    adminDispute(id: $id) {
+      id
+      jobId
+      jobTitle
+      bookingId
+      openedById
+      clientId
+      workerId
+      reason
+      status
+      resolution
+      resolutionNote
+      faultParty
+      resolvedAt
+      escrowAmount
+      escrowState
+      history {
+        kind
+        labelKey
+        actorId
+        escrowState
+        note
+        occurredAt
+      }
+      messages {
+        id
+        authorId
+        body
+        attachments {
+          id
+          url
+        }
+        createdAt
+      }
+      createdAt
+    }
+  }
+`;
+
+export interface AdminDisputeQueryResult {
+  adminDispute: AdminDisputeDetail | null;
+}
+
+/**
  * The admin dispute queue (ADM-05). Admin-only server-side. Kept light — the
  * board needs a card per dispute, not the full thread, so only message ids come
  * back (for the count). Mirrors payments.resolver.ts#disputeQueue.
