@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AbuseReportReason, MessageKind } from '@trustpro/database';
+import { AbuseReportReason, MessageKind } from '@kavio/database';
 
 /**
  * Messaging WRITE DTOs (MSG-01, MSG-04). Validated with Zod before the DB, per

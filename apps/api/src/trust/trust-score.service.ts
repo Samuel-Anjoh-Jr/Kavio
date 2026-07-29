@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Prisma, TrustEventType, TrustPillar, UserStatus } from '@trustpro/database';
+import { Prisma, TrustEventType, TrustPillar, UserStatus } from '@kavio/database';
 import { createLogger, getRequestId } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { TierService } from './tier.service';

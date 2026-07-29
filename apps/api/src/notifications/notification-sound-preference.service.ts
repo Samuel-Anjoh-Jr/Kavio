@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { NotificationCategory } from '@trustpro/database';
+import { NotificationCategory } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
@@ -54,7 +54,7 @@ export class NotificationSoundPreferenceService {
       throw new AppException(
         HttpStatus.BAD_REQUEST,
         'UNKNOWN_SOUND_KEY',
-        'That is not a sound TrustPro knows about.',
+        'That is not a sound Kavio knows about.',
         { soundKey: ['Unknown sound key.'] },
       );
     }

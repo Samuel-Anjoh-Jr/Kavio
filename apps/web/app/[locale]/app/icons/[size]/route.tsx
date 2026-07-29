@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { ImageResponse } from 'next/og';
 import { NextResponse } from 'next/server';
 
@@ -5,12 +7,20 @@ import { NextResponse } from 'next/server';
  * Generates the PWA manifest icons on the fly via `next/og` (no image
  * asset pipeline / extra dependency needed). Referenced by
  * `app/[locale]/app/manifest.webmanifest/route.ts` and by the app layout's
- * `apple` icon metadata. A single Indigo TMDS mark (rounded square + white
- * checkmark) is reused across variants; the maskable variant shrinks the
- * mark into the safe zone so OS adaptive-icon cropping never clips it.
+ * `apple` icon metadata. The Kavio mark (public/brand/kavio-mark.png) is
+ * composited onto a neutral-50 square, reused across variants; the maskable
+ * variant shrinks the mark into the safe zone so OS adaptive-icon cropping
+ * never clips it.
  */
 
-const INDIGO = '#3d5afe';
+const NEUTRAL_50 = '#f8f9fc';
+
+// public/brand/kavio-mark.png is 480x369 (source: cropped transparent mark).
+const MARK_ASPECT_RATIO = 480 / 369;
+
+const MARK_DATA_URI = `data:image/png;base64,${readFileSync(
+  path.join(process.cwd(), 'public/brand/kavio-mark.png'),
+).toString('base64')}`;
 
 type IconVariant = {
   size: number;
@@ -37,7 +47,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ siz
   }
 
   const { size, cornerRadiusRatio, markScaleRatio } = variant;
-  const markSize = Math.round(size * markScaleRatio);
+  const markHeight = Math.round(size * markScaleRatio);
+  const markWidth = Math.round(markHeight * MARK_ASPECT_RATIO);
 
   return new ImageResponse(
     <div
@@ -47,22 +58,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ siz
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: INDIGO,
+        background: NEUTRAL_50,
         borderRadius: Math.round(size * cornerRadiusRatio),
       }}
     >
-      <svg
-        width={markSize}
-        height={markSize}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth={2.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M4.5 12.75l6 6 9-13.5" />
-      </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element -- next/og requires a plain <img>, not next/image. */}
+      <img src={MARK_DATA_URI} width={markWidth} height={markHeight} alt="" />
     </div>,
     {
       width: size,

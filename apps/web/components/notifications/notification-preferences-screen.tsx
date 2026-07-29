@@ -172,7 +172,7 @@ export function NotificationPreferencesScreen() {
 }
 
 /**
- * Per-category custom sound (NOT-02). Only ever plays while TrustPro is open
+ * Per-category custom sound (NOT-02). Only ever plays while Kavio is open
  * in a tab — no browser lets a site choose the sound for a BACKGROUND push
  * notification, so a category left unset (or set to "Default") just gets
  * whatever the device already plays for every other notification.

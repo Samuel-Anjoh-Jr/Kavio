@@ -1,4 +1,4 @@
-import { VerificationTier } from '@trustpro/database';
+import { VerificationTier } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import type { PrismaService } from '../prisma/prisma.service';
 import { MAX_NEARBY_LIMIT, MAX_RADIUS_M } from './geo.config';

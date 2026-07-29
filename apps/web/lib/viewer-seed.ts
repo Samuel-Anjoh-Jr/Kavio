@@ -20,7 +20,7 @@ import { useSyncExternalStore } from 'react';
  * search call, and never joined to an account. Clearing site data mints a new
  * one, which costs the visitor nothing but a different shuffle.
  */
-const STORAGE_KEY = 'trustpro.viewer-seed';
+const STORAGE_KEY = 'kavio.viewer-seed';
 
 export function getViewerSeed(): string {
   // Server render and any environment without storage (private mode in some

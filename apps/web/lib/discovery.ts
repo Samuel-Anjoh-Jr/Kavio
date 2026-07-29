@@ -188,8 +188,8 @@ export function initials(name: string | null | undefined): string {
 // Saved searches, recently viewed (DIS-10)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SAVED_SEARCHES_KEY = 'trustpro.saved-searches';
-const RECENT_WORKERS_KEY = 'trustpro.recent-workers';
+const SAVED_SEARCHES_KEY = 'kavio.saved-searches';
+const RECENT_WORKERS_KEY = 'kavio.recent-workers';
 
 /** Caps chosen so the lists stay browsable and the storage entry stays small. */
 const MAX_SAVED_SEARCHES = 20;

@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SOSStatus } from '@trustpro/database';
+import { SOSStatus } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { normalizeToE164 } from '../lib/phone.util';
@@ -323,7 +323,7 @@ export class SafetyService {
       where: { id: userId },
       select: { name: true },
     });
-    return user?.name?.trim() || 'A TrustPro user';
+    return user?.name?.trim() || 'A Kavio user';
   }
 }
 

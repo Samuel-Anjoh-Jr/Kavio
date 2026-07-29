@@ -1,4 +1,4 @@
-import { LocationSource, PortfolioItemType, PortfolioSlot } from '@trustpro/database';
+import { LocationSource, PortfolioItemType, PortfolioSlot } from '@kavio/database';
 import { z } from 'zod';
 
 /**

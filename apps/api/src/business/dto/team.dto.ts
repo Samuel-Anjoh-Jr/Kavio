@@ -1,4 +1,4 @@
-import { TeamMemberAccessLevel, TeamMemberRole } from '@trustpro/database';
+import { TeamMemberAccessLevel, TeamMemberRole } from '@kavio/database';
 import { z } from 'zod';
 
 /**

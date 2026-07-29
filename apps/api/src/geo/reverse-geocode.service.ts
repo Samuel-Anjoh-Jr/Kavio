@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { GeoRegionLevel } from '@trustpro/database';
+import type { GeoRegionLevel } from '@kavio/database';
 import { describeError } from '../lib/describe-error';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DevicePlatform } from '@trustpro/database';
+import { DevicePlatform } from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import type { RegisterDeviceDto } from './dto/device-registration.dto';
@@ -7,7 +7,7 @@ import type { RegisterDeviceDto } from './dto/device-registration.dto';
 const logger = createLogger('notifications:devices');
 
 /**
- * The web-push device registry (NOT-01, P76). A user reads TrustPro on several
+ * The web-push device registry (NOT-01, P76). A user reads Kavio on several
  * devices, so one identity has many subscriptions keyed by their globally-unique
  * endpoint. Registering is an UPSERT on the endpoint: a browser that re-subscribes
  * (keys rotated, permission re-granted) updates the one row rather than piling up

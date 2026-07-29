@@ -1,4 +1,4 @@
-import { Prisma, VerificationTier } from '@trustpro/database';
+import { Prisma, VerificationTier } from '@kavio/database';
 
 /**
  * Trust in default search ranking (TRU-04, DIS-08).

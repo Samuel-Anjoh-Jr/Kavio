@@ -7,10 +7,10 @@ import type { NotificationSoundKey } from '@/lib/notifications';
  *
  * No browser lets a site choose the sound a BACKGROUND push notification
  * plays; the OS/browser always uses its own default chime regardless of
- * anything sent in the push payload. What IS real: while TrustPro is open in
+ * anything sent in the push payload. What IS real: while Kavio is open in
  * a tab, the service worker relays the push payload here the instant it
  * arrives (see components/pwa/service-worker-register.tsx, which turns the
- * SW's `notification-push` postMessage into a `trustpro:notification-push`
+ * SW's `notification-push` postMessage into a `kavio:notification-push`
  * window event), and a plain `Audio` element can play anything. So this
  * player only ever runs for that one case — everywhere else, "custom sound"
  * correctly degrades to "the device's own default", exactly as if nothing

@@ -4,7 +4,7 @@ import {
   AbuseReportStatus,
   ModerationActionType,
   ReportTargetType,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Reporting & moderation WRITE DTOs (ADM-08). Validated with Zod before the DB,

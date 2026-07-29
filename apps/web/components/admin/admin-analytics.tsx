@@ -206,7 +206,7 @@ function exportReport(analytics: AdminAnalytics, t: (key: string) => string): vo
   }
 
   const stamp = new Date().toISOString().slice(0, 10);
-  downloadCsv(`trustpro-analytics-${analytics.windowDays}d-${stamp}.csv`, rows);
+  downloadCsv(`kavio-analytics-${analytics.windowDays}d-${stamp}.csv`, rows);
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {

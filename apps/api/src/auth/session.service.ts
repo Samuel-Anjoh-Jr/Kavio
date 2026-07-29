@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { Role, UserStatus, type VerificationTier } from '@trustpro/database';
+import { Role, UserStatus, type VerificationTier } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { hashSecret } from '../lib/secret-hash.util';

@@ -5,7 +5,7 @@ import {
   TeamMemberStatus,
   TransactionType,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Business reads (BIZ-01, BIZ-02, BIZ-03), served over GraphQL per the DUAL API

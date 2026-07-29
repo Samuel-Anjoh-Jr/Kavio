@@ -1,4 +1,4 @@
-import { BookingStatus, EscrowState, JobStatus } from '@trustpro/database';
+import { BookingStatus, EscrowState, JobStatus } from '@kavio/database';
 import {
   bookingStatusForEscrowState,
   canTransitionEscrow,

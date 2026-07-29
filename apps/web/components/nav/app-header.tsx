@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { Bookmark, LifeBuoy, LogOut, Search, Settings, ShieldCheck, UserRound } from 'lucide-react';
@@ -42,9 +43,20 @@ export function AppHeader() {
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Link
           href="/app"
-          className="rounded-input font-heading text-lg font-semibold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex items-center gap-2 rounded-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          TrustPro
+          <Image
+            src="/brand/kavio-mark.png"
+            alt=""
+            aria-hidden="true"
+            width={480}
+            height={369}
+            priority
+            className="h-7 w-auto"
+          />
+          <span className="font-heading text-lg font-semibold tracking-tight text-foreground">
+            Kavio
+          </span>
         </Link>
 
         <nav aria-label={t('primary')} className="hidden items-center gap-1 xl:flex">

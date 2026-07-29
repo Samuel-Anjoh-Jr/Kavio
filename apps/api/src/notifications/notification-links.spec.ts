@@ -7,7 +7,7 @@ import { normaliseDeepLink, resolveDeepLink } from './notification-links';
  * become an open redirect once it is stored and later followed.
  */
 describe('notification deep links', () => {
-  const BASE = 'https://trustpro.cm';
+  const BASE = 'https://kavio.cm';
 
   describe('normaliseDeepLink', () => {
     it('keeps an app-relative path as-is', () => {

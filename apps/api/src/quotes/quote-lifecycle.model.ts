@@ -1,4 +1,4 @@
-import { QuoteStatus } from '@trustpro/database';
+import { QuoteStatus } from '@kavio/database';
 
 /**
  * The quote lifecycle as a PURE state machine (QTE-03, SRS §3.6).

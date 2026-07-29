@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { TrustEventType, VerificationCheckType } from '@trustpro/database';
+import { TrustEventType, VerificationCheckType } from '@kavio/database';
 import {
   IDENTITY_CREATED,
   IDENTITY_PHONE_VERIFIED,

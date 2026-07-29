@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { TeamMemberRole, VerificationTier } from '@trustpro/database';
+import { TeamMemberRole, VerificationTier } from '@kavio/database';
 
 /**
  * The public business profile (PROMPT 47; PRO-06).

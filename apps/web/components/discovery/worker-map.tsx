@@ -34,8 +34,8 @@ const MapCanvas = dynamic(() => import('./map-canvas'), {
  * metered connection it would spend their data doing it.
  */
 
-const DENSITY_SOURCE = 'trustpro-density';
-const WORKER_SOURCE = 'trustpro-workers';
+const DENSITY_SOURCE = 'kavio-density';
+const WORKER_SOURCE = 'kavio-workers';
 
 function apiBaseUrl(): string {
   return (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');

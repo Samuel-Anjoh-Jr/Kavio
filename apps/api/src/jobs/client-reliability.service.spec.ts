@@ -1,4 +1,4 @@
-import { BookingStatus, VerificationTier } from '@trustpro/database';
+import { BookingStatus, VerificationTier } from '@kavio/database';
 import type { PrismaService } from '../prisma/prisma.service';
 import { ClientReliabilityService } from './client-reliability.service';
 

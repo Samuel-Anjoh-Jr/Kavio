@@ -1,5 +1,5 @@
 import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
-import { SOSStatus } from '@trustpro/database';
+import { SOSStatus } from '@kavio/database';
 
 /**
  * Safety & SOS READ models (SOS-02, SOS-03). GraphQL, per the DUAL API RULE —

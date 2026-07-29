@@ -40,7 +40,7 @@ export async function generateMetadata({
       // text over the page content, which reads as a rendering bug at the top of
       // every screen.
       statusBarStyle: 'default',
-      title: 'TrustPro',
+      title: 'Kavio',
     },
     icons: {
       apple: `/${locale}/app/icons/apple-180`,

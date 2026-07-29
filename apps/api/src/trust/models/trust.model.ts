@@ -4,7 +4,7 @@ import {
   TrustPillar,
   VerificationCheckType,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Trust reads (TRU-01, TRU-04), served over GraphQL per the DUAL API RULE.

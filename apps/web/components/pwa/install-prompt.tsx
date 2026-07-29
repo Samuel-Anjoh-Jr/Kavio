@@ -30,7 +30,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const DISMISS_KEY = 'trustpro:install-dismissed-at';
+const DISMISS_KEY = 'kavio:install-dismissed-at';
 const DISMISS_COOLDOWN_DAYS = 30;
 const ENGAGEMENT_MS = 45_000;
 

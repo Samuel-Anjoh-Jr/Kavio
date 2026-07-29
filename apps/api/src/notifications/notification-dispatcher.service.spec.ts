@@ -1,4 +1,4 @@
-import { NotificationCategory, NotificationChannel, NotificationStatus } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel, NotificationStatus } from '@kavio/database';
 import { NotificationRequestedEvent } from './events/notification.events';
 import { getChannelPriority } from './notification.config';
 import { NotificationDispatcher } from './notification-dispatcher.service';
@@ -222,7 +222,7 @@ describe('NotificationDispatcher', () => {
         new NotificationRequestedEvent({
           userId: USER.id,
           templateKey: 'auth.password_reset',
-          variables: { resetUrl: 'https://trustpro.cm/reset/abc', expiresInMinutes: 30 },
+          variables: { resetUrl: 'https://kavio.cm/reset/abc', expiresInMinutes: 30 },
         }),
       );
 
@@ -352,7 +352,7 @@ describe('NotificationDispatcher', () => {
         new NotificationRequestedEvent({
           userId: USER.id,
           templateKey: 'auth.password_reset',
-          variables: { resetUrl: 'https://trustpro.cm/reset/abc', expiresInMinutes: 30 },
+          variables: { resetUrl: 'https://kavio.cm/reset/abc', expiresInMinutes: 30 },
         }),
       );
 

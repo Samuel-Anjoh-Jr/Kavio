@@ -1,6 +1,6 @@
 {
   "$comment": [
-    "Launch geography for TrustPro (Douala and Yaoundé first), PROMPT 38.",
+    "Launch geography for Kavio (Douala and Yaoundé first), PROMPT 38.",
     "",
     "Each entry carries a CENTRE and an approximate RADIUS, not a real polygon.",
     "The seed turns those into a bounding box so every spatial query works on a",

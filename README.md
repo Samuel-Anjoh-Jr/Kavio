@@ -1,4 +1,6 @@
-# TrustPro
+# Kavio
+
+_Where good work starts._
 
 A trust-first local-services and skilled-labour marketplace for Cameroon (Douala and Yaounde first). **Web-only**: a Next.js App Router application, installable as a PWA on mobile or desktop, or used in any browser. There is no native mobile app.
 

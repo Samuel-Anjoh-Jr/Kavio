@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { TransactionStatus, TransactionType } from '@trustpro/database';
+import { TransactionStatus, TransactionType } from '@kavio/database';
 import { AppException } from '../../lib/app-exception';
 import { createLogger, getRequestId } from '../../lib/logger';
 import { PrismaService } from '../../prisma/prisma.service';

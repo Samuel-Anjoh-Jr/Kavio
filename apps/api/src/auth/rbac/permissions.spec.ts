@@ -1,4 +1,4 @@
-import { Role } from '@trustpro/database';
+import { Role } from '@kavio/database';
 import { permissionsForRole, roleHasAllPermissions, roleHasPermission } from './permissions';
 
 describe('RBAC permission catalogue', () => {

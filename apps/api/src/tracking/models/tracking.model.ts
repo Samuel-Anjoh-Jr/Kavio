@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { TrackingSessionStatus } from '@trustpro/database';
+import { TrackingSessionStatus } from '@kavio/database';
 
 /**
  * Live-tracking READ models (PROMPT 74; SOS-03). GraphQL, per the DUAL API RULE.

@@ -1,4 +1,4 @@
-import { NotificationCategory, NotificationChannel, NotificationStatus } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel, NotificationStatus } from '@kavio/database';
 import type { Job } from 'bullmq';
 import { NotificationDeliveryProcessor } from './notification-delivery.processor';
 import type { NotificationSoundPreferenceService } from './notification-sound-preference.service';
@@ -98,7 +98,7 @@ describe('NotificationDeliveryProcessor', () => {
     expect(updatedRow()).toMatchObject({
       status: NotificationStatus.SENT,
       errorMessage: null,
-      subject: 'TrustPro test notification',
+      subject: 'Kavio test notification',
     });
     expect(updatedRow().sentAt).toBeInstanceOf(Date);
   });
@@ -146,7 +146,7 @@ describe('NotificationDeliveryProcessor', () => {
         makeJob({
           templateKey: 'auth.password_reset',
           channel: NotificationChannel.SMS,
-          variables: { resetUrl: 'https://trustpro.cm/r/1', expiresInMinutes: 30 },
+          variables: { resetUrl: 'https://kavio.cm/r/1', expiresInMinutes: 30 },
         }),
       ),
     ).resolves.toBeUndefined();

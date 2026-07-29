@@ -157,8 +157,8 @@ parallel one that could drift. Inert the moment real credentials exist.
 
 **Run the production build, not `pnpm dev`.**
 ```bash
-pnpm build && pnpm --filter @trustpro/api start:prod   # API on :4000
-pnpm --filter @trustpro/web start                      # web on :3000
+pnpm build && pnpm --filter @kavio/api start:prod   # API on :4000
+pnpm --filter @kavio/web start                      # web on :3000
 ```
 `pnpm dev` shows a red **"N issues"** dev-tools badge in the bottom-left
 corner on every page. Investors will see it.
@@ -182,7 +182,7 @@ service). They load fine with internet, but if the venue Wi-Fi is weak the
 landing page shows empty image frames. Consider a local asset fallback, or
 test on the venue network first.
 
-### Demo accounts — password `TrustPro2026!`
+### Demo accounts — password `Kavio2026!`
 
 | Role | Account | Notes |
 | --- | --- | --- |
@@ -191,8 +191,8 @@ test on the venue network first.
 | Client | `client1@example.com` … `client6@example.com` | No KYC needed. Hires directly, pays escrow, reviews |
 | Worker (visible in search) | `worker14@example.com`, `worker18@example.com` | Contact-verified + ID-approved |
 | Worker (hidden from search) | `worker1@example.com`, `worker7@example.com` | Not yet ID-approved — shows the discovery gate |
-| Field agent | `agent.douala@trustpro.cm` | Verification queue |
-| Admin | `admin@trustpro.cm` | **2FA — code prints to the API terminal** |
+| Field agent | `agent.douala@kavio.cm` | Verification queue |
+| Admin | `admin@kavio.cm` | **2FA — code prints to the API terminal** |
 
 ### A strong 5-minute path
 

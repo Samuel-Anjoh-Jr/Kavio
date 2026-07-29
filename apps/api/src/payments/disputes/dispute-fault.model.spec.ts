@@ -1,4 +1,4 @@
-import { DisputeFaultParty, DisputeResolution, TrustEventType } from '@trustpro/database';
+import { DisputeFaultParty, DisputeResolution, TrustEventType } from '@kavio/database';
 import {
   defaultFaultParty,
   isTerminalResolution,

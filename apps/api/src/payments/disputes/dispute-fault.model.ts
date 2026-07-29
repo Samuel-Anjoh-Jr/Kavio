@@ -1,4 +1,4 @@
-import { DisputeFaultParty, DisputeResolution, TrustEventType } from '@trustpro/database';
+import { DisputeFaultParty, DisputeResolution, TrustEventType } from '@kavio/database';
 
 /**
  * How an admin's resolution and fault finding turn into a trust consequence

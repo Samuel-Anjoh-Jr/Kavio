@@ -1,5 +1,5 @@
 import type { EventEmitter2 } from '@nestjs/event-emitter';
-import { VerificationTier } from '@trustpro/database';
+import { VerificationTier } from '@kavio/database';
 import {
   NOTIFICATION_REQUESTED,
   NotificationRequestedEvent,

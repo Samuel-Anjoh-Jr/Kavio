@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { VerificationCheckType, VerificationStatus } from '@trustpro/database';
+import { VerificationCheckType, VerificationStatus } from '@kavio/database';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import {

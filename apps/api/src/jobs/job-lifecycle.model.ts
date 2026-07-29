@@ -1,4 +1,4 @@
-import { JobStatus } from '@trustpro/database';
+import { JobStatus } from '@kavio/database';
 
 /**
  * The job lifecycle as a PURE state machine (JOB-05, SRS §21.3).

@@ -1,4 +1,4 @@
-import type { JobApplicationStatus, JobStatus } from '@trustpro/database';
+import type { JobApplicationStatus, JobStatus } from '@kavio/database';
 
 /**
  * Job domain events (JOB-03…JOB-06). Controllers/services EMIT these and know

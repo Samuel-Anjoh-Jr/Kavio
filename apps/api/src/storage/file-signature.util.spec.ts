@@ -16,7 +16,7 @@ describe('detectMimeType', () => {
     Buffer.from([0x00]),
   ]);
 
-  it('recognises the formats TrustPro accepts', () => {
+  it('recognises the formats Kavio accepts', () => {
     expect(detectMimeType(jpeg)).toBe('image/jpeg');
     expect(detectMimeType(png)).toBe('image/png');
     expect(detectMimeType(pdf)).toBe('application/pdf');

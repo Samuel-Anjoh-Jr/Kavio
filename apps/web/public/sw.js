@@ -1,4 +1,4 @@
-// TrustPro app-shell service worker.
+// Kavio app-shell service worker.
 //
 // Registered ONLY from components/pwa/service-worker-register.tsx, which is
 // mounted only inside app/[locale]/app/layout.tsx. Registration passes an
@@ -20,7 +20,7 @@
 //
 // SWR is chosen over network-first deliberately. Network-first makes every
 // navigation wait out a timeout before falling back — on the 3G connections
-// TrustPro targets that is the difference between an app that feels broken and
+// Kavio targets that is the difference between an app that feels broken and
 // one that feels instant. The cost is that a document can be one visit stale;
 // that is acceptable here because the DATA on these screens does not come from
 // the document. Reads go through Apollo (persisted separately to IndexedDB, see
@@ -30,8 +30,8 @@
 // What is NEVER served stale: anything under /api. A cached GraphQL read could
 // show a released escrow as still held, and a cached write is nonsense.
 
-const SHELL_CACHE = 'trustpro-shell-v2';
-const CONTENT_CACHE = 'trustpro-content-v2';
+const SHELL_CACHE = 'kavio-shell-v2';
+const CONTENT_CACHE = 'kavio-content-v2';
 const OFFLINE_URL = '/offline.html';
 
 /**
@@ -178,7 +178,7 @@ self.addEventListener('push', (event) => {
     payload = {};
   }
 
-  const title = payload.title || 'TrustPro';
+  const title = payload.title || 'Kavio';
   const options = {
     body: payload.body || '',
     icon: payload.icon || '/window.svg',

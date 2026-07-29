@@ -192,7 +192,7 @@ export function buildMetadata(options: {
       url: canonical,
       title,
       description,
-      siteName: 'TrustPro',
+      siteName: 'Kavio',
       locale: OG_LOCALES[locale as string] ?? 'en_CM',
       alternateLocale: alternateLocales,
       images: [{ url: ogImage, width: 1200, height: 630, alt: title }],

@@ -9,7 +9,7 @@ import { flushQueue, hydrateQueue, subscribeToQueue, queueSnapshot } from './wri
  * `navigator.onLine` is famously optimistic — it reports "online" for a device
  * attached to a captive portal or a dead cell tower. It is still the right
  * signal here: it is the only one available without spending the user's data on
- * heartbeat requests, and TrustPro's response to being offline is to show a
+ * heartbeat requests, and Kavio's response to being offline is to show a
  * banner and queue writes, both of which are cheap to be wrong about. A failed
  * write also queues on its own, so a false "online" degrades gracefully.
  */

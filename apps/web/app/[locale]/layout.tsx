@@ -51,7 +51,7 @@ export async function generateMetadata({
   /**
    * Site-wide metadata DEFAULTS. Individual public pages override the specifics
    * through `buildMetadata`; what lives here is the entity-level frame every page
-   * inherits — a templated title so a sub-page reads "Explore · TrustPro", the
+   * inherits — a templated title so a sub-page reads "Explore · Kavio", the
    * canonical origin (`metadataBase`), the publisher/creator identity, and the
    * `format-detection` guard that stops phone browsers auto-linking numbers in
    * copy as if they were dial links.
@@ -60,13 +60,13 @@ export async function generateMetadata({
     metadataBase: new URL(SITE_URL),
     title: {
       default: t('title'),
-      template: `%s · TrustPro`,
+      template: `%s · Kavio`,
     },
     description: t('description'),
-    applicationName: 'TrustPro',
-    authors: [{ name: 'TrustPro' }],
-    creator: 'TrustPro',
-    publisher: 'TrustPro',
+    applicationName: 'Kavio',
+    authors: [{ name: 'Kavio' }],
+    creator: 'Kavio',
+    publisher: 'Kavio',
     category: 'marketplace',
     formatDetection: { telephone: false, email: false, address: false },
     alternates: {
@@ -77,7 +77,7 @@ export async function generateMetadata({
     },
     openGraph: {
       type: 'website',
-      siteName: 'TrustPro',
+      siteName: 'Kavio',
       locale: OG_LOCALES[locale] ?? 'en_CM',
       title: t('title'),
       description: t('description'),

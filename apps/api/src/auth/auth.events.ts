@@ -1,4 +1,4 @@
-import type { Role } from '@trustpro/database';
+import type { Role } from '@kavio/database';
 
 /**
  * Identity domain events (ACC-04, ACC-05).

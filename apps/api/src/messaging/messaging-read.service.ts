@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { MessageStatus, Prisma } from '@trustpro/database';
+import { MessageStatus, Prisma } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { PrismaService } from '../prisma/prisma.service';

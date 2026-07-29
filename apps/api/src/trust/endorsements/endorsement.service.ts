@@ -5,7 +5,7 @@ import {
   Role,
   TrustEventType,
   type EndorsementRelationship,
-} from '@trustpro/database';
+} from '@kavio/database';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { AppException } from '../../lib/app-exception';
 import { createLogger, getRequestId } from '../../lib/logger';
@@ -96,7 +96,7 @@ export class EndorsementService {
       throw new AppException(
         HttpStatus.FORBIDDEN,
         'NAMED_ENDORSEMENT_IS_STAFF_ONLY',
-        'Only a TrustPro agent can record an endorsement on someone else’s behalf.',
+        'Only a Kavio agent can record an endorsement on someone else’s behalf.',
       );
     }
 
@@ -171,7 +171,7 @@ export class EndorsementService {
       throw new AppException(
         HttpStatus.FORBIDDEN,
         'CANNOT_REVOKE_ENDORSEMENT',
-        'Only the person who wrote an endorsement, or a TrustPro reviewer, can withdraw it.',
+        'Only the person who wrote an endorsement, or a Kavio reviewer, can withdraw it.',
       );
     }
 

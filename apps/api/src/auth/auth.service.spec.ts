@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import type { EventEmitter2 } from '@nestjs/event-emitter';
-import { Prisma, Role, UserStatus } from '@trustpro/database';
+import { Prisma, Role, UserStatus } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';

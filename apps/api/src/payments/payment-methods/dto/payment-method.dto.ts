@@ -1,4 +1,4 @@
-import { PaymentMethodType } from '@trustpro/database';
+import { PaymentMethodType } from '@kavio/database';
 import { z } from 'zod';
 
 /**

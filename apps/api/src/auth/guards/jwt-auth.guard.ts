@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserStatus } from '@trustpro/database';
+import { UserStatus } from '@kavio/database';
 import { AppException } from '../../lib/app-exception';
 import type { AuthenticatedUser } from '../auth.types';
 import { getRequestFromContext, IS_PUBLIC_KEY } from '../decorators/auth.decorators';

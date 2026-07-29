@@ -4,7 +4,7 @@ import {
   Role,
   UserStatus,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { z } from 'zod';
 
 /**

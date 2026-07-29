@@ -2,7 +2,7 @@ import type {
   VerificationCheckType,
   VerificationRejectionReason,
   VerificationStage,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Verification domain events (TRU-06, TRU-07, AGT-03).

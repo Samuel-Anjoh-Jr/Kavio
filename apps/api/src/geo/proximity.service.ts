@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { VerificationTier } from '@trustpro/database';
+import type { VerificationTier } from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import {

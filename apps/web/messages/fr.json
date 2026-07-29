@@ -1,10 +1,10 @@
 {
   "Metadata": {
-    "title": "TrustPro — Services locaux de confiance au Cameroun",
+    "title": "Kavio — Services locaux de confiance au Cameroun",
     "description": "Trouvez des travailleurs vérifiés et fiables pour des services locaux à Douala et Yaoundé."
   },
   "HomePage": {
-    "heading": "Bienvenue sur TrustPro",
+    "heading": "Bienvenue sur Kavio",
     "tagline": "La marketplace axée sur la confiance pour les services locaux au Cameroun.",
     "sampleAmountLabel": "Exemple de frais de service",
     "sampleDateLabel": "Dernière mise à jour"
@@ -29,7 +29,7 @@
   },
   "Styleguide": {
     "title": "Système de design TMDS",
-    "description": "TrustPro Modern Design System — tokens et primitives restylés, prévisualisés en direct dans le thème actuel.",
+    "description": "Kavio Modern Design System — tokens et primitives restylés, prévisualisés en direct dans le thème actuel.",
     "colorsHeading": "Couleurs",
     "typographyHeading": "Typographie",
     "typographyHeadingSample": "Exemple de titre",
@@ -138,8 +138,9 @@
       "sentTo": "Nous avons envoyé un code à {destination}."
     },
     "brandPanel": {
+      "slogan": "Là où le bon travail commence",
       "headline": "Une confiance vérifiable, pas seulement annoncée.",
-      "body": "TrustPro vérifie l'identité, les compétences et l'historique de travail : vous savez exactement qui vous recrutez, ou qui vous recrute.",
+      "body": "Kavio vérifie l'identité, les compétences et l'historique de travail : vous savez exactement qui vous recrutez, ou qui vous recrute.",
       "points": {
         "verified": "Vérification progressive, du téléphone aux contrôles sur le terrain",
         "escrow": "Paiements sous séquestre, libérés seulement une fois le travail terminé",
@@ -148,8 +149,8 @@
     },
     "signUp": {
       "title": "Créez votre compte",
-      "subtitle": "Cela prend une minute. Vous pouvez explorer TrustPro sans compte, mais il en faut un pour publier, postuler ou payer.",
-      "intentLegend": "Qu'est-ce qui vous amène sur TrustPro ?",
+      "subtitle": "Cela prend une minute. Vous pouvez explorer Kavio sans compte, mais il en faut un pour publier, postuler ou payer.",
+      "intentLegend": "Qu'est-ce qui vous amène sur Kavio ?",
       "intent": {
         "find_work": {
           "title": "Je cherche du travail",
@@ -184,7 +185,7 @@
       "forgotPassword": "Mot de passe oublié ?",
       "submitting": "Connexion en cours…",
       "useCode": "Se connecter avec un code",
-      "noAccount": "Nouveau sur TrustPro ?",
+      "noAccount": "Nouveau sur Kavio ?",
       "createAccount": "Créer un compte"
     },
     "verify": {
@@ -293,7 +294,7 @@
       "ID_VERIFIED": "Téléversez votre carte nationale d’identité pour approbation.",
       "FIELD_VERIFIED": "Planifiez une vérification en personne.",
       "PORTFOLIO_ADDED": "Ajoutez des photos de vos réalisations.",
-      "JOB_COMPLETED": "Réalisez des missions via TrustPro.",
+      "JOB_COMPLETED": "Réalisez des missions via Kavio.",
       "REPEAT_CUSTOMER": "Fidélisez les clients que vous avez déjà servis.",
       "EXCELLENT_REVIEW": "Obtenez d’excellents avis de vos clients.",
       "ENDORSEMENT_RECEIVED": "Demandez à un ancien client ou à un leader communautaire de vous recommander."
@@ -335,7 +336,7 @@
   },
   "Roles": {
     "switcherLabel": "Changer de rôle",
-    "switched": "Vous utilisez maintenant TrustPro en tant que {role}.",
+    "switched": "Vous utilisez maintenant Kavio en tant que {role}.",
     "names": {
       "WORKER": "Artisan",
       "CLIENT": "Client",
@@ -367,7 +368,7 @@
     },
     "seeAll": "Tout voir",
     "recentlyViewed": "Consultés récemment",
-    "unnamedWorker": "Professionnel TrustPro"
+    "unnamedWorker": "Professionnel Kavio"
   },
   "JobCard": {
     "unnamedJob": "Offre sans titre",
@@ -459,11 +460,11 @@
     "visibilityPublicBody": "Tout professionnel vérifié peut la voir et postuler."
   },
   "Home": {
-    "title": "Votre espace TrustPro",
+    "title": "Votre espace Kavio",
     "greeting": {
       "WORKER": "Votre activité en un coup d'œil",
       "CLIENT": "Recrutez en toute confiance",
-      "BUSINESS": "Votre entreprise sur TrustPro"
+      "BUSINESS": "Votre entreprise sur Kavio"
     },
     "subtitle": {
       "WORKER": "Complétez votre profil, gagnez des missions et faites monter votre Score de Confiance.",
@@ -471,7 +472,7 @@
       "BUSINESS": "Gérez le profil, les documents et l'équipe de votre entreprise."
     },
     "onboardingHeading": "Terminez la configuration de votre profil",
-    "onboardingBody": "Vous êtes à {percent} % du parcours. Chaque étape débloque davantage de TrustPro.",
+    "onboardingBody": "Vous êtes à {percent} % du parcours. Chaque étape débloque davantage de Kavio.",
     "onboardingStart": "Commencer",
     "onboardingResume": "Continuer",
     "exploreCard": "Explorer les artisans",
@@ -520,7 +521,7 @@
     "worker": {
       "title": "Configurez votre profil d'artisan",
       "subtitle": "Plus votre profil est complet, plus les clients vous trouvent et vous font confiance. Tout s'enregistre au fur et à mesure.",
-      "completed": "Votre profil d'artisan est en ligne. Bienvenue sur TrustPro.",
+      "completed": "Votre profil d'artisan est en ligne. Bienvenue sur Kavio.",
       "unlocks": {
         "appear_in_search": "Apparaître dans les résultats de recherche",
         "portfolio_showcase": "Mettre en avant vos réalisations",
@@ -558,7 +559,7 @@
           "label": "Identité",
           "title": "Vérifiez qui vous êtes",
           "description": "Une identité vérifiée débloque le badge que les clients recherchent, et des missions mieux rémunérées.",
-          "privacy": "Votre pièce d'identité et votre selfie sont chiffrés, privés, et visibles uniquement par vous et l'équipe de vérification TrustPro. Ils n'apparaissent jamais sur votre profil public.",
+          "privacy": "Votre pièce d'identité et votre selfie sont chiffrés, privés, et visibles uniquement par vous et l'équipe de vérification Kavio. Ils n'apparaissent jamais sur votre profil public.",
           "idFront": "Envoyer la pièce d'identité (recto)",
           "idBack": "Envoyer la pièce d'identité (verso)",
           "selfie": "Prendre un selfie",
@@ -598,7 +599,7 @@
     },
     "business": {
       "title": "Enregistrez votre entreprise",
-      "subtitle": "Parlez-nous de votre société et ajoutez votre équipe. La vérification est examinée par TrustPro une fois terminé.",
+      "subtitle": "Parlez-nous de votre société et ajoutez votre équipe. La vérification est examinée par Kavio une fois terminé.",
       "completed": "Votre entreprise est enregistrée. L'examen de vérification suit.",
       "unlocks": {
         "company_profile": "Un profil d'entreprise public",
@@ -623,8 +624,8 @@
         "documents": {
           "label": "Documents",
           "title": "Documents d'enregistrement",
-          "description": "Envoyez votre enregistrement pour que TrustPro examine votre entreprise en vue du badge Entreprise Vérifiée.",
-          "privacy": "Les documents d'enregistrement sont privés et chiffrés. Seule l'équipe de vérification TrustPro peut les ouvrir.",
+          "description": "Envoyez votre enregistrement pour que Kavio examine votre entreprise en vue du badge Entreprise Vérifiée.",
+          "privacy": "Les documents d'enregistrement sont privés et chiffrés. Seule l'équipe de vérification Kavio peut les ouvrir.",
           "registration": "Envoyer le document d'enregistrement",
           "registrationHint": "Certificat RCCM ou équivalent. PDF ou image, jusqu'à 15 Mo.",
           "logo": "Envoyer le logo de l'entreprise",
@@ -704,7 +705,7 @@
       "COLLEAGUE": "Collègue"
     },
     "heading": "Recommandations de la communauté",
-    "capturedByAgent": "Recueillie en personne par un agent TrustPro",
+    "capturedByAgent": "Recueillie en personne par un agent Kavio",
     "taperExplainer": "Les recommandations comptent surtout à vos débuts. À mesure que vous réalisez des travaux, votre propre parcours compte davantage et les recommandations comptent moins.",
     "influence": "Apporte {points} points sur {cap}",
     "taperedOut": "Vos travaux terminés parlent désormais pour vous : les recommandations n'ajoutent plus de points."
@@ -712,7 +713,7 @@
   "Badge": {
     "FOUNDING_PROFESSIONAL": {
       "name": "Professionnel vérifié fondateur",
-      "description": "Vérifié en personne par un agent de terrain TrustPro."
+      "description": "Vérifié en personne par un agent de terrain Kavio."
     },
     "IDENTITY_VERIFIED": {
       "name": "Identité vérifiée",
@@ -744,7 +745,7 @@
     },
     "FIRST_JOB": {
       "name": "Premier travail terminé",
-      "description": "Premier travail réalisé via TrustPro."
+      "description": "Premier travail réalisé via Kavio."
     },
     "JOBS_10": {
       "name": "10 travaux",
@@ -772,7 +773,7 @@
     "heading": "Votre historique de confiance",
     "empty": "Votre historique de confiance apparaîtra ici au fur et à mesure de vos vérifications et de vos travaux.",
     "event": {
-      "ACCOUNT_CREATED": "Inscription sur TrustPro",
+      "ACCOUNT_CREATED": "Inscription sur Kavio",
       "PHONE_VERIFIED": "Numéro de téléphone vérifié",
       "ID_VERIFIED": "Carte nationale d'identité approuvée",
       "FIELD_VERIFIED": "Vérifié en personne par un agent",
@@ -959,7 +960,7 @@
     "filteredOutTitle": "Personne ne correspond à tous les filtres",
     "filteredOutBody": "Il y a des professionnels ici, mais aucun ne coche toutes vos cases. Essayez d'assouplir un filtre.",
     "serviceMissingTitle": "Personne ne propose encore ce service",
-    "serviceMissingBody": "Personne sur TrustPro ne fait encore ce travail — nulle part. Nous accueillons de nouveaux professionnels chaque semaine, revenez bientôt.",
+    "serviceMissingBody": "Personne sur Kavio ne fait encore ce travail — nulle part. Nous accueillons de nouveaux professionnels chaque semaine, revenez bientôt.",
     "noProvidersTitle": "Aucun prestataire ici pour l'instant",
     "noProvidersBody": "Personne ne propose ce service dans votre zone pour l'instant. Revenez bientôt — nous grandissons vite à Douala et Yaoundé.",
     "noProvidersBodyNearest": "Personne ne propose ce service dans votre zone, mais le prestataire le plus proche est à environ {distance}.",
@@ -1013,7 +1014,7 @@
     "apply": "{count, plural, =0 {Voir les résultats} one {Appliquer # filtre} other {Appliquer # filtres}}"
   },
   "WorkerCard": {
-    "unnamed": "Professionnel TrustPro",
+    "unnamed": "Professionnel Kavio",
     "new": "Nouveau",
     "priceFrom": "À partir de",
     "priceOnRequest": "Prix sur demande",
@@ -1043,9 +1044,9 @@
     "emptyAction": "Parcourir les professionnels"
   },
   "Profile": {
-    "unnamed": "Professionnel TrustPro",
+    "unnamed": "Professionnel Kavio",
     "notFoundTitle": "Profil introuvable",
-    "metaFallback": "{name} sur TrustPro",
+    "metaFallback": "{name} sur Kavio",
     "loadErrorTitle": "Impossible de charger ce profil",
     "loadErrorBody": "Une erreur est survenue de notre côté. Réessayez dans un instant.",
     "memberSince": "Inscrit en {date}",
@@ -1122,11 +1123,11 @@
   },
   "Business": {
     "notFoundTitle": "Entreprise introuvable",
-    "metaFallback": "{name} sur TrustPro",
+    "metaFallback": "{name} sur Kavio",
     "loadErrorTitle": "Impossible de charger cette entreprise",
     "loadErrorBody": "Une erreur est survenue de notre côté. Réessayez dans un instant.",
     "verifiedBusiness": "Entreprise vérifiée",
-    "memberSince": "Sur TrustPro depuis {date}",
+    "memberSince": "Sur Kavio depuis {date}",
     "stat": {
       "team": "Membres de l'équipe",
       "completedJobs": "Travaux terminés",
@@ -1178,7 +1179,7 @@
       "requestsEmptyTitle": "Aucune demande pour le moment",
       "requestsEmptyBody": "Quand un client vous invite directement à faire un devis pour sa mission, cela apparaîtra ici.",
       "untitledJob": "Mission sans titre",
-      "unknownClient": "Un client TrustPro",
+      "unknownClient": "Un client Kavio",
       "viewRequest": "Voir",
       "pipelineHeading": "Mon activité",
       "quotesPendingTitle": "Mes devis",
@@ -1309,7 +1310,7 @@
     },
     "applicantsHeading": "{count, plural, one {# candidat} other {# candidats}}",
     "invitationsSentHeading": "{count, plural, one {# invitation envoyée} other {# invitations envoyées}}",
-    "unnamedWorker": "Professionnel TrustPro",
+    "unnamedWorker": "Professionnel Kavio",
     "notSelected": "Non retenu",
     "shortlist": "Présélectionner",
     "cancelInvitation": "Annuler l’invitation",
@@ -1383,7 +1384,7 @@
     "feeQuotePrice": "Prix du devis",
     "feePlatform": "Frais de plateforme (~10 %)",
     "feeWorkerGets": "Le professionnel reçoit",
-    "feeDisclaimer": "Les frais font tourner TrustPro et protègent votre paiement.",
+    "feeDisclaimer": "Les frais font tourner Kavio et protègent votre paiement.",
     "escrowAssurance": "Votre argent est conservé en toute sécurité sous séquestre et libéré seulement quand vous confirmez le travail.",
     "acceptAndPay": "Accepter et approvisionner le séquestre",
     "accepted": "Devis accepté — payez maintenant pour financer le séquestre.",
@@ -1615,7 +1616,7 @@
       "SYSTEM": "Système",
       "OFFERS": "Offres"
     },
-    "systemThread": "TrustPro",
+    "systemThread": "Kavio",
     "noMessagesYet": "Aucun message",
     "notFound": "Cette conversation est introuvable.",
     "backToInbox": "Retour aux messages",
@@ -1740,7 +1741,7 @@
       "title": "Historique SOS",
       "empty": "Vous n’avez envoyé aucune alerte SOS. C’est une bonne chose.",
       "sharedWith": "Partagé avec {count} contacts",
-      "safetyProcess": "Sécurité TrustPro",
+      "safetyProcess": "Sécurité Kavio",
       "delivered": "Distribué",
       "notDelivered": "Non distribué",
       "viewMap": "Voir la position",
@@ -1829,7 +1830,7 @@
       "saveFailed": "Cette préférence n’a pas pu être enregistrée. Veuillez réessayer.",
       "push": {
         "title": "Notifications push",
-        "body": "Soyez notifié sur cet appareil même lorsque TrustPro est fermé.",
+        "body": "Soyez notifié sur cet appareil même lorsque Kavio est fermé.",
         "enable": "Activer le push",
         "enabled": "Le push est activé sur cet appareil",
         "disable": "Désactiver",
@@ -1841,8 +1842,8 @@
       },
       "sound": {
         "title": "Sons de notification",
-        "body": "Choisissez un son par catégorie pour quand TrustPro est ouvert. Les notifications en arrière-plan utilisent toujours le son de votre appareil — aucun navigateur ne permet à un site de le changer.",
-        "note": "Les sons ne jouent que lorsque TrustPro est ouvert dans un onglet. « Par défaut » laisse le choix à votre appareil.",
+        "body": "Choisissez un son par catégorie pour quand Kavio est ouvert. Les notifications en arrière-plan utilisent toujours le son de votre appareil — aucun navigateur ne permet à un site de le changer.",
+        "note": "Les sons ne jouent que lorsque Kavio est ouvert dans un onglet. « Par défaut » laisse le choix à votre appareil.",
         "options": {
           "default": "Par défaut (appareil)",
           "chime": "Carillon",
@@ -1877,7 +1878,7 @@
       "HARASSMENT": "Harcèlement ou intimidation",
       "SCAM": "Arnaque ou fraude",
       "INAPPROPRIATE": "Contenu inapproprié",
-      "OFF_PLATFORM": "Tentative de quitter TrustPro",
+      "OFF_PLATFORM": "Tentative de quitter Kavio",
       "FAKE_PROFILE": "Profil faux ou usurpé",
       "STOLEN_CONTENT": "Photos ou travaux volés",
       "MISLEADING": "Informations trompeuses ou fausses",
@@ -2001,7 +2002,7 @@
     "loadMore": "Voir plus d'avis",
     "loadingMore": "Chargement…",
     "onJob": "Sur la mission « {job} »",
-    "anonymousAuthor": "Client TrustPro",
+    "anonymousAuthor": "Client Kavio",
     "report": "Signaler"
   },
   "BusinessConsole": {
@@ -2519,7 +2520,7 @@
     },
     "maintenance": {
       "title": "De retour très vite",
-      "description": "TrustPro est en maintenance planifiée. Revenez dans quelques minutes — vos données sont en sécurité."
+      "description": "Kavio est en maintenance planifiée. Revenez dans quelques minutes — vos données sont en sécurité."
     },
     "offline": {
       "banner": "Hors ligne — contenu enregistré affiché",
@@ -2534,8 +2535,8 @@
   },
   "Pwa": {
     "install": {
-      "title": "Installer TrustPro",
-      "description": "Ajoutez TrustPro à votre écran d’accueil pour un accès plus rapide et la navigation hors ligne.",
+      "title": "Installer Kavio",
+      "description": "Ajoutez Kavio à votre écran d’accueil pour un accès plus rapide et la navigation hors ligne.",
       "action": "Installer l’app",
       "later": "Plus tard",
       "iosHint": "Touchez Partager, puis « Sur l’écran d’accueil ».",
@@ -2575,15 +2576,15 @@
       "primaryCta": "Explorer les artisans",
       "secondaryCta": "Créer un compte",
       "noAccountNote": "Aucun compte requis pour parcourir. Connectez-vous uniquement pour agir.",
-      "workerPortraitAlt": "Un artisan TrustPro vérifié",
-      "clientPortraitAlt": "Un client TrustPro",
-      "workerTwoPortraitAlt": "Un autre artisan TrustPro vérifié",
+      "workerPortraitAlt": "Un artisan Kavio vérifié",
+      "clientPortraitAlt": "Un client Kavio",
+      "workerTwoPortraitAlt": "Un autre artisan Kavio vérifié",
       "trustScoreLabel": "Score de Confiance {score} sur 100",
       "trustScoreCaption": "Vérifié · Niveau 3",
       "verifiedBadge": "Identité vérifiée"
     },
     "proof": {
-      "heading": "TrustPro en chiffres",
+      "heading": "Kavio en chiffres",
       "verified": "Artisans vérifiés",
       "success": "Taux de réussite",
       "rating": "Note moyenne",
@@ -2612,7 +2613,7 @@
         },
         "100": {
           "label": "Pro vérifié par un agent",
-          "description": "Contrôles en personne par un agent TrustPro. La plus haute garantie."
+          "description": "Contrôles en personne par un agent Kavio. La plus haute garantie."
         }
       }
     },
@@ -2632,7 +2633,7 @@
       "steps": {
         "hold": {
           "title": "Vous payez sous séquestre",
-          "body": "Quand vous acceptez un devis, votre paiement est conservé par TrustPro — pas versé à l’artisan."
+          "body": "Quand vous acceptez un devis, votre paiement est conservé par Kavio — pas versé à l’artisan."
         },
         "work": {
           "title": "Les travaux se déroulent",
@@ -2665,7 +2666,7 @@
       "note": "Navigation gratuite · Connexion uniquement pour agir"
     },
     "footer": {
-      "tagline": "La marketplace de la confiance pour les services locaux au Cameroun.",
+      "tagline": "Là où le bon travail commence.",
       "legalHeading": "Légal",
       "productHeading": "Produit",
       "terms": "Conditions d’utilisation",
@@ -2674,32 +2675,32 @@
       "browseWorkers": "Parcourir les artisans",
       "browseJobs": "Parcourir les missions",
       "joinAsWorker": "Devenir artisan",
-      "copyright": "© {year} TrustPro. Tous droits réservés."
+      "copyright": "© {year} Kavio. Tous droits réservés."
     }
   },
   "Legal": {
     "terms": {
       "title": "Conditions d’utilisation",
       "updated": "Dernière mise à jour le 23 juillet 2026",
-      "intro": "Ces conditions régissent votre utilisation de TrustPro. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
+      "intro": "Ces conditions régissent votre utilisation de Kavio. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
       "sections": [
         {
-          "heading": "1. Utiliser TrustPro",
+          "heading": "1. Utiliser Kavio",
           "body": [
-            "TrustPro met en relation des clients avec des artisans vérifiés au Cameroun. Vous devez pouvoir conclure un contrat pour utiliser la plateforme.",
+            "Kavio met en relation des clients avec des artisans vérifiés au Cameroun. Vous devez pouvoir conclure un contrat pour utiliser la plateforme.",
             "Vous êtes responsable de l’exactitude des informations fournies et de l’activité sur votre compte."
           ]
         },
         {
           "heading": "2. Réservations et séquestre",
           "body": [
-            "Les paiements sont conservés sous séquestre et libérés selon la Politique de remboursement et litige. TrustPro n’est pas partie au contrat entre un client et un artisan."
+            "Les paiements sont conservés sous séquestre et libérés selon la Politique de remboursement et litige. Kavio n’est pas partie au contrat entre un client et un artisan."
           ]
         },
         {
           "heading": "3. Conduite interdite",
           "body": [
-            "Vous ne pouvez pas utiliser TrustPro pour frauder, harceler ou mettre en danger autrui, ni pour contourner les systèmes de paiement ou de vérification."
+            "Vous ne pouvez pas utiliser Kavio pour frauder, harceler ou mettre en danger autrui, ni pour contourner les systèmes de paiement ou de vérification."
           ]
         }
       ]
@@ -2707,7 +2708,7 @@
     "privacy": {
       "title": "Politique de confidentialité",
       "updated": "Dernière mise à jour le 23 juillet 2026",
-      "intro": "Comment TrustPro collecte, utilise et protège vos données. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
+      "intro": "Comment Kavio collecte, utilise et protège vos données. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
       "sections": [
         {
           "heading": "1. Ce que nous collectons",
@@ -2733,12 +2734,12 @@
     "refunds": {
       "title": "Politique de remboursement et litige",
       "updated": "Dernière mise à jour le 23 juillet 2026",
-      "intro": "Comment fonctionnent le séquestre, les remboursements et les litiges sur TrustPro. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
+      "intro": "Comment fonctionnent le séquestre, les remboursements et les litiges sur Kavio. Ceci est un squelette de lancement à remplacer par un texte validé par un conseil juridique avant le lancement public.",
       "sections": [
         {
           "heading": "1. Séquestre",
           "body": [
-            "Le paiement d’une mission est conservé par TrustPro dès l’acceptation d’un devis et libéré à l’artisan seulement à la confirmation de la fin des travaux."
+            "Le paiement d’une mission est conservé par Kavio dès l’acceptation d’un devis et libéré à l’artisan seulement à la confirmation de la fin des travaux."
           ]
         },
         {

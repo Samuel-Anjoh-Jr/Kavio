@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { LocationSource } from '@trustpro/database';
+import { LocationSource } from '@kavio/database';
 import { ReverseGeocodeService } from '../geo/reverse-geocode.service';
-import { MediaAssetKind } from '@trustpro/database';
+import { MediaAssetKind } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';

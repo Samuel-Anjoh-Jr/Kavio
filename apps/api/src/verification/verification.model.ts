@@ -4,7 +4,7 @@ import {
   VerificationCheckType,
   VerificationRejectionReason,
   VerificationStage,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * The verification rules (TRU-06, TRU-07, TRU-08, AGT-03), as PURE data and

@@ -1,4 +1,4 @@
-import { UserStatus } from '@trustpro/database';
+import { UserStatus } from '@kavio/database';
 import type { Socket } from 'socket.io';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { TokenService } from '../auth/token.service';

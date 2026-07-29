@@ -1,5 +1,5 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
-import { OnboardingRole } from '@trustpro/database';
+import { OnboardingRole } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/decorators/auth.decorators';
 import { Onboarding } from './models/onboarding.model';

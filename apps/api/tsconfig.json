@@ -1,5 +1,5 @@
 {
-  "extends": "@trustpro/typescript-config/nestjs.json",
+  "extends": "@kavio/typescript-config/nestjs.json",
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": "./"

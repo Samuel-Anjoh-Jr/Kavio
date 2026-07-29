@@ -1,4 +1,4 @@
-import type { Prisma } from '@trustpro/database';
+import type { Prisma } from '@kavio/database';
 import { normalizeToE164 } from '../lib/phone.util';
 
 /**

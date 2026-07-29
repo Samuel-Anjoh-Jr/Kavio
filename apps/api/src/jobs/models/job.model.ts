@@ -5,7 +5,7 @@ import {
   JobStatus,
   JobUrgency,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Job READ models (PROMPTS 55, 57). GraphQL, per the DUAL API RULE — every write

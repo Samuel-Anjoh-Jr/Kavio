@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ReviewStatus } from '@trustpro/database';
+import { ReviewStatus } from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';

@@ -1,4 +1,4 @@
-import { Role } from '@trustpro/database';
+import { Role } from '@kavio/database';
 
 /**
  * The RBAC permission catalogue (ACC-06, NFR-SEC-02).

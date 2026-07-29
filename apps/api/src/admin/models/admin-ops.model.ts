@@ -1,5 +1,5 @@
 import { Field, GraphQLISODateTime, ID, Int, ObjectType } from '@nestjs/graphql';
-import { AnnouncementAudience, AnnouncementStatus, Role } from '@trustpro/database';
+import { AnnouncementAudience, AnnouncementStatus, Role } from '@kavio/database';
 import { GraphQLJSON } from '../../graphql/json.scalar';
 
 /**

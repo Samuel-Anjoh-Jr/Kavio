@@ -1,7 +1,7 @@
 import { ExecutionContext, HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { Role, UserStatus, VerificationTier } from '@trustpro/database';
+import { Role, UserStatus, VerificationTier } from '@kavio/database';
 import { AppException } from '../../lib/app-exception';
 import type { JwtConfig } from '../auth.config';
 import type { AuthenticatedUser } from '../auth.types';
@@ -15,8 +15,8 @@ const CONFIG: JwtConfig = {
   refreshSecret: 'refresh-secret-for-tests',
   accessTtlSeconds: 900,
   refreshTtlSeconds: 2_592_000,
-  issuer: 'trustpro',
-  audience: 'trustpro-web',
+  issuer: 'kavio',
+  audience: 'kavio-web',
 };
 
 const tokens = new TokenService(new JwtService(), CONFIG);

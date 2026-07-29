@@ -32,7 +32,7 @@ import {
 /**
  * Emergency-contact management (SOS-02): the people alerted when an SOS fires.
  *
- * These are not TrustPro accounts — a neighbour, a family member — so they are
+ * These are not Kavio accounts — a neighbour, a family member — so they are
  * captured as name + phone (+ optional email), and the SOS share fans out to them
  * directly. The list is what makes the SOS meaningful: an alert with no contacts
  * has nobody to reach, so the empty state pushes hard toward adding one.

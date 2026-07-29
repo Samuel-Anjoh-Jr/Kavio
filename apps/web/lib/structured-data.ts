@@ -40,7 +40,7 @@ function webPageId(url: string): string {
  * The Organization entity — the anchor every other node points at.
  *
  * `knowsAbout` lists the trades the platform is authoritative on: it is a direct
- * topical-relevance signal, telling an answer engine that "TrustPro" is a
+ * topical-relevance signal, telling an answer engine that "Kavio" is a
  * sensible entity to cite for "verified electrician in Douala". `areaServed`
  * carries real City nodes with coordinates so local intent resolves. `sameAs`
  * is corroboration — and is empty rather than fabricated when no profiles are
@@ -58,7 +58,7 @@ export function organizationNode(options: {
   return {
     '@type': 'Organization',
     '@id': ORG_ID,
-    name: 'TrustPro',
+    name: 'Kavio',
     url: `${SITE_URL}/${locale}`,
     logo: {
       '@type': 'ImageObject',
@@ -108,7 +108,7 @@ export function websiteNode(options: { locale: string; description: string }): J
     '@type': 'WebSite',
     '@id': WEBSITE_ID,
     url: `${SITE_URL}/${locale}`,
-    name: 'TrustPro',
+    name: 'Kavio',
     description,
     inLanguage: localeTag(locale),
     publisher: { '@id': ORG_ID },
@@ -209,7 +209,7 @@ export function breadcrumbNode(options: {
 /**
  * The marketplace itself as a Service, so "hire a verified plumber in Cameroon"
  * has a Service entity to match. `areaServed`, `provider`, and a priced
- * (fee-bearing) offer give an answer engine the shape of what TrustPro actually
+ * (fee-bearing) offer give an answer engine the shape of what Kavio actually
  * does.
  */
 export function serviceNode(options: {

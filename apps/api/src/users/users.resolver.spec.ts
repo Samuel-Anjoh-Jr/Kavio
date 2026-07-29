@@ -1,6 +1,6 @@
 import { GraphQLSchemaBuilderModule, GraphQLSchemaFactory } from '@nestjs/graphql';
 import { NestFactory } from '@nestjs/core';
-import { Role, UserStatus, VerificationTier } from '@trustpro/database';
+import { Role, UserStatus, VerificationTier } from '@kavio/database';
 import { printSchema } from 'graphql';
 import { registerGraphQLEnums } from '../graphql/enums';
 import type { AuthenticatedUser } from '../auth/auth.types';

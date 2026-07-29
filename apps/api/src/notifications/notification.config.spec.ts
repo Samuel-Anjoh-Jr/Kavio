@@ -1,4 +1,4 @@
-import { NotificationCategory, NotificationChannel } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel } from '@kavio/database';
 import {
   buildDefaultPreferences,
   getChannelPriority,

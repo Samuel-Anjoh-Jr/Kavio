@@ -4,7 +4,7 @@ import {
   PortfolioSlot,
   VerificationCheckType,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { EndorsementView } from '../../trust/models/endorsement.model';
 
 /**

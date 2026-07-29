@@ -1,4 +1,4 @@
-import { VerificationTier } from '@trustpro/database';
+import { VerificationTier } from '@kavio/database';
 import { VERIFIED_MIN_TIER } from './search.config';
 
 describe('VERIFIED_MIN_TIER', () => {

@@ -1,4 +1,4 @@
-import { NotificationCategory } from '@trustpro/database';
+import { NotificationCategory } from '@kavio/database';
 
 /**
  * Custom notification sounds (NOT-02).
@@ -8,7 +8,7 @@ import { NotificationCategory } from '@trustpro/database';
  * and Notification API have no `sound` option any shipping browser honours, so
  * a closed tab always gets the device's own default chime, full stop.
  *
- * What IS real: while TrustPro is open in a tab, the app can play any audio
+ * What IS real: while Kavio is open in a tab, the app can play any audio
  * file it likes the instant a notification arrives (the service worker relays
  * the push payload to open clients, which play the sound with a plain `Audio`
  * element — see apps/web/lib/notification-sound.ts). So "custom sound" here

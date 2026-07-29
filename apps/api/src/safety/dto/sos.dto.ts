@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SOSStatus } from '@trustpro/database';
+import { SOSStatus } from '@kavio/database';
 
 /**
  * Safety & SOS WRITE DTOs (SOS-01, SOS-02, SOS-03). Validated with Zod before the

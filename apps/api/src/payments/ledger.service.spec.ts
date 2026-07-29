@@ -1,4 +1,4 @@
-import { TransactionDirection, TransactionType } from '@trustpro/database';
+import { TransactionDirection, TransactionType } from '@kavio/database';
 import { LedgerService } from './ledger.service';
 
 /**

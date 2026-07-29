@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { NotificationCategory, NotificationChannel, Role } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel, Role } from '@kavio/database';
 
 /**
  * Notification Center READ models (NOT-02). GraphQL, per the DUAL API RULE —

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Menu, X } from 'lucide-react';
@@ -101,21 +102,16 @@ export function SiteHeader() {
           href="/"
           className="flex items-center gap-2 rounded-button focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <span className="flex size-8 items-center justify-center rounded-input bg-primary">
-            <svg
-              viewBox="0 0 24 24"
-              className="size-5"
-              fill="none"
-              stroke="#fff"
-              strokeWidth={2.6}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
-          </span>
-          <span className="font-heading text-lg font-semibold text-foreground">TrustPro</span>
+          <Image
+            src="/brand/kavio-mark.png"
+            alt=""
+            aria-hidden="true"
+            width={480}
+            height={369}
+            priority
+            className="h-8 w-auto"
+          />
+          <span className="font-heading text-lg font-semibold text-foreground">Kavio</span>
         </Link>
 
         <nav aria-label={t('primary')} className="hidden items-center gap-1 md:flex">

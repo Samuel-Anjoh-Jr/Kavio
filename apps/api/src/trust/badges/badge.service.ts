@@ -7,7 +7,7 @@ import {
   VerificationCheckType,
   VerificationStatus,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { createLogger, getRequestId } from '../../lib/logger';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TRUST_RECOMPUTED, TrustRecomputedEvent } from '../trust.events';

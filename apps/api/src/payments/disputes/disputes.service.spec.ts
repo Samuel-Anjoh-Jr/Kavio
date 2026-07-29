@@ -1,10 +1,5 @@
 import type { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  DisputeFaultParty,
-  DisputeResolution,
-  EscrowState,
-  TrustEventType,
-} from '@trustpro/database';
+import { DisputeFaultParty, DisputeResolution, EscrowState, TrustEventType } from '@kavio/database';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { TrustScoreService } from '../../trust/trust-score.service';

@@ -1,5 +1,5 @@
 // ═════════════════════════════════════════════════════════════════════════
-// seed.mjs — TrustPro Cameroon demo dataset
+// seed.mjs — Kavio Cameroon demo dataset
 //
 // Builds a realistic, internally-consistent snapshot of the platform for an
 // investor / stakeholder demo: every ledger balances, every state machine
@@ -24,7 +24,7 @@ import { randomBytes, randomInt, randomUUID, scrypt } from 'crypto';
 
 const prisma = new PrismaClient();
 
-const DEFAULT_PASSWORD = 'TrustPro2026!';
+const DEFAULT_PASSWORD = 'Kavio2026!';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Password hashing — MUST match apps/api/src/lib/password.util.ts exactly.
@@ -486,7 +486,7 @@ async function createMedia(
 // main()
 // ═════════════════════════════════════════════════════════════════════════
 async function main() {
-  console.log('🌱 Seeding TrustPro Cameroon demo database...\n');
+  console.log('🌱 Seeding Kavio Cameroon demo database...\n');
   const passwordHash = await hashPassword(DEFAULT_PASSWORD);
 
   // ── Phase 0: clear existing data, leaf tables first ─────────────────────
@@ -787,8 +787,8 @@ async function main() {
         nameEn: cat.nameEn,
         nameFr: cat.nameFr,
         icon: cat.icon,
-        descriptionEn: `Professional ${cat.nameEn.toLowerCase()} services, vetted through TrustPro's tiered verification.`,
-        descriptionFr: `Services professionnels de ${cat.nameFr.toLowerCase()}, vérifiés via le système de niveaux de confiance TrustPro.`,
+        descriptionEn: `Professional ${cat.nameEn.toLowerCase()} services, vetted through Kavio's tiered verification.`,
+        descriptionFr: `Services professionnels de ${cat.nameFr.toLowerCase()}, vérifiés via le système de niveaux de confiance Kavio.`,
         sortOrder: catSortOrder++,
         workerCount: 0, // recomputed below once workers are attached
       },
@@ -955,9 +955,9 @@ async function main() {
 
   // — Admin —
   const admin = await createIdentity({
-    email: 'admin@trustpro.cm',
+    email: 'admin@kavio.cm',
     phone: '+237699000001',
-    name: 'Admin TrustPro',
+    name: 'Admin Kavio',
     avatar: avatarUrl(),
     locale: 'en',
     phoneVerifiedAt: daysAgo(200),
@@ -991,7 +991,7 @@ async function main() {
   ]) {
     const { name } = randomPersonName();
     const agentUser = await createIdentity({
-      email: `${first.toLowerCase().replace(/\s+/g, '.')}@trustpro.cm`,
+      email: `${first.toLowerCase().replace(/\s+/g, '.')}@kavio.cm`,
       phone: uniqueCameroonPhone(),
       name,
       avatar: avatarUrl(),
@@ -1711,8 +1711,8 @@ async function main() {
       ],
       portfolio: [{ mediaAssetId: randomUUID(), caption: 'Recent job', type: 'PHOTO' }],
       identity: { idFrontAssetId: randomUUID(), selfieAssetId: randomUUID() },
-      profile: { displayName: user.name ?? 'TrustPro user' },
-      company: { name: user.name ?? 'TrustPro Services', city },
+      profile: { displayName: user.name ?? 'Kavio user' },
+      company: { name: user.name ?? 'Kavio Services', city },
       documents: { registrationAssetId: randomUUID() },
       team: [{ name: 'Team member', role: 'STAFF', accessLevel: 'VIEW_ONLY' }],
       location: { city, source: 'HUMAN_INPUT' },
@@ -3412,8 +3412,8 @@ async function main() {
 
   const announcements = [
     {
-      titleEn: 'Welcome to TrustPro Cameroon!',
-      titleFr: 'Bienvenue sur TrustPro Cameroun!',
+      titleEn: 'Welcome to Kavio Cameroon!',
+      titleFr: 'Bienvenue sur Kavio Cameroun!',
       bodyEn:
         'We are excited to launch the platform connecting trusted professionals with clients.',
       bodyFr:
@@ -3457,8 +3457,8 @@ async function main() {
 
   const faqs = [
     {
-      questionEn: 'How does TrustPro verify workers?',
-      questionFr: 'Comment TrustPro vérifie-t-il les travailleurs?',
+      questionEn: 'How does Kavio verify workers?',
+      questionFr: 'Comment Kavio vérifie-t-il les travailleurs?',
       answerEn:
         'We use a multi-tier verification process including phone, ID, and field verification.',
       answerFr:
@@ -3506,9 +3506,8 @@ async function main() {
       roleEn: 'Plumber, Douala',
       roleFr: 'Plombier, Douala',
       avatarUrl: avatarUrl(),
-      contentEn: 'TrustPro helped me find reliable work. The escrow system gives me peace of mind.',
-      contentFr:
-        "TrustPro m'a aidé à trouver un travail fiable. Le système de séquestre me rassure.",
+      contentEn: 'Kavio helped me find reliable work. The escrow system gives me peace of mind.',
+      contentFr: "Kavio m'a aidé à trouver un travail fiable. Le système de séquestre me rassure.",
       rating: 4.8,
       order: 1,
       visible: true,
@@ -3520,8 +3519,8 @@ async function main() {
       roleEn: 'Business Owner, Yaoundé',
       roleFr: "Chef d'entreprise, Yaoundé",
       avatarUrl: avatarUrl(),
-      contentEn: 'I have hired several workers through TrustPro and the quality is excellent.',
-      contentFr: "J'ai embauché plusieurs travailleurs via TrustPro et la qualité est excellente.",
+      contentEn: 'I have hired several workers through Kavio and the quality is excellent.',
+      contentFr: "J'ai embauché plusieurs travailleurs via Kavio et la qualité est excellente.",
       rating: 4.5,
       order: 2,
       visible: true,

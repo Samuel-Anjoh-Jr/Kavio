@@ -24,7 +24,7 @@ import {
 const REFRESH_SKEW_SECONDS = 30;
 
 /**
- * What TrustPro stores in the Auth.js JWT cookie.
+ * What Kavio stores in the Auth.js JWT cookie.
  *
  * Declared here rather than by augmenting `next-auth/jwt`: that module is a bare
  * `export *` of `@auth/core/jwt`, whose JWT interface extends
@@ -32,7 +32,7 @@ const REFRESH_SKEW_SECONDS = 30;
  * custom claim would silently read back as `unknown`. One explicit type and one
  * cast per callback is both safer and easier to follow.
  */
-interface TrustProToken {
+interface KavioToken {
   userId?: string;
   activeRole?: string;
   roles?: string[];
@@ -178,7 +178,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * caller ever sees an expired one.
      */
     async jwt({ token: rawToken, user, trigger }) {
-      const token = rawToken as TrustProToken & typeof rawToken;
+      const token = rawToken as KavioToken & typeof rawToken;
 
       if (user) {
         return {
@@ -243,7 +243,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     session({ session, token: rawToken }) {
-      const token = rawToken as TrustProToken;
+      const token = rawToken as KavioToken;
 
       session.user.id = token.userId ?? '';
       session.user.activeRole = token.activeRole ?? '';

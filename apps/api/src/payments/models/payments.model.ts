@@ -8,7 +8,7 @@ import {
   TransactionDirection,
   TransactionStatus,
   TransactionType,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Payments READ models (PROMPTS 63, 66, 68; PAY-05). GraphQL, per the DUAL API

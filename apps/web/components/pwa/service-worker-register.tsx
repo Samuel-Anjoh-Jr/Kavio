@@ -69,7 +69,7 @@ export function ServiceWorkerRegister({ locale }: { locale: string }) {
         // particular component happens to be mounted, and multiple listeners
         // (sound, the bell's badge) can each pick it up independently.
         window.dispatchEvent(
-          new CustomEvent('trustpro:notification-push', { detail: data.payload ?? {} }),
+          new CustomEvent('kavio:notification-push', { detail: data.payload ?? {} }),
         );
       }
     };

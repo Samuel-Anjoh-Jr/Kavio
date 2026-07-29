@@ -1,5 +1,5 @@
 import { Args, Float, ID, Int, Query, Resolver } from '@nestjs/graphql';
-import { GeoRegionLevel } from '@trustpro/database';
+import { GeoRegionLevel } from '@kavio/database';
 import { Public } from '../auth/decorators/auth.decorators';
 import { GeoService } from './geo.service';
 import {

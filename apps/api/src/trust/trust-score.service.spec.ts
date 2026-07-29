@@ -1,4 +1,4 @@
-import { TrustEventType, TrustPillar, UserStatus } from '@trustpro/database';
+import { TrustEventType, TrustPillar, UserStatus } from '@kavio/database';
 import type { EventEmitter2 } from '@nestjs/event-emitter';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { TierService } from './tier.service';

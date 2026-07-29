@@ -1,4 +1,4 @@
-import type { MessageKind } from '@trustpro/database';
+import type { MessageKind } from '@kavio/database';
 
 /**
  * Messaging domain events (MSG-01, SRS §13). The messaging service emits these;

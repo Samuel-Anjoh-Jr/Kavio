@@ -51,7 +51,7 @@ import {
   VerificationStage,
   VerificationStatus,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Prisma enums exposed to the GraphQL schema. Registering them ONCE here (rather

@@ -119,7 +119,7 @@ export const EMPTY_JOB_DRAFT: JobDraft = {
   jobId: null,
 };
 
-const DRAFT_KEY = 'trustpro.job-draft';
+const DRAFT_KEY = 'kavio.job-draft';
 
 /**
  * The draft store is read through `useSyncExternalStore` in the stepper rather

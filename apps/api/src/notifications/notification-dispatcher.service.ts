@@ -1,6 +1,6 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { NotificationChannel, NotificationStatus } from '@trustpro/database';
+import { NotificationChannel, NotificationStatus } from '@kavio/database';
 import { createLogger, getRequestId } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueueService } from '../queue/queue.service';

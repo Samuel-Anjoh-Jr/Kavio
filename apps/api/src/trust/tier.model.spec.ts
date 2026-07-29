@@ -1,4 +1,4 @@
-import { VerificationCheckType, VerificationTier } from '@trustpro/database';
+import { VerificationCheckType, VerificationTier } from '@kavio/database';
 import { deriveTier, evaluateGate, type TierDerivationInput, type TierGate } from './tier.model';
 
 /**

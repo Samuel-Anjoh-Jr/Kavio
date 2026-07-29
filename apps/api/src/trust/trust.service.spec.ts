@@ -1,10 +1,4 @@
-import {
-  Role,
-  TrustEventType,
-  TrustPillar,
-  UserStatus,
-  VerificationTier,
-} from '@trustpro/database';
+import { Role, TrustEventType, TrustPillar, UserStatus, VerificationTier } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import type { PrismaService } from '../prisma/prisma.service';

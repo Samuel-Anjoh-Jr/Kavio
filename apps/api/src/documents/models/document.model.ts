@@ -4,7 +4,7 @@ import {
   MediaVisibility,
   VerificationCheckType,
   VerificationStatus,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * The Documents area (TRU-08), served over GraphQL per the DUAL API RULE.

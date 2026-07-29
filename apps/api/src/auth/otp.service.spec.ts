@@ -1,4 +1,4 @@
-import { VerificationPurpose } from '@trustpro/database';
+import { VerificationPurpose } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { hashSecret } from '../lib/secret-hash.util';
 import type { NotificationRequestedEvent } from '../notifications/events/notification.events';

@@ -1,4 +1,4 @@
-import type { Role, UserStatus, VerificationTier } from '@trustpro/database';
+import type { Role, UserStatus, VerificationTier } from '@kavio/database';
 
 /**
  * The authenticated identity attached to every request by JwtAuthGuard, built

@@ -5,7 +5,7 @@ import {
   VerificationStage,
   VerificationStatus,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Verification reads (TRU-06, AGT-02, AGT-03), served over GraphQL per the DUAL

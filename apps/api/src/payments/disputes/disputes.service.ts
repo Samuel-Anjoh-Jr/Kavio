@@ -7,7 +7,7 @@ import {
   EscrowState,
   MediaAssetKind,
   Prisma,
-} from '@trustpro/database';
+} from '@kavio/database';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { roleHasPermission } from '../../auth/rbac/permissions';
 import { AppException } from '../../lib/app-exception';

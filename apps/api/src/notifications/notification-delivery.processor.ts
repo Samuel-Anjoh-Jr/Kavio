@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { NotificationStatus } from '@trustpro/database';
+import { NotificationStatus } from '@kavio/database';
 import type { Job } from 'bullmq';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';

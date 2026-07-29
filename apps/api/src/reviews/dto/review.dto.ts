@@ -1,4 +1,4 @@
-import { AbuseReportReason } from '@trustpro/database';
+import { AbuseReportReason } from '@kavio/database';
 import { z } from 'zod';
 import { REVIEW_RATING_MAX, REVIEW_RATING_MIN } from '../review.model';
 

@@ -116,7 +116,7 @@ export class TilesService {
       maxzoom: 18,
       // [west, south, east, north] — Douala through Yaoundé with headroom.
       bounds: [9.4, 3.6, 11.8, 4.3],
-      attribution: '© OpenStreetMap contributors · TrustPro',
+      attribution: '© OpenStreetMap contributors · Kavio',
       scheme: useCarto ? 'carto' : 'postgis',
     };
   }

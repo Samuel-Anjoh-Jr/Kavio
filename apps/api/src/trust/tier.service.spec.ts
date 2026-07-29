@@ -1,4 +1,4 @@
-import { VerificationCheckType, VerificationStatus, VerificationTier } from '@trustpro/database';
+import { VerificationCheckType, VerificationStatus, VerificationTier } from '@kavio/database';
 import type { EventEmitter2 } from '@nestjs/event-emitter';
 import type { PrismaService } from '../prisma/prisma.service';
 import { TierService } from './tier.service';

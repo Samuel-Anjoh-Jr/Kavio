@@ -1,4 +1,4 @@
-import { VerificationPurpose } from '@trustpro/database';
+import { VerificationPurpose } from '@kavio/database';
 import { z } from 'zod';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../auth.config';
 
@@ -87,7 +87,7 @@ export const toggleTwoFactorSchema = z.object({
   password: z.string().min(1, 'Enter your password to confirm.'),
 });
 
-/** Roles a user may grant themselves. AGENT and ADMIN are assigned by TrustPro
+/** Roles a user may grant themselves. AGENT and ADMIN are assigned by Kavio
  *  only — self-service would be a privilege-escalation hole. */
 export const selfAssignableRoles = ['WORKER', 'CLIENT', 'BUSINESS'] as const;
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationCategory, NotificationChannel } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel } from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { buildDefaultPreferences } from './notification.config';

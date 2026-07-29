@@ -1,5 +1,5 @@
 import { Args, Int, Query, Resolver } from '@nestjs/graphql';
-import { AgentInvitationStatus, Role, UserStatus, VerificationTier } from '@trustpro/database';
+import { AgentInvitationStatus, Role, UserStatus, VerificationTier } from '@kavio/database';
 import { RequirePermissions } from '../auth/decorators/auth.decorators';
 import { AdminUsersService } from './admin-users.service';
 import { AdminUserPageView, AgentInvitationView } from './models/admin-users.model';

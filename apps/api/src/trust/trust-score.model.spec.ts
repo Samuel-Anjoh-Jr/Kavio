@@ -1,4 +1,4 @@
-import { TrustEventType, TrustPillar } from '@trustpro/database';
+import { TrustEventType, TrustPillar } from '@kavio/database';
 import {
   ADMIN_ADJUSTMENT_MAX_MAGNITUDE,
   computeTrustScore,

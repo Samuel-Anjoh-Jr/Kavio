@@ -8,7 +8,7 @@ import {
   Role,
   TeamMemberAccessLevel,
   TeamMemberRole,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';

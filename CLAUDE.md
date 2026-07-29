@@ -1,4 +1,4 @@
-PROJECT: TrustPro, a trust-first local-services / skilled-labour marketplace for Cameroon (Douala and Yaoundé first).
+PROJECT: Kavio, a trust-first local-services / skilled-labour marketplace for Cameroon (Douala and Yaoundé first).
 WEB-ONLY: a Next.js App Router app, installable as a PWA on mobile/desktop, or used on the web. NO native mobile app.
 The moat is TRUST, not listings: a continuously updated Trust Engine (identity, professional, marketplace, financial),
 progressive verification (Tiers 0-3), portfolio evidence, transparent quotes, and escrow. Bilingual EN/FR. Currency XAF only.
@@ -73,4 +73,4 @@ DEFINITION OF DONE (every PR): typechecks; lints; tests for new logic; reads via
   contrast, reduced-motion); requestId logging; no secrets committed; PR references the SRS requirement IDs + the PROMPT number.
 
 CONVENTIONS: TypeScript everywhere. One NestJS module per SRS module. Shared types + GraphQL ops + Prisma client in packages/*.
-  Brand token: "TrustPro". Add each feature's Prisma models + migration inside the prompt that introduces the feature (incremental schema).
+  Brand token: "Kavio". Add each feature's Prisma models + migration inside the prompt that introduces the feature (incremental schema).

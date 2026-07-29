@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext, SetMetadata } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { Role } from '@trustpro/database';
+import type { Role } from '@kavio/database';
 import type { Permission } from '../rbac/permissions';
 import type { AuthenticatedUser } from '../auth.types';
 
