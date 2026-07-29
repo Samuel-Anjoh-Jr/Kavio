@@ -4,14 +4,13 @@ import { cn } from '@/lib/utils';
 /**
  * Shared furniture for the role-based homes (ACC-07, DIS-01).
  *
- * `PendingPanel` is the important one. Several panels these homes are specified
- * to carry — incoming job requests, quotes, earnings — are backed by modules
- * that land in later phases. The choice is between hiding them, faking them, or
- * naming them honestly. Hiding them makes the home look like the product is
- * smaller than it is; faking them is the one thing a trust-first marketplace
- * cannot do. So the panel is rendered, labelled with what it will hold, and
- * marked as not yet available — the user learns the shape of their dashboard
- * without being shown a single invented number.
+ * `PendingPanel` renders a labelled, dashed-border placeholder. Two honest uses:
+ * a panel with nothing in it yet (an empty state — see dashboard-panels.tsx,
+ * which reads the real data and falls back to this), and the business
+ * console's own numbers, which stay behind the console rather than being
+ * duplicated here (see BusinessHome in app/home/page.tsx). Neither is an
+ * invented number — the difference between "empty" and "not built" matters in
+ * a trust-first marketplace, so this component never stands in for the latter.
  */
 
 export function HomeSection({

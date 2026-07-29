@@ -10,8 +10,11 @@ import { UNREAD_MESSAGES_QUERY, type UnreadMessagesQueryResult } from '@/lib/gra
 import { cn } from '@/lib/utils';
 
 /**
- * Phone-width primary navigation. Hidden from `md` up, where AppHeader's inline
- * nav takes over — so the two are never both announced to a screen reader.
+ * Phone- and tablet-width primary navigation. Hidden from `lg` up, where
+ * AppHeader's inline nav takes over — so the two are never both announced to a
+ * screen reader. Tablets get the same bottom tab bar as phones (native
+ * mobile-app UX) rather than a condensed desktop nav; only real desktop
+ * viewports switch to the top inline nav.
  *
  * Sits above the iOS home indicator via `pb-[env(safe-area-inset-bottom)]`,
  * which matters once the PWA is installed and runs without browser chrome.
@@ -59,7 +62,7 @@ export function AppBottomNav() {
   return (
     <nav
       aria-label={t('primary')}
-      className="sticky bottom-0 z-40 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      className="sticky bottom-0 z-40 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur xl:hidden"
     >
       <ul className="mx-auto flex max-w-lg items-stretch">
         {items.map(({ href, label, icon: Icon, badge }) => {

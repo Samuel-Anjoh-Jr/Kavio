@@ -58,9 +58,15 @@ describe('job milestone ladder', () => {
 });
 
 describe('escrow milestone ladder', () => {
-  it('collects at PAID and releases at the end', () => {
-    expect(escrowMilestoneIndex('PENDING_PAYMENT')).toBe(0);
+  it('is unreached while awaiting payment, collects at PAID and releases at the end', () => {
+    // PENDING_PAYMENT is the state BEFORE its own rung is reached ("fund the
+    // escrow to begin") — unlike every other status here, which names
+    // something that already happened, so it must not read as complete.
+    expect(escrowMilestoneIndex('PENDING_PAYMENT')).toBe(-1);
     expect(escrowMilestoneIndex('PAID')).toBe(1);
+    // ACCEPTED (the worker acknowledging a funded booking) has no rung of its
+    // own — it reads as the same reached point as PAID.
+    expect(escrowMilestoneIndex('ACCEPTED')).toBe(escrowMilestoneIndex('PAID'));
     expect(escrowMilestoneIndex('RELEASED')).toBe(ESCROW_MILESTONES.length - 1);
   });
 

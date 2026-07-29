@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TrustScoreRing } from '@/components/trust/trust-score-ring';
 import { TierBadge } from '@/components/trust/tier-badge';
 import { useRequireAuth } from '@/components/auth/require-auth';
+import { useFavorites } from '@/components/discovery/favorites-provider';
 import { formatDistance } from '@/lib/geo';
 import { formatRating, formatXaf, initials, type WorkerCardData } from '@/lib/discovery';
 import { cardHoverIn, cardHoverOut, useReducedMotion } from '@/lib/motion';
@@ -43,10 +44,11 @@ export function WorkerCard({ worker, compact = false, className }: WorkerCardPro
   const t = useTranslations('WorkerCard');
   const locale = useLocale();
   const requireAuth = useRequireAuth();
+  const { isSaved, toggle } = useFavorites();
   const reducedMotion = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const saved = isSaved(worker.userId);
 
   const name = worker.name ?? t('unnamed');
   const distance = formatDistance(worker.distanceM, (key, values) => t(`distance.${key}`, values));
@@ -237,9 +239,22 @@ export function WorkerCard({ worker, compact = false, className }: WorkerCardPro
           aria-pressed={saved}
           aria-label={saved ? t('unsave', { name }) : t('save', { name })}
           onClick={() =>
-            requireAuth('save_favorite', () => setSaved((value) => !value), {
-              payload: { userId: worker.userId },
-            })
+            requireAuth(
+              'save_favorite',
+              () =>
+                void toggle({
+                  userId: worker.userId,
+                  name: worker.name,
+                  avatar: worker.avatar,
+                  headline: worker.headline,
+                  city: worker.city,
+                  tier: worker.tier,
+                  trustScore: worker.trustScore,
+                  completedJobs: worker.completedJobs,
+                  averageRating: worker.averageRating,
+                }),
+              { payload: { userId: worker.userId } },
+            )
           }
           className="inline-flex size-10 shrink-0 items-center justify-center rounded-button border border-input text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >

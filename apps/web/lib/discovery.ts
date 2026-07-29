@@ -4,22 +4,16 @@
  * The discovery contract: what a worker card needs, and the small amount of
  * per-visitor state discovery keeps (DIS-02, DIS-10).
  *
- * Saved workers, saved searches and recently-viewed all live in localStorage
- * here, deliberately, for the launch shape of the product:
- *
- *  - RECENTLY VIEWED is browsing history. It belongs to the device, not the
- *    account, and a guest gets it without signing up — which is the point of the
- *    guest first-interface (ACC-01).
- *  - SAVING is a gated action (ACC-02): the button calls requireAuth first. What
- *    is stored here is the local mirror that keeps the UI honest between the tap
- *    and the server round-trip, and gives a signed-out visitor who just bounced
- *    to login their selection back when they return.
- *
- * When the favourites backend lands this file becomes the cache in front of it,
- * not a second source of truth.
+ * Saved searches and recently-viewed live in localStorage here, deliberately:
+ * both are per-device browsing convenience, not account data, so a guest gets
+ * them without signing up (ACC-01). SAVED WORKERS is account data instead —
+ * it is a gated action (ACC-02) backed by the server (FavoritesProvider,
+ * `myFavorites`), not device-local state, so it follows the signed-in identity
+ * to another device rather than staying behind on this one.
  */
 
 import type { NearbyWorkerResult, SearchWorkerResult } from './graphql/discovery';
+import type { SavedWorker } from './graphql/favorites';
 import type { VerificationTier } from './trust';
 
 /**
@@ -118,6 +112,36 @@ export function nearbyResultToCard(worker: NearbyWorkerResult): WorkerCardData {
 }
 
 /**
+ * Projects a saved worker onto the same card contract, for the Saved list.
+ *
+ * `myFavorites` carries no distance, price or matched-service fields — those
+ * belong to a search hit, not a bookmark — so they are null/empty here. The
+ * card already renders each of those as optional.
+ */
+export function savedWorkerToCard(worker: SavedWorker): WorkerCardData {
+  return {
+    workerProfileId: worker.userId,
+    userId: worker.userId,
+    name: worker.name,
+    avatar: worker.avatar,
+    headline: worker.headline,
+    city: worker.city,
+    area: null,
+    tier: worker.tier,
+    trustScore: worker.trustScore,
+    completedJobs: worker.completedJobs,
+    averageRating: worker.averageRating,
+    distanceM: null,
+    priceFrom: null,
+    matchedServiceName: null,
+    matchedServiceCount: 0,
+    latitude: null,
+    longitude: null,
+    portfolioPreview: [],
+  };
+}
+
+/**
  * Formats an XAF amount.
  *
  * XAF has no minor unit, so there are never decimals — a "5 000,00 FCFA" price
@@ -161,10 +185,9 @@ export function initials(name: string | null | undefined): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Saved workers, saved searches, recently viewed (DIS-10)
+// Saved searches, recently viewed (DIS-10)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SAVED_WORKERS_KEY = 'trustpro.saved-workers';
 const SAVED_SEARCHES_KEY = 'trustpro.saved-searches';
 const RECENT_WORKERS_KEY = 'trustpro.recent-workers';
 
@@ -209,23 +232,6 @@ function writeJson(key: string, value: unknown): void {
     // Private browsing or a full quota. Saving is a convenience, never a
     // correctness requirement, so a failure here is silent by design.
   }
-}
-
-export function readSavedWorkers(): string[] {
-  return readJson<string[]>(SAVED_WORKERS_KEY, []).filter(
-    (id): id is string => typeof id === 'string',
-  );
-}
-
-/** Toggles a save and returns the new list, so callers re-render from one value. */
-export function toggleSavedWorker(userId: string): string[] {
-  const current = readSavedWorkers();
-  const next = current.includes(userId)
-    ? current.filter((id) => id !== userId)
-    : [userId, ...current];
-
-  writeJson(SAVED_WORKERS_KEY, next);
-  return next;
 }
 
 export function readSavedSearches(): SavedSearch[] {

@@ -1,12 +1,24 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertTriangle, Lock } from 'lucide-react';
+import { AlertTriangle, Loader2, Lock, Wallet } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { FormBanner } from '@/components/auth/form-banner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { useToast } from '@/components/ui/use-toast';
+import { ApiError } from '@/lib/api-error';
 import { formatXaf } from '@/lib/discovery';
 import { formatDateTime } from '@/lib/datetime';
 import {
@@ -16,6 +28,7 @@ import {
   isEscrowException,
 } from '@/lib/quotes';
 import { MY_BOOKINGS_QUERY, type Booking, type MyBookingsQueryResult } from '@/lib/graphql/quotes';
+import { restPost } from '@/lib/rest-api';
 import { MilestoneStepper, type Milestone } from './milestone-stepper';
 
 /**
@@ -29,7 +42,7 @@ import { MilestoneStepper, type Milestone } from './milestone-stepper';
  */
 export function EscrowTimelines() {
   const t = useTranslations('Transactions');
-  const { data, loading, error } = useQuery<MyBookingsQueryResult>(MY_BOOKINGS_QUERY, {
+  const { data, loading, error, refetch } = useQuery<MyBookingsQueryResult>(MY_BOOKINGS_QUERY, {
     fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
   });
@@ -59,13 +72,13 @@ export function EscrowTimelines() {
   return (
     <div className="flex flex-col gap-6">
       {bookings.map((booking) => (
-        <EscrowCard key={booking.id} booking={booking} />
+        <EscrowCard key={booking.id} booking={booking} onPaid={() => void refetch()} />
       ))}
     </div>
   );
 }
 
-function EscrowCard({ booking }: { booking: Booking }) {
+function EscrowCard({ booking, onPaid }: { booking: Booking; onPaid: () => void }) {
   const t = useTranslations('Transactions');
   const locale = useLocale();
 
@@ -140,8 +153,65 @@ function EscrowCard({ booking }: { booking: Booking }) {
             {t('releasedOn', { date: formatDateTime(booking.createdAt, locale) ?? '' })}
           </p>
         )}
+
+        {booking.status === 'PENDING_PAYMENT' && <PayNowDialog booking={booking} onPaid={onPaid} />}
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * The explicit "fund the escrow" action a PENDING_PAYMENT booking is waiting
+ * on (PAY-01). Accepting a quote only creates the booking — the API
+ * deliberately does not auto-charge (see EscrowInitiationListener), so
+ * without this button a booking sat in "Awaiting payment" forever with no
+ * way to actually pay.
+ */
+function PayNowDialog({ booking, onPaid }: { booking: Booking; onPaid: () => void }) {
+  const t = useTranslations('Transactions');
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
+
+  async function pay() {
+    setBusy(true);
+    setError(null);
+    try {
+      await restPost(`bookings/${booking.id}/pay`);
+      setOpen(false);
+      toast({ title: t('paymentRequested') });
+      onPaid();
+    } catch (err) {
+      if (err instanceof ApiError) setError({ message: err.message, requestId: err.requestId });
+      else setError({ message: t('paymentFailed') });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full">
+          <Wallet aria-hidden />
+          {t('payNow')}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('payNowTitle')}</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          {error && <FormBanner tone="error" message={error.message} requestId={error.requestId} />}
+          <p className="text-sm text-muted-foreground">{t('payNowHint')}</p>
+          <Button onClick={() => void pay()} disabled={busy}>
+            {busy ? <Loader2 aria-hidden className="animate-spin" /> : <Wallet aria-hidden />}
+            {t('confirmPay')}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -15,10 +15,11 @@ import {
 import { Field } from '@/components/auth/field';
 import { FormBanner } from '@/components/auth/form-banner';
 import { useToast } from '@/components/ui/use-toast';
-import { useRequireAuth } from '@/components/auth/require-auth';
+import { useIntentReplay, useRequireAuth } from '@/components/auth/require-auth';
 import { ApiError } from '@/lib/api-error';
 import { formatXaf } from '@/lib/discovery';
 import { parseBudget } from '@/lib/jobs';
+import { startConversation } from '@/lib/messaging';
 import { estimateFee } from '@/lib/payments';
 import type { Quote } from '@/lib/graphql/quotes';
 import { restPost } from '@/lib/rest-api';
@@ -29,20 +30,38 @@ import { restPost } from '@/lib/rest-api';
  *
  * Accepting is the money moment, so the fee is shown BEFORE it (PAY-02): the
  * dialog lays out price, the ~10% platform fee and what the worker receives, so
- * the ~10% is never a surprise sprung at payment. Accepting creates the booking
- * and initiates escrow (the entry point for PAY-01), then routes to the wallet
- * where the funds are visibly held.
+ * the ~10% is never a surprise sprung at payment. Accepting only creates the
+ * booking (PENDING_PAYMENT) — the API deliberately does not auto-charge, so
+ * this routes to the wallet where funding escrow is its own explicit action
+ * (see PayNowDialog in escrow-timeline.tsx, the entry point for PAY-01).
  */
 export function QuoteClientActions({ quote, onChanged }: { quote: Quote; onChanged: () => void }) {
   const t = useTranslations('Quotes');
   const { toast } = useToast();
   const requireAuth = useRequireAuth();
+  const router = useRouter();
+
+  async function startChat() {
+    try {
+      const { id } = await startConversation({ recipientId: quote.workerId, jobId: quote.jobId });
+      router.push(`/app/messages/${id}`);
+    } catch (err) {
+      toast({
+        title: err instanceof ApiError ? err.message : t('messageFailed'),
+        variant: 'danger',
+      });
+    }
+  }
+
+  useIntentReplay('contact_worker', (intent) => {
+    if (intent.payload?.quoteId === quote.id) void startChat();
+  });
 
   const actionable = quote.status === 'SENT' || quote.status === 'VIEWED';
   if (!actionable) return null;
 
   function chat() {
-    requireAuth('contact_worker', () => toast({ title: t('messagingSoon') }));
+    requireAuth('contact_worker', () => void startChat(), { payload: { quoteId: quote.id } });
   }
 
   return (

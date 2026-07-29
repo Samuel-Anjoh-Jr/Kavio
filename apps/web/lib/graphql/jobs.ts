@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
 import type { JobStatus, JobUrgency } from '@/lib/jobs';
+import type { VerificationTier } from '@/lib/trust';
 
 /**
  * Job READS (DUAL API RULE: reads are GraphQL, writes are REST in lib/rest-api).
@@ -28,7 +29,7 @@ export interface WorkerPreview {
   avatar: string | null;
   headline: string | null;
   city: string | null;
-  tier: string;
+  tier: VerificationTier;
   trustScore: number;
   completedJobs: number;
   averageRating: number | null;
@@ -223,4 +224,151 @@ export interface JobPostingEligibilityResult {
     feeXaf: number;
     steps: Array<{ kind: string; checkType: string | null; messageKey: string }>;
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Applications & invitations (JOB-03, JOB-04)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type JobApplicationStatus =
+  'SUBMITTED' | 'UNDER_REVIEW' | 'SHORTLISTED' | 'NOT_SELECTED' | 'HIRED' | 'WITHDRAWN';
+
+export interface JobApplication {
+  id: string;
+  jobId: string;
+  jobTitle: string | null;
+  status: JobApplicationStatus;
+  message: string;
+  worker: WorkerPreview | null;
+  createdAt: string;
+}
+
+const WORKER_PREVIEW_FIELDS = `
+  workerId
+  name
+  avatar
+  headline
+  city
+  tier
+  trustScore
+  completedJobs
+  averageRating
+`;
+
+const APPLICATION_FIELDS = `
+  id
+  jobId
+  jobTitle
+  status
+  message
+  worker {
+    ${WORKER_PREVIEW_FIELDS}
+  }
+  createdAt
+`;
+
+/** A job's applicants, for its poster (JOB-03). */
+export const JOB_APPLICANTS_QUERY = gql`
+  query JobApplicants($jobId: ID!) {
+    jobApplicants(jobId: $jobId) {
+      ${APPLICATION_FIELDS}
+    }
+  }
+`;
+
+export interface JobApplicantsQueryResult {
+  jobApplicants: JobApplication[];
+}
+
+/** The worker's own applications and their statuses (JOB-04). */
+export const MY_APPLICATIONS_QUERY = gql`
+  query MyApplications {
+    myApplications {
+      ${APPLICATION_FIELDS}
+    }
+  }
+`;
+
+export interface MyApplicationsQueryResult {
+  myApplications: JobApplication[];
+}
+
+export type JobInvitationStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELLED';
+
+export interface ClientReliability {
+  clientId: string;
+  name: string | null;
+  avatar: string | null;
+  tier: VerificationTier;
+  trustScore: number;
+  jobsPosted: number;
+  jobsCompleted: number;
+  /** Completed / posted, 0-1. Null before anything has been posted. */
+  completionRate: number | null;
+  /** Mean rating workers gave this client. Null until rated — never zero. */
+  averageRating: number | null;
+}
+
+export interface JobInvitation {
+  id: string;
+  jobId: string;
+  jobTitle: string | null;
+  status: JobInvitationStatus;
+  message: string | null;
+  /** The invited worker card, for the poster's view. */
+  worker: WorkerPreview | null;
+  /** Who is asking, for the WORKER's view of an incoming job request. */
+  client: ClientReliability | null;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+const INVITATION_FIELDS = `
+  id
+  jobId
+  jobTitle
+  status
+  message
+  worker {
+    ${WORKER_PREVIEW_FIELDS}
+  }
+  client {
+    clientId
+    name
+    avatar
+    tier
+    trustScore
+    jobsPosted
+    jobsCompleted
+    completionRate
+    averageRating
+  }
+  expiresAt
+  createdAt
+`;
+
+/** Workers a poster invited to a job (JOB-03). */
+export const JOB_INVITATIONS_QUERY = gql`
+  query JobInvitations($jobId: ID!) {
+    jobInvitations(jobId: $jobId) {
+      ${INVITATION_FIELDS}
+    }
+  }
+`;
+
+export interface JobInvitationsQueryResult {
+  jobInvitations: JobInvitation[];
+}
+
+/** The worker's incoming Job Requests (JOB-04). */
+export const MY_JOB_INVITATIONS_QUERY = gql`
+  query MyJobInvitations {
+    myJobInvitations {
+      ${INVITATION_FIELDS}
+    }
+  }
+`;
+
+export interface MyJobInvitationsQueryResult {
+  myJobInvitations: JobInvitation[];
 }

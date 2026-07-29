@@ -63,7 +63,7 @@ export function OpenDisputeForm({ jobId }: { jobId: string }) {
     try {
       const dispute = await restPost<{ id: string }>('disputes', {
         bookingId: booking!.id,
-        message: trimmed,
+        reason: trimmed,
       });
       router.push(`/app/disputes/${dispute.id}`);
     } catch (err) {

@@ -1,7 +1,8 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { Role } from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { CurrentUser, RequirePermissions } from '../auth/decorators/auth.decorators';
+import { CurrentUser, RequirePermissions, Roles } from '../auth/decorators/auth.decorators';
 import { ZodValidationPipe } from '../lib/zod-validation.pipe';
 import {
   advanceVerificationSchema,
@@ -22,8 +23,16 @@ import { VerificationService, type SubmissionResult } from './verification.servi
  * Verification writes (REST, per the DUAL API RULE). Reads are GraphQL.
  *
  * Two audiences on one controller, separated by permission:
- *   verification:submit          the subject, sending their own documents
- *   admin:verification_review    agents and admins, deciding them
+ *   verification:submit    the subject, sending their own documents
+ *   ADMIN or AGENT         reviewing and deciding them (AGT-03, ADM-03)
+ *
+ * The review actions are gated by @Roles rather than @RequirePermissions
+ * deliberately: field agents and admins are the two roles that genuinely do
+ * this job, not a delegable capability another role could be granted, and
+ * there is no single permission both hold (AGENT carries
+ * `verification:field_verify`, not `admin:verification_review` — requiring
+ * the latter here would silently lock every field agent out of the board
+ * their own role exists for).
  *
  * Every review action is RBAC-gated here AND audit-logged in the service. The
  * guard stops the request; the audit log answers for the ones that got through.
@@ -59,7 +68,7 @@ export class VerificationController {
 
   @Post(':id/claim')
   @HttpCode(HttpStatus.OK)
-  @RequirePermissions('admin:verification_review')
+  @Roles(Role.ADMIN, Role.AGENT)
   async claim(
     @CurrentUser() reviewer: AuthenticatedUser,
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -70,7 +79,7 @@ export class VerificationController {
   /** Moves an item along the board. Decisions have their own endpoints. */
   @Post(':id/stage')
   @HttpCode(HttpStatus.OK)
-  @RequirePermissions('admin:verification_review')
+  @Roles(Role.ADMIN, Role.AGENT)
   async advance(
     @CurrentUser() reviewer: AuthenticatedUser,
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -81,7 +90,7 @@ export class VerificationController {
 
   @Post(':id/approve')
   @HttpCode(HttpStatus.OK)
-  @RequirePermissions('admin:verification_review')
+  @Roles(Role.ADMIN, Role.AGENT)
   async approve(
     @CurrentUser() reviewer: AuthenticatedUser,
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -92,7 +101,7 @@ export class VerificationController {
 
   @Post(':id/reject')
   @HttpCode(HttpStatus.OK)
-  @RequirePermissions('admin:verification_review')
+  @Roles(Role.ADMIN, Role.AGENT)
   async reject(
     @CurrentUser() reviewer: AuthenticatedUser,
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -104,7 +113,7 @@ export class VerificationController {
   /** Asks the subject for more, without costing them their place in the queue. */
   @Post(':id/request-info')
   @HttpCode(HttpStatus.OK)
-  @RequirePermissions('admin:verification_review')
+  @Roles(Role.ADMIN, Role.AGENT)
   async requestInfo(
     @CurrentUser() reviewer: AuthenticatedUser,
     @Param('id', new ParseUUIDPipe()) id: string,

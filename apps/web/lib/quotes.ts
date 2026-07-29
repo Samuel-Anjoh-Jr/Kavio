@@ -29,6 +29,7 @@ export const QUOTE_STATUS_TONE: Record<QuoteStatus, StatusTone> = {
 export type BookingStatus =
   | 'PENDING_PAYMENT'
   | 'PAID'
+  | 'ACCEPTED'
   | 'IN_PROGRESS'
   | 'COMPLETED'
   | 'RELEASED'
@@ -39,6 +40,7 @@ export type BookingStatus =
 export const BOOKING_STATUS_TONE: Record<BookingStatus, StatusTone> = {
   PENDING_PAYMENT: 'warning',
   PAID: 'primary',
+  ACCEPTED: 'primary',
   IN_PROGRESS: 'accent',
   COMPLETED: 'success',
   RELEASED: 'success',
@@ -73,5 +75,17 @@ export function isEscrowException(status: BookingStatus): boolean {
 }
 
 export function escrowMilestoneIndex(status: BookingStatus): number {
+  // PENDING_PAYMENT occupies rung 0 for labelling ("Payment — fund the escrow
+  // to begin"), but it is the state BEFORE that rung is reached, not after —
+  // unlike every other status here, which names something that already
+  // happened. Reporting it as reached would check off "Payment" the instant a
+  // quote is accepted, before any money has moved.
+  if (status === 'PENDING_PAYMENT') return -1;
+  // ACCEPTED (the worker acknowledging a funded booking) has no rung of its
+  // own on this 5-step ladder — it sits between "Secured in escrow" and "Work
+  // in progress" with nothing new to show the client, so it reads as the same
+  // reached point as PAID rather than falling through to -1 (indexOf finding
+  // nothing) and wrongly looking like payment never happened.
+  if (status === 'ACCEPTED') return ESCROW_MILESTONES.indexOf('PAID');
   return ESCROW_MILESTONES.indexOf(status);
 }

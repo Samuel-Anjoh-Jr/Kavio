@@ -27,40 +27,43 @@ import { QUOTE_DURATION_UNITS, type QuoteDurationUnit } from '@/lib/quotes';
 import type { Quote } from '@/lib/graphql/quotes';
 import { restPatch, restPost } from '@/lib/rest-api';
 
+type QuoteComposerProps =
+  | {
+      mode: 'edit' | 'revise';
+      quote: Quote;
+      jobId?: undefined;
+      trigger: ReactNode;
+      onSaved: () => void;
+    }
+  | { mode: 'create'; quote?: undefined; jobId: string; trigger: ReactNode; onSaved: () => void };
+
 /**
  * The worker's quote composer (QTE-01): an itemised, priced offer.
  *
- * Two entry points, one form:
+ * Three entry points, one form:
+ *  - CREATE the first quote on a job (POST /jobs/:jobId/quotes, sent immediately),
  *  - EDIT a still-DRAFT quote (PATCH), or
  *  - REVISE a sent quote as a counter-offer (POST /revise) — a revision is a NEW
  *    quote chained to the one it supersedes, so the form carries a full offer,
- *    not a delta (matches the API's reviseQuoteSchema).
+ *    not a delta (matches the API's reviseQuoteSchema and createQuoteSchema).
  *
  * "What's included" is a real itemised list rather than a paragraph, because a
  * client comparing two quotes needs to compare line items, not prose.
  */
-export function QuoteComposer({
-  quote,
-  mode,
-  trigger,
-  onSaved,
-}: {
-  quote: Quote;
-  mode: 'edit' | 'revise';
-  trigger: ReactNode;
-  onSaved: () => void;
-}) {
+export function QuoteComposer(props: QuoteComposerProps) {
+  const { mode, trigger, onSaved } = props;
+  const quote = mode === 'create' ? null : props.quote;
   const t = useTranslations('Quotes');
   const [open, setOpen] = useState(false);
 
-  const [price, setPrice] = useState(String(quote.price || ''));
+  const [price, setPrice] = useState(String(quote?.price || ''));
   const [durationValue, setDurationValue] = useState(
-    quote.durationValue ? String(quote.durationValue) : '',
+    quote?.durationValue ? String(quote.durationValue) : '',
   );
-  const [durationUnit, setDurationUnit] = useState<QuoteDurationUnit>(quote.durationUnit ?? 'DAY');
-  const [includes, setIncludes] = useState<string[]>(quote.includes ?? []);
+  const [durationUnit, setDurationUnit] = useState<QuoteDurationUnit>(quote?.durationUnit ?? 'DAY');
+  const [includes, setIncludes] = useState<string[]>(quote?.includes ?? []);
   const [newItem, setNewItem] = useState('');
-  const [message, setMessage] = useState(quote.message ?? '');
+  const [message, setMessage] = useState(quote?.message ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
 
@@ -92,9 +95,11 @@ export function QuoteComposer({
 
     try {
       if (mode === 'edit') {
-        await restPatch(`quotes/${quote.id}`, body);
+        await restPatch(`quotes/${props.quote.id}`, body);
+      } else if (mode === 'revise') {
+        await restPost(`quotes/${props.quote.id}/revise`, { ...body, send: true });
       } else {
-        await restPost(`quotes/${quote.id}/revise`, { ...body, send: true });
+        await restPost(`jobs/${props.jobId}/quotes`, { ...body, send: true });
       }
       setOpen(false);
       onSaved();
@@ -114,7 +119,13 @@ export function QuoteComposer({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{mode === 'edit' ? t('editQuote') : t('reviseQuote')}</DialogTitle>
+          <DialogTitle>
+            {mode === 'edit'
+              ? t('editQuote')
+              : mode === 'revise'
+                ? t('reviseQuote')
+                : t('sendQuote')}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
@@ -218,7 +229,11 @@ export function QuoteComposer({
 
           <Button onClick={() => void save()} disabled={saving || !priceValue}>
             {saving ? <Loader2 aria-hidden className="animate-spin" /> : null}
-            {mode === 'edit' ? t('saveDraft') : t('sendRevision')}
+            {mode === 'edit'
+              ? t('saveDraft')
+              : mode === 'revise'
+                ? t('sendRevision')
+                : t('sendQuote')}
           </Button>
         </div>
       </DialogContent>

@@ -21,21 +21,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useToast } from '@/components/ui/use-toast';
-import { useRequireAuth } from '@/components/auth/require-auth';
+import { useIntentReplay, useRequireAuth } from '@/components/auth/require-auth';
 import { ReportDialog } from '@/components/moderation/report-dialog';
 import { MilestoneStepper, type Milestone } from '@/components/transactions/milestone-stepper';
+import { JobWorkerActions } from '@/components/jobs/job-worker-actions';
+import { JobPosterApplicants } from '@/components/jobs/job-poster-applicants';
 import { ApiError } from '@/lib/api-error';
 import { formatXaf } from '@/lib/discovery';
 import { formatDateTime } from '@/lib/datetime';
-import {
-  isJobException,
-  JOB_MILESTONES,
-  JOB_STATUS_TONE,
-  jobMilestoneIndex,
-  type JobStatus,
-} from '@/lib/jobs';
+import { isJobException, JOB_MILESTONES, JOB_STATUS_TONE, jobMilestoneIndex } from '@/lib/jobs';
 import { JOB_QUERY, type JobQueryResult } from '@/lib/graphql/jobs';
 import { ME_QUERY, type MeQueryResult } from '@/lib/graphql/documents';
+import { MY_BOOKINGS_QUERY, type MyBookingsQueryResult } from '@/lib/graphql/quotes';
+import { startConversation } from '@/lib/messaging';
 import { restPost } from '@/lib/rest-api';
 
 /**
@@ -46,9 +44,17 @@ import { restPost } from '@/lib/rest-api';
  * animated stepper next to the real event history with its timestamps.
  *
  * The completion handoff is the important interaction. When the poster confirms
- * a completed job, that single action releases the escrow (the RELEASED
- * transition the API wires to payout in PROMPT 64) and prompts a review — the
- * client confirming is what pays the worker, so it is deliberately explicit.
+ * a completed job, that single action releases the escrow and prompts a review —
+ * the client confirming is what pays the worker, so it is deliberately explicit.
+ *
+ * The buttons below post to the BOOKING'S escrow endpoints
+ * (`bookings/:id/accept-work` / `start` / `complete` / `confirm`), not the
+ * job's own `jobs/:id/transition`. Only the booking endpoints move money —
+ * `EscrowService#applyTransition` updates the EscrowHold, pays the worker out
+ * at RELEASED, and drives the job's own status to match as a side effect
+ * (`applySystemTransition`). Calling `jobs/:id/transition` directly would move
+ * the job's displayed status without ever touching escrow, leaving the booking
+ * stuck and the worker unpaid.
  *
  * Which actions show is decided by who the viewer is; whether they are ALLOWED
  * is decided by the server, which authorises every transition against the
@@ -74,20 +80,29 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
     skip: authStatus !== 'authenticated',
   });
 
+  const { data: bookingsData, refetch: refetchBookings } = useQuery<MyBookingsQueryResult>(
+    MY_BOOKINGS_QUERY,
+    { skip: authStatus !== 'authenticated', fetchPolicy: 'cache-and-network' },
+  );
+
   const job = data?.job;
   const viewerId = meData?.me?.id ?? null;
   const isPoster = Boolean(viewerId && job && viewerId === job.posterId);
   // The viewer is a plausible worker on this job when signed in and not the
   // poster; the server has the final say on whether the transition is theirs.
   const isPossibleWorker = authStatus === 'authenticated' && !isPoster;
+  const booking = bookingsData?.myBookings.find((b) => b.jobId === jobId) ?? null;
 
-  async function transition(to: JobStatus, successKey: string) {
+  async function advance(calls: string[], successKey: string) {
+    if (!booking) return;
     setBusy(true);
     try {
-      await restPost(`jobs/${jobId}/transition`, { to });
-      await refetch();
+      for (const call of calls) {
+        await restPost(`bookings/${booking.id}/${call}`);
+      }
+      await Promise.all([refetch(), refetchBookings()]);
       toast({ title: t(successKey) });
-      if (to === 'RELEASED') {
+      if (calls.includes('confirm')) {
         // Confirming completion is what releases the money and opens the review.
         toast({ title: t('reviewPrompt') });
       }
@@ -101,11 +116,32 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
     }
   }
 
+  // The other party: the poster messages the worker booked on this job, and
+  // anyone else (an applicant sizing up the work, the booked worker) messages
+  // the poster. Null when the poster has nobody to message yet (no booking).
+  const recipientId = isPoster ? (booking?.workerId ?? null) : (job?.posterId ?? null);
+
+  async function startContact() {
+    if (!recipientId) return;
+    try {
+      const { id } = await startConversation({ recipientId, jobId });
+      router.push(`/app/messages/${id}`);
+    } catch (err) {
+      toast({
+        title: err instanceof ApiError ? err.message : t('messageFailed'),
+        variant: 'danger',
+      });
+    }
+  }
+
+  useIntentReplay('contact_worker', (intent) => {
+    if (intent.payload?.jobId === jobId) void startContact();
+  });
+
   function contact() {
-    // Messaging is Phase 5; the gate and intent are wired now so a guest bounces
-    // and a signed-in user gets a truthful "coming soon" rather than a 404.
-    requireAuth('contact_worker', () => toast({ title: t('messagingSoon') }), {
+    requireAuth('contact_worker', () => void startContact(), {
       returnTo: `/app/jobs/${jobId}`,
+      payload: { jobId },
     });
   }
 
@@ -177,6 +213,29 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
         </div>
       )}
 
+      {/* A worker's (or a not-yet-signed-in worker's) ways into a job that
+          isn't theirs: respond to an invitation, apply, or quote it outright. */}
+      {!isPoster && <JobWorkerActions jobId={jobId} jobStatus={job.status} />}
+
+      {/* QUOTED jobs have no accept/decline UI here — quotes are negotiated in
+          the quotes inbox (QTE-02) — so without this the poster has no way to
+          discover that quotes have arrived at all. */}
+      {isPoster && job.status === 'QUOTED' && (
+        <div className="flex items-center justify-between gap-3 rounded-card border border-primary/30 bg-primary/10 p-4">
+          <div>
+            <p className="font-medium text-foreground">{t('quotesReceivedHeading')}</p>
+            <p className="text-sm text-muted-foreground">{t('quotesReceivedBody')}</p>
+          </div>
+          <Button size="sm" onClick={() => router.push('/app/quotes')}>
+            {t('viewQuotes')}
+          </Button>
+        </div>
+      )}
+
+      {isPoster && (job.status === 'OPEN' || job.status === 'QUOTED') && (
+        <JobPosterApplicants jobId={jobId} />
+      )}
+
       {job.description && (
         <Card>
           <CardContent className="whitespace-pre-wrap py-5 text-sm text-surface-foreground">
@@ -204,29 +263,42 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
 
       {/* ── Actions ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3">
-        <Button variant="outline" onClick={contact}>
-          <MessageCircle aria-hidden />
-          {t('contact')}
-        </Button>
+        {recipientId && (
+          <Button variant="outline" onClick={contact}>
+            <MessageCircle aria-hidden />
+            {t('contact')}
+          </Button>
+        )}
 
-        {isPossibleWorker && job.status === 'ACCEPTED' && (
-          <Button onClick={() => void transition('IN_PROGRESS', 'startedToast')} disabled={busy}>
+        {isPossibleWorker && job.status === 'ACCEPTED' && booking && (
+          <Button
+            onClick={() =>
+              void advance(
+                // A retry after a partial failure may already be past PAID
+                // (accept-work succeeded, start didn't) — only replay the step
+                // that's actually still needed.
+                booking.status === 'PAID' ? ['accept-work', 'start'] : ['start'],
+                'startedToast',
+              )
+            }
+            disabled={busy}
+          >
             {busy ? <Loader2 aria-hidden className="animate-spin" /> : null}
             {t('startJob')}
           </Button>
         )}
 
-        {isPossibleWorker && job.status === 'IN_PROGRESS' && (
-          <Button onClick={() => void transition('COMPLETED', 'completedToast')} disabled={busy}>
+        {isPossibleWorker && job.status === 'IN_PROGRESS' && booking && (
+          <Button onClick={() => void advance(['complete'], 'completedToast')} disabled={busy}>
             {busy ? <Loader2 aria-hidden className="animate-spin" /> : <CheckCircle2 aria-hidden />}
             {t('markComplete')}
           </Button>
         )}
 
-        {isPoster && job.status === 'COMPLETED' && (
+        {isPoster && job.status === 'COMPLETED' && booking && (
           <Button
             variant="success"
-            onClick={() => void transition('RELEASED', 'releasedToast')}
+            onClick={() => void advance(['confirm'], 'releasedToast')}
             disabled={busy}
           >
             {busy ? <Loader2 aria-hidden className="animate-spin" /> : <ShieldCheck aria-hidden />}
@@ -235,7 +307,7 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
         )}
 
         {job.status === 'RELEASED' && (
-          <Button variant="outline" onClick={contact}>
+          <Button variant="outline" onClick={() => router.push(`/app/jobs/${jobId}/review`)}>
             <Star aria-hidden />
             {t('leaveReview')}
           </Button>

@@ -31,6 +31,7 @@ import { GeoModule } from './geo/geo.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { SearchModule } from './search/search.module';
 import { ProfilesModule } from './profiles/profiles.module';
+import { FavoritesModule } from './profiles/favorites/favorites.module';
 import { JobsModule } from './jobs/jobs.module';
 import { QuotesModule } from './quotes/quotes.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -88,6 +89,8 @@ import { AdminModule } from './admin/admin.module';
     SearchModule,
     // Worker and business profiles, read and owner-edited (PRO-01…PRO-07).
     ProfilesModule,
+    // Saved workers — a personal shortlist onto a profile, not a trust signal.
+    FavoritesModule,
     // Business, teams and corporate eligibility (BIZ-*). Before JobsModule,
     // which resolves a team job's company access through it, and after
     // VerificationModule, whose pipeline the RCCM check rides.
