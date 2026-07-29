@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { VerificationRejectionReason } from '@trustpro/database';
+import { VerificationRejectionReason } from '@kavio/database';
 import { createLogger } from '../lib/logger';
 
 const logger = createLogger('verification:ocr');

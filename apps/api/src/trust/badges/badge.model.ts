@@ -1,4 +1,4 @@
-import { BadgeType, VerificationTier } from '@trustpro/database';
+import { BadgeType, VerificationTier } from '@kavio/database';
 
 /**
  * Milestone badge rules (TRU-11), as a PURE function of trust state.

@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { JobStatus, MediaAssetKind, QuoteStatus } from '@trustpro/database';
+import { JobStatus, MediaAssetKind, QuoteStatus } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';

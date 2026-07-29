@@ -42,7 +42,7 @@ export {
 import type { BrowsingLocation } from './geo-core';
 import { clampRadius, isValidCoordinate } from './geo-core';
 
-const STORAGE_KEY = 'trustpro.location';
+const STORAGE_KEY = 'kavio.location';
 
 /**
  * A stored fix goes stale after a week. People move, and a month-old GPS point

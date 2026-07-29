@@ -1,4 +1,4 @@
-import { VerificationTier } from '@trustpro/database';
+import { VerificationTier } from '@kavio/database';
 
 /**
  * Discovery filter semantics (PROMPT 45; DIS-07, DIS-08).

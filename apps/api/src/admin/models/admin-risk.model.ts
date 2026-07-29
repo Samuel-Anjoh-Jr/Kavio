@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { UserStatus } from '@trustpro/database';
+import { UserStatus } from '@kavio/database';
 
 /**
  * The Fraud & Risk monitor (ADM-06), served over GraphQL per the DUAL API RULE.

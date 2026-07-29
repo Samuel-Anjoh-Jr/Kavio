@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { NotificationCategory, NotificationChannel } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel } from '@kavio/database';
 import { NOTIFICATION_SOUND_KEYS } from '../notification-sound';
 
 /**

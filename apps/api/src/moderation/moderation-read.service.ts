@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AbuseReportReason, AbuseReportStatus, Prisma, ReportTargetType } from '@trustpro/database';
+import { AbuseReportReason, AbuseReportStatus, Prisma, ReportTargetType } from '@kavio/database';
 import { PrismaService } from '../prisma/prisma.service';
 import { ModerationTargetService } from './moderation-target.service';
 import type {

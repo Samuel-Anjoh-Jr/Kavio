@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationChannel } from '@trustpro/database';
+import { NotificationChannel } from '@kavio/database';
 import {
   getEmailFromAddress,
   getEmailProviderName,

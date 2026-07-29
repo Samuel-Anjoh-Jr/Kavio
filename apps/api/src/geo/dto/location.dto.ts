@@ -1,4 +1,4 @@
-import { LocationSource } from '@trustpro/database';
+import { LocationSource } from '@kavio/database';
 import { z } from 'zod';
 
 /**

@@ -18,7 +18,7 @@ const logger = createLogger('business:notifications');
 /**
  * Turns business & team events into notification requests (BIZ-01, BIZ-03).
  *
- * The invitation is the interesting one: the invitee usually has NO TrustPro
+ * The invitation is the interesting one: the invitee usually has NO Kavio
  * account yet, so there is no userId to address and no preference row to honour.
  * The dispatcher is built around a user, so this listener addresses the INVITER
  * with the delivery details and lets the business surface send the link — rather

@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { Faq, PortfolioShowcase, Prisma, Testimonial } from '@trustpro/database';
+import type { Faq, PortfolioShowcase, Prisma, Testimonial } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { roleHasPermission } from '../auth/rbac/permissions';
 import { AppException } from '../lib/app-exception';

@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { Role, UserStatus, VerificationTier } from '@trustpro/database';
+import { Role, UserStatus, VerificationTier } from '@kavio/database';
 import type { JwtConfig } from './auth.config';
 import { TokenService, TokenVerificationError } from './token.service';
 
@@ -8,8 +8,8 @@ const CONFIG: JwtConfig = {
   refreshSecret: 'refresh-secret-for-tests',
   accessTtlSeconds: 900,
   refreshTtlSeconds: 2_592_000,
-  issuer: 'trustpro',
-  audience: 'trustpro-web',
+  issuer: 'kavio',
+  audience: 'kavio-web',
 };
 
 function makeService(overrides: Partial<JwtConfig> = {}) {

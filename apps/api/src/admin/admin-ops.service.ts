@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AnnouncementStatus, Prisma, Role, type AnnouncementAudience } from '@trustpro/database';
+import { AnnouncementStatus, Prisma, Role, type AnnouncementAudience } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PERMISSIONS, ROLE_PERMISSIONS } from '../auth/rbac/permissions';
 import { AppException } from '../lib/app-exception';

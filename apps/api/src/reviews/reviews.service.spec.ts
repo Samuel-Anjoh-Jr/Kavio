@@ -1,5 +1,5 @@
 import type { EventEmitter2 } from '@nestjs/event-emitter';
-import { ReviewStatus, TrustEventType } from '@trustpro/database';
+import { ReviewStatus, TrustEventType } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { TrustScoreService } from '../trust/trust-score.service';

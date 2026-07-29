@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { VerificationTier } from '@trustpro/database';
+import { VerificationTier } from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import {
   NOTIFICATION_REQUESTED,

@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { Role } from '@trustpro/database';
+import type { Role } from '@kavio/database';
 import { AppException } from '../../lib/app-exception';
 import { createLogger } from '../../lib/logger';
 import {

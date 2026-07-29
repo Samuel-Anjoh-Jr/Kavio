@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { TeamMemberStatus } from '@trustpro/database';
+import { TeamMemberStatus } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';

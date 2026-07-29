@@ -6,7 +6,7 @@
  * "image/jpeg" and served back to someone else. These checks read the actual
  * leading bytes, and an upload is rejected when the two disagree.
  *
- * Deliberately narrow: only the formats TrustPro accepts are recognised, and
+ * Deliberately narrow: only the formats Kavio accepts are recognised, and
  * anything unrecognised is refused rather than waved through.
  */
 

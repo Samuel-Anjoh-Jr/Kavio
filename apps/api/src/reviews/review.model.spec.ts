@@ -1,4 +1,4 @@
-import { BookingStatus, ReviewStatus } from '@trustpro/database';
+import { BookingStatus, ReviewStatus } from '@kavio/database';
 import {
   countsToward,
   decideReviewEligibility,

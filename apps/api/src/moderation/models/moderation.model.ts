@@ -5,7 +5,7 @@ import {
   ModerationActionType,
   ReportTargetType,
   UserStatus,
-} from '@trustpro/database';
+} from '@kavio/database';
 
 /**
  * Reporting & moderation READ models (ADM-08). GraphQL, per the DUAL API RULE —

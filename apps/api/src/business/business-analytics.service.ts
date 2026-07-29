@@ -6,7 +6,7 @@ import {
   JobStatus,
   ReviewStatus,
   TransactionStatus,
-} from '@trustpro/database';
+} from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
@@ -45,7 +45,7 @@ const RECENT_PAYMENTS = 10;
  * THERE IS NO COMPANY WALLET. A business has SPEND, not a balance — nothing can
  * be paid into a company here and nothing out of it.
  *
- * That is a deliberate product decision, not an omission. Money in TrustPro flows
+ * That is a deliberate product decision, not an omission. Money in Kavio flows
  * through an IDENTITY: a person funds an escrow from their own wallet, Campay
  * confirms, the escrow settles to the worker. A company float would be a second
  * pot with its own balance, needing Campay top-up collection, a way to spend

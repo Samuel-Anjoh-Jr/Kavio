@@ -1,4 +1,4 @@
-import { QuoteDurationUnit } from '@trustpro/database';
+import { QuoteDurationUnit } from '@kavio/database';
 import { z } from 'zod';
 
 /**

@@ -43,7 +43,7 @@ export default function RootNotFound() {
             href="/en"
             className="mt-2 rounded-xl bg-indigo-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-indigo-700"
           >
-            Go to TrustPro · Aller à TrustPro
+            Go to Kavio · Aller à Kavio
           </Link>
         </div>
       </body>

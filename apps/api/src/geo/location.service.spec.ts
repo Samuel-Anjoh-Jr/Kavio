@@ -1,4 +1,4 @@
-import { LocationSource, Role, UserStatus, VerificationTier } from '@trustpro/database';
+import { LocationSource, Role, UserStatus, VerificationTier } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import type { PrismaService } from '../prisma/prisma.service';

@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { BadgeType, VerificationCheckType, VerificationTier } from '@trustpro/database';
+import { BadgeType, VerificationCheckType, VerificationTier } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';

@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { GeoRegionLevel, VerificationTier } from '@trustpro/database';
+import { GeoRegionLevel, VerificationTier } from '@kavio/database';
 
 /**
  * Spatial reads (PROMPTS 38-40), served over GraphQL per the DUAL API RULE.

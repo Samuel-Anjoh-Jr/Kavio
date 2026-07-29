@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from '@/components/locale-switcher';
@@ -30,9 +31,20 @@ export async function AuthShell({
         <header className="flex items-center justify-between px-6 py-5 sm:px-10">
           <Link
             href="/"
-            className="rounded-input font-heading text-lg font-semibold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex items-center gap-2 rounded-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            TrustPro
+            <Image
+              src="/brand/kavio-mark.png"
+              alt=""
+              aria-hidden="true"
+              width={480}
+              height={369}
+              priority
+              className="h-7 w-auto"
+            />
+            <span className="font-heading text-lg font-semibold tracking-tight text-foreground">
+              Kavio
+            </span>
           </Link>
           {/* ACC-11: language is switchable at any time, including mid-signup. */}
           <div className="flex items-center gap-2">
@@ -58,7 +70,8 @@ export async function AuthShell({
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.18),transparent_55%)]"
         />
         <div className="relative">
-          <p className="font-heading text-3xl font-semibold leading-tight text-primary-foreground">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent">{t('slogan')}</p>
+          <p className="mt-3 font-heading text-3xl font-semibold leading-tight text-primary-foreground">
             {t('headline')}
           </p>
           <p className="mt-4 max-w-sm text-primary-foreground/80">{t('body')}</p>

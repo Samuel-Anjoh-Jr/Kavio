@@ -1,4 +1,4 @@
-import { JobApplicationStatus } from '@trustpro/database';
+import { JobApplicationStatus } from '@kavio/database';
 import { z } from 'zod';
 
 /**

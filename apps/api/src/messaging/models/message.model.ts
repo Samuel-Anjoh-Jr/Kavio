@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { MessageKind, MessageStatus } from '@trustpro/database';
+import { MessageKind, MessageStatus } from '@kavio/database';
 
 /**
  * Messaging READ models (MSG-01, MSG-02). GraphQL, per the DUAL API RULE — every

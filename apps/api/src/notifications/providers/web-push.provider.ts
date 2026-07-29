@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationChannel } from '@trustpro/database';
+import { NotificationChannel } from '@kavio/database';
 import webpush from 'web-push';
 import { createLogger } from '../../lib/logger';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -44,7 +44,7 @@ export class WebPushProvider implements NotificationChannelProvider {
   ) {
     if (env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
       this.vapid = {
-        subject: env.VAPID_SUBJECT?.trim() || 'mailto:support@trustpro.cm',
+        subject: env.VAPID_SUBJECT?.trim() || 'mailto:support@kavio.cm',
         publicKey: env.VAPID_PUBLIC_KEY,
         privateKey: env.VAPID_PRIVATE_KEY,
       };

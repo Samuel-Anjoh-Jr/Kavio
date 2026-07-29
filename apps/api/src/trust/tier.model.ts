@@ -1,4 +1,4 @@
-import { VerificationCheckType, VerificationTier } from '@trustpro/database';
+import { VerificationCheckType, VerificationTier } from '@kavio/database';
 
 /**
  * Progressive tier derivation (SRS §21.4, TRU-02), as a PURE function.

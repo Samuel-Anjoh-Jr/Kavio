@@ -32,7 +32,7 @@ export interface GatedIntent {
   capturedAt: number;
 }
 
-const STORAGE_KEY = 'trustpro.pending-intent';
+const STORAGE_KEY = 'kavio.pending-intent';
 
 /**
  * Intents die after an hour. A replay from a stale tab days later would drop the

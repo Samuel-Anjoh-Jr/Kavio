@@ -1,6 +1,6 @@
-# TrustPro Brand Guidelines
+# Kavio Brand Guidelines
 
-The visual language of TrustPro. This document is the reference the build prompts
+The visual language of Kavio. This document is the reference the build prompts
 point at (SRS §26.2), and the **60/30/10 colour ratio** below is a binding rule,
 not a suggestion — it is enforced on every primary CTA and checked in review.
 
@@ -8,6 +8,19 @@ The design tokens themselves live in
 [apps/web/app/[locale]/globals.css](apps/web/app/%5Blocale%5D/globals.css). This
 document explains how to _apply_ them; that file is the single source of the
 _values_. Never hardcode a hex or a pixel in a component — resolve to a token.
+
+---
+
+## Name, slogan & logo
+
+- **Name:** Kavio
+- **Slogan:** "Where good work starts" (FR: "Là où le bon travail commence")
+- **Mark:** the gradient "K" glyph at
+  [apps/web/public/brand/kavio-mark.png](apps/web/public/brand/kavio-mark.png),
+  transparent background, 480×369 source. It is the one file every logo
+  placement in the app reads from (header, footer, auth screens, PWA icons,
+  favicon, social-preview image) — replace that single file to update the mark
+  everywhere rather than hand-editing each call site.
 
 ---
 

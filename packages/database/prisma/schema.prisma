@@ -137,7 +137,7 @@ model User {
 
   // Business teams (PROMPT 81; BIZ-03). A member row binds to an identity only
   // once the invitation is ACCEPTED — an invited colleague usually has no
-  // TrustPro account yet — so membership is a nullable relation on both sides.
+  // Kavio account yet — so membership is a nullable relation on both sides.
   teamMemberships    BusinessTeamMember[] @relation("TeamMemberUser")
   sentTeamInvites    BusinessTeamMember[] @relation("TeamMemberInviter")
   verifiedBusinesses BusinessProfile[]    @relation("BusinessProfileVerifier")
@@ -950,7 +950,7 @@ model TierConfig {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// The roles that have an onboarding flow. AGENT/ADMIN are staff, onboarded by
-/// TrustPro rather than self-service.
+/// Kavio rather than self-service.
 enum OnboardingRole {
   WORKER
   CLIENT
@@ -1174,7 +1174,7 @@ enum TeamMemberStatus {
 /// A member of a business's team (BIZ-03).
 ///
 /// Identified by email/phone rather than a User FK AT INTAKE — the colleague
-/// being invited usually has no TrustPro account yet — and bound to `userId` when
+/// being invited usually has no Kavio account yet — and bound to `userId` when
 /// the invitation is accepted. Both facts are needed: the contact details are how
 /// the invitation is delivered, and the identity is what server-side access
 /// enforcement resolves against. An unaccepted row grants nothing.
@@ -3282,7 +3282,7 @@ model LocationPing {
 // ─────────────────────────────────────────────────────────────────────────────
 // Web-push device registry (PROMPT 76; NOT-01, SRS §26.1).
 //
-// A user reads TrustPro on several devices (phone browser, laptop). Web push
+// A user reads Kavio on several devices (phone browser, laptop). Web push
 // targets a SUBSCRIPTION (endpoint + VAPID keys), not a user, so one identity has
 // many registrations. A push that fails because the browser dropped the
 // subscription deactivates the row (isActive=false) so the dispatcher stops

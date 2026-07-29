@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { VerificationTier } from '@trustpro/database';
+import type { VerificationTier } from '@kavio/database';
 import { clampLimit, clampOffset, clampRadius, isValidCoordinates } from '../geo/coordinates.util';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';

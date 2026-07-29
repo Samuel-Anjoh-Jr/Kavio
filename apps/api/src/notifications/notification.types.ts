@@ -1,4 +1,4 @@
-import type { NotificationCategory, NotificationChannel } from '@trustpro/database';
+import type { NotificationCategory, NotificationChannel } from '@kavio/database';
 
 /** Supported UI/content locales. Every template ships both (SYS-03, NFR-I18N-01). */
 export type Locale = 'en' | 'fr';

@@ -1,6 +1,15 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { ImageResponse } from 'next/og';
 import { getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+
+// public/brand/kavio-mark.png is 480x369 (source: cropped transparent mark).
+const MARK_ASPECT_RATIO = 480 / 369;
+const MARK_HEIGHT = 64;
+const MARK_DATA_URI = `data:image/png;base64,${readFileSync(
+  path.join(process.cwd(), 'public/brand/kavio-mark.png'),
+).toString('base64')}`;
 
 /**
  * The default social-preview image, per locale (SYS-05, SRS §26.6).
@@ -38,31 +47,13 @@ export default async function OpengraphImage({ params }: { params: Promise<{ loc
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        <div
-          style={{
-            width: 72,
-            height: 72,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#3d5afe',
-            borderRadius: 18,
-          }}
-        >
-          <svg
-            width={40}
-            height={40}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth={2.6}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4.5 12.75l6 6 9-13.5" />
-          </svg>
-        </div>
-        <span style={{ fontSize: 40, fontWeight: 600 }}>TrustPro</span>
+        <img
+          src={MARK_DATA_URI}
+          width={Math.round(MARK_HEIGHT * MARK_ASPECT_RATIO)}
+          height={MARK_HEIGHT}
+          alt=""
+        />
+        <span style={{ fontSize: 40, fontWeight: 600 }}>Kavio</span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

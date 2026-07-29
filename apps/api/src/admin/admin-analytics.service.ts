@@ -11,7 +11,7 @@ import {
   TransactionType,
   UserStatus,
   VerificationTier,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import {

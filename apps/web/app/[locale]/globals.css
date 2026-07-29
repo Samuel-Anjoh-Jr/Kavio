@@ -6,11 +6,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * TrustPro Modern Design System (TMDS) — design tokens.
+ * Kavio Modern Design System (TMDS) — design tokens.
  * Every colour, radius, shadow and font used across the app must resolve to
  * one of these CSS variables (via the Tailwind theme below); no hardcoded
  * hex/px values in components. Light values live in :root, dark overrides in
- * .dark. See docs/TrustPro_SRS_Architecture_v3.md §20.1-20.3.
+ * .dark. See docs/Kavio_SRS_Architecture_v3.md §20.1-20.3.
  */
 :root {
   /* Brand */

@@ -1,8 +1,8 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient, prisma } from '@trustpro/database';
+import { PrismaClient, prisma } from '@kavio/database';
 
 /**
- * Exposes the shared Prisma client (from @trustpro/database) as an injectable
+ * Exposes the shared Prisma client (from @kavio/database) as an injectable
  * NestJS provider. Uses the singleton so the whole API shares one connection
  * pool. Feature modules inject PrismaService for DB access.
  */

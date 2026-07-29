@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { Role, UserStatus, VerificationTier } from '@trustpro/database';
+import { Role, UserStatus, VerificationTier } from '@kavio/database';
 
 /** One role grant on the identity (ACC-06). */
 @ObjectType({ description: 'A role granted to an identity.' })

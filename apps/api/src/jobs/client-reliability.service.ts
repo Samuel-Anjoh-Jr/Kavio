@@ -5,7 +5,7 @@ import {
   DisputeStatus,
   JobStatus,
   ReviewStatus,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { roundToTwo } from '../reviews/review.model';

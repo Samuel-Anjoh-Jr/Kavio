@@ -1,4 +1,4 @@
-import { JobStatus } from '@trustpro/database';
+import { JobStatus } from '@kavio/database';
 import {
   canTransitionJob,
   isTerminalJobStatus,

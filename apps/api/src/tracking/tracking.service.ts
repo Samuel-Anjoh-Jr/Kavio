@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { BookingStatus, TrackingSessionStatus } from '@trustpro/database';
+import { BookingStatus, TrackingSessionStatus } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';

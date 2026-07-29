@@ -1,4 +1,4 @@
-import type { VerificationTier } from '@trustpro/database';
+import type { VerificationTier } from '@kavio/database';
 
 /**
  * Trust domain events (TRU-01, TRU-04).

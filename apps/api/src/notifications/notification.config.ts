@@ -1,5 +1,5 @@
-import { NotificationCategory, NotificationChannel } from '@trustpro/database';
-import type { Prisma } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel } from '@kavio/database';
+import type { Prisma } from '@kavio/database';
 
 /** DI token carrying the resolved channel priority into the dispatcher. */
 export const NOTIFICATION_CHANNEL_PRIORITY = Symbol('NOTIFICATION_CHANNEL_PRIORITY');
@@ -63,12 +63,12 @@ export function getEmailProviderName(env: NodeJS.ProcessEnv = process.env): Emai
 }
 
 export function getEmailFromAddress(env: NodeJS.ProcessEnv = process.env): string {
-  return env.NOTIFICATIONS_EMAIL_FROM?.trim() || 'TrustPro <no-reply@trustpro.cm>';
+  return env.NOTIFICATIONS_EMAIL_FROM?.trim() || 'Kavio <no-reply@kavio.cm>';
 }
 
 /** Base URL used to build deep links in templates. */
 export function getAppBaseUrl(env: NodeJS.ProcessEnv = process.env): string {
-  return (env.APP_BASE_URL?.trim() || 'https://trustpro.cm').replace(/\/$/, '');
+  return (env.APP_BASE_URL?.trim() || 'https://kavio.cm').replace(/\/$/, '');
 }
 
 /**

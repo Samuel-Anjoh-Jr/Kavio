@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  VerificationStage,
-  VerificationStatus,
-  type VerificationCheckType,
-} from '@trustpro/database';
+import { VerificationStage, VerificationStatus, type VerificationCheckType } from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import {

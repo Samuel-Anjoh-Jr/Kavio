@@ -1,4 +1,4 @@
-import { OnboardingRole } from '@trustpro/database';
+import { OnboardingRole } from '@kavio/database';
 import {
   completedStepKeys,
   computeCompletion,

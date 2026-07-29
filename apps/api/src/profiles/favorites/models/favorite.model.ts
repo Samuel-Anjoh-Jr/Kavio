@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { VerificationTier } from '@trustpro/database';
+import { VerificationTier } from '@kavio/database';
 
 /**
  * A saved worker, as shown on the "Saved" list and used to answer "have I

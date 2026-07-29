@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MediaVisibility, QuoteStatus } from '@trustpro/database';
+import { MediaVisibility, QuoteStatus } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';

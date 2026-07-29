@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { PaymentMethodType } from '@trustpro/database';
+import { PaymentMethodType } from '@kavio/database';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { AppException } from '../../lib/app-exception';
 import { createLogger } from '../../lib/logger';

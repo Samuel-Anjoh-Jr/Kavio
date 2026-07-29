@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { JobApplicationStatus, JobStatus, QuoteStatus } from '@trustpro/database';
+import { JobApplicationStatus, JobStatus, QuoteStatus } from '@kavio/database';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   NOTIFICATION_REQUESTED,

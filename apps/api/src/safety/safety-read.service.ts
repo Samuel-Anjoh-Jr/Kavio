@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SOSStatus } from '@trustpro/database';
+import { SOSStatus } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import type { EmergencyContactView, SOSAlertView } from './models/safety.model';

@@ -18,7 +18,7 @@ import {
  * Polls on a gentle interval as the baseline: the count is not time-critical
  * the way a live chat is, and a lightweight poll is cheaper than a dedicated
  * connection on a low-end phone. On top of that, this is also the one place
- * that listens for `trustpro:notification-push` — the window event
+ * that listens for `kavio:notification-push` — the window event
  * service-worker-register.tsx fires the instant a push arrives while the tab
  * is open — so the badge updates immediately instead of waiting out the poll,
  * and the notification's sound (if any) plays right here.
@@ -43,8 +43,8 @@ export function NotificationBell() {
       void refetch();
     };
 
-    window.addEventListener('trustpro:notification-push', onPush);
-    return () => window.removeEventListener('trustpro:notification-push', onPush);
+    window.addEventListener('kavio:notification-push', onPush);
+    return () => window.removeEventListener('kavio:notification-push', onPush);
   }, [status, refetch]);
 
   if (status !== 'authenticated') return null;

@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { BadgeType, EndorsementRelationship } from '@trustpro/database';
+import { BadgeType, EndorsementRelationship } from '@kavio/database';
 
 /**
  * Endorsement, badge and trust-history reads (TRU-10, TRU-11).

@@ -10,7 +10,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { del as vercelBlobDel, head as vercelBlobHead, put as vercelBlobPut } from '@vercel/blob';
-import { MediaVisibility, type MediaAssetKind } from '@trustpro/database';
+import { MediaVisibility, type MediaAssetKind } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { detectMimeTypes } from './file-signature.util';

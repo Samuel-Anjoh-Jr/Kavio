@@ -7,7 +7,7 @@ import {
   VerificationRejectionReason,
   VerificationStage,
   VerificationStatus,
-} from '@trustpro/database';
+} from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';

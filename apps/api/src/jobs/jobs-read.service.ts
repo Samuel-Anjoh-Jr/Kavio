@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JobStatus, JobUrgency, JobVisibility, MediaVisibility, Prisma } from '@trustpro/database';
+import { JobStatus, JobUrgency, JobVisibility, MediaVisibility, Prisma } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';

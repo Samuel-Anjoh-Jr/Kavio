@@ -1,4 +1,4 @@
-import { Role } from '@trustpro/database';
+import { Role } from '@kavio/database';
 
 /**
  * Where a notification takes you when it is clicked (NOT-02, P77/P78).

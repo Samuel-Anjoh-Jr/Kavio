@@ -1,4 +1,4 @@
-import { MediaAssetKind, MediaVisibility } from '@trustpro/database';
+import { MediaAssetKind, MediaVisibility } from '@kavio/database';
 
 /**
  * Upload policy (CLAUDE.md STORAGE, NFR-SEC).

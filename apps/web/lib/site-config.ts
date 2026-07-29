@@ -2,7 +2,7 @@ import { routing } from '@/i18n/routing';
 
 /**
  * The single source of the site's ENTITY facts — the things Google's Knowledge
- * Graph and, increasingly, an LLM answering "what is TrustPro" both read from
+ * Graph and, increasingly, an LLM answering "what is Kavio" both read from
  * (PROMPTS 93, 93.1; SRS §26.4/§26.6).
  *
  * Why this exists as one module: modern search and AI answer engines resolve a

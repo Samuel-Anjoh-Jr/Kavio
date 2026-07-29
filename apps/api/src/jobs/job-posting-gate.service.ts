@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { JobVisibility, VerificationCheckType, VerificationStatus } from '@trustpro/database';
+import { JobVisibility, VerificationCheckType, VerificationStatus } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
@@ -140,7 +140,7 @@ export class JobPostingGateService {
     throw new AppException(
       HttpStatus.FORBIDDEN,
       'BUSINESS_VERIFICATION_REQUIRED',
-      'Get verified as a business to post job vacancies. This keeps fake jobs off TrustPro.',
+      'Get verified as a business to post job vacancies. This keeps fake jobs off Kavio.',
       {
         // The client renders these as a checklist; the codes key the EN/FR copy.
         verification: eligibility.steps.map((step) => step.messageKey),

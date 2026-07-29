@@ -1,4 +1,4 @@
-import type { ReportTargetType } from '@trustpro/database';
+import type { ReportTargetType } from '@kavio/database';
 
 /**
  * Review domain events (REV-01…REV-03). Emitted by ReviewsService; the

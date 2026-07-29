@@ -7,7 +7,7 @@ import {
   VerificationRejectionReason,
   VerificationStage,
   VerificationStatus,
-} from '@trustpro/database';
+} from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
@@ -78,7 +78,7 @@ export class VerificationService {
       throw new AppException(
         HttpStatus.FORBIDDEN,
         'CHECK_IS_STAFF_ONLY',
-        'This check is completed by a TrustPro agent, not from your account.',
+        'This check is completed by a Kavio agent, not from your account.',
       );
     }
 

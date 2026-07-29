@@ -1,4 +1,4 @@
-import { BadgeType, VerificationTier } from '@trustpro/database';
+import { BadgeType, VerificationTier } from '@kavio/database';
 import {
   COMMUNITY_ENDORSED_THRESHOLD,
   earnedBadges,

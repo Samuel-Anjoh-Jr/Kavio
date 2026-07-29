@@ -76,7 +76,7 @@ export function setNotificationPreference(input: {
 
 /**
  * The fixed sound keys the API understands (see apps/api/src/notifications/
- * notification-sound.ts). Only ever plays while TrustPro is open in a tab —
+ * notification-sound.ts). Only ever plays while Kavio is open in a tab —
  * no browser lets a site choose the sound for a BACKGROUND push notification,
  * so "Default" here really means "let the device pick", the same as leaving
  * it unset.

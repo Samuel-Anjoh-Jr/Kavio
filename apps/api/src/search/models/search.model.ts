@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { VerificationTier } from '@trustpro/database';
+import { VerificationTier } from '@kavio/database';
 import { NoProviderReason } from '../no-provider.util';
 
 /**

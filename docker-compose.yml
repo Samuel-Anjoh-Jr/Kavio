@@ -3,18 +3,18 @@ version: '3.8'
 services:
   postgres:
     image: postgis/postgis:16-3.4
-    container_name: trustpro-postgres
+    container_name: kavio-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: trustpro
+      POSTGRES_DB: kavio
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - '5432:5432'
     volumes:
-      - trustpro-postgres-data:/var/lib/postgresql/data
+      - kavio-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d trustpro']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d kavio']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,11 +22,11 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: trustpro-redis
+    container_name: kavio-redis
     ports:
       - '6379:6379'
     volumes:
-      - trustpro-redis-data:/data
+      - kavio-redis-data:/data
     command: redis-server --appendonly yes
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
@@ -36,5 +36,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  trustpro-postgres-data:
-  trustpro-redis-data:
+  kavio-postgres-data:
+  kavio-redis-data:

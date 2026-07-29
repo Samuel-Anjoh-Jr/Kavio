@@ -1,4 +1,4 @@
-import type { BadgeType } from '@trustpro/database';
+import type { BadgeType } from '@kavio/database';
 
 /** A milestone crossed (TRU-11). Consumed by notifications and, later, the UI. */
 export const BADGE_UNLOCKED = 'trust.badge.unlocked';

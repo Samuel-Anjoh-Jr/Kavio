@@ -1,4 +1,4 @@
-import { MediaAssetKind, MediaVisibility, Role } from '@trustpro/database';
+import { MediaAssetKind, MediaVisibility, Role } from '@kavio/database';
 import {
   decideDocumentAccess,
   type DocumentAccessSubject,

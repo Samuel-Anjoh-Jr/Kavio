@@ -6,7 +6,7 @@ import {
   ModerationActionType,
   Prisma,
   UserStatus,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { riskLevel, riskRank } from './risk-level.model';

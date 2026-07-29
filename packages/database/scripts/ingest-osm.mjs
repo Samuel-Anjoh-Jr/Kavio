@@ -56,7 +56,7 @@ async function overpass(query) {
       'Content-Type': 'application/x-www-form-urlencoded',
       // Overpass is a donated public resource and it rate-limits anonymous
       // floods. Identifying the client is the courtesy that keeps it usable.
-      'User-Agent': 'TrustPro/0.1 (ingest; https://trustpro.cm)',
+      'User-Agent': 'Kavio/0.1 (ingest; https://kavio.cm)',
     },
     body: new URLSearchParams({ data: query }).toString(),
   });

@@ -1,10 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import {
-  Prisma,
-  TransactionDirection,
-  TransactionStatus,
-  TransactionType,
-} from '@trustpro/database';
+import { Prisma, TransactionDirection, TransactionStatus, TransactionType } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { PrismaService } from '../prisma/prisma.service';
 

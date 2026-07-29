@@ -126,8 +126,8 @@ export function getJwtConfig(env: NodeJS.ProcessEnv = process.env): JwtConfig {
     ),
     accessTtlSeconds: parseDuration(env.JWT_ACCESS_EXPIRES_IN ?? '15m', 900),
     refreshTtlSeconds: parseDuration(env.JWT_REFRESH_EXPIRES_IN ?? '30d', 2_592_000),
-    issuer: env.JWT_ISSUER?.trim() || 'trustpro',
-    audience: env.JWT_AUDIENCE?.trim() || 'trustpro-web',
+    issuer: env.JWT_ISSUER?.trim() || 'kavio',
+    audience: env.JWT_AUDIENCE?.trim() || 'kavio-web',
   };
 }
 

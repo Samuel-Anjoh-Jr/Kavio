@@ -1,5 +1,5 @@
 import { Args, ID, Int, Query, Resolver } from '@nestjs/graphql';
-import { AbuseReportStatus, ReportTargetType } from '@trustpro/database';
+import { AbuseReportStatus, ReportTargetType } from '@kavio/database';
 import { RequirePermissions } from '../auth/decorators/auth.decorators';
 import { ModerationReadService } from './moderation-read.service';
 import {

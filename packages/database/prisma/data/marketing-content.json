@@ -4,42 +4,42 @@
     {
       "id": "af157a55-5d6d-5492-b6c7-a0d3acb04dae",
       "category": "general",
-      "questionEn": "What is TrustPro?",
-      "questionFr": "Qu’est-ce que TrustPro ?",
-      "answerEn": "TrustPro connects households and businesses in Douala and Yaoundé with skilled workers whose identity, work and track record have been verified. Every worker carries a Trust Score you can inspect before you hire.",
-      "answerFr": "TrustPro met en relation les ménages et les entreprises de Douala et Yaoundé avec des artisans dont l’identité, le travail et les antécédents sont vérifiés. Chaque artisan porte un Score de Confiance que vous pouvez consulter avant d’embaucher."
+      "questionEn": "What is Kavio?",
+      "questionFr": "Qu’est-ce que Kavio ?",
+      "answerEn": "Kavio connects households and businesses in Douala and Yaoundé with skilled workers whose identity, work and track record have been verified. Every worker carries a Trust Score you can inspect before you hire.",
+      "answerFr": "Kavio met en relation les ménages et les entreprises de Douala et Yaoundé avec des artisans dont l’identité, le travail et les antécédents sont vérifiés. Chaque artisan porte un Score de Confiance que vous pouvez consulter avant d’embaucher."
     },
     {
       "id": "637961dd-bc56-56bc-978e-82764cc0df29",
       "category": "verification",
       "questionEn": "What does \"verified\" actually mean?",
       "questionFr": "Que signifie réellement « vérifié » ?",
-      "answerEn": "Verification is progressive, across four tiers. A verified worker has passed identity checks against a government ID and a live selfie, had their address confirmed, and submitted portfolio evidence of real completed work. Higher tiers add in-person checks by a TrustPro agent.",
-      "answerFr": "La vérification est progressive, sur quatre niveaux. Un artisan vérifié a validé son identité avec une pièce officielle et un selfie en direct, fait confirmer son adresse et fourni des preuves de travaux réellement réalisés. Les niveaux supérieurs ajoutent des contrôles sur le terrain par un agent TrustPro."
+      "answerEn": "Verification is progressive, across four tiers. A verified worker has passed identity checks against a government ID and a live selfie, had their address confirmed, and submitted portfolio evidence of real completed work. Higher tiers add in-person checks by a Kavio agent.",
+      "answerFr": "La vérification est progressive, sur quatre niveaux. Un artisan vérifié a validé son identité avec une pièce officielle et un selfie en direct, fait confirmer son adresse et fourni des preuves de travaux réellement réalisés. Les niveaux supérieurs ajoutent des contrôles sur le terrain par un agent Kavio."
     },
     {
       "id": "8bc6ad9b-0e17-5009-bc2a-48f58ab715f4",
       "category": "payments",
       "questionEn": "How does escrow protect my money?",
       "questionFr": "Comment le séquestre protège-t-il mon argent ?",
-      "answerEn": "When you accept a quote, your payment is held by TrustPro rather than sent to the worker. It is released only after you confirm the work is complete. If something goes wrong, you open a dispute and the funds stay held until it is settled.",
-      "answerFr": "Lorsque vous acceptez un devis, votre paiement est conservé par TrustPro plutôt que versé à l’artisan. Il n’est libéré qu’après votre confirmation que le travail est terminé. En cas de problème, vous ouvrez un litige et les fonds restent bloqués jusqu’à son règlement."
+      "answerEn": "When you accept a quote, your payment is held by Kavio rather than sent to the worker. It is released only after you confirm the work is complete. If something goes wrong, you open a dispute and the funds stay held until it is settled.",
+      "answerFr": "Lorsque vous acceptez un devis, votre paiement est conservé par Kavio plutôt que versé à l’artisan. Il n’est libéré qu’après votre confirmation que le travail est terminé. En cas de problème, vous ouvrez un litige et les fonds restent bloqués jusqu’à son règlement."
     },
     {
       "id": "51ada6a4-350b-56fa-b9e4-f2ffdede8ab0",
       "category": "payments",
       "questionEn": "What does it cost?",
       "questionFr": "Combien cela coûte-t-il ?",
-      "answerEn": "Browsing, posting a job and receiving quotes are free. TrustPro takes a service fee of about 10% on completed work, and it is shown to you in full before you pay — never added afterwards.",
-      "answerFr": "La navigation, la publication d’une mission et la réception de devis sont gratuites. TrustPro prélève des frais de service d’environ 10 % sur les travaux terminés, affichés intégralement avant le paiement — jamais ajoutés ensuite."
+      "answerEn": "Browsing, posting a job and receiving quotes are free. Kavio takes a service fee of about 10% on completed work, and it is shown to you in full before you pay — never added afterwards.",
+      "answerFr": "La navigation, la publication d’une mission et la réception de devis sont gratuites. Kavio prélève des frais de service d’environ 10 % sur les travaux terminés, affichés intégralement avant le paiement — jamais ajoutés ensuite."
     },
     {
       "id": "15012ea2-716f-548e-8c21-8518902f534b",
       "category": "payments",
       "questionEn": "What happens if the work is not done properly?",
       "questionFr": "Que se passe-t-il si le travail est mal fait ?",
-      "answerEn": "Do not confirm completion. Open a dispute instead: the escrowed funds stay held, both sides submit evidence, and a TrustPro reviewer decides the outcome. Refunds go back through the same channel you paid with.",
-      "answerFr": "Ne confirmez pas la fin des travaux. Ouvrez plutôt un litige : les fonds sous séquestre restent bloqués, les deux parties fournissent des preuves et un examinateur TrustPro tranche. Les remboursements repassent par le moyen de paiement utilisé."
+      "answerEn": "Do not confirm completion. Open a dispute instead: the escrowed funds stay held, both sides submit evidence, and a Kavio reviewer decides the outcome. Refunds go back through the same channel you paid with.",
+      "answerFr": "Ne confirmez pas la fin des travaux. Ouvrez plutôt un litige : les fonds sous séquestre restent bloqués, les deux parties fournissent des preuves et un examinateur Kavio tranche. Les remboursements repassent par le moyen de paiement utilisé."
     },
     {
       "id": "f6ba4b9a-3d49-53bd-9ce6-80869b9e7023",

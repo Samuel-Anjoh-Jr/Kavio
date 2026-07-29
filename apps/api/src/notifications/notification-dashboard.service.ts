@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationChannel, NotificationStatus, Prisma } from '@trustpro/database';
+import { NotificationChannel, NotificationStatus, Prisma } from '@kavio/database';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
   DailyDeliveryStatView,

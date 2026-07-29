@@ -1,5 +1,5 @@
 {
-  "extends": "@trustpro/typescript-config/nextjs.json",
+  "extends": "@kavio/typescript-config/nextjs.json",
   "compilerOptions": {
     "jsx": "react-jsx",
     "paths": {

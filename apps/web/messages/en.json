@@ -1,10 +1,10 @@
 {
   "Metadata": {
-    "title": "TrustPro — Trusted local services in Cameroon",
+    "title": "Kavio — Trusted local services in Cameroon",
     "description": "Find verified, trusted workers for local services in Douala and Yaoundé."
   },
   "HomePage": {
-    "heading": "Welcome to TrustPro",
+    "heading": "Welcome to Kavio",
     "tagline": "The trust-first marketplace for local services in Cameroon.",
     "sampleAmountLabel": "Example service fee",
     "sampleDateLabel": "Last updated"
@@ -29,7 +29,7 @@
   },
   "Styleguide": {
     "title": "TMDS design system",
-    "description": "TrustPro Modern Design System — tokens and restyled primitives, previewed live in the current theme.",
+    "description": "Kavio Modern Design System — tokens and restyled primitives, previewed live in the current theme.",
     "colorsHeading": "Colours",
     "typographyHeading": "Typography",
     "typographyHeadingSample": "Heading sample",
@@ -138,8 +138,9 @@
       "sentTo": "We sent a code to {destination}."
     },
     "brandPanel": {
+      "slogan": "Where good work starts",
       "headline": "Trust you can verify, not just claim.",
-      "body": "TrustPro verifies identity, skills and work history so you know exactly who you are hiring — or who is hiring you.",
+      "body": "Kavio verifies identity, skills and work history so you know exactly who you are hiring — or who is hiring you.",
       "points": {
         "verified": "Progressive verification, from phone to in-person field checks",
         "escrow": "Payments held in escrow and released only when the job is done",
@@ -148,8 +149,8 @@
     },
     "signUp": {
       "title": "Create your account",
-      "subtitle": "It takes a minute. You can explore TrustPro without one, but you will need an account to post, apply or pay.",
-      "intentLegend": "What brings you to TrustPro?",
+      "subtitle": "It takes a minute. You can explore Kavio without one, but you will need an account to post, apply or pay.",
+      "intentLegend": "What brings you to Kavio?",
       "intent": {
         "find_work": {
           "title": "I want to find work",
@@ -184,7 +185,7 @@
       "forgotPassword": "Forgot your password?",
       "submitting": "Signing you in…",
       "useCode": "Sign in with a code instead",
-      "noAccount": "New to TrustPro?",
+      "noAccount": "New to Kavio?",
       "createAccount": "Create an account"
     },
     "verify": {
@@ -293,7 +294,7 @@
       "ID_VERIFIED": "Upload your national ID for approval.",
       "FIELD_VERIFIED": "Book an in-person verification visit.",
       "PORTFOLIO_ADDED": "Add photos of work you have done.",
-      "JOB_COMPLETED": "Complete jobs through TrustPro.",
+      "JOB_COMPLETED": "Complete jobs through Kavio.",
       "REPEAT_CUSTOMER": "Win repeat business from clients you have served.",
       "EXCELLENT_REVIEW": "Earn excellent reviews from your clients.",
       "ENDORSEMENT_RECEIVED": "Ask a past customer or community leader to endorse you."
@@ -335,7 +336,7 @@
   },
   "Roles": {
     "switcherLabel": "Switch role",
-    "switched": "You are now using TrustPro as {role}.",
+    "switched": "You are now using Kavio as {role}.",
     "names": {
       "WORKER": "Worker",
       "CLIENT": "Client",
@@ -367,7 +368,7 @@
     },
     "seeAll": "See all",
     "recentlyViewed": "Recently viewed",
-    "unnamedWorker": "TrustPro professional"
+    "unnamedWorker": "Kavio professional"
   },
   "JobCard": {
     "unnamedJob": "Untitled job",
@@ -459,11 +460,11 @@
     "visibilityPublicBody": "Any verified worker can see it and apply."
   },
   "Home": {
-    "title": "Your TrustPro home",
+    "title": "Your Kavio home",
     "greeting": {
       "WORKER": "Your work at a glance",
       "CLIENT": "Find and hire with confidence",
-      "BUSINESS": "Your business on TrustPro"
+      "BUSINESS": "Your business on Kavio"
     },
     "subtitle": {
       "WORKER": "Build your profile, win jobs and grow your Trust Score.",
@@ -471,7 +472,7 @@
       "BUSINESS": "Manage your company profile, documents and team."
     },
     "onboardingHeading": "Finish setting up your profile",
-    "onboardingBody": "You are {percent}% of the way there. Each step unlocks more of TrustPro.",
+    "onboardingBody": "You are {percent}% of the way there. Each step unlocks more of Kavio.",
     "onboardingStart": "Get started",
     "onboardingResume": "Continue",
     "exploreCard": "Explore workers",
@@ -520,7 +521,7 @@
     "worker": {
       "title": "Set up your worker profile",
       "subtitle": "The more complete your profile, the more customers find and trust you. Everything saves as you go.",
-      "completed": "Your worker profile is live. Welcome to TrustPro.",
+      "completed": "Your worker profile is live. Welcome to Kavio.",
       "unlocks": {
         "appear_in_search": "Appear in search results",
         "portfolio_showcase": "Showcase your past work",
@@ -558,7 +559,7 @@
           "label": "Identity",
           "title": "Verify who you are",
           "description": "Verified identity unlocks the badge customers look for, and higher-value jobs.",
-          "privacy": "Your ID and selfie are encrypted, private, and visible only to you and TrustPro's verification team. They never appear on your public profile.",
+          "privacy": "Your ID and selfie are encrypted, private, and visible only to you and Kavio's verification team. They never appear on your public profile.",
           "idFront": "Upload ID (front)",
           "idBack": "Upload ID (back)",
           "selfie": "Take a selfie",
@@ -598,7 +599,7 @@
     },
     "business": {
       "title": "Register your business",
-      "subtitle": "Tell us about your company and add your team. Verification is reviewed by TrustPro after you finish.",
+      "subtitle": "Tell us about your company and add your team. Verification is reviewed by Kavio after you finish.",
       "completed": "Your business is registered. Verification review comes next.",
       "unlocks": {
         "company_profile": "A public company profile",
@@ -623,8 +624,8 @@
         "documents": {
           "label": "Documents",
           "title": "Registration documents",
-          "description": "Upload your registration so TrustPro can review your business for the Verified Business badge.",
-          "privacy": "Registration documents are private and encrypted. Only TrustPro's verification team can open them.",
+          "description": "Upload your registration so Kavio can review your business for the Verified Business badge.",
+          "privacy": "Registration documents are private and encrypted. Only Kavio's verification team can open them.",
           "registration": "Upload registration document",
           "registrationHint": "RCCM certificate or equivalent. PDF or image, up to 15MB.",
           "logo": "Upload company logo",
@@ -704,7 +705,7 @@
       "COLLEAGUE": "Colleague"
     },
     "heading": "Community endorsements",
-    "capturedByAgent": "Recorded in person by a TrustPro agent",
+    "capturedByAgent": "Recorded in person by a Kavio agent",
     "taperExplainer": "Endorsements help most when you're starting out. As you complete jobs, your own track record counts for more and endorsements count for less.",
     "influence": "Contributing {points} of {cap} points",
     "taperedOut": "Your completed jobs now speak for you — endorsements no longer add points."
@@ -712,7 +713,7 @@
   "Badge": {
     "FOUNDING_PROFESSIONAL": {
       "name": "Founding Verified Professional",
-      "description": "Verified in person by a TrustPro field agent."
+      "description": "Verified in person by a Kavio field agent."
     },
     "IDENTITY_VERIFIED": {
       "name": "Identity Verified",
@@ -744,7 +745,7 @@
     },
     "FIRST_JOB": {
       "name": "First Job Completed",
-      "description": "Completed a first job through TrustPro."
+      "description": "Completed a first job through Kavio."
     },
     "JOBS_10": {
       "name": "10 Jobs",
@@ -772,7 +773,7 @@
     "heading": "Your trust history",
     "empty": "Your trust history will appear here as you verify your details and complete work.",
     "event": {
-      "ACCOUNT_CREATED": "Joined TrustPro",
+      "ACCOUNT_CREATED": "Joined Kavio",
       "PHONE_VERIFIED": "Phone number verified",
       "ID_VERIFIED": "National ID approved",
       "FIELD_VERIFIED": "Verified in person by an agent",
@@ -959,7 +960,7 @@
     "filteredOutTitle": "No one matches every filter",
     "filteredOutBody": "There are workers here, but none of them match everything you asked for. Try relaxing a filter.",
     "serviceMissingTitle": "No one offers this yet",
-    "serviceMissingBody": "Nobody on TrustPro does this work yet — anywhere. We're onboarding new professionals every week, so check back soon.",
+    "serviceMissingBody": "Nobody on Kavio does this work yet — anywhere. We're onboarding new professionals every week, so check back soon.",
     "noProvidersTitle": "No providers here yet",
     "noProvidersBody": "No one offers this service in your area yet. Check back soon — we're growing fast in Douala and Yaoundé.",
     "noProvidersBodyNearest": "No one offers this in your area yet, but the nearest provider is about {distance} away.",
@@ -1013,7 +1014,7 @@
     "apply": "{count, plural, =0 {Show results} one {Apply # filter} other {Apply # filters}}"
   },
   "WorkerCard": {
-    "unnamed": "TrustPro professional",
+    "unnamed": "Kavio professional",
     "new": "New here",
     "priceFrom": "From",
     "priceOnRequest": "Price on request",
@@ -1043,9 +1044,9 @@
     "emptyAction": "Browse workers"
   },
   "Profile": {
-    "unnamed": "TrustPro professional",
+    "unnamed": "Kavio professional",
     "notFoundTitle": "Profile not found",
-    "metaFallback": "{name} on TrustPro",
+    "metaFallback": "{name} on Kavio",
     "loadErrorTitle": "We couldn't load this profile",
     "loadErrorBody": "Something went wrong on our side. Please try again in a moment.",
     "memberSince": "Joined {date}",
@@ -1122,11 +1123,11 @@
   },
   "Business": {
     "notFoundTitle": "Business not found",
-    "metaFallback": "{name} on TrustPro",
+    "metaFallback": "{name} on Kavio",
     "loadErrorTitle": "We couldn't load this business",
     "loadErrorBody": "Something went wrong on our side. Please try again in a moment.",
     "verifiedBusiness": "Verified business",
-    "memberSince": "On TrustPro since {date}",
+    "memberSince": "On Kavio since {date}",
     "stat": {
       "team": "Team members",
       "completedJobs": "Jobs completed",
@@ -1178,7 +1179,7 @@
       "requestsEmptyTitle": "No job requests yet",
       "requestsEmptyBody": "When a client invites you directly to quote their job, it will show up here.",
       "untitledJob": "Untitled job",
-      "unknownClient": "A TrustPro client",
+      "unknownClient": "A Kavio client",
       "viewRequest": "View",
       "pipelineHeading": "My pipeline",
       "quotesPendingTitle": "My quotes",
@@ -1309,7 +1310,7 @@
     },
     "applicantsHeading": "{count, plural, one {# applicant} other {# applicants}}",
     "invitationsSentHeading": "{count, plural, one {# invitation sent} other {# invitations sent}}",
-    "unnamedWorker": "TrustPro professional",
+    "unnamedWorker": "Kavio professional",
     "notSelected": "Not selected",
     "shortlist": "Shortlist",
     "cancelInvitation": "Cancel invitation",
@@ -1383,7 +1384,7 @@
     "feeQuotePrice": "Quote price",
     "feePlatform": "Platform fee (~10%)",
     "feeWorkerGets": "Worker receives",
-    "feeDisclaimer": "The fee keeps TrustPro running and your payment protected.",
+    "feeDisclaimer": "The fee keeps Kavio running and your payment protected.",
     "escrowAssurance": "Your money is held safely in escrow and only released when you confirm the work.",
     "acceptAndPay": "Accept & fund escrow",
     "accepted": "Quote accepted — pay now to fund the escrow.",
@@ -1615,7 +1616,7 @@
       "SYSTEM": "System",
       "OFFERS": "Offers"
     },
-    "systemThread": "TrustPro",
+    "systemThread": "Kavio",
     "noMessagesYet": "No messages yet",
     "notFound": "This conversation was not found.",
     "backToInbox": "Back to messages",
@@ -1740,7 +1741,7 @@
       "title": "SOS history",
       "empty": "You have not sent any SOS alerts. That is a good thing.",
       "sharedWith": "Shared with {count} contacts",
-      "safetyProcess": "TrustPro safety",
+      "safetyProcess": "Kavio safety",
       "delivered": "Delivered",
       "notDelivered": "Not delivered",
       "viewMap": "View location",
@@ -1829,7 +1830,7 @@
       "saveFailed": "That preference could not be saved. Please try again.",
       "push": {
         "title": "Push notifications",
-        "body": "Get notified on this device even when TrustPro is closed.",
+        "body": "Get notified on this device even when Kavio is closed.",
         "enable": "Enable push",
         "enabled": "Push is on for this device",
         "disable": "Turn off",
@@ -1841,8 +1842,8 @@
       },
       "sound": {
         "title": "Notification sounds",
-        "body": "Pick a sound per category for when TrustPro is open. Background notifications always use your device's own sound — no browser lets a website change that.",
-        "note": "Sounds only play while TrustPro is open in a tab. \"Default\" leaves it to your device.",
+        "body": "Pick a sound per category for when Kavio is open. Background notifications always use your device's own sound — no browser lets a website change that.",
+        "note": "Sounds only play while Kavio is open in a tab. \"Default\" leaves it to your device.",
         "options": {
           "default": "Default (device)",
           "chime": "Chime",
@@ -1877,7 +1878,7 @@
       "HARASSMENT": "Harassment or bullying",
       "SCAM": "Scam or fraud",
       "INAPPROPRIATE": "Inappropriate content",
-      "OFF_PLATFORM": "Trying to move off TrustPro",
+      "OFF_PLATFORM": "Trying to move off Kavio",
       "FAKE_PROFILE": "Fake or impersonating profile",
       "STOLEN_CONTENT": "Stolen photos or work",
       "MISLEADING": "Misleading or false information",
@@ -2001,7 +2002,7 @@
     "loadMore": "Show more reviews",
     "loadingMore": "Loading…",
     "onJob": "On the job “{job}”",
-    "anonymousAuthor": "TrustPro client",
+    "anonymousAuthor": "Kavio client",
     "report": "Report"
   },
   "BusinessConsole": {
@@ -2519,7 +2520,7 @@
     },
     "maintenance": {
       "title": "We’ll be right back",
-      "description": "TrustPro is down for scheduled maintenance. Please check back in a few minutes — your data is safe."
+      "description": "Kavio is down for scheduled maintenance. Please check back in a few minutes — your data is safe."
     },
     "offline": {
       "banner": "You’re offline — showing saved content",
@@ -2534,8 +2535,8 @@
   },
   "Pwa": {
     "install": {
-      "title": "Install TrustPro",
-      "description": "Add TrustPro to your home screen for faster access and offline browsing.",
+      "title": "Install Kavio",
+      "description": "Add Kavio to your home screen for faster access and offline browsing.",
       "action": "Install app",
       "later": "Not now",
       "iosHint": "Tap Share, then “Add to Home Screen”.",
@@ -2575,15 +2576,15 @@
       "primaryCta": "Explore workers",
       "secondaryCta": "Create an account",
       "noAccountNote": "No account needed to browse. You only sign in when you’re ready to act.",
-      "workerPortraitAlt": "A verified TrustPro worker",
-      "clientPortraitAlt": "A TrustPro client",
-      "workerTwoPortraitAlt": "Another verified TrustPro worker",
+      "workerPortraitAlt": "A verified Kavio worker",
+      "clientPortraitAlt": "A Kavio client",
+      "workerTwoPortraitAlt": "Another verified Kavio worker",
       "trustScoreLabel": "Trust Score {score} out of 100",
       "trustScoreCaption": "Verified · Tier 3",
       "verifiedBadge": "ID verified"
     },
     "proof": {
-      "heading": "TrustPro by the numbers",
+      "heading": "Kavio by the numbers",
       "verified": "Verified workers",
       "success": "Job success rate",
       "rating": "Average rating",
@@ -2612,7 +2613,7 @@
         },
         "100": {
           "label": "Agent-verified pro",
-          "description": "In-person checks by a TrustPro agent. The highest assurance we offer."
+          "description": "In-person checks by a Kavio agent. The highest assurance we offer."
         }
       }
     },
@@ -2632,7 +2633,7 @@
       "steps": {
         "hold": {
           "title": "You pay into escrow",
-          "body": "When you accept a quote, your payment is held by TrustPro — not sent to the worker."
+          "body": "When you accept a quote, your payment is held by Kavio — not sent to the worker."
         },
         "work": {
           "title": "The work happens",
@@ -2665,7 +2666,7 @@
       "note": "Free to browse · You only sign in to act"
     },
     "footer": {
-      "tagline": "The trust-first marketplace for local services in Cameroon.",
+      "tagline": "Where good work starts.",
       "legalHeading": "Legal",
       "productHeading": "Product",
       "terms": "Terms of Service",
@@ -2674,32 +2675,32 @@
       "browseWorkers": "Browse workers",
       "browseJobs": "Browse jobs",
       "joinAsWorker": "Join as a worker",
-      "copyright": "© {year} TrustPro. All rights reserved."
+      "copyright": "© {year} Kavio. All rights reserved."
     }
   },
   "Legal": {
     "terms": {
       "title": "Terms of Service",
       "updated": "Last updated 23 July 2026",
-      "intro": "These terms govern your use of TrustPro. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
+      "intro": "These terms govern your use of Kavio. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
       "sections": [
         {
-          "heading": "1. Using TrustPro",
+          "heading": "1. Using Kavio",
           "body": [
-            "TrustPro connects clients with verified skilled workers in Cameroon. You must be able to form a binding contract to use the platform.",
+            "Kavio connects clients with verified skilled workers in Cameroon. You must be able to form a binding contract to use the platform.",
             "You are responsible for the accuracy of the information you provide and for activity under your account."
           ]
         },
         {
           "heading": "2. Bookings and escrow",
           "body": [
-            "Payments for jobs are held in escrow and released according to the Refund & Dispute Policy. TrustPro is not a party to the contract between a client and a worker."
+            "Payments for jobs are held in escrow and released according to the Refund & Dispute Policy. Kavio is not a party to the contract between a client and a worker."
           ]
         },
         {
           "heading": "3. Prohibited conduct",
           "body": [
-            "You may not use TrustPro to defraud, harass, or endanger others, or to circumvent the platform’s payment or verification systems."
+            "You may not use Kavio to defraud, harass, or endanger others, or to circumvent the platform’s payment or verification systems."
           ]
         }
       ]
@@ -2707,7 +2708,7 @@
     "privacy": {
       "title": "Privacy Policy",
       "updated": "Last updated 23 July 2026",
-      "intro": "How TrustPro collects, uses and protects your data. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
+      "intro": "How Kavio collects, uses and protects your data. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
       "sections": [
         {
           "heading": "1. What we collect",
@@ -2733,12 +2734,12 @@
     "refunds": {
       "title": "Refund & Dispute Policy",
       "updated": "Last updated 23 July 2026",
-      "intro": "How escrow, refunds and disputes work on TrustPro. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
+      "intro": "How escrow, refunds and disputes work on Kavio. This is a launch skeleton to be replaced by counsel-reviewed text before public launch.",
       "sections": [
         {
           "heading": "1. Escrow",
           "body": [
-            "Payment for a job is held by TrustPro when you accept a quote and released to the worker only when you confirm completion."
+            "Payment for a job is held by Kavio when you accept a quote and released to the worker only when you confirm completion."
           ]
         },
         {

@@ -41,13 +41,13 @@ export interface EmailLayoutOptions {
 
 const FOOTER_COPY: Record<Locale, { tagline: string; why: string; preferences: string }> = {
   en: {
-    tagline: 'TrustPro — verified local professionals in Cameroon.',
-    why: 'You received this email because you have a TrustPro account.',
+    tagline: 'Kavio — verified local professionals in Cameroon.',
+    why: 'You received this email because you have a Kavio account.',
     preferences: 'Manage your notification preferences',
   },
   fr: {
-    tagline: 'TrustPro — des professionnels locaux vérifiés au Cameroun.',
-    why: 'Vous recevez cet e-mail parce que vous avez un compte TrustPro.',
+    tagline: 'Kavio — des professionnels locaux vérifiés au Cameroun.',
+    why: 'Vous recevez cet e-mail parce que vous avez un compte Kavio.',
     preferences: 'Gérer vos préférences de notification',
   },
 };

@@ -4,7 +4,7 @@ import {
   VerificationCheckType,
   VerificationStage,
   VerificationStatus,
-} from '@trustpro/database';
+} from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser, Roles } from '../auth/decorators/auth.decorators';
 import {

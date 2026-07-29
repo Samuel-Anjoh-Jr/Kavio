@@ -6,7 +6,7 @@ import {
   UserStatus,
   VerificationPurpose,
   type UserRole as UserRoleModel,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
 import { burnPasswordTiming, hashPassword, verifyPassword } from '../lib/password.util';

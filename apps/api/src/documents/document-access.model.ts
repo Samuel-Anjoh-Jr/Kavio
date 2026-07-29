@@ -1,4 +1,4 @@
-import { MediaVisibility, Role, type MediaAssetKind } from '@trustpro/database';
+import { MediaVisibility, Role, type MediaAssetKind } from '@kavio/database';
 
 /**
  * Who may read a stored document (TRU-08, NFR-SEC-04), as a PURE function.

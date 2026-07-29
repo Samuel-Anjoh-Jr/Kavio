@@ -1,4 +1,4 @@
-import { QuoteStatus } from '@trustpro/database';
+import { QuoteStatus } from '@kavio/database';
 import {
   canTransitionQuote,
   isQuoteTransitionAllowedFor,

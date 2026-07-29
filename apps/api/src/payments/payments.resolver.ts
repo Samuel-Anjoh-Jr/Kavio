@@ -1,5 +1,5 @@
 import { Args, ID, Int, Query, Resolver } from '@nestjs/graphql';
-import { DisputeStatus, TransactionStatus, TransactionType } from '@trustpro/database';
+import { DisputeStatus, TransactionStatus, TransactionType } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser, RequirePermissions } from '../auth/decorators/auth.decorators';
 import {

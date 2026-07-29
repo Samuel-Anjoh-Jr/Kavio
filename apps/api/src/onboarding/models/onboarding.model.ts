@@ -1,5 +1,5 @@
 import { Field, GraphQLISODateTime, Int, ObjectType } from '@nestjs/graphql';
-import { OnboardingRole } from '@trustpro/database';
+import { OnboardingRole } from '@kavio/database';
 import { GraphQLJSON } from '../../graphql/json.scalar';
 
 @ObjectType({ description: 'A benefit that unlocks at a profile-completion threshold (TRU-05).' })

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Headers, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { Role } from '@trustpro/database';
+import { Role } from '@kavio/database';
 import { ZodValidationPipe } from '../lib/zod-validation.pipe';
 import { AuthService, LoginResult, SignUpResult } from './auth.service';
 import type { AuthenticatedUser, SessionTokens } from './auth.types';

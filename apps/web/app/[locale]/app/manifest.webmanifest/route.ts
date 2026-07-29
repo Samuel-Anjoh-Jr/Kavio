@@ -12,11 +12,11 @@ import { routing, type Locale } from '@/i18n/routing';
 
 const COPY: Record<Locale, { name: string; description: string }> = {
   en: {
-    name: 'TrustPro',
+    name: 'Kavio',
     description: 'Find verified, trusted workers for local services in Douala and Yaoundé.',
   },
   fr: {
-    name: 'TrustPro',
+    name: 'Kavio',
     description:
       'Trouvez des travailleurs vérifiés et fiables pour des services locaux à Douala et Yaoundé.',
   },

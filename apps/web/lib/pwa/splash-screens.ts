@@ -7,7 +7,7 @@
  * viewport AND orientation, which is why this is a hand-maintained device list
  * rather than something computed.
  *
- * The list covers the phone sizes that actually matter for TrustPro's users
+ * The list covers the phone sizes that actually matter for Kavio's users
  * rather than every iOS device ever shipped — an unmatched device falls back to
  * the blank default, which is the same thing it would get with no list at all,
  * so the cost of an omission is zero and the cost of exhaustiveness is a

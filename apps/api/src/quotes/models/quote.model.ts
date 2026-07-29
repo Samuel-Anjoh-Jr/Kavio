@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { BookingStatus, QuoteDurationUnit, QuoteStatus } from '@trustpro/database';
+import { BookingStatus, QuoteDurationUnit, QuoteStatus } from '@kavio/database';
 import { WorkerPreviewView } from '../../jobs/models/job.model';
 
 /**

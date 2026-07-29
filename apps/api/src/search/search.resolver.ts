@@ -1,5 +1,5 @@
 import { Args, Float, ID, Int, Query, Resolver } from '@nestjs/graphql';
-import { VerificationTier } from '@trustpro/database';
+import { VerificationTier } from '@kavio/database';
 import { Throttle } from '@nestjs/throttler';
 import { Public } from '../auth/decorators/auth.decorators';
 import { SearchFiltersService } from './search-filters.service';

@@ -1,6 +1,6 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import type { Role, UserStatus, VerificationTier } from '@trustpro/database';
+import type { Role, UserStatus, VerificationTier } from '@kavio/database';
 import { getJwtConfig, type JwtConfig } from './auth.config';
 
 /**

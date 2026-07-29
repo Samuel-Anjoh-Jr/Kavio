@@ -1,4 +1,4 @@
-import { BookingStatus, ReviewStatus } from '@trustpro/database';
+import { BookingStatus, ReviewStatus } from '@kavio/database';
 
 /**
  * The review rules (REV-01, REV-02) as PURE functions.

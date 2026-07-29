@@ -1,4 +1,4 @@
-import { BookingStatus, EscrowState, JobStatus } from '@trustpro/database';
+import { BookingStatus, EscrowState, JobStatus } from '@kavio/database';
 
 /**
  * The escrow money machine as a PURE state machine (PAY-01, PAY-02, SRS §15.1).

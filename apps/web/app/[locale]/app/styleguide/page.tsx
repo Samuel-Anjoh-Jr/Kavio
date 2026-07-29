@@ -386,7 +386,7 @@ export default function StyleguidePage() {
               ref={transitionBoxRef}
               className="flex h-20 items-center justify-center rounded-card bg-primary text-primary-foreground shadow-md"
             >
-              TrustPro
+              Kavio
             </div>
             <Button
               variant="outline"

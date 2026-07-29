@@ -7,7 +7,7 @@ import {
   Prisma,
   TransactionStatus,
   TransactionType,
-} from '@trustpro/database';
+} from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { PrismaService } from '../prisma/prisma.service';

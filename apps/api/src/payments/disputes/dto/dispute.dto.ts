@@ -1,4 +1,4 @@
-import { DisputeFaultParty, DisputeResolution } from '@trustpro/database';
+import { DisputeFaultParty, DisputeResolution } from '@kavio/database';
 import { z } from 'zod';
 
 /**

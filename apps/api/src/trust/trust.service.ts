@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Role, TrustPillar, VerificationTier } from '@trustpro/database';
+import { Role, TrustPillar, VerificationTier } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';

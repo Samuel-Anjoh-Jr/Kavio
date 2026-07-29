@@ -1,4 +1,4 @@
-import { TeamMemberAccessLevel, TeamMemberStatus } from '@trustpro/database';
+import { TeamMemberAccessLevel, TeamMemberStatus } from '@kavio/database';
 
 /**
  * What a team member may do for a business (BIZ-03), as a PURE function.

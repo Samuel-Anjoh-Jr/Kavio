@@ -39,7 +39,7 @@ const redisClientProvider: Provider = {
 
 /**
  * Global Redis foundation: a single shared ioredis connection (from REDIS_URL)
- * plus the RedisService wrapper. Redis backs three subsystems in TrustPro —
+ * plus the RedisService wrapper. Redis backs three subsystems in Kavio —
  * BullMQ queues, the rate-limit store, and the WS pub/sub adapter (SRS §17, §24.1).
  */
 @Global()

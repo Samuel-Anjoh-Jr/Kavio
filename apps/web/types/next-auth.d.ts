@@ -1,7 +1,7 @@
 import type { DefaultSession } from 'next-auth';
 
 /**
- * Module augmentation for the TrustPro session shape. Without this the identity
+ * Module augmentation for the Kavio session shape. Without this the identity
  * fields the callbacks set would be untyped `any` at every call site, which is
  * exactly where an authorisation mistake hides.
  */

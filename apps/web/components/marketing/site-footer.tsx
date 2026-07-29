@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 
@@ -30,21 +31,15 @@ export function SiteFooter() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex max-w-xs flex-col gap-3">
             <span className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-input bg-primary">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="size-5"
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth={2.6}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </span>
-              <span className="font-heading text-lg font-semibold text-foreground">TrustPro</span>
+              <Image
+                src="/brand/kavio-mark.png"
+                alt=""
+                aria-hidden="true"
+                width={480}
+                height={369}
+                className="h-8 w-auto"
+              />
+              <span className="font-heading text-lg font-semibold text-foreground">Kavio</span>
             </span>
             <p className="text-sm text-muted-foreground">{t('tagline')}</p>
           </div>

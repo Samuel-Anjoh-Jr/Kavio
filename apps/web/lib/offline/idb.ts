@@ -4,7 +4,7 @@
  * A minimal promise wrapper over IndexedDB (NFR-PWA-01/02).
  *
  * Hand-rolled rather than pulling in `idb`: this needs four operations against
- * two key/value stores, and on the low-bandwidth phone connections TrustPro
+ * two key/value stores, and on the low-bandwidth phone connections Kavio
  * targets, every avoided kilobyte of JS is a real cost avoided. There is no
  * generic query surface here on purpose — if a caller ever needs cursors or
  * indexes, that is the signal to adopt a real library instead of growing this.
@@ -15,7 +15,7 @@
  * never break it.
  */
 
-const DB_NAME = 'trustpro-offline';
+const DB_NAME = 'kavio-offline';
 const DB_VERSION = 1;
 
 export const STORE_APOLLO = 'apollo-cache';

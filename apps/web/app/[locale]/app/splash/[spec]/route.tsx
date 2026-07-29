@@ -81,7 +81,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ spe
           letterSpacing: -0.5,
         }}
       >
-        TrustPro
+        Kavio
       </div>
     </div>,
     {

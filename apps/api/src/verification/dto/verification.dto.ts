@@ -3,7 +3,7 @@ import {
   VerificationCheckType,
   VerificationRejectionReason,
   VerificationStage,
-} from '@trustpro/database';
+} from '@kavio/database';
 import { z } from 'zod';
 
 /**

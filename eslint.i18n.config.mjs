@@ -84,7 +84,7 @@ export default tseslint.config(
               // Default: all-caps identifiers (e.g. enum values used as display text).
               '[A-Z_-]+',
               // Brand token — identical in EN and FR by design (see CLAUDE.md).
-              'TrustPro',
+              'Kavio',
               // Honeypot decoy label: inside aria-hidden, never shown to users.
               'Website',
               // Decorative aria-hidden glyph (record button dot).

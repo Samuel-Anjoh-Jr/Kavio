@@ -1,4 +1,4 @@
-import { NotificationChannel } from '@trustpro/database';
+import { NotificationChannel } from '@kavio/database';
 import { LOCALES } from '../notification.types';
 import {
   TEMPLATE_KEYS,
@@ -64,7 +64,7 @@ describe('template registry', () => {
     // password_reset is email-only.
     expect(
       renderTemplate('auth.password_reset', NotificationChannel.SMS, 'en', {
-        resetUrl: 'https://trustpro.cm/r/1',
+        resetUrl: 'https://kavio.cm/r/1',
         expiresInMinutes: 30,
       }),
     ).toBeNull();
@@ -99,7 +99,7 @@ describe('template registry', () => {
 
     expect(rendered?.channel).toBe('EMAIL');
     if (rendered?.channel === 'EMAIL') {
-      expect(rendered.content.subject).toBe('TrustPro test notification');
+      expect(rendered.content.subject).toBe('Kavio test notification');
     }
   });
 });
@@ -114,12 +114,12 @@ function sampleVariables(key: string): Record<string, unknown> {
     case 'auth.otp_code':
       return { code: '123456', expiresInMinutes: 10 };
     case 'auth.password_reset':
-      return { resetUrl: 'https://trustpro.cm/reset/abc', expiresInMinutes: 30 };
+      return { resetUrl: 'https://kavio.cm/reset/abc', expiresInMinutes: 30 };
     case 'auth.new_device_login':
       return {
         deviceName: 'Chrome on Android',
         occurredAt: '21 July 2026, 09:14',
-        secureAccountUrl: 'https://trustpro.cm/settings/security',
+        secureAccountUrl: 'https://kavio.cm/settings/security',
       };
     case 'auth.password_changed':
       return { occurredAt: '21 July 2026, 09:14' };

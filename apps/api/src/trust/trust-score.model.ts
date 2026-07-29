@@ -1,4 +1,4 @@
-import { TrustEventType, TrustPillar } from '@trustpro/database';
+import { TrustEventType, TrustPillar } from '@kavio/database';
 
 /**
  * The Trust Score point model (SRS §21.5), as a PURE function of the event log.

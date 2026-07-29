@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { GeoRegionLevel } from '@trustpro/database';
+import type { GeoRegionLevel } from '@kavio/database';
 import { PrismaService } from '../prisma/prisma.service';
 import { assertValidCoordinates, clampLimit, type Coordinates } from './coordinates.util';
 import type { GeoRegionView, LandmarkView } from './models/geo.model';

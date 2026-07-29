@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { OnboardingRole } from '@trustpro/database';
+import { OnboardingRole } from '@kavio/database';
 import { z } from 'zod';
 import { AppException } from '../lib/app-exception';
 import { ZodValidationPipe } from '../lib/zod-validation.pipe';

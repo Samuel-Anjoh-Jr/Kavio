@@ -7,7 +7,7 @@ import {
   TrustEventType,
   UserStatus,
   VerificationCheckType,
-} from '@trustpro/database';
+} from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { normalizeToE164 } from '../lib/phone.util';

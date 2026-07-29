@@ -1,4 +1,4 @@
-import { TeamMemberAccessLevel } from '@trustpro/database';
+import { TeamMemberAccessLevel } from '@kavio/database';
 import {
   ACCESS_LEVEL_CAPABILITIES,
   accessLevelHas,

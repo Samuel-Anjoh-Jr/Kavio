@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable, Optional } from '@nestjs/common';
-import { VerificationPurpose } from '@trustpro/database';
+import { VerificationPurpose } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
 import {

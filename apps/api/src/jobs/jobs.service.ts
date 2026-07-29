@@ -1,12 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  JobStatus,
-  JobVisibility,
-  LocationSource,
-  MediaAssetKind,
-  Prisma,
-} from '@trustpro/database';
+import { JobStatus, JobVisibility, LocationSource, MediaAssetKind, Prisma } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { BusinessAccessService } from '../business/business-access.service';
 import { AppException } from '../lib/app-exception';

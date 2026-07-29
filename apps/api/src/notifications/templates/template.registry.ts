@@ -1,4 +1,4 @@
-import { NotificationCategory, NotificationChannel } from '@trustpro/database';
+import { NotificationCategory, NotificationChannel } from '@kavio/database';
 import type {
   EmailContent,
   Locale,
@@ -167,39 +167,39 @@ const testNotification: TemplateDefinition<'system.test_notification'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: 'TrustPro test notification',
+        subject: 'Kavio test notification',
         html: renderEmailLayout({
           locale: 'en',
-          preheader: 'A test notification from TrustPro.',
+          preheader: 'A test notification from Kavio.',
           heading: 'Test notification',
           bodyHtml: paragraphs(
-            'This is a test notification from the TrustPro dispatcher.',
+            'This is a test notification from the Kavio dispatcher.',
             escapeHtml(v.message),
           ),
         }),
-        text: `Test notification\n\nThis is a test notification from the TrustPro dispatcher.\n\n${v.message}`,
+        text: `Test notification\n\nThis is a test notification from the Kavio dispatcher.\n\n${v.message}`,
       }),
       fr: (v) => ({
-        subject: 'Notification de test TrustPro',
+        subject: 'Notification de test Kavio',
         html: renderEmailLayout({
           locale: 'fr',
-          preheader: 'Une notification de test de TrustPro.',
+          preheader: 'Une notification de test de Kavio.',
           heading: 'Notification de test',
           bodyHtml: paragraphs(
-            'Ceci est une notification de test du répartiteur TrustPro.',
+            'Ceci est une notification de test du répartiteur Kavio.',
             escapeHtml(v.message),
           ),
         }),
-        text: `Notification de test\n\nCeci est une notification de test du répartiteur TrustPro.\n\n${v.message}`,
+        text: `Notification de test\n\nCeci est une notification de test du répartiteur Kavio.\n\n${v.message}`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
-      en: (v) => ({ title: 'TrustPro test', body: v.message }),
-      fr: (v) => ({ title: 'Test TrustPro', body: v.message }),
+      en: (v) => ({ title: 'Kavio test', body: v.message }),
+      fr: (v) => ({ title: 'Test Kavio', body: v.message }),
     },
     [NotificationChannel.SMS]: {
-      en: (v) => ({ text: `TrustPro test: ${v.message}` }),
-      fr: (v) => ({ text: `Test TrustPro : ${v.message}` }),
+      en: (v) => ({ text: `Kavio test: ${v.message}` }),
+      fr: (v) => ({ text: `Test Kavio : ${v.message}` }),
     },
   },
 };
@@ -210,35 +210,35 @@ const accountWelcome: TemplateDefinition<'account.welcome'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: 'Welcome to TrustPro',
+        subject: 'Welcome to Kavio',
         html: renderEmailLayout({
           locale: 'en',
-          preheader: 'Your TrustPro account is ready.',
+          preheader: 'Your Kavio account is ready.',
           heading: `Welcome, ${v.name}`,
           bodyHtml: paragraphs(
-            'Your TrustPro account is ready. Verify your details to build your Trust Score and unlock more of the platform.',
+            'Your Kavio account is ready. Verify your details to build your Trust Score and unlock more of the platform.',
             'Every step you complete raises your Trust Score and makes you more visible to clients near you.',
           ),
         }),
-        text: `Welcome, ${v.name}\n\nYour TrustPro account is ready. Verify your details to build your Trust Score and unlock more of the platform.`,
+        text: `Welcome, ${v.name}\n\nYour Kavio account is ready. Verify your details to build your Trust Score and unlock more of the platform.`,
       }),
       fr: (v) => ({
-        subject: 'Bienvenue sur TrustPro',
+        subject: 'Bienvenue sur Kavio',
         html: renderEmailLayout({
           locale: 'fr',
-          preheader: 'Votre compte TrustPro est prêt.',
+          preheader: 'Votre compte Kavio est prêt.',
           heading: `Bienvenue, ${v.name}`,
           bodyHtml: paragraphs(
-            'Votre compte TrustPro est prêt. Vérifiez vos informations pour développer votre Score de Confiance et débloquer davantage de fonctionnalités.',
+            'Votre compte Kavio est prêt. Vérifiez vos informations pour développer votre Score de Confiance et débloquer davantage de fonctionnalités.',
             'Chaque étape complétée augmente votre Score de Confiance et vous rend plus visible auprès des clients près de chez vous.',
           ),
         }),
-        text: `Bienvenue, ${v.name}\n\nVotre compte TrustPro est prêt. Vérifiez vos informations pour développer votre Score de Confiance.`,
+        text: `Bienvenue, ${v.name}\n\nVotre compte Kavio est prêt. Vérifiez vos informations pour développer votre Score de Confiance.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
-      en: (v) => ({ title: 'Welcome to TrustPro', body: `You're all set, ${v.name}.` }),
-      fr: (v) => ({ title: 'Bienvenue sur TrustPro', body: `Tout est prêt, ${v.name}.` }),
+      en: (v) => ({ title: 'Welcome to Kavio', body: `You're all set, ${v.name}.` }),
+      fr: (v) => ({ title: 'Bienvenue sur Kavio', body: `Tout est prêt, ${v.name}.` }),
     },
   },
 };
@@ -250,44 +250,44 @@ const authOtpCode: TemplateDefinition<'auth.otp_code'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: `${v.code} is your TrustPro verification code`,
+        subject: `${v.code} is your Kavio verification code`,
         html: renderEmailLayout({
           locale: 'en',
-          preheader: 'Your TrustPro verification code.',
+          preheader: 'Your Kavio verification code.',
           heading: 'Your verification code',
           bodyHtml:
-            paragraphs('Enter this code to verify your TrustPro account:') +
+            paragraphs('Enter this code to verify your Kavio account:') +
             codeBlock(v.code) +
             paragraphs(
               `This code expires in ${v.expiresInMinutes} minutes.`,
               'If you did not request it, you can safely ignore this email.',
             ),
         }),
-        text: `Your TrustPro verification code is ${v.code}. It expires in ${v.expiresInMinutes} minutes. If you did not request it, ignore this email.`,
+        text: `Your Kavio verification code is ${v.code}. It expires in ${v.expiresInMinutes} minutes. If you did not request it, ignore this email.`,
       }),
       fr: (v) => ({
-        subject: `${v.code} est votre code de vérification TrustPro`,
+        subject: `${v.code} est votre code de vérification Kavio`,
         html: renderEmailLayout({
           locale: 'fr',
-          preheader: 'Votre code de vérification TrustPro.',
+          preheader: 'Votre code de vérification Kavio.',
           heading: 'Votre code de vérification',
           bodyHtml:
-            paragraphs('Saisissez ce code pour vérifier votre compte TrustPro :') +
+            paragraphs('Saisissez ce code pour vérifier votre compte Kavio :') +
             codeBlock(v.code) +
             paragraphs(
               `Ce code expire dans ${v.expiresInMinutes} minutes.`,
               "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.",
             ),
         }),
-        text: `Votre code de vérification TrustPro est ${v.code}. Il expire dans ${v.expiresInMinutes} minutes.`,
+        text: `Votre code de vérification Kavio est ${v.code}. Il expire dans ${v.expiresInMinutes} minutes.`,
       }),
     },
     [NotificationChannel.SMS]: {
       en: (v) => ({
-        text: `${v.code} is your TrustPro code. It expires in ${v.expiresInMinutes} min. Never share it.`,
+        text: `${v.code} is your Kavio code. It expires in ${v.expiresInMinutes} min. Never share it.`,
       }),
       fr: (v) => ({
-        text: `${v.code} est votre code TrustPro. Il expire dans ${v.expiresInMinutes} min. Ne le partagez jamais.`,
+        text: `${v.code} est votre code Kavio. Il expire dans ${v.expiresInMinutes} min. Ne le partagez jamais.`,
       }),
     },
   },
@@ -300,10 +300,10 @@ const authPasswordReset: TemplateDefinition<'auth.password_reset'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: 'Reset your TrustPro password',
+        subject: 'Reset your Kavio password',
         html: renderEmailLayout({
           locale: 'en',
-          preheader: 'Reset your TrustPro password.',
+          preheader: 'Reset your Kavio password.',
           heading: 'Reset your password',
           bodyHtml: paragraphs(
             `Use the button below to choose a new password. This link expires in ${v.expiresInMinutes} minutes.`,
@@ -311,13 +311,13 @@ const authPasswordReset: TemplateDefinition<'auth.password_reset'> = {
           ),
           cta: { label: 'Reset password', url: v.resetUrl },
         }),
-        text: `Reset your TrustPro password: ${v.resetUrl}\n\nThis link expires in ${v.expiresInMinutes} minutes. If you did not request it, ignore this email.`,
+        text: `Reset your Kavio password: ${v.resetUrl}\n\nThis link expires in ${v.expiresInMinutes} minutes. If you did not request it, ignore this email.`,
       }),
       fr: (v) => ({
-        subject: 'Réinitialisez votre mot de passe TrustPro',
+        subject: 'Réinitialisez votre mot de passe Kavio',
         html: renderEmailLayout({
           locale: 'fr',
-          preheader: 'Réinitialisez votre mot de passe TrustPro.',
+          preheader: 'Réinitialisez votre mot de passe Kavio.',
           heading: 'Réinitialisez votre mot de passe',
           bodyHtml: paragraphs(
             `Utilisez le bouton ci-dessous pour choisir un nouveau mot de passe. Ce lien expire dans ${v.expiresInMinutes} minutes.`,
@@ -325,7 +325,7 @@ const authPasswordReset: TemplateDefinition<'auth.password_reset'> = {
           ),
           cta: { label: 'Réinitialiser le mot de passe', url: v.resetUrl },
         }),
-        text: `Réinitialisez votre mot de passe TrustPro : ${v.resetUrl}\n\nCe lien expire dans ${v.expiresInMinutes} minutes.`,
+        text: `Réinitialisez votre mot de passe Kavio : ${v.resetUrl}\n\nCe lien expire dans ${v.expiresInMinutes} minutes.`,
       }),
     },
   },
@@ -338,7 +338,7 @@ const authNewDeviceLogin: TemplateDefinition<'auth.new_device_login'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: 'New sign-in to your TrustPro account',
+        subject: 'New sign-in to your Kavio account',
         html: renderEmailLayout({
           locale: 'en',
           preheader: 'A new device signed in to your account.',
@@ -349,10 +349,10 @@ const authNewDeviceLogin: TemplateDefinition<'auth.new_device_login'> = {
           ),
           cta: { label: 'Secure my account', url: v.secureAccountUrl },
         }),
-        text: `New sign-in to your TrustPro account from ${v.deviceName} on ${v.occurredAt}. If this was not you, secure your account: ${v.secureAccountUrl}`,
+        text: `New sign-in to your Kavio account from ${v.deviceName} on ${v.occurredAt}. If this was not you, secure your account: ${v.secureAccountUrl}`,
       }),
       fr: (v) => ({
-        subject: 'Nouvelle connexion à votre compte TrustPro',
+        subject: 'Nouvelle connexion à votre compte Kavio',
         html: renderEmailLayout({
           locale: 'fr',
           preheader: "Un nouvel appareil s'est connecté à votre compte.",
@@ -363,7 +363,7 @@ const authNewDeviceLogin: TemplateDefinition<'auth.new_device_login'> = {
           ),
           cta: { label: 'Sécuriser mon compte', url: v.secureAccountUrl },
         }),
-        text: `Nouvelle connexion à votre compte TrustPro depuis ${v.deviceName} le ${v.occurredAt}. Si ce n'était pas vous, sécurisez votre compte : ${v.secureAccountUrl}`,
+        text: `Nouvelle connexion à votre compte Kavio depuis ${v.deviceName} le ${v.occurredAt}. Si ce n'était pas vous, sécurisez votre compte : ${v.secureAccountUrl}`,
       }),
     },
   },
@@ -376,30 +376,30 @@ const authPasswordChanged: TemplateDefinition<'auth.password_changed'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: 'Your TrustPro password was changed',
+        subject: 'Your Kavio password was changed',
         html: renderEmailLayout({
           locale: 'en',
-          preheader: 'Your TrustPro password was changed.',
+          preheader: 'Your Kavio password was changed.',
           heading: 'Your password was changed',
           bodyHtml: paragraphs(
-            `Your TrustPro password was changed on ${escapeHtml(v.occurredAt)}. You have been signed out on every device.`,
+            `Your Kavio password was changed on ${escapeHtml(v.occurredAt)}. You have been signed out on every device.`,
             'If this was not you, reset your password immediately and contact support.',
           ),
         }),
-        text: `Your TrustPro password was changed on ${v.occurredAt}. You have been signed out on every device. If this was not you, reset your password immediately and contact support.`,
+        text: `Your Kavio password was changed on ${v.occurredAt}. You have been signed out on every device. If this was not you, reset your password immediately and contact support.`,
       }),
       fr: (v) => ({
-        subject: 'Votre mot de passe TrustPro a été modifié',
+        subject: 'Votre mot de passe Kavio a été modifié',
         html: renderEmailLayout({
           locale: 'fr',
-          preheader: 'Votre mot de passe TrustPro a été modifié.',
+          preheader: 'Votre mot de passe Kavio a été modifié.',
           heading: 'Votre mot de passe a été modifié',
           bodyHtml: paragraphs(
-            `Votre mot de passe TrustPro a été modifié le ${escapeHtml(v.occurredAt)}. Vous avez été déconnecté de tous vos appareils.`,
+            `Votre mot de passe Kavio a été modifié le ${escapeHtml(v.occurredAt)}. Vous avez été déconnecté de tous vos appareils.`,
             "Si vous n'êtes pas à l'origine de ce changement, réinitialisez votre mot de passe immédiatement et contactez le support.",
           ),
         }),
-        text: `Votre mot de passe TrustPro a été modifié le ${v.occurredAt}. Vous avez été déconnecté de tous vos appareils. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement.`,
+        text: `Votre mot de passe Kavio a été modifié le ${v.occurredAt}. Vous avez été déconnecté de tous vos appareils. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement.`,
       }),
     },
   },
@@ -415,7 +415,7 @@ const authTwoFactorChanged: TemplateDefinition<'auth.two_factor_changed'> = {
         subject: v.enabled ? 'Two-factor authentication is on' : 'Two-factor authentication is off',
         html: renderEmailLayout({
           locale: 'en',
-          preheader: 'A security setting on your TrustPro account changed.',
+          preheader: 'A security setting on your Kavio account changed.',
           heading: v.enabled
             ? 'Two-factor authentication enabled'
             : 'Two-factor authentication disabled',
@@ -427,8 +427,8 @@ const authTwoFactorChanged: TemplateDefinition<'auth.two_factor_changed'> = {
           ),
         }),
         text: v.enabled
-          ? 'Two-factor authentication is now ON for your TrustPro account. If you did not make this change, reset your password immediately.'
-          : 'Two-factor authentication is now OFF for your TrustPro account. If you did not make this change, reset your password immediately.',
+          ? 'Two-factor authentication is now ON for your Kavio account. If you did not make this change, reset your password immediately.'
+          : 'Two-factor authentication is now OFF for your Kavio account. If you did not make this change, reset your password immediately.',
       }),
       fr: (v) => ({
         subject: v.enabled
@@ -436,7 +436,7 @@ const authTwoFactorChanged: TemplateDefinition<'auth.two_factor_changed'> = {
           : 'La double authentification est désactivée',
         html: renderEmailLayout({
           locale: 'fr',
-          preheader: 'Un paramètre de sécurité de votre compte TrustPro a changé.',
+          preheader: 'Un paramètre de sécurité de votre compte Kavio a changé.',
           heading: v.enabled
             ? 'Double authentification activée'
             : 'Double authentification désactivée',
@@ -448,8 +448,8 @@ const authTwoFactorChanged: TemplateDefinition<'auth.two_factor_changed'> = {
           ),
         }),
         text: v.enabled
-          ? "La double authentification est maintenant ACTIVÉE sur votre compte TrustPro. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement."
-          : "La double authentification est maintenant DÉSACTIVÉE sur votre compte TrustPro. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement.",
+          ? "La double authentification est maintenant ACTIVÉE sur votre compte Kavio. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement."
+          : "La double authentification est maintenant DÉSACTIVÉE sur votre compte Kavio. Si ce n'était pas vous, réinitialisez votre mot de passe immédiatement.",
       }),
     },
   },
@@ -499,32 +499,32 @@ const trustTierPromoted: TemplateDefinition<'trust.tier_promoted'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: `You reached ${TIER_NAMES.en[v.tier] ?? v.tier} on TrustPro`,
+        subject: `You reached ${TIER_NAMES.en[v.tier] ?? v.tier} on Kavio`,
         html: renderEmailLayout({
           locale: 'en',
           preheader: 'Your verification level went up.',
           heading: `You reached ${escapeHtml(TIER_NAMES.en[v.tier] ?? v.tier)}`,
           bodyHtml: paragraphs(
-            'Your verification level on TrustPro just went up.',
+            'Your verification level on Kavio just went up.',
             escapeHtml(TIER_UNLOCKS.en[v.tier] ?? 'More of the platform is now open to you.'),
           ),
         }),
-        text: `You reached ${TIER_NAMES.en[v.tier] ?? v.tier} on TrustPro. ${TIER_UNLOCKS.en[v.tier] ?? ''}`,
+        text: `You reached ${TIER_NAMES.en[v.tier] ?? v.tier} on Kavio. ${TIER_UNLOCKS.en[v.tier] ?? ''}`,
       }),
       fr: (v) => ({
-        subject: `Vous avez atteint le niveau ${TIER_NAMES.fr[v.tier] ?? v.tier} sur TrustPro`,
+        subject: `Vous avez atteint le niveau ${TIER_NAMES.fr[v.tier] ?? v.tier} sur Kavio`,
         html: renderEmailLayout({
           locale: 'fr',
           preheader: 'Votre niveau de vérification a augmenté.',
           heading: `Vous avez atteint : ${escapeHtml(TIER_NAMES.fr[v.tier] ?? v.tier)}`,
           bodyHtml: paragraphs(
-            'Votre niveau de vérification sur TrustPro vient d’augmenter.',
+            'Votre niveau de vérification sur Kavio vient d’augmenter.',
             escapeHtml(
               TIER_UNLOCKS.fr[v.tier] ?? 'De nouvelles fonctionnalités vous sont ouvertes.',
             ),
           ),
         }),
-        text: `Vous avez atteint le niveau ${TIER_NAMES.fr[v.tier] ?? v.tier} sur TrustPro. ${TIER_UNLOCKS.fr[v.tier] ?? ''}`,
+        text: `Vous avez atteint le niveau ${TIER_NAMES.fr[v.tier] ?? v.tier} sur Kavio. ${TIER_UNLOCKS.fr[v.tier] ?? ''}`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -556,7 +556,7 @@ const trustScoreMilestone: TemplateDefinition<'trust.score_milestone'> = {
             'Open your Trust Score breakdown to see what would raise it further.',
           ),
         }),
-        text: `Your TrustPro Trust Score passed ${v.threshold} and is now ${v.score}.`,
+        text: `Your Kavio Trust Score passed ${v.threshold} and is now ${v.score}.`,
       }),
       fr: (v) => ({
         subject: `Votre Score de Confiance a dépassé ${v.threshold}`,
@@ -569,7 +569,7 @@ const trustScoreMilestone: TemplateDefinition<'trust.score_milestone'> = {
             'Consultez le détail de votre Score de Confiance pour voir comment l’augmenter encore.',
           ),
         }),
-        text: `Votre Score de Confiance TrustPro a dépassé ${v.threshold} et atteint ${v.score}.`,
+        text: `Votre Score de Confiance Kavio a dépassé ${v.threshold} et atteint ${v.score}.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -707,27 +707,27 @@ const trustBadgeUnlocked: TemplateDefinition<'trust.badge_unlocked'> = {
         subject: `You unlocked ${localized(BADGE_NAMES.en, v.badge)}`,
         html: renderEmailLayout({
           locale: 'en',
-          preheader: 'A new badge on your TrustPro profile.',
+          preheader: 'A new badge on your Kavio profile.',
           heading: `You unlocked ${escapeHtml(localized(BADGE_NAMES.en, v.badge))}`,
           bodyHtml: paragraphs(
             'This badge now shows on your profile, where every client who finds you can see it.',
             'Badges are permanent — once you have earned one, it stays.',
           ),
         }),
-        text: `You unlocked the ${localized(BADGE_NAMES.en, v.badge)} badge on TrustPro.`,
+        text: `You unlocked the ${localized(BADGE_NAMES.en, v.badge)} badge on Kavio.`,
       }),
       fr: (v) => ({
         subject: `Vous avez débloqué : ${localized(BADGE_NAMES.fr, v.badge)}`,
         html: renderEmailLayout({
           locale: 'fr',
-          preheader: 'Un nouveau badge sur votre profil TrustPro.',
+          preheader: 'Un nouveau badge sur votre profil Kavio.',
           heading: `Vous avez débloqué : ${escapeHtml(localized(BADGE_NAMES.fr, v.badge))}`,
           bodyHtml: paragraphs(
             'Ce badge apparaît désormais sur votre profil, visible par tous les clients qui vous trouvent.',
             'Les badges sont permanents : une fois obtenu, il vous reste acquis.',
           ),
         }),
-        text: `Vous avez débloqué le badge ${localized(BADGE_NAMES.fr, v.badge)} sur TrustPro.`,
+        text: `Vous avez débloqué le badge ${localized(BADGE_NAMES.fr, v.badge)} sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -759,7 +759,7 @@ const verificationApproved: TemplateDefinition<'verification.approved'> = {
             'Open your Trust Score to see what this unlocked and what comes next.',
           ),
         }),
-        text: `Your ${localized(CHECK_NAMES.en, v.checkType, 'document')} was verified on TrustPro.`,
+        text: `Your ${localized(CHECK_NAMES.en, v.checkType, 'document')} was verified on Kavio.`,
       }),
       fr: (v) => ({
         subject: 'Votre vérification a été approuvée',
@@ -772,7 +772,7 @@ const verificationApproved: TemplateDefinition<'verification.approved'> = {
             'Consultez votre Score de Confiance pour voir ce que cela débloque et la suite.',
           ),
         }),
-        text: `Votre ${localized(CHECK_NAMES.fr, v.checkType, 'document')} a été vérifié sur TrustPro.`,
+        text: `Votre ${localized(CHECK_NAMES.fr, v.checkType, 'document')} a été vérifié sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -854,7 +854,7 @@ const verificationInfoRequested: TemplateDefinition<'verification.info_requested
             'Add it from your verification screen and we will pick it straight back up — you keep your place in the queue.',
           ),
         }),
-        text: `We need one more thing for your TrustPro verification: ${v.infoRequest}`,
+        text: `We need one more thing for your Kavio verification: ${v.infoRequest}`,
       }),
       fr: (v) => ({
         subject: 'Il nous manque un élément',
@@ -868,7 +868,7 @@ const verificationInfoRequested: TemplateDefinition<'verification.info_requested
             'Ajoutez-le depuis votre écran de vérification et nous reprendrons aussitôt — vous gardez votre place dans la file.',
           ),
         }),
-        text: `Il nous manque un élément pour votre vérification TrustPro : ${v.infoRequest}`,
+        text: `Il nous manque un élément pour votre vérification Kavio : ${v.infoRequest}`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -909,7 +909,7 @@ const jobApplicationReceived: TemplateDefinition<'job.application_received'> = {
             'Open the job to see their profile, Trust Score and message.',
           ),
         }),
-        text: `A worker applied to your job "${v.jobTitle}". Open TrustPro to review them.`,
+        text: `A worker applied to your job "${v.jobTitle}". Open Kavio to review them.`,
       }),
       fr: (v) => ({
         subject: 'Vous avez une nouvelle candidature',
@@ -922,7 +922,7 @@ const jobApplicationReceived: TemplateDefinition<'job.application_received'> = {
             'Ouvrez l’offre pour voir son profil, son Score de Confiance et son message.',
           ),
         }),
-        text: `Un artisan a postulé à votre offre « ${v.jobTitle} ». Ouvrez TrustPro pour l’examiner.`,
+        text: `Un artisan a postulé à votre offre « ${v.jobTitle} ». Ouvrez Kavio pour l’examiner.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -951,7 +951,7 @@ const jobInvitationReceived: TemplateDefinition<'job.invitation_received'> = {
             'Open it to review the details and send a quote.',
           ),
         }),
-        text: `A client invited you to the job "${v.jobTitle}". Open TrustPro to send a quote.`,
+        text: `A client invited you to the job "${v.jobTitle}". Open Kavio to send a quote.`,
       }),
       fr: (v) => ({
         subject: 'Un client vous invite à une mission',
@@ -964,7 +964,7 @@ const jobInvitationReceived: TemplateDefinition<'job.invitation_received'> = {
             'Ouvrez-la pour consulter les détails et envoyer un devis.',
           ),
         }),
-        text: `Un client vous a invité à la mission « ${v.jobTitle} ». Ouvrez TrustPro pour envoyer un devis.`,
+        text: `Un client vous a invité à la mission « ${v.jobTitle} ». Ouvrez Kavio pour envoyer un devis.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -987,10 +987,10 @@ const jobApplicationStatusChanged: TemplateDefinition<'job.application_status_ch
           heading: 'Application update',
           bodyHtml: paragraphs(
             `There is an update on your application to "${escapeHtml(v.jobTitle)}".`,
-            'Open TrustPro to see where things stand.',
+            'Open Kavio to see where things stand.',
           ),
         }),
-        text: `Your application to "${v.jobTitle}" has an update on TrustPro.`,
+        text: `Your application to "${v.jobTitle}" has an update on Kavio.`,
       }),
       fr: (v) => ({
         subject: 'Mise à jour de votre candidature',
@@ -1000,10 +1000,10 @@ const jobApplicationStatusChanged: TemplateDefinition<'job.application_status_ch
           heading: 'Mise à jour',
           bodyHtml: paragraphs(
             `Votre candidature à « ${escapeHtml(v.jobTitle)} » a une mise à jour.`,
-            'Ouvrez TrustPro pour voir où en est votre candidature.',
+            'Ouvrez Kavio pour voir où en est votre candidature.',
           ),
         }),
-        text: `Votre candidature à « ${v.jobTitle} » a une mise à jour sur TrustPro.`,
+        text: `Votre candidature à « ${v.jobTitle} » a une mise à jour sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1068,7 +1068,7 @@ const quoteReceived: TemplateDefinition<'quote.received'> = {
             'Open it to see what’s included and accept, decline, or ask for a counter-offer.',
           ),
         }),
-        text: `You received a quote of ${xaf(v.price, 'en')} for "${v.jobTitle}" on TrustPro.`,
+        text: `You received a quote of ${xaf(v.price, 'en')} for "${v.jobTitle}" on Kavio.`,
       }),
       fr: (v) => ({
         subject: 'Vous avez reçu un nouveau devis',
@@ -1081,7 +1081,7 @@ const quoteReceived: TemplateDefinition<'quote.received'> = {
             'Ouvrez-le pour voir ce qui est inclus et accepter, refuser ou demander une contre-offre.',
           ),
         }),
-        text: `Vous avez reçu un devis de ${xaf(v.price, 'fr')} pour « ${v.jobTitle} » sur TrustPro.`,
+        text: `Vous avez reçu un devis de ${xaf(v.price, 'fr')} pour « ${v.jobTitle} » sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1110,7 +1110,7 @@ const quoteAccepted: TemplateDefinition<'quote.accepted'> = {
             'A booking has been created. Once payment is secured in escrow, you can start the work.',
           ),
         }),
-        text: `Your quote of ${xaf(v.price, 'en')} for "${v.jobTitle}" was accepted on TrustPro.`,
+        text: `Your quote of ${xaf(v.price, 'en')} for "${v.jobTitle}" was accepted on Kavio.`,
       }),
       fr: (v) => ({
         subject: 'Votre devis a été accepté',
@@ -1123,7 +1123,7 @@ const quoteAccepted: TemplateDefinition<'quote.accepted'> = {
             'Une réservation a été créée. Dès que le paiement est sécurisé sous séquestre, vous pouvez commencer.',
           ),
         }),
-        text: `Votre devis de ${xaf(v.price, 'fr')} pour « ${v.jobTitle} » a été accepté sur TrustPro.`,
+        text: `Votre devis de ${xaf(v.price, 'fr')} pour « ${v.jobTitle} » a été accepté sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1149,7 +1149,7 @@ const quoteDeclined: TemplateDefinition<'quote.declined'> = {
             'Plenty of other jobs are looking for someone with your skills — keep going.',
           ),
         }),
-        text: `The client declined your quote for "${v.jobTitle}" on TrustPro.`,
+        text: `The client declined your quote for "${v.jobTitle}" on Kavio.`,
       }),
       fr: (v) => ({
         subject: 'À propos de votre devis',
@@ -1162,7 +1162,7 @@ const quoteDeclined: TemplateDefinition<'quote.declined'> = {
             'D’autres missions cherchent vos compétences — continuez.',
           ),
         }),
-        text: `Le client a décliné votre devis pour « ${v.jobTitle} » sur TrustPro.`,
+        text: `Le client a décliné votre devis pour « ${v.jobTitle} » sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1189,10 +1189,10 @@ const quoteCounterRequested: TemplateDefinition<'quote.counter_requested'> = {
               ? [`They suggested around ${xaf(v.targetPrice, 'en')}.`]
               : []),
             ...(v.message ? [escapeHtml(v.message)] : []),
-            'Open TrustPro to send a revised quote.',
+            'Open Kavio to send a revised quote.',
           ),
         }),
-        text: `The client asked for a counter-offer on "${v.jobTitle}". Open TrustPro to revise your quote.`,
+        text: `The client asked for a counter-offer on "${v.jobTitle}". Open Kavio to revise your quote.`,
       }),
       fr: (v) => ({
         subject: 'Le client demande une contre-offre',
@@ -1204,10 +1204,10 @@ const quoteCounterRequested: TemplateDefinition<'quote.counter_requested'> = {
             `Le client souhaite un devis révisé pour « ${escapeHtml(v.jobTitle)} ».`,
             ...(v.targetPrice != null ? [`Il propose environ ${xaf(v.targetPrice, 'fr')}.`] : []),
             ...(v.message ? [escapeHtml(v.message)] : []),
-            'Ouvrez TrustPro pour envoyer un devis révisé.',
+            'Ouvrez Kavio pour envoyer un devis révisé.',
           ),
         }),
-        text: `Le client demande une contre-offre pour « ${v.jobTitle} ». Ouvrez TrustPro pour réviser votre devis.`,
+        text: `Le client demande une contre-offre pour « ${v.jobTitle} ». Ouvrez Kavio pour réviser votre devis.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1264,7 +1264,7 @@ const paymentRequired: TemplateDefinition<'payment.required'> = {
             'Your money is held safely and only released to the worker once you confirm the work is done.',
           ),
         }),
-        text: `Pay ${xaf(v.amount, 'en')} into escrow to confirm your booking on TrustPro.`,
+        text: `Pay ${xaf(v.amount, 'en')} into escrow to confirm your booking on Kavio.`,
       }),
       fr: (v) => ({
         subject: 'Sécurisez votre réservation via le séquestre',
@@ -1277,7 +1277,7 @@ const paymentRequired: TemplateDefinition<'payment.required'> = {
             'Votre argent est conservé en sécurité et n’est versé au professionnel qu’une fois le travail confirmé.',
           ),
         }),
-        text: `Payez ${xaf(v.amount, 'fr')} sous séquestre pour confirmer votre réservation sur TrustPro.`,
+        text: `Payez ${xaf(v.amount, 'fr')} sous séquestre pour confirmer votre réservation sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1421,10 +1421,10 @@ const escrowWorkCompleted: TemplateDefinition<'escrow.work_completed'> = {
           heading: 'Job marked done',
           bodyHtml: paragraphs(
             `The worker marked "${escapeHtml(v.jobTitle)}" as done.`,
-            'Review the work and confirm completion on TrustPro to release payment from escrow.',
+            'Review the work and confirm completion on Kavio to release payment from escrow.',
           ),
         }),
-        text: `The worker marked "${v.jobTitle}" as done. Review and confirm completion on TrustPro to release payment.`,
+        text: `The worker marked "${v.jobTitle}" as done. Review and confirm completion on Kavio to release payment.`,
       }),
       fr: (v) => ({
         subject: 'Votre prestataire a marqué le job comme terminé',
@@ -1434,10 +1434,10 @@ const escrowWorkCompleted: TemplateDefinition<'escrow.work_completed'> = {
           heading: 'Job marqué terminé',
           bodyHtml: paragraphs(
             `Le prestataire a marqué « ${escapeHtml(v.jobTitle)} » comme terminé.`,
-            'Vérifiez le travail et confirmez sur TrustPro pour libérer le paiement du séquestre.',
+            'Vérifiez le travail et confirmez sur Kavio pour libérer le paiement du séquestre.',
           ),
         }),
-        text: `Le prestataire a marqué « ${v.jobTitle} » comme terminé. Vérifiez et confirmez sur TrustPro pour libérer le paiement.`,
+        text: `Le prestataire a marqué « ${v.jobTitle} » comme terminé. Vérifiez et confirmez sur Kavio pour libérer le paiement.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1469,7 +1469,7 @@ const escrowReleased: TemplateDefinition<'escrow.released'> = {
             'You can withdraw it to your Mobile Money at any time.',
           ),
         }),
-        text: `${xaf(v.amount, 'en')} for "${v.jobTitle}" has been released to your TrustPro wallet.`,
+        text: `${xaf(v.amount, 'en')} for "${v.jobTitle}" has been released to your Kavio wallet.`,
       }),
       fr: (v) => ({
         subject: 'Vous avez été payé',
@@ -1482,7 +1482,7 @@ const escrowReleased: TemplateDefinition<'escrow.released'> = {
             'Vous pouvez les retirer vers votre Mobile Money à tout moment.',
           ),
         }),
-        text: `${xaf(v.amount, 'fr')} pour « ${v.jobTitle} » ont été versés sur votre portefeuille TrustPro.`,
+        text: `${xaf(v.amount, 'fr')} pour « ${v.jobTitle} » ont été versés sur votre portefeuille Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1514,7 +1514,7 @@ const escrowRefunded: TemplateDefinition<'escrow.refunded'> = {
             'You can withdraw it to your Mobile Money at any time.',
           ),
         }),
-        text: `${xaf(v.amount, 'en')} for "${v.jobTitle}" has been refunded to your TrustPro wallet.`,
+        text: `${xaf(v.amount, 'en')} for "${v.jobTitle}" has been refunded to your Kavio wallet.`,
       }),
       fr: (v) => ({
         subject: 'Votre séquestre a été remboursé',
@@ -1527,7 +1527,7 @@ const escrowRefunded: TemplateDefinition<'escrow.refunded'> = {
             'Vous pouvez les retirer vers votre Mobile Money à tout moment.',
           ),
         }),
-        text: `${xaf(v.amount, 'fr')} pour « ${v.jobTitle} » ont été remboursés sur votre portefeuille TrustPro.`,
+        text: `${xaf(v.amount, 'fr')} pour « ${v.jobTitle} » ont été remboursés sur votre portefeuille Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1553,7 +1553,7 @@ const paymentFailed: TemplateDefinition<'payment.failed'> = {
           heading: 'Payment failed',
           bodyHtml: paragraphs(
             `Your payment of ${xaf(v.amount, 'en')} could not be completed. ${failureLine(v.reasonKey, 'en')}`,
-            'No money has left your account. Please try again from TrustPro.',
+            'No money has left your account. Please try again from Kavio.',
           ),
         }),
         text: `Your payment of ${xaf(v.amount, 'en')} failed: ${failureLine(v.reasonKey, 'en')}`,
@@ -1566,7 +1566,7 @@ const paymentFailed: TemplateDefinition<'payment.failed'> = {
           heading: 'Échec du paiement',
           bodyHtml: paragraphs(
             `Votre paiement de ${xaf(v.amount, 'fr')} n’a pas pu être effectué. ${failureLine(v.reasonKey, 'fr')}`,
-            'Aucun montant n’a été débité. Veuillez réessayer depuis TrustPro.',
+            'Aucun montant n’a été débité. Veuillez réessayer depuis Kavio.',
           ),
         }),
         text: `Votre paiement de ${xaf(v.amount, 'fr')} a échoué : ${failureLine(v.reasonKey, 'fr')}`,
@@ -1592,7 +1592,7 @@ const disputeOpened: TemplateDefinition<'dispute.opened'> = {
           heading: 'Dispute opened',
           bodyHtml: paragraphs(
             `A dispute has been opened on "${escapeHtml(v.jobTitle)}". The escrow is frozen while our team reviews it.`,
-            'Open TrustPro to add your side and any evidence.',
+            'Open Kavio to add your side and any evidence.',
           ),
         }),
         text: `A dispute was opened on "${v.jobTitle}". The escrow is frozen pending review.`,
@@ -1605,7 +1605,7 @@ const disputeOpened: TemplateDefinition<'dispute.opened'> = {
           heading: 'Litige ouvert',
           bodyHtml: paragraphs(
             `Un litige a été ouvert sur « ${escapeHtml(v.jobTitle)} ». Le séquestre est gelé pendant l’examen par notre équipe.`,
-            'Ouvrez TrustPro pour donner votre version et vos preuves.',
+            'Ouvrez Kavio pour donner votre version et vos preuves.',
           ),
         }),
         text: `Un litige a été ouvert sur « ${v.jobTitle} ». Le séquestre est gelé.`,
@@ -1631,10 +1631,10 @@ const disputeResolved: TemplateDefinition<'dispute.resolved'> = {
           heading: 'Dispute resolved',
           bodyHtml: paragraphs(
             `The dispute on "${escapeHtml(v.jobTitle)}" has been resolved by our team.`,
-            'Open TrustPro to see the outcome and your updated wallet.',
+            'Open Kavio to see the outcome and your updated wallet.',
           ),
         }),
-        text: `The dispute on "${v.jobTitle}" has been resolved. Open TrustPro to see the outcome.`,
+        text: `The dispute on "${v.jobTitle}" has been resolved. Open Kavio to see the outcome.`,
       }),
       fr: (v) => ({
         subject: 'Votre litige a été résolu',
@@ -1644,10 +1644,10 @@ const disputeResolved: TemplateDefinition<'dispute.resolved'> = {
           heading: 'Litige résolu',
           bodyHtml: paragraphs(
             `Le litige sur « ${escapeHtml(v.jobTitle)} » a été résolu par notre équipe.`,
-            'Ouvrez TrustPro pour voir la décision et votre portefeuille mis à jour.',
+            'Ouvrez Kavio pour voir la décision et votre portefeuille mis à jour.',
           ),
         }),
-        text: `Le litige sur « ${v.jobTitle} » a été résolu. Ouvrez TrustPro pour voir la décision.`,
+        text: `Le litige sur « ${v.jobTitle} » a été résolu. Ouvrez Kavio pour voir la décision.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1668,9 +1668,9 @@ const messageReceived: TemplateDefinition<'message.received'> = {
         subject: `New message from ${v.senderName}`,
         html: renderEmailLayout({
           locale: 'en',
-          preheader: 'You have a new message on TrustPro.',
+          preheader: 'You have a new message on Kavio.',
           heading: `Message from ${escapeHtml(v.senderName)}`,
-          bodyHtml: paragraphs(escapeHtml(v.preview), 'Open TrustPro to reply.'),
+          bodyHtml: paragraphs(escapeHtml(v.preview), 'Open Kavio to reply.'),
         }),
         text: `New message from ${v.senderName}: ${v.preview}`,
       }),
@@ -1678,9 +1678,9 @@ const messageReceived: TemplateDefinition<'message.received'> = {
         subject: `Nouveau message de ${v.senderName}`,
         html: renderEmailLayout({
           locale: 'fr',
-          preheader: 'Vous avez un nouveau message sur TrustPro.',
+          preheader: 'Vous avez un nouveau message sur Kavio.',
           heading: `Message de ${escapeHtml(v.senderName)}`,
-          bodyHtml: paragraphs(escapeHtml(v.preview), 'Ouvrez TrustPro pour répondre.'),
+          bodyHtml: paragraphs(escapeHtml(v.preview), 'Ouvrez Kavio pour répondre.'),
         }),
         text: `Nouveau message de ${v.senderName} : ${v.preview}`,
       }),
@@ -1708,7 +1708,7 @@ const reviewReceived: TemplateDefinition<'review.received'> = {
             'Every review builds your Trust Score and helps the next client choose you.',
           ),
         }),
-        text: `You received a ${v.rating}-star review for "${v.jobTitle}" on TrustPro.`,
+        text: `You received a ${v.rating}-star review for "${v.jobTitle}" on Kavio.`,
       }),
       fr: (v) => ({
         subject: 'Vous avez reçu un nouvel avis',
@@ -1721,7 +1721,7 @@ const reviewReceived: TemplateDefinition<'review.received'> = {
             'Chaque avis renforce votre Score de Confiance et aide le prochain client à vous choisir.',
           ),
         }),
-        text: `Vous avez reçu un avis de ${v.rating} étoiles pour « ${v.jobTitle} » sur TrustPro.`,
+        text: `Vous avez reçu un avis de ${v.rating} étoiles pour « ${v.jobTitle} » sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1747,7 +1747,7 @@ const jobMatched: TemplateDefinition<'job.matched'> = {
             'Open it to review the details and send a quote before someone else does.',
           ),
         }),
-        text: `A new job "${v.jobTitle}" matching your skills was posted on TrustPro.`,
+        text: `A new job "${v.jobTitle}" matching your skills was posted on Kavio.`,
       }),
       fr: (v) => ({
         subject: 'Une nouvelle mission correspond à vos compétences',
@@ -1760,7 +1760,7 @@ const jobMatched: TemplateDefinition<'job.matched'> = {
             'Ouvrez-la pour consulter les détails et envoyer un devis avant les autres.',
           ),
         }),
-        text: `Une nouvelle mission « ${v.jobTitle} » correspondant à vos compétences a été publiée sur TrustPro.`,
+        text: `Une nouvelle mission « ${v.jobTitle} » correspondant à vos compétences a été publiée sur Kavio.`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1784,13 +1784,13 @@ const safetySosTriggered: TemplateDefinition<'safety.sos_triggered'> = {
           preheader: `${v.userName} may need help.`,
           heading: `${escapeHtml(v.userName)} triggered an SOS`,
           bodyHtml: paragraphs(
-            `${escapeHtml(v.contactName)}, ${escapeHtml(v.userName)} has triggered an emergency SOS on TrustPro and listed you as an emergency contact.`,
+            `${escapeHtml(v.contactName)}, ${escapeHtml(v.userName)} has triggered an emergency SOS on Kavio and listed you as an emergency contact.`,
             ...(v.message ? [`They added: "${escapeHtml(v.message)}"`] : []),
             'Please check on them now.',
           ),
           ...(v.mapUrl ? { cta: { label: 'See their location', url: v.mapUrl } } : {}),
         }),
-        text: `EMERGENCY: ${v.userName} triggered an SOS on TrustPro.${v.message ? ` Message: ${v.message}.` : ''}${v.mapUrl ? ` Location: ${v.mapUrl}` : ''}`,
+        text: `EMERGENCY: ${v.userName} triggered an SOS on Kavio.${v.message ? ` Message: ${v.message}.` : ''}${v.mapUrl ? ` Location: ${v.mapUrl}` : ''}`,
       }),
       fr: (v) => ({
         subject: `Urgence : ${v.userName} a déclenché un SOS`,
@@ -1799,13 +1799,13 @@ const safetySosTriggered: TemplateDefinition<'safety.sos_triggered'> = {
           preheader: `${v.userName} a peut-être besoin d’aide.`,
           heading: `${escapeHtml(v.userName)} a déclenché un SOS`,
           bodyHtml: paragraphs(
-            `${escapeHtml(v.contactName)}, ${escapeHtml(v.userName)} a déclenché un SOS d’urgence sur TrustPro et vous a désigné comme contact d’urgence.`,
+            `${escapeHtml(v.contactName)}, ${escapeHtml(v.userName)} a déclenché un SOS d’urgence sur Kavio et vous a désigné comme contact d’urgence.`,
             ...(v.message ? [`Message ajouté : « ${escapeHtml(v.message)} »`] : []),
             'Merci de prendre de ses nouvelles immédiatement.',
           ),
           ...(v.mapUrl ? { cta: { label: 'Voir sa position', url: v.mapUrl } } : {}),
         }),
-        text: `URGENCE : ${v.userName} a déclenché un SOS sur TrustPro.${v.message ? ` Message : ${v.message}.` : ''}${v.mapUrl ? ` Position : ${v.mapUrl}` : ''}`,
+        text: `URGENCE : ${v.userName} a déclenché un SOS sur Kavio.${v.message ? ` Message : ${v.message}.` : ''}${v.mapUrl ? ` Position : ${v.mapUrl}` : ''}`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
@@ -1854,7 +1854,7 @@ const moderationActionTaken: TemplateDefinition<'moderation.action_taken'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: 'An update about your TrustPro account',
+        subject: 'An update about your Kavio account',
         html: renderEmailLayout({
           locale: 'en',
           preheader: 'A moderation decision was made about your account.',
@@ -1868,10 +1868,10 @@ const moderationActionTaken: TemplateDefinition<'moderation.action_taken'> = {
             'If you believe this is a mistake, reply to this email and a person will look again.',
           ),
         }),
-        text: `TrustPro applied ${actionLabel(v.action, 'en')} to your account. Reason: ${v.reason}.${v.expiresAt ? ` Lapses ${new Date(v.expiresAt).toDateString()}.` : ''}`,
+        text: `Kavio applied ${actionLabel(v.action, 'en')} to your account. Reason: ${v.reason}.${v.expiresAt ? ` Lapses ${new Date(v.expiresAt).toDateString()}.` : ''}`,
       }),
       fr: (v) => ({
-        subject: 'Une mise à jour concernant votre compte TrustPro',
+        subject: 'Une mise à jour concernant votre compte Kavio',
         html: renderEmailLayout({
           locale: 'fr',
           preheader: 'Une décision de modération concerne votre compte.',
@@ -1885,7 +1885,7 @@ const moderationActionTaken: TemplateDefinition<'moderation.action_taken'> = {
             'Si vous pensez qu’il s’agit d’une erreur, répondez à cet e-mail et une personne réexaminera le dossier.',
           ),
         }),
-        text: `TrustPro a appliqué ${actionLabel(v.action, 'fr')} à votre compte. Motif : ${v.reason}.${v.expiresAt ? ` Fin le ${new Date(v.expiresAt).toDateString()}.` : ''}`,
+        text: `Kavio a appliqué ${actionLabel(v.action, 'fr')} à votre compte. Motif : ${v.reason}.${v.expiresAt ? ` Fin le ${new Date(v.expiresAt).toDateString()}.` : ''}`,
       }),
     },
     [NotificationChannel.WEB_PUSH]: {

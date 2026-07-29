@@ -27,7 +27,7 @@ export type ContactChannelRequirement = 'PHONE' | 'EMAIL' | 'EITHER';
 
 export const SETTING_KEYS = {
   /**
-   * SMS is a paid aggregator TrustPro has not bought yet, so EMAIL is the
+   * SMS is a paid aggregator Kavio has not bought yet, so EMAIL is the
    * launch default: it is the channel that actually delivers today. An operator
    * flips this to PHONE (or EITHER) the day SMS goes live, with no code change.
    */

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
-import { MediaAssetKind } from '@trustpro/database';
+import { MediaAssetKind } from '@kavio/database';
 import { z } from 'zod';
 import { Body } from '@nestjs/common';
 import { AppException } from '../lib/app-exception';

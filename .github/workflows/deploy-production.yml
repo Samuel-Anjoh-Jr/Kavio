@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Dummy values: validate/type-check only need Prisma to parse the schema.
-      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/trustpro?schema=public'
-      DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/trustpro?schema=public'
+      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/kavio?schema=public'
+      DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/kavio?schema=public'
     steps:
       - name: Checkout
         uses: actions/checkout@v4

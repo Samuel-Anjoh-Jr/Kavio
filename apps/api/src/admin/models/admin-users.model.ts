@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
-import { AgentInvitationStatus, Role, UserStatus, VerificationTier } from '@trustpro/database';
+import { AgentInvitationStatus, Role, UserStatus, VerificationTier } from '@kavio/database';
 
 /**
  * Account management and agent invitations (ADM-02, ADM-06), served over GraphQL
