@@ -837,6 +837,8 @@
     "infoLabel": "De quoi avez-vous besoin de sa part ?",
     "infoHint": "Elle le verra exactement tel que vous l'écrivez : soyez précis.",
     "suspensionWarning": "Ceci suspend définitivement le compte et annule son Score de Confiance. À n'utiliser que pour un document dont vous avez confirmé la falsification.",
+    "advanceTo": "Envoyer vers {stage}",
+    "advanced": "Déplacé.",
     "approved": "Approuvé.",
     "rejected": "Refusé. Nous lui avons indiqué quoi corriger.",
     "infoRequested": "Demande envoyée.",

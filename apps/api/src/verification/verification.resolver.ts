@@ -1,7 +1,12 @@
 import { Args, ID, Int, Query, Resolver } from '@nestjs/graphql';
-import { VerificationCheckType, VerificationStage, VerificationStatus } from '@trustpro/database';
+import {
+  Role,
+  VerificationCheckType,
+  VerificationStage,
+  VerificationStatus,
+} from '@trustpro/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { CurrentUser, RequirePermissions } from '../auth/decorators/auth.decorators';
+import { CurrentUser, Roles } from '../auth/decorators/auth.decorators';
 import {
   REJECTION_POLICIES,
   rejectionMessageKey,
@@ -70,7 +75,7 @@ export class VerificationResolver {
     }));
   }
 
-  @RequirePermissions('admin:verification_review')
+  @Roles(Role.ADMIN, Role.AGENT)
   @Query(() => VerificationPipelineView, {
     description:
       'Per-stage counts, average review time and approval rate for the review pipeline (AGT-03).',
@@ -82,7 +87,7 @@ export class VerificationResolver {
     return { ...metrics, stages: [...metrics.stages] };
   }
 
-  @RequirePermissions('admin:verification_review')
+  @Roles(Role.ADMIN, Role.AGENT)
   @Query(() => [VerificationQueueItemView], {
     description:
       'One column of the review board, oldest first — the queue is worked FIFO (AGT-03). `group` is the ADM-03 tab (ALL/ID/BUSINESS/FIELD).',

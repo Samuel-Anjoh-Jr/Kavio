@@ -837,6 +837,8 @@
     "infoLabel": "What do you need from them?",
     "infoHint": "They see this exactly as you write it, so be specific.",
     "suspensionWarning": "This permanently suspends the account and voids their Trust Score. Only use it for a document you have confirmed is forged.",
+    "advanceTo": "Send to {stage}",
+    "advanced": "Moved.",
     "approved": "Approved.",
     "rejected": "Rejected. We've told them what to fix.",
     "infoRequested": "Request sent.",

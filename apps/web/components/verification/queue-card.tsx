@@ -120,7 +120,7 @@ export function QueueCard({
             </Button>
           )}
 
-          <ReviewPanel recordId={item.id} onDecided={onChanged} />
+          <ReviewPanel recordId={item.id} stage={item.stage} onDecided={onChanged} />
         </>
       )}
     </article>

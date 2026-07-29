@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { AlertTriangle, Check, MessageCircleQuestion, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, MessageCircleQuestion, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -15,11 +15,19 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { FormError } from '@/components/form-error';
 import { ApiError } from '@/lib/api-error';
-import { approveVerification, rejectVerification, requestMoreInfo } from '@/lib/verification-api';
 import {
+  advanceVerification,
+  approveVerification,
+  rejectVerification,
+  requestMoreInfo,
+} from '@/lib/verification-api';
+import {
+  canTransition,
   isSuspendingReason,
+  PIPELINE_STAGES,
   REJECTION_REASONS,
   type VerificationRejectionReason,
+  type VerificationStage,
 } from '@/lib/verification';
 
 type Mode = 'idle' | 'reject' | 'info';
@@ -38,13 +46,18 @@ type Mode = 'idle' | 'reject' | 'info';
  */
 export function ReviewPanel({
   recordId,
+  stage,
   onDecided,
 }: {
   recordId: string;
+  /** The item's CURRENT stage — which of Approve/Reject/Ask-for-more/advance
+   * are legal moves depends on it (mirrors STAGE_TRANSITIONS server-side). */
+  stage: VerificationStage;
   /** Refetches the board — a decided item leaves the column it was in. */
   onDecided: () => void;
 }) {
   const t = useTranslations('ReviewBoard');
+  const tVerify = useTranslations('Verification');
   const { toast } = useToast();
 
   const [mode, setMode] = useState<Mode>('idle');
@@ -80,27 +93,65 @@ export function ReviewPanel({
   const suspends = reason !== '' && isSuspendingReason(reason);
   const infoTooShort = infoRequest.trim().length < 10;
 
+  // Approve and "ask for more" are only legal from specific stages
+  // (PENDING_APPROVAL, and anything that can step back to SUBMITTED,
+  // respectively) — mirrors the server's own STAGE_TRANSITIONS /
+  // USE_DECISION_ENDPOINT rules, so a reviewer is never offered a button that
+  // will 409. Reject is legal from every non-terminal stage, so it needs no
+  // gating. Everything short of PENDING_APPROVAL instead gets one button per
+  // legal forward move — APPROVED/REJECTED excluded, since those are the
+  // dedicated decision actions below, not a plain stage advance.
+  const canApprove = stage === 'PENDING_APPROVAL';
+  const canRequestInfo = canTransition(stage, 'SUBMITTED');
+  // The caller only ever renders this for a non-terminal item (QueueCard
+  // hides it once `decided`), so `stage` is always SUBMITTED, UNDER_REVIEW,
+  // FIELD_CHECK or PENDING_APPROVAL here.
+  const currentIndex = PIPELINE_STAGES.indexOf(stage);
+  const advanceTargets = PIPELINE_STAGES.filter(
+    (target) =>
+      target !== 'APPROVED' &&
+      target !== 'REJECTED' &&
+      PIPELINE_STAGES.indexOf(target) > currentIndex &&
+      canTransition(stage, target),
+  );
+
   return (
     <div className="mt-3 border-t border-border pt-3">
       {mode === 'idle' && (
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="success"
-            size="sm"
-            disabled={busy}
-            onClick={() => void run(() => approveVerification(recordId), 'approved')}
-          >
-            <Check aria-hidden className="size-3.5" />
-            {t('approve')}
-          </Button>
+          {advanceTargets.map((target) => (
+            <Button
+              key={target}
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={() => void run(() => advanceVerification(recordId, target), 'advanced')}
+            >
+              <ArrowRight aria-hidden className="size-3.5" />
+              {t('advanceTo', { stage: tVerify(`stage.${target}`) })}
+            </Button>
+          ))}
+          {canApprove && (
+            <Button
+              variant="success"
+              size="sm"
+              disabled={busy}
+              onClick={() => void run(() => approveVerification(recordId), 'approved')}
+            >
+              <Check aria-hidden className="size-3.5" />
+              {t('approve')}
+            </Button>
+          )}
           <Button variant="outline" size="sm" disabled={busy} onClick={() => setMode('reject')}>
             <X aria-hidden className="size-3.5" />
             {t('reject')}
           </Button>
-          <Button variant="ghost" size="sm" disabled={busy} onClick={() => setMode('info')}>
-            <MessageCircleQuestion aria-hidden className="size-3.5" />
-            {t('requestInfo')}
-          </Button>
+          {canRequestInfo && (
+            <Button variant="ghost" size="sm" disabled={busy} onClick={() => setMode('info')}>
+              <MessageCircleQuestion aria-hidden className="size-3.5" />
+              {t('requestInfo')}
+            </Button>
+          )}
         </div>
       )}
 
