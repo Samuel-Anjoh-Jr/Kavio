@@ -29,7 +29,15 @@ type FormValues = z.infer<typeof schema>;
  * user goes back there — not to a generic home — so the action they were part
  * way through survives the detour.
  */
-export function LoginForm({ next, gatedAction }: { next: string | null; gatedAction: string | null }) {
+export function LoginForm({
+  next,
+  gatedAction,
+  sessionExpired = false,
+}: {
+  next: string | null;
+  gatedAction: string | null;
+  sessionExpired?: boolean;
+}) {
   const t = useTranslations('Auth.login');
   const tShared = useTranslations('Auth');
   const tGated = useTranslations('Auth.gated');
@@ -90,7 +98,8 @@ export function LoginForm({ next, gatedAction }: { next: string | null; gatedAct
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
       {/* Explains WHY they were interrupted, so the bounce reads as intentional. */}
-      {gatedAction && tGated.has(gatedAction) && (
+      {sessionExpired && <FormBanner tone="error" message={t('sessionExpired')} />}
+      {!sessionExpired && gatedAction && tGated.has(gatedAction) && (
         <FormBanner tone="success" message={tGated(gatedAction)} />
       )}
 

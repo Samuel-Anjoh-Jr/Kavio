@@ -183,6 +183,7 @@
       "passwordLabel": "Mot de passe",
       "passwordRequired": "Saisissez votre mot de passe.",
       "forgotPassword": "Mot de passe oublié ?",
+      "sessionExpired": "Votre session a expiré. Reconnectez-vous pour reprendre là où vous en étiez.",
       "submitting": "Connexion en cours…",
       "useCode": "Se connecter avec un code",
       "noAccount": "Nouveau sur Kavio ?",

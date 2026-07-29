@@ -18,17 +18,21 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ next?: string; intent?: string }>;
+  searchParams: Promise<{ next?: string; intent?: string; reason?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { next, intent } = await searchParams;
+  const { next, intent, reason } = await searchParams;
   const t = await getTranslations('Auth.login');
 
   return (
     <AuthShell title={t('title')} subtitle={t('subtitle')}>
-      <LoginForm next={next ?? null} gatedAction={intent ?? null} />
+      <LoginForm
+        next={next ?? null}
+        gatedAction={intent ?? null}
+        sessionExpired={reason === 'session_expired'}
+      />
     </AuthShell>
   );
 }
