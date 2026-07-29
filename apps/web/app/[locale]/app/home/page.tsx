@@ -1,14 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import {
-  ArrowRight,
-  Banknote,
-  BriefcaseBusiness,
-  CalendarClock,
-  FileText,
-  Inbox,
-  Users,
-} from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, CalendarClock, Users } from 'lucide-react';
 import { auth } from '@/auth';
 import { redirect, Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
@@ -18,6 +10,13 @@ import { WorkerVerificationBanner } from '@/components/verification/worker-verif
 import { TrustScoreRing } from '@/components/trust/trust-score-ring';
 import { DiscoverRail } from '@/components/home/discover-rail';
 import { HomeSection, PendingPanel } from '@/components/home/home-primitives';
+import {
+  ClientJobsPanel,
+  ClientQuotesPanel,
+  WorkerEarningsPanel,
+  WorkerJobRequestsPanel,
+  WorkerPipelinePanel,
+} from '@/components/home/dashboard-panels';
 import type { OnboardingRole } from '@/lib/onboarding';
 import { loadOnboarding } from '../onboarding/load-onboarding';
 import { loadTrustBreakdown } from '../trust/load-trust-breakdown';
@@ -32,9 +31,11 @@ import { loadTrustBreakdown } from '../trust/load-trust-breakdown';
  * identical across all three homes — a Worker who switches to Client does not
  * become less verified.
  *
- * Panels backed by later-phase modules (job requests, quotes, earnings) are
- * rendered as named, explicitly-pending panels rather than hidden or invented.
- * See components/home/home-primitives.tsx for why.
+ * The pipeline panels (job requests, quotes, earnings) read real data from
+ * `components/home/dashboard-panels.tsx` — an honest empty state when there is
+ * nothing yet, never an invented number. Only the business console's own
+ * numbers stay behind their console (see BusinessHome below, and
+ * components/home/home-primitives.tsx for the one remaining placeholder use).
  */
 
 export async function generateMetadata({
@@ -178,26 +179,11 @@ async function WorkerHome({ userId }: { userId: string }) {
           </Button>
         }
       >
-        <PendingPanel
-          icon={<Inbox aria-hidden className="size-5" />}
-          title={t('worker.requestsPendingTitle')}
-          body={t('worker.requestsPendingBody')}
-        />
+        <WorkerJobRequestsPanel />
       </HomeSection>
 
       <HomeSection title={t('worker.pipelineHeading')}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <PendingPanel
-            icon={<FileText aria-hidden className="size-5" />}
-            title={t('worker.quotesPendingTitle')}
-            body={t('worker.quotesPendingBody')}
-          />
-          <PendingPanel
-            icon={<BriefcaseBusiness aria-hidden className="size-5" />}
-            title={t('worker.activeJobsPendingTitle')}
-            body={t('worker.activeJobsPendingBody')}
-          />
-        </div>
+        <WorkerPipelinePanel />
       </HomeSection>
 
       <HomeSection
@@ -212,11 +198,7 @@ async function WorkerHome({ userId }: { userId: string }) {
         }
       >
         <div className="grid gap-4 sm:grid-cols-2">
-          <PendingPanel
-            icon={<Banknote aria-hidden className="size-5" />}
-            title={t('worker.earningsPendingTitle')}
-            body={t('worker.earningsPendingBody')}
-          />
+          <WorkerEarningsPanel />
 
           {/* Availability is edited where it is captured today; the dedicated
               management screen arrives with PROMPT 48. */}
@@ -263,16 +245,8 @@ async function ClientHome() {
 
       <HomeSection title={t('client.jobsHeading')}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <PendingPanel
-            icon={<BriefcaseBusiness aria-hidden className="size-5" />}
-            title={t('client.postedJobsPendingTitle')}
-            body={t('client.postedJobsPendingBody')}
-          />
-          <PendingPanel
-            icon={<FileText aria-hidden className="size-5" />}
-            title={t('client.quotesPendingTitle')}
-            body={t('client.quotesPendingBody')}
-          />
+          <ClientJobsPanel />
+          <ClientQuotesPanel />
         </div>
       </HomeSection>
     </>

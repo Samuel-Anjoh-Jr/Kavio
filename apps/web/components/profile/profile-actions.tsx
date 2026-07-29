@@ -1,14 +1,17 @@
 'use client';
 
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
 import { Flag, MessageSquare, Pencil, Receipt, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Link } from '@/i18n/navigation';
-import { useRequireAuth } from '@/components/auth/require-auth';
+import { Link, useRouter } from '@/i18n/navigation';
+import { useIntentReplay, useRequireAuth } from '@/components/auth/require-auth';
 import { ReportDialog } from '@/components/moderation/report-dialog';
+import { RequestQuoteDialog } from '@/components/jobs/request-quote-dialog';
+import { ApiError } from '@/lib/api-error';
 import { recordRecentWorker } from '@/lib/discovery';
+import { startConversation } from '@/lib/messaging';
 
 /**
  * Profile actions (PRO-04): Message, Request a Quote / Book, Share, Report.
@@ -19,10 +22,11 @@ import { recordRecentWorker } from '@/lib/discovery';
  * RESUMES afterwards (ACC-02). The exception is Share, which changes nothing and
  * is the one thing a guest can do that helps us.
  *
- * Messaging and quoting land in Phases 4-5. Rather than hiding the buttons
- * until then, the gate runs for real and the destination says plainly that the
- * feature is coming — a disabled button teaches nothing about what the platform
- * will do, and this screen's job is to make the platform's potential obvious.
+ * Message opens a real conversation (MSG-01, job-less — `startConversation`
+ * accepts no `jobId`). Request a Quote opens a DIRECT job for this worker and
+ * invites them (JOB-01, JOB-03) — the same "client chose this counterparty"
+ * engagement the posting gate exists to distinguish from the public board, so
+ * it needs no verification either.
  */
 /** Browser capability, fixed for the life of the page — nothing to subscribe to. */
 const NO_SUBSCRIBE = () => () => {};
@@ -46,7 +50,9 @@ export function ProfileActions({
 }) {
   const t = useTranslations('Profile');
   const requireAuth = useRequireAuth();
+  const router = useRouter();
   const { toast } = useToast();
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   // navigator.share exists only on some browsers, and only over HTTPS. Read as
   // an external store so the server render (no share sheet) and the client's
   // first paint agree, without a state write in an effect.
@@ -58,6 +64,29 @@ export function ProfileActions({
   useEffect(() => {
     recordRecentWorker({ userId: workerUserId, name: workerName, avatar, headline });
   }, [workerUserId, workerName, avatar, headline]);
+
+  async function contactWorker() {
+    try {
+      const { id } = await startConversation({ recipientId: workerUserId });
+      router.push(`/app/messages/${id}`);
+    } catch (err) {
+      toast({
+        title: err instanceof ApiError ? err.message : t('messageFailed'),
+        variant: 'danger',
+      });
+    }
+  }
+
+  // A guest's tap bounces to auth and RESUMES here (ACC-02): Message needs no
+  // typed content to replay, so it fires for real; Request a Quote needs a
+  // description of the work, so the resume is just reopening the dialog for
+  // the guest to finish what they started.
+  useIntentReplay('contact_worker', (intent) => {
+    if (intent.payload?.workerUserId === workerUserId) void contactWorker();
+  });
+  useIntentReplay('request_quote', (intent) => {
+    if (intent.payload?.workerUserId === workerUserId) setQuoteDialogOpen(true);
+  });
 
   async function share() {
     const url = window.location.href;
@@ -99,7 +128,7 @@ export function ProfileActions({
     <div className="flex flex-wrap gap-3">
       <Button
         onClick={() =>
-          requireAuth('request_quote', () => toast({ title: t('quoteComingSoon') }), {
+          requireAuth('request_quote', () => setQuoteDialogOpen(true), {
             payload: { workerUserId },
           })
         }
@@ -111,7 +140,7 @@ export function ProfileActions({
       <Button
         variant="outline"
         onClick={() =>
-          requireAuth('contact_worker', () => toast({ title: t('messagingComingSoon') }), {
+          requireAuth('contact_worker', () => void contactWorker(), {
             payload: { workerUserId },
           })
         }
@@ -139,6 +168,13 @@ export function ProfileActions({
             {t('report')}
           </Button>
         }
+      />
+
+      <RequestQuoteDialog
+        workerUserId={workerUserId}
+        workerName={workerName}
+        open={quoteDialogOpen}
+        onOpenChange={setQuoteDialogOpen}
       />
     </div>
   );

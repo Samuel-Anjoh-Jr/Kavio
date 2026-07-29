@@ -21,9 +21,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useToast } from '@/components/ui/use-toast';
-import { useRequireAuth } from '@/components/auth/require-auth';
+import { useIntentReplay, useRequireAuth } from '@/components/auth/require-auth';
 import { ReportDialog } from '@/components/moderation/report-dialog';
 import { MilestoneStepper, type Milestone } from '@/components/transactions/milestone-stepper';
+import { JobWorkerActions } from '@/components/jobs/job-worker-actions';
+import { JobPosterApplicants } from '@/components/jobs/job-poster-applicants';
 import { ApiError } from '@/lib/api-error';
 import { formatXaf } from '@/lib/discovery';
 import { formatDateTime } from '@/lib/datetime';
@@ -31,6 +33,7 @@ import { isJobException, JOB_MILESTONES, JOB_STATUS_TONE, jobMilestoneIndex } fr
 import { JOB_QUERY, type JobQueryResult } from '@/lib/graphql/jobs';
 import { ME_QUERY, type MeQueryResult } from '@/lib/graphql/documents';
 import { MY_BOOKINGS_QUERY, type MyBookingsQueryResult } from '@/lib/graphql/quotes';
+import { startConversation } from '@/lib/messaging';
 import { restPost } from '@/lib/rest-api';
 
 /**
@@ -113,11 +116,32 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
     }
   }
 
+  // The other party: the poster messages the worker booked on this job, and
+  // anyone else (an applicant sizing up the work, the booked worker) messages
+  // the poster. Null when the poster has nobody to message yet (no booking).
+  const recipientId = isPoster ? (booking?.workerId ?? null) : (job?.posterId ?? null);
+
+  async function startContact() {
+    if (!recipientId) return;
+    try {
+      const { id } = await startConversation({ recipientId, jobId });
+      router.push(`/app/messages/${id}`);
+    } catch (err) {
+      toast({
+        title: err instanceof ApiError ? err.message : t('messageFailed'),
+        variant: 'danger',
+      });
+    }
+  }
+
+  useIntentReplay('contact_worker', (intent) => {
+    if (intent.payload?.jobId === jobId) void startContact();
+  });
+
   function contact() {
-    // Messaging is Phase 5; the gate and intent are wired now so a guest bounces
-    // and a signed-in user gets a truthful "coming soon" rather than a 404.
-    requireAuth('contact_worker', () => toast({ title: t('messagingSoon') }), {
+    requireAuth('contact_worker', () => void startContact(), {
       returnTo: `/app/jobs/${jobId}`,
+      payload: { jobId },
     });
   }
 
@@ -189,6 +213,10 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
         </div>
       )}
 
+      {/* A worker's (or a not-yet-signed-in worker's) ways into a job that
+          isn't theirs: respond to an invitation, apply, or quote it outright. */}
+      {!isPoster && <JobWorkerActions jobId={jobId} jobStatus={job.status} />}
+
       {/* QUOTED jobs have no accept/decline UI here — quotes are negotiated in
           the quotes inbox (QTE-02) — so without this the poster has no way to
           discover that quotes have arrived at all. */}
@@ -202,6 +230,10 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
             {t('viewQuotes')}
           </Button>
         </div>
+      )}
+
+      {isPoster && (job.status === 'OPEN' || job.status === 'QUOTED') && (
+        <JobPosterApplicants jobId={jobId} />
       )}
 
       {job.description && (
@@ -231,10 +263,12 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
 
       {/* ── Actions ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3">
-        <Button variant="outline" onClick={contact}>
-          <MessageCircle aria-hidden />
-          {t('contact')}
-        </Button>
+        {recipientId && (
+          <Button variant="outline" onClick={contact}>
+            <MessageCircle aria-hidden />
+            {t('contact')}
+          </Button>
+        )}
 
         {isPossibleWorker && job.status === 'ACCEPTED' && booking && (
           <Button
@@ -273,7 +307,7 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
         )}
 
         {job.status === 'RELEASED' && (
-          <Button variant="outline" onClick={contact}>
+          <Button variant="outline" onClick={() => router.push(`/app/jobs/${jobId}/review`)}>
             <Star aria-hidden />
             {t('leaveReview')}
           </Button>

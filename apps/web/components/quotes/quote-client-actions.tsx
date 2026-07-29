@@ -15,10 +15,11 @@ import {
 import { Field } from '@/components/auth/field';
 import { FormBanner } from '@/components/auth/form-banner';
 import { useToast } from '@/components/ui/use-toast';
-import { useRequireAuth } from '@/components/auth/require-auth';
+import { useIntentReplay, useRequireAuth } from '@/components/auth/require-auth';
 import { ApiError } from '@/lib/api-error';
 import { formatXaf } from '@/lib/discovery';
 import { parseBudget } from '@/lib/jobs';
+import { startConversation } from '@/lib/messaging';
 import { estimateFee } from '@/lib/payments';
 import type { Quote } from '@/lib/graphql/quotes';
 import { restPost } from '@/lib/rest-api';
@@ -38,12 +39,29 @@ export function QuoteClientActions({ quote, onChanged }: { quote: Quote; onChang
   const t = useTranslations('Quotes');
   const { toast } = useToast();
   const requireAuth = useRequireAuth();
+  const router = useRouter();
+
+  async function startChat() {
+    try {
+      const { id } = await startConversation({ recipientId: quote.workerId, jobId: quote.jobId });
+      router.push(`/app/messages/${id}`);
+    } catch (err) {
+      toast({
+        title: err instanceof ApiError ? err.message : t('messageFailed'),
+        variant: 'danger',
+      });
+    }
+  }
+
+  useIntentReplay('contact_worker', (intent) => {
+    if (intent.payload?.quoteId === quote.id) void startChat();
+  });
 
   const actionable = quote.status === 'SENT' || quote.status === 'VIEWED';
   if (!actionable) return null;
 
   function chat() {
-    requireAuth('contact_worker', () => toast({ title: t('messagingSoon') }));
+    requireAuth('contact_worker', () => void startChat(), { payload: { quoteId: quote.id } });
   }
 
   return (
