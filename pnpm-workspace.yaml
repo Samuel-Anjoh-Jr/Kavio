@@ -7,8 +7,13 @@ overrides:
   # next@16.2.11 pins postcss@8.4.31 directly (CVE fixed in 8.4.32+); force the
   # patched line repo-wide until Next ships a release that bumps it itself.
   postcss: ^8.5.20
-  # eslint's minimatch chain pulls a vulnerable brace-expansion (DoS via
-  # unbounded expansion, GHSA-mh99-v99m-4gvg); force the patched line.
+  # brace-expansion DoS (GHSA-mh99-v99m-4gvg): the only real fix is >=5.0.8 —
+  # 1.1.18/2.1.4 are unrelated releases on older majors, still "<=5.0.7" by
+  # semver, so audit keeps flagging them. eslint's own @eslint/config-array
+  # and @eslint/eslintrc still pin minimatch@^3.1.5 (which needs
+  # brace-expansion's legacy 1.x export shape), so bumping minimatch itself
+  # to a current major is required to get everything onto brace-expansion 5.x.
+  minimatch: ^10.2.6
   brace-expansion: ^5.0.8
 allowBuilds:
   # Its postinstall only builds the parser Apollo Studio usage reporting needs,
