@@ -139,8 +139,15 @@ export function MapCanvas({
           latest.current.onReady?.(map);
         });
 
-        map.on('moveend', () => {
+        map.on('moveend', (event) => {
           if (cancelled || !latest.current.onViewportChange) return;
+          // `originalEvent` is only set when the move came from a real drag,
+          // wheel, or touch gesture — a programmatic move (the recentre effect
+          // below, or our own "search this area" easeTo) leaves it undefined.
+          // Without this check, hydrating a saved location — or the button's
+          // own recentre — re-fires "moved viewport" and pops the button right
+          // back up with no user interaction at all.
+          if (!event.originalEvent) return;
           const bounds = map.getBounds();
           const centre = map.getCenter();
           if (!bounds) return;
