@@ -1,3 +1,5 @@
+// Schema-only touch to (re-)trigger the Prisma Migrate workflow after wiring
+// up the DIRECT_URL Actions secret for the Supabase connection.
 generator client {
   provider = "prisma-client-js"
 }
