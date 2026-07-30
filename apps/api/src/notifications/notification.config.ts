@@ -68,7 +68,10 @@ export function getEmailFromAddress(env: NodeJS.ProcessEnv = process.env): strin
 
 /** Base URL used to build deep links in templates. */
 export function getAppBaseUrl(env: NodeJS.ProcessEnv = process.env): string {
-  return (env.APP_BASE_URL?.trim() || 'https://kavio.cm').replace(/\/$/, '');
+  const unwrapped = env.APP_BASE_URL?.trim()
+    .replace(/^["']|["']$/g, '')
+    .trim();
+  return (unwrapped || 'https://kavio.cm').replace(/\/$/, '');
 }
 
 /**

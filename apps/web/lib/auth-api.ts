@@ -1,3 +1,4 @@
+import { normalizeEnvUrl } from './env-url';
 import { parseApiError } from './api-error';
 
 /**
@@ -7,11 +8,10 @@ import { parseApiError } from './api-error';
  */
 
 export function getApiBaseUrl(): string {
-  return (
-    process.env.API_INTERNAL_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:4000'
-  ).replace(/\/$/, '');
+  return normalizeEnvUrl(
+    process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL,
+    'http://localhost:4000',
+  );
 }
 
 /** The token pair the API returns on login, OTP verification and refresh. */

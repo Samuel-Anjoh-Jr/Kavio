@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { createLogger } from '../lib/logger';
+import { wsCorsOptions } from './ws-cors.config';
 
 const logger = createLogger('system-gateway');
 
@@ -19,7 +20,7 @@ const logger = createLogger('system-gateway');
  * Real feature gateways (live location, chat) follow this same shape and rely
  * on the same shared adapter for horizontal scaling.
  */
-@WebSocketGateway({ namespace: '/system', cors: { origin: true } })
+@WebSocketGateway({ namespace: '/system', cors: wsCorsOptions() })
 export class SystemGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server!: Server;

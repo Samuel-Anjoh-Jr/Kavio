@@ -11,6 +11,7 @@ import { TokenService } from '../auth/token.service';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { authenticateSocket, userRoom } from '../realtime/ws-auth';
+import { wsCorsOptions } from '../realtime/ws-cors.config';
 import { pingSchema } from './dto/tracking.dto';
 import { TrackingService } from './tracking.service';
 
@@ -34,7 +35,7 @@ interface SocketData {
  * API instance. Consent is enforced at ingestion: a revoked or ended session
  * makes ingestPing return null and the gateway tells the sender to stop.
  */
-@WebSocketGateway({ namespace: '/tracking', cors: { origin: true } })
+@WebSocketGateway({ namespace: '/tracking', cors: wsCorsOptions() })
 export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server!: Server;
