@@ -1741,14 +1741,18 @@ async function main() {
       },
     });
   }
-  let inProgressCount = 0;
-  for (const w of workers) {
-    const inProgress = w.tierTarget === 'TIER_0' && pct(0.4);
-    if (inProgress) inProgressCount++;
-    await createOnboarding(w, 'WORKER', { inProgress });
-  }
-  for (const c of clients) await createOnboarding(c, 'CLIENT', {});
-  for (const b of businesses) await createOnboarding(b.owner, 'BUSINESS', {});
+  // Each identity's onboarding row is independent of every other's, so the
+  // whole batch fans out concurrently. The in-progress coin flip is decided
+  // synchronously up front, before anything is awaited.
+  const workerInProgressFlags = workers.map((w) => w.tierTarget === 'TIER_0' && pct(0.4));
+  const inProgressCount = workerInProgressFlags.filter(Boolean).length;
+  await Promise.all([
+    ...workers.map((w, i) =>
+      createOnboarding(w, 'WORKER', { inProgress: workerInProgressFlags[i] }),
+    ),
+    ...clients.map((c) => createOnboarding(c, 'CLIENT', {})),
+    ...businesses.map((b) => createOnboarding(b.owner, 'BUSINESS', {})),
+  ]);
   console.log(
     `   Onboarding flows: ${workers.length + clients.length + businesses.length} (${inProgressCount} still in progress — autosave demo)\n`,
   );
@@ -1775,139 +1779,155 @@ async function main() {
     'Non loin de la station Total',
   ];
 
-  async function bumpCategoryWorkerCount(categoryId) {
-    await prisma.serviceCategory.update({
-      where: { id: categoryId },
-      data: { workerCount: { increment: 1 } },
-    });
+  // Accumulated in memory and flushed as one batched update per category
+  // after the worker loop, instead of one awaited UPDATE per service — the
+  // final counts are identical, just without a round trip per increment.
+  const categoryWorkerCountDelta = new Map();
+  function bumpCategoryWorkerCount(categoryId) {
+    categoryWorkerCountDelta.set(categoryId, (categoryWorkerCountDelta.get(categoryId) ?? 0) + 1);
   }
 
   const workerProfiles = new Map(); // userId -> WorkerProfile row
   const workerPortfolioCount = new Map();
-  for (const worker of workers) {
-    if (suspendedUsers.has(worker.id)) continue; // banned identity keeps no public profile
-    const geo = randomItem(neighbourhoods);
-    const coords = coordsNear(geo);
-    const isFr = worker.locale === 'fr';
-    const primaryCategory = randomItem(topCategories);
-    const yearsExperience = randomInt(1, 22);
+  // Each worker's profile/services/availability/portfolio are independent of
+  // every other worker's, so the whole pass fans out concurrently.
+  await Promise.all(
+    workers
+      .filter((worker) => !suspendedUsers.has(worker.id)) // banned identity keeps no public profile
+      .map(async (worker) => {
+        const geo = randomItem(neighbourhoods);
+        const coords = coordsNear(geo);
+        const isFr = worker.locale === 'fr';
+        const primaryCategory = randomItem(topCategories);
+        const yearsExperience = randomInt(1, 22);
 
-    let coverAssetId = null;
-    if (pct(0.55)) {
-      const cover = await createMedia(worker.id, 'WORKER_COVER', coverUrl(worker.id), {
-        visibility: 'PUBLIC',
-      });
-      coverAssetId = cover.id;
-    }
+        let coverAssetId = null;
+        if (pct(0.55)) {
+          const cover = await createMedia(worker.id, 'WORKER_COVER', coverUrl(worker.id), {
+            visibility: 'PUBLIC',
+          });
+          coverAssetId = cover.id;
+        }
 
-    const wp = await prisma.workerProfile.create({
-      data: {
-        userId: worker.id,
-        headline: isFr
-          ? `${primaryCategory.nameFr} professionnel(le)`
-          : `Professional ${primaryCategory.nameEn}`,
-        bio: isFr ? randomItem(BIO_FR) : randomItem(BIO_EN),
-        yearsExperience,
-        city: coords.city,
-        area: geo.nameEn,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        locationSource: 'HUMAN_INPUT',
-        landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`,
-        locationUpdatedAt: worker.createdAt,
-        geoRegionId: geo.id,
-        coverAssetId,
-        createdAt: worker.createdAt,
-      },
-    });
-    workerProfiles.set(worker.id, wp);
-
-    // Services — the worker's own categories, 1-3 of them.
-    const numServices = randomInt(1, 3);
-    const chosenCategories = sample(allCategories, numServices);
-    for (const cat of chosenCategories) {
-      await prisma.service.create({
-        data: {
-          workerProfileId: wp.id,
-          categoryId: cat.id,
-          name: isFr ? `Service de ${cat.nameFr.toLowerCase()}` : `${cat.nameEn} service`,
-          description: isFr
-            ? `Intervention rapide et soignée en ${cat.nameFr.toLowerCase()}.`
-            : `Fast, careful ${cat.nameEn.toLowerCase()} work.`,
-          startingPrice: roundXaf(randomInt(3000, 25000)),
-          isActive: true,
-        },
-      });
-      await bumpCategoryWorkerCount(cat.id);
-    }
-
-    // Weekly availability — 5 of 7 days.
-    for (const day of sample([0, 1, 2, 3, 4, 5, 6], 5)) {
-      await prisma.availability.create({
-        data: {
-          workerProfileId: wp.id,
-          dayOfWeek: day,
-          startTime: '08:00',
-          endTime: pct(0.5) ? '17:00' : '18:30',
-        },
-      });
-    }
-
-    // Occasional one-off exceptions (public holidays), bilingual note.
-    if (pct(0.15)) {
-      await prisma.availabilityException.create({
-        data: {
-          workerProfileId: wp.id,
-          date: daysFromNow(randomInt(5, 40)),
-          isAvailable: false,
-          note: isFr ? 'Fête du Travail — fermé' : 'Public holiday — closed',
-        },
-      });
-    }
-
-    // Portfolio — the top survey-validated driver of who gets hired (PRO-02).
-    const numPortfolio = randomInt(
-      worker.tierTarget === 'TIER_0' ? 0 : 1,
-      worker.tierTarget === 'TIER_3' ? 5 : 3,
-    );
-    if (numPortfolio > 0) {
-      const doBeforeAfter = pct(0.4);
-      const groupKey = doBeforeAfter ? randomUUID() : null;
-      const projectTitle = doBeforeAfter
-        ? isFr
-          ? 'Rénovation complète'
-          : 'Full renovation'
-        : null;
-      for (let p = 0; p < numPortfolio; p++) {
-        const media = await createMedia(
-          worker.id,
-          'PORTFOLIO_IMAGE',
-          portfolioUrl(`${worker.id}-${p}`),
-          { visibility: 'PUBLIC' },
-        );
-        await prisma.portfolioItem.create({
+        const wp = await prisma.workerProfile.create({
           data: {
-            workerProfileId: wp.id,
-            mediaAssetId: media.id,
-            type: 'PHOTO',
-            caption: isFr
-              ? 'Travail terminé pour un client à ' + coords.city
-              : 'Finished work for a client in ' + coords.city,
-            groupKey: doBeforeAfter && p < 2 ? groupKey : null,
-            projectTitle: doBeforeAfter && p < 2 ? projectTitle : null,
-            slot: doBeforeAfter && p === 0 ? 'BEFORE' : doBeforeAfter && p === 1 ? 'AFTER' : null,
-            sortOrder: p,
+            userId: worker.id,
+            headline: isFr
+              ? `${primaryCategory.nameFr} professionnel(le)`
+              : `Professional ${primaryCategory.nameEn}`,
+            bio: isFr ? randomItem(BIO_FR) : randomItem(BIO_EN),
+            yearsExperience,
+            city: coords.city,
+            area: geo.nameEn,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            locationSource: 'HUMAN_INPUT',
+            landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`,
+            locationUpdatedAt: worker.createdAt,
+            geoRegionId: geo.id,
+            coverAssetId,
+            createdAt: worker.createdAt,
           },
         });
-      }
-      workerPortfolioCount.set(worker.id, numPortfolio);
-      markCheckPassed(worker.id, 'PORTFOLIO');
-      await addTrustEvent(worker.id, 'PORTFOLIO_ADDED', 'PROFESSIONAL', 3, {
-        sourceType: 'PortfolioItem',
-        occurredAt: hoursAfter(worker.createdAt, 48),
-      });
-    }
-  }
+        workerProfiles.set(worker.id, wp);
+
+        // Services — the worker's own categories, 1-3 of them.
+        const numServices = randomInt(1, 3);
+        const chosenCategories = sample(allCategories, numServices);
+        for (const cat of chosenCategories) {
+          await prisma.service.create({
+            data: {
+              workerProfileId: wp.id,
+              categoryId: cat.id,
+              name: isFr ? `Service de ${cat.nameFr.toLowerCase()}` : `${cat.nameEn} service`,
+              description: isFr
+                ? `Intervention rapide et soignée en ${cat.nameFr.toLowerCase()}.`
+                : `Fast, careful ${cat.nameEn.toLowerCase()} work.`,
+              startingPrice: roundXaf(randomInt(3000, 25000)),
+              isActive: true,
+            },
+          });
+          bumpCategoryWorkerCount(cat.id);
+        }
+
+        // Weekly availability — 5 of 7 days.
+        for (const day of sample([0, 1, 2, 3, 4, 5, 6], 5)) {
+          await prisma.availability.create({
+            data: {
+              workerProfileId: wp.id,
+              dayOfWeek: day,
+              startTime: '08:00',
+              endTime: pct(0.5) ? '17:00' : '18:30',
+            },
+          });
+        }
+
+        // Occasional one-off exceptions (public holidays), bilingual note.
+        if (pct(0.15)) {
+          await prisma.availabilityException.create({
+            data: {
+              workerProfileId: wp.id,
+              date: daysFromNow(randomInt(5, 40)),
+              isAvailable: false,
+              note: isFr ? 'Fête du Travail — fermé' : 'Public holiday — closed',
+            },
+          });
+        }
+
+        // Portfolio — the top survey-validated driver of who gets hired (PRO-02).
+        const numPortfolio = randomInt(
+          worker.tierTarget === 'TIER_0' ? 0 : 1,
+          worker.tierTarget === 'TIER_3' ? 5 : 3,
+        );
+        if (numPortfolio > 0) {
+          const doBeforeAfter = pct(0.4);
+          const groupKey = doBeforeAfter ? randomUUID() : null;
+          const projectTitle = doBeforeAfter
+            ? isFr
+              ? 'Rénovation complète'
+              : 'Full renovation'
+            : null;
+          for (let p = 0; p < numPortfolio; p++) {
+            const media = await createMedia(
+              worker.id,
+              'PORTFOLIO_IMAGE',
+              portfolioUrl(`${worker.id}-${p}`),
+              { visibility: 'PUBLIC' },
+            );
+            await prisma.portfolioItem.create({
+              data: {
+                workerProfileId: wp.id,
+                mediaAssetId: media.id,
+                type: 'PHOTO',
+                caption: isFr
+                  ? 'Travail terminé pour un client à ' + coords.city
+                  : 'Finished work for a client in ' + coords.city,
+                groupKey: doBeforeAfter && p < 2 ? groupKey : null,
+                projectTitle: doBeforeAfter && p < 2 ? projectTitle : null,
+                slot:
+                  doBeforeAfter && p === 0 ? 'BEFORE' : doBeforeAfter && p === 1 ? 'AFTER' : null,
+                sortOrder: p,
+              },
+            });
+          }
+          workerPortfolioCount.set(worker.id, numPortfolio);
+          markCheckPassed(worker.id, 'PORTFOLIO');
+          await addTrustEvent(worker.id, 'PORTFOLIO_ADDED', 'PROFESSIONAL', 3, {
+            sourceType: 'PortfolioItem',
+            occurredAt: hoursAfter(worker.createdAt, 48),
+          });
+        }
+      }),
+  );
+
+  await Promise.all(
+    Array.from(categoryWorkerCountDelta.entries()).map(([categoryId, delta]) =>
+      prisma.serviceCategory.update({
+        where: { id: categoryId },
+        data: { workerCount: { increment: delta } },
+      }),
+    ),
+  );
   console.log(
     `   Worker profiles . ${workerProfiles.size} (services, availability, portfolio attached)\n`,
   );
@@ -1936,8 +1956,7 @@ async function main() {
     clientProfiles.set(user.id, cp);
     return cp;
   }
-  for (const c of clients) await createClientProfile(c);
-  for (const w of dualRoleWorkers) await createClientProfile(w);
+  await Promise.all([...clients, ...dualRoleWorkers].map((u) => createClientProfile(u)));
   console.log(`   Client profiles . ${clientProfiles.size}\n`);
 
   // ── Phase 8: jobs, applications, invitations, quotes, bookings, escrow,
@@ -2788,58 +2807,80 @@ async function main() {
   // exactly the "safe to delete and rebuild by replaying TrustEvent" shape
   // the schema describes.
   console.log('🔒 Finalizing Trust Scores, tiers and badges...');
-  let suspendedCount = 0;
-  for (const user of allIdentities) {
-    const ledger = ledgerFor(user.id);
-    const isSuspended = suspendedUsers.has(user.id);
-    const { tier, total, avgRating } = isSuspended
-      ? { tier: 'TIER_0', total: 0, avgRating: null }
-      : deriveTier(ledger);
 
-    await prisma.trustScore.create({
-      data: {
-        subjectId: user.id,
-        identityScore: clamp(ledger.IDENTITY, 0, 100),
-        professionalScore: clamp(ledger.PROFESSIONAL, 0, 100),
-        marketplaceScore: clamp(ledger.MARKETPLACE, 0, 100),
-        financialScore: clamp(ledger.FINANCIAL, 0, 100),
-        total,
-        suspended: isSuspended,
-        suspendedAt: isSuspended ? NOW : null,
-        suspensionReason: isSuspended ? 'Confirmed fraudulent identity document (TRU-08).' : null,
-        completedJobs: ledger.completedJobs,
-        averageRating: avgRating != null ? Number(avgRating.toFixed(2)) : null,
-        eventCount: ledger.eventCount,
-        computedAt: NOW,
-      },
-    });
-    await prisma.user.update({ where: { id: user.id }, data: { trustScore: total, tier } });
+  // One grouped query instead of one `endorsement.count` per identity.
+  const approvedEndorsementCounts = await prisma.endorsement.groupBy({
+    by: ['subjectId'],
+    where: { status: 'APPROVED' },
+    _count: { _all: true },
+  });
+  const approvedEndorsementsBySubject = new Map(
+    approvedEndorsementCounts.map((r) => [r.subjectId, r._count._all]),
+  );
 
-    // Milestone badges (TRU-11) — permanent once unlocked, so derived here
-    // alongside the score rather than toggled with it later.
-    const badgeTypes = [];
-    if (ledger.checks.has('PHONE')) badgeTypes.push('IDENTITY_VERIFIED');
-    if (tier === 'TIER_2' || tier === 'TIER_3') badgeTypes.push('VERIFIED_PROFESSIONAL');
-    if (tier === 'TIER_3') badgeTypes.push('FIELD_VERIFIED_PROFESSIONAL');
-    if (total >= 25) badgeTypes.push('TRUST_SCORE_25');
-    if (total >= 50) badgeTypes.push('TRUST_SCORE_50');
-    if (total >= 75) badgeTypes.push('TRUST_SCORE_75');
-    if (total >= 90) badgeTypes.push('TRUST_SCORE_90');
-    if (ledger.completedJobs >= 1) badgeTypes.push('FIRST_JOB');
-    if (ledger.completedJobs >= 10) badgeTypes.push('JOBS_10');
-    const approvedEndorsements = await prisma.endorsement.count({
-      where: { subjectId: user.id, status: 'APPROVED' },
-    });
-    if (approvedEndorsements >= 5) badgeTypes.push('COMMUNITY_ENDORSED');
-    for (const type of badgeTypes) {
-      await prisma.userBadge.upsert({
-        where: { subjectId_type: { subjectId: user.id, type } },
-        update: {},
-        create: { subjectId: user.id, type, sourceType: 'TrustEngineDerivation', awardedAt: NOW },
+  // Every identity's score/tier/badges are independent of every other
+  // identity's — nothing here reads another user's just-written row — so the
+  // whole finalization pass fans out concurrently instead of paying one full
+  // network round trip per identity, per row.
+  const finalizationResults = await Promise.all(
+    allIdentities.map(async (user) => {
+      const ledger = ledgerFor(user.id);
+      const isSuspended = suspendedUsers.has(user.id);
+      const { tier, total, avgRating } = isSuspended
+        ? { tier: 'TIER_0', total: 0, avgRating: null }
+        : deriveTier(ledger);
+
+      await prisma.trustScore.create({
+        data: {
+          subjectId: user.id,
+          identityScore: clamp(ledger.IDENTITY, 0, 100),
+          professionalScore: clamp(ledger.PROFESSIONAL, 0, 100),
+          marketplaceScore: clamp(ledger.MARKETPLACE, 0, 100),
+          financialScore: clamp(ledger.FINANCIAL, 0, 100),
+          total,
+          suspended: isSuspended,
+          suspendedAt: isSuspended ? NOW : null,
+          suspensionReason: isSuspended ? 'Confirmed fraudulent identity document (TRU-08).' : null,
+          completedJobs: ledger.completedJobs,
+          averageRating: avgRating != null ? Number(avgRating.toFixed(2)) : null,
+          eventCount: ledger.eventCount,
+          computedAt: NOW,
+        },
       });
-    }
-    if (isSuspended) suspendedCount++;
-  }
+      await prisma.user.update({ where: { id: user.id }, data: { trustScore: total, tier } });
+
+      // Milestone badges (TRU-11) — permanent once unlocked, so derived here
+      // alongside the score rather than toggled with it later.
+      const badgeTypes = [];
+      if (ledger.checks.has('PHONE')) badgeTypes.push('IDENTITY_VERIFIED');
+      if (tier === 'TIER_2' || tier === 'TIER_3') badgeTypes.push('VERIFIED_PROFESSIONAL');
+      if (tier === 'TIER_3') badgeTypes.push('FIELD_VERIFIED_PROFESSIONAL');
+      if (total >= 25) badgeTypes.push('TRUST_SCORE_25');
+      if (total >= 50) badgeTypes.push('TRUST_SCORE_50');
+      if (total >= 75) badgeTypes.push('TRUST_SCORE_75');
+      if (total >= 90) badgeTypes.push('TRUST_SCORE_90');
+      if (ledger.completedJobs >= 1) badgeTypes.push('FIRST_JOB');
+      if (ledger.completedJobs >= 10) badgeTypes.push('JOBS_10');
+      const approvedEndorsements = approvedEndorsementsBySubject.get(user.id) ?? 0;
+      if (approvedEndorsements >= 5) badgeTypes.push('COMMUNITY_ENDORSED');
+      await Promise.all(
+        badgeTypes.map((type) =>
+          prisma.userBadge.upsert({
+            where: { subjectId_type: { subjectId: user.id, type } },
+            update: {},
+            create: {
+              subjectId: user.id,
+              type,
+              sourceType: 'TrustEngineDerivation',
+              awardedAt: NOW,
+            },
+          }),
+        ),
+      );
+      return isSuspended;
+    }),
+  );
+  const suspendedCount = finalizationResults.filter(Boolean).length;
   console.log(
     `   Trust scores .... ${allIdentities.length} identities (${suspendedCount} suspended for confirmed fraud)`,
   );
@@ -2854,125 +2895,132 @@ async function main() {
 
   // ── Phase 10: messaging ───────────────────────────────────────────────────
   console.log('💬 Creating conversations and messages...');
-  const conversations = [];
-  for (const jc of jobsCreated.filter((j) => j.hiredWorker)) {
-    const { job, poster, hiredWorker, acceptedQuote, finalStatus, startAt } = jc;
-    const posterUser = poster.posterUser;
-    const isFr = poster.isFr;
-    const conv = await prisma.conversation.create({
-      data: { jobId: job.id, createdAt: hoursAfter(startAt, 3) },
-    });
-    await prisma.conversationParticipant.create({
-      data: {
-        conversationId: conv.id,
-        userId: posterUser.id,
-        role: 'MEMBER',
-        createdAt: hoursAfter(startAt, 3),
-      },
-    });
-    await prisma.conversationParticipant.create({
-      data: {
-        conversationId: conv.id,
-        userId: hiredWorker.id,
-        role: 'MEMBER',
-        createdAt: hoursAfter(startAt, 3),
-      },
-    });
-    if (finalStatus === 'DISPUTED') {
-      await prisma.conversationParticipant.create({
-        data: {
-          conversationId: conv.id,
-          userId: admin.id,
-          role: 'OBSERVER',
-          createdAt: hoursAfter(startAt, 215),
-        },
-      });
-    }
-
-    let t = hoursAfter(startAt, 3);
-    let lastMessage = null;
-    const send = async (sender, kind, body, metadata = null, withImage = false) => {
-      const msg = await prisma.message.create({
-        data: {
-          conversationId: conv.id,
-          senderId: sender.id,
-          kind,
-          body,
-          metadata,
-          status: 'READ',
-          deliveredAt: hoursAfter(t, 0.2),
-          readAt: hoursAfter(t, 0.5),
-          createdAt: t,
-        },
-      });
-      if (withImage) {
-        const media = await createMedia(sender.id, 'MESSAGE_IMAGE', messageImageUrl(msg.id), {
-          visibility: 'PRIVATE',
+  // Each job's conversation thread is independent of every other job's — the
+  // running `t`/`lastMessage` closures are scoped per-thread — so the threads
+  // fan out concurrently. Promise.all preserves the input array's order, so
+  // conversations[1] below still refers to the same thread it always did.
+  const conversations = await Promise.all(
+    jobsCreated
+      .filter((j) => j.hiredWorker)
+      .map(async (jc) => {
+        const { job, poster, hiredWorker, acceptedQuote, finalStatus, startAt } = jc;
+        const posterUser = poster.posterUser;
+        const isFr = poster.isFr;
+        const conv = await prisma.conversation.create({
+          data: { jobId: job.id, createdAt: hoursAfter(startAt, 3) },
         });
-        await prisma.messageAttachment.create({
-          data: { messageId: msg.id, mediaAssetId: media.id },
+        await prisma.conversationParticipant.create({
+          data: {
+            conversationId: conv.id,
+            userId: posterUser.id,
+            role: 'MEMBER',
+            createdAt: hoursAfter(startAt, 3),
+          },
         });
-      }
-      lastMessage = msg;
-      t = hoursAfter(t, randomInt(1, 20));
-      return msg;
-    };
+        await prisma.conversationParticipant.create({
+          data: {
+            conversationId: conv.id,
+            userId: hiredWorker.id,
+            role: 'MEMBER',
+            createdAt: hoursAfter(startAt, 3),
+          },
+        });
+        if (finalStatus === 'DISPUTED') {
+          await prisma.conversationParticipant.create({
+            data: {
+              conversationId: conv.id,
+              userId: admin.id,
+              role: 'OBSERVER',
+              createdAt: hoursAfter(startAt, 215),
+            },
+          });
+        }
 
-    await send(
-      posterUser,
-      'TEXT',
-      isFr
-        ? 'Bonjour, je suis intéressé(e) par votre devis.'
-        : 'Hi, I\u2019m interested in your quote.',
-    );
-    if (acceptedQuote) await send(hiredWorker, 'QUOTE', null, { quoteId: acceptedQuote.id });
-    await send(
-      posterUser,
-      'TEXT',
-      isFr ? 'Ça marche, on peut commencer quand ?' : 'Sounds good — when can we start?',
-    );
-    await send(
-      hiredWorker,
-      'TEXT',
-      isFr ? 'Je peux venir dès demain matin.' : 'I can come by tomorrow morning.',
-    );
-    if (pct(0.5))
-      await send(
-        posterUser,
-        'IMAGE',
-        isFr ? 'Voici une photo du problème.' : 'Here\u2019s a photo of the issue.',
-        null,
-        true,
-      );
-    if (['IN_PROGRESS', 'COMPLETED', 'RELEASED'].includes(finalStatus) && pct(0.5)) {
-      await send(hiredWorker, 'LOCATION', null, { lat: job.latitude, lng: job.longitude });
-    }
-    await send(
-      hiredWorker,
-      'TEXT',
-      isFr ? "J'arrive dans 15 minutes." : 'On my way — about 15 minutes out.',
-    );
-    if (['COMPLETED', 'RELEASED'].includes(finalStatus)) {
-      await send(posterUser, 'TEXT', isFr ? 'Merci, super travail !' : 'Thanks, great work!');
-    }
-    if (finalStatus === 'DISPUTED') {
-      await send(
-        posterUser,
-        'TEXT',
-        isFr
-          ? 'Je ne suis pas satisfait, il manque du travail.'
-          : 'I\u2019m not satisfied — some of the work is missing.',
-      );
-    }
-    await prisma.conversation.update({
-      where: { id: conv.id },
-      data: {
-        lastMessageAt: t,
-        lastMessagePreview: (lastMessage.body ?? 'Media message').slice(0, 60),
-      },
-    });
-    conversations.push({ conv, job, posterUser, hiredWorker, finalStatus });
-  }
+        let t = hoursAfter(startAt, 3);
+        let lastMessage = null;
+        const send = async (sender, kind, body, metadata = null, withImage = false) => {
+          const msg = await prisma.message.create({
+            data: {
+              conversationId: conv.id,
+              senderId: sender.id,
+              kind,
+              body,
+              metadata,
+              status: 'READ',
+              deliveredAt: hoursAfter(t, 0.2),
+              readAt: hoursAfter(t, 0.5),
+              createdAt: t,
+            },
+          });
+          if (withImage) {
+            const media = await createMedia(sender.id, 'MESSAGE_IMAGE', messageImageUrl(msg.id), {
+              visibility: 'PRIVATE',
+            });
+            await prisma.messageAttachment.create({
+              data: { messageId: msg.id, mediaAssetId: media.id },
+            });
+          }
+          lastMessage = msg;
+          t = hoursAfter(t, randomInt(1, 20));
+          return msg;
+        };
+
+        await send(
+          posterUser,
+          'TEXT',
+          isFr
+            ? 'Bonjour, je suis intéressé(e) par votre devis.'
+            : 'Hi, I\u2019m interested in your quote.',
+        );
+        if (acceptedQuote) await send(hiredWorker, 'QUOTE', null, { quoteId: acceptedQuote.id });
+        await send(
+          posterUser,
+          'TEXT',
+          isFr ? 'Ça marche, on peut commencer quand ?' : 'Sounds good — when can we start?',
+        );
+        await send(
+          hiredWorker,
+          'TEXT',
+          isFr ? 'Je peux venir dès demain matin.' : 'I can come by tomorrow morning.',
+        );
+        if (pct(0.5))
+          await send(
+            posterUser,
+            'IMAGE',
+            isFr ? 'Voici une photo du problème.' : 'Here\u2019s a photo of the issue.',
+            null,
+            true,
+          );
+        if (['IN_PROGRESS', 'COMPLETED', 'RELEASED'].includes(finalStatus) && pct(0.5)) {
+          await send(hiredWorker, 'LOCATION', null, { lat: job.latitude, lng: job.longitude });
+        }
+        await send(
+          hiredWorker,
+          'TEXT',
+          isFr ? "J'arrive dans 15 minutes." : 'On my way — about 15 minutes out.',
+        );
+        if (['COMPLETED', 'RELEASED'].includes(finalStatus)) {
+          await send(posterUser, 'TEXT', isFr ? 'Merci, super travail !' : 'Thanks, great work!');
+        }
+        if (finalStatus === 'DISPUTED') {
+          await send(
+            posterUser,
+            'TEXT',
+            isFr
+              ? 'Je ne suis pas satisfait, il manque du travail.'
+              : 'I\u2019m not satisfied — some of the work is missing.',
+          );
+        }
+        await prisma.conversation.update({
+          where: { id: conv.id },
+          data: {
+            lastMessageAt: t,
+            lastMessagePreview: (lastMessage.body ?? 'Media message').slice(0, 60),
+          },
+        });
+        return { conv, job, posterUser, hiredWorker, finalStatus };
+      }),
+  );
 
   // A block, following a soured job (MSG-04).
   const refundedThread = conversations.find((c) => c.finalStatus === 'REFUNDED');
@@ -3116,27 +3164,27 @@ async function main() {
   for (const user of sosUsers) {
     // Each user has 1-3 emergency contacts
     const numContacts = randomInt(1, 3);
+    const contactRows = [];
     for (let i = 0; i < numContacts; i++) {
       const { name } = randomPersonName();
-      await prisma.emergencyContact.create({
-        data: {
-          userId: user.id,
-          name,
-          phone: uniqueCameroonPhone(),
-          relationship: randomItem([
-            'Brother',
-            'Sister',
-            'Spouse',
-            'Friend',
-            'Colleague',
-            'Landlord',
-          ]),
-          email: faker.internet.email({ firstName: name.split(' ')[0] }).toLowerCase(),
-          isActive: true,
-          createdAt: daysAgo(randomInt(10, 200)),
-        },
+      contactRows.push({
+        userId: user.id,
+        name,
+        phone: uniqueCameroonPhone(),
+        relationship: randomItem([
+          'Brother',
+          'Sister',
+          'Spouse',
+          'Friend',
+          'Colleague',
+          'Landlord',
+        ]),
+        email: faker.internet.email({ firstName: name.split(' ')[0] }).toLowerCase(),
+        isActive: true,
+        createdAt: daysAgo(randomInt(10, 200)),
       });
     }
+    await prisma.emergencyContact.createMany({ data: contactRows });
 
     // Half of them have triggered at least one SOS alert
     if (pct(0.5)) {
@@ -3253,21 +3301,21 @@ async function main() {
 
     // A handful of pings (the subject's position over time)
     const numPings = randomInt(5, 15);
+    const pingRows = [];
     for (let i = 0; i < numPings; i++) {
-      await prisma.locationPing.create({
-        data: {
-          sessionId: session.id,
-          userId: hiredWorker.id,
-          latitude: jc.job.latitude + (Math.random() - 0.5) * 0.02,
-          longitude: jc.job.longitude + (Math.random() - 0.5) * 0.02,
-          accuracy: randomInt(10, 50),
-          heading: randomInt(0, 360),
-          speed: randomInt(0, 60),
-          recordedAt: hoursAfter(session.startedAt, i * 3 + randomInt(0, 10)),
-          createdAt: hoursAfter(session.startedAt, i * 3 + randomInt(0, 10)),
-        },
+      pingRows.push({
+        sessionId: session.id,
+        userId: hiredWorker.id,
+        latitude: jc.job.latitude + (Math.random() - 0.5) * 0.02,
+        longitude: jc.job.longitude + (Math.random() - 0.5) * 0.02,
+        accuracy: randomInt(10, 50),
+        heading: randomInt(0, 360),
+        speed: randomInt(0, 60),
+        recordedAt: hoursAfter(session.startedAt, i * 3 + randomInt(0, 10)),
+        createdAt: hoursAfter(session.startedAt, i * 3 + randomInt(0, 10)),
       });
     }
+    await prisma.locationPing.createMany({ data: pingRows });
   }
   console.log(
     `   Tracking sessions: ${await prisma.trackingSession.count()}, pings: ${await prisma.locationPing.count()}`,
@@ -3291,25 +3339,25 @@ async function main() {
     'SAFETY',
     'MARKETING',
   ];
+  // Phase 0 always clears NotificationPreference first, so every (user, channel,
+  // category) triple below is guaranteed unique — a single batched insert is
+  // equivalent to the one-row-at-a-time upsert this replaced, just without
+  // ~1,500 sequential network round trips.
+  const preferenceRows = [];
   for (const user of allIdentities) {
     for (const channel of channels) {
       for (const category of categories) {
-        await prisma.notificationPreference.upsert({
-          where: {
-            userId_channel_category: { userId: user.id, channel, category },
-          },
-          update: {},
-          create: {
-            userId: user.id,
-            channel,
-            category,
-            enabled: pct(0.75),
-            createdAt: user.createdAt,
-          },
+        preferenceRows.push({
+          userId: user.id,
+          channel,
+          category,
+          enabled: pct(0.75),
+          createdAt: user.createdAt,
         });
       }
     }
   }
+  await prisma.notificationPreference.createMany({ data: preferenceRows, skipDuplicates: true });
 
   // In-app notifications for every user (0-8 each)
   const notificationTemplates = [
@@ -3347,6 +3395,7 @@ async function main() {
     { category: 'SAFETY', title: 'SOS alert resolved', body: 'Your SOS alert has been resolved.' },
   ];
 
+  const notificationRows = [];
   for (const user of sample(allIdentities, 18)) {
     const numNotifs = randomInt(0, 6);
     const usedTemplates = sample(
@@ -3356,22 +3405,21 @@ async function main() {
     for (const tmpl of usedTemplates) {
       const createdAt = daysAgo(randomInt(0, 30));
       const readAt = pct(0.6) ? hoursAfter(createdAt, randomInt(1, 48)) : null;
-      await prisma.notification.create({
-        data: {
-          userId: user.id,
-          category: tmpl.category,
-          templateKey: `${tmpl.category.toLowerCase()}_notification`,
-          title: tmpl.title,
-          body: tmpl.body,
-          url: '/dashboard',
-          important: ['PAYMENTS', 'TRUST', 'DISPUTES', 'SECURITY'].includes(tmpl.category),
-          readAt,
-          metadata: { randomSeed: randomUUID() },
-          createdAt,
-        },
+      notificationRows.push({
+        userId: user.id,
+        category: tmpl.category,
+        templateKey: `${tmpl.category.toLowerCase()}_notification`,
+        title: tmpl.title,
+        body: tmpl.body,
+        url: '/dashboard',
+        important: ['PAYMENTS', 'TRUST', 'DISPUTES', 'SECURITY'].includes(tmpl.category),
+        readAt,
+        metadata: { randomSeed: randomUUID() },
+        createdAt,
       });
     }
   }
+  await prisma.notification.createMany({ data: notificationRows });
   console.log(
     `   Notifications ... ${await prisma.notification.count()} (preferences for ${allIdentities.length} users)`,
   );
@@ -3380,31 +3428,31 @@ async function main() {
   console.log('📱 Creating device registrations...');
 
   const deviceUsers = sample(allIdentities, 10);
+  const deviceRows = [];
   for (const user of deviceUsers) {
     const numDevices = randomInt(1, 2);
     for (let d = 0; d < numDevices; d++) {
-      await prisma.deviceRegistration.create({
-        data: {
-          userId: user.id,
-          platform: 'WEB',
-          endpoint: `https://example.com/push/${randomUUID()}`,
-          p256dh: faker.string.alphanumeric(20),
-          auth: faker.string.alphanumeric(20),
-          deviceName: randomItem([
-            'Chrome on Mac',
-            'Firefox on Windows',
-            'Safari on iPhone',
-            'Edge on Windows',
-            'Chrome on Android',
-          ]),
-          isActive: pct(0.85),
-          lastSeenAt: daysAgo(randomInt(0, 5)),
-          createdAt: daysAgo(randomInt(10, 100)),
-          updatedAt: new Date(),
-        },
+      deviceRows.push({
+        userId: user.id,
+        platform: 'WEB',
+        endpoint: `https://example.com/push/${randomUUID()}`,
+        p256dh: faker.string.alphanumeric(20),
+        auth: faker.string.alphanumeric(20),
+        deviceName: randomItem([
+          'Chrome on Mac',
+          'Firefox on Windows',
+          'Safari on iPhone',
+          'Edge on Windows',
+          'Chrome on Android',
+        ]),
+        isActive: pct(0.85),
+        lastSeenAt: daysAgo(randomInt(0, 5)),
+        createdAt: daysAgo(randomInt(10, 100)),
+        updatedAt: new Date(),
       });
     }
   }
+  await prisma.deviceRegistration.createMany({ data: deviceRows });
   console.log(`   Device registrations: ${await prisma.deviceRegistration.count()}`);
 
   // ── Phase 16: Admin content ──────────────────────────────────────────────
