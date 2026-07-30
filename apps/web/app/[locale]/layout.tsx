@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { Geist, Geist_Mono, Inter, Inter_Tight, IBM_Plex_Sans } from 'next/font/google';
 import { routing } from '@/i18n/routing';
 import { Providers } from '@/components/providers';
@@ -104,6 +104,7 @@ export default async function LocaleLayout({
   }
 
   setRequestLocale(locale);
+  const messages = await getMessages();
 
   return (
     <html
@@ -112,12 +113,12 @@ export default async function LocaleLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${interTight.variable} ${ibmPlexSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        <Providers>
-          <NextIntlClientProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
             {children}
             <Toaster />
-          </NextIntlClientProvider>
-        </Providers>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
