@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { setRequestLocale } from 'next-intl/server';
 import { MotionProvider } from '@/components/motion/motion-provider';
 import { PageTransition } from '@/components/motion/page-transition';
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register';
@@ -77,6 +78,7 @@ export default async function AppLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const basePath = `/${locale}/app`;
 
   return (
