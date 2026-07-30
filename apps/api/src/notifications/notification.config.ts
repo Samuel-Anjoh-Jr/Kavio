@@ -20,6 +20,7 @@ const DEFAULT_CHANNEL_PRIORITY: NotificationChannel[] = [
   NotificationChannel.WEB_PUSH,
   NotificationChannel.EMAIL,
   NotificationChannel.SMS,
+  NotificationChannel.WHATSAPP,
 ];
 
 export function getChannelPriority(env: NodeJS.ProcessEnv = process.env): NotificationChannel[] {
@@ -39,12 +40,57 @@ export function getChannelPriority(env: NodeJS.ProcessEnv = process.env): Notifi
 }
 
 /**
- * SMS feature flag. OFF at launch: the provider is registered and fully wired,
- * but skipped until this flips (SRS §17, launch constraint). Flipping it to
- * "true" routes SMS-capable templates to the stub with zero call-site changes.
+ * Twilio backs both the SMS and WhatsApp channels — one account, two "From"
+ * numbers. Each channel is considered configured only once every value it
+ * needs is present, so a half-filled .env (e.g. the account SID pasted but not
+ * the WhatsApp sender) stays OFF rather than failing at send time.
+ */
+export function hasTwilioSmsConfig(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_SMS_FROM_NUMBER);
+}
+
+export function hasTwilioWhatsappConfig(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(
+    env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_WHATSAPP_FROM_NUMBER,
+  );
+}
+
+export type SmsProviderName = 'stub' | 'twilio';
+export type WhatsappProviderName = 'stub' | 'twilio';
+
+export function getSmsProviderName(env: NodeJS.ProcessEnv = process.env): SmsProviderName {
+  return hasTwilioSmsConfig(env) ? 'twilio' : 'stub';
+}
+
+export function getWhatsappProviderName(
+  env: NodeJS.ProcessEnv = process.env,
+): WhatsappProviderName {
+  return hasTwilioWhatsappConfig(env) ? 'twilio' : 'stub';
+}
+
+/**
+ * SMS feature flag. OFF at launch, same as the email channel's console→resend
+ * switch: an explicit "true"/"false" always wins, and with neither set it
+ * auto-enables the moment the Twilio SMS credentials below are all present —
+ * no separate flag to remember once the values are filled in.
  */
 export function isSmsEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env.NOTIFICATIONS_SMS_ENABLED === 'true';
+  const explicit = env.NOTIFICATIONS_SMS_ENABLED;
+  if (explicit === 'true') return true;
+  if (explicit === 'false') return false;
+  return hasTwilioSmsConfig(env);
+}
+
+/**
+ * WhatsApp feature flag. Same posture as SMS: an explicit override always
+ * wins, otherwise it auto-enables once the Twilio WhatsApp credentials are
+ * all present.
+ */
+export function isWhatsappEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  const explicit = env.NOTIFICATIONS_WHATSAPP_ENABLED;
+  if (explicit === 'true') return true;
+  if (explicit === 'false') return false;
+  return hasTwilioWhatsappConfig(env);
 }
 
 /**
@@ -99,14 +145,19 @@ export function isImportantCategory(category: NotificationCategory): boolean {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Channel × category defaults for a brand-new identity. SMS rows are seeded
- * disabled because the channel is deferred; a user who has never touched their
- * settings therefore sees nothing change when the flag is flipped platform-wide.
- * SECURITY is seeded enabled for completeness, but security notices bypass this
- * table entirely and always go by email.
+ * Channel × category defaults for a brand-new identity. SMS and WHATSAPP rows
+ * are seeded disabled because both channels are deferred; a user who has never
+ * touched their settings therefore sees nothing change when either flag is
+ * flipped platform-wide. SECURITY is seeded enabled for completeness, but
+ * security notices bypass this table entirely and always go by email.
  */
 const OPT_OUT_BY_DEFAULT: ReadonlySet<NotificationCategory> = new Set([
   NotificationCategory.MARKETING,
+]);
+
+const DEFERRED_CHANNELS: ReadonlySet<NotificationChannel> = new Set([
+  NotificationChannel.SMS,
+  NotificationChannel.WHATSAPP,
 ]);
 
 export function buildDefaultPreferences(
@@ -120,7 +171,7 @@ export function buildDefaultPreferences(
         userId,
         channel,
         category,
-        enabled: channel !== NotificationChannel.SMS && !OPT_OUT_BY_DEFAULT.has(category),
+        enabled: !DEFERRED_CHANNELS.has(channel) && !OPT_OUT_BY_DEFAULT.has(category),
       });
     }
   }

@@ -31,9 +31,9 @@ import { cn } from '@/lib/utils';
  * Per-channel notification preferences (NOT-02, SET-02).
  *
  * A channel × category grid: the user decides which kinds of update reach them on
- * which channel. SMS is shown but disabled with a "coming soon" tag — it is wired
- * end to end and flips on with a server flag, so the column is present rather than
- * hidden, which is the honest way to defer it. Security notices are deliberately
+ * which channel. SMS and WhatsApp are shown but disabled with a "coming soon" tag —
+ * both are wired end to end and flip on with a server flag, so the columns are
+ * present rather than hidden, which is the honest way to defer them. Security notices are deliberately
  * absent from the grid: they always go by email and cannot be muted (SRS §17).
  *
  * Web push additionally needs a browser opt-in, so its column carries an enable

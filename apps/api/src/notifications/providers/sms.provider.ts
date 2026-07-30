@@ -1,34 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationChannel } from '@kavio/database';
 import { createLogger } from '../../lib/logger';
-import { isSmsEnabled } from '../notification.config';
+import { getSmsProviderName, isSmsEnabled, type SmsProviderName } from '../notification.config';
 import type {
   NotificationChannelProvider,
   RecipientContext,
   RenderedMessage,
 } from '../notification.types';
+import { sendTwilioMessage } from './twilio.util';
 
 const logger = createLogger('notifications:sms');
 
 /**
- * The SMS channel — REGISTERED but feature-flagged OFF (SRS §17, launch
- * constraint). SMS needs a paid Cameroonian aggregator, so it is deferred.
+ * The SMS channel. Two backends behind one channel, same shape as
+ * EmailProvider's console/resend split:
+ *  - "stub": logs the attempt and delivers nothing. This is what runs until
+ *    Twilio is configured, and what still runs if NOTIFICATIONS_SMS_ENABLED is
+ *    forced "true" without credentials (kept for local dispatch testing).
+ *  - "twilio": real delivery over Twilio's Messages REST API.
  *
- * This stub exists so the seam is real rather than hypothetical: it is a fully
- * registered provider that the dispatcher already considers on every dispatch and
- * skips only because `isEnabled()` is false. Setting NOTIFICATIONS_SMS_ENABLED=true
- * routes SMS-capable templates here immediately, with zero call-site changes —
- * that flip is exercised by the dispatcher tests.
- *
- * When the real aggregator is bought, only `send()` below changes: recipients are
- * already stored in E.164 and every SMS-capable template already has EN/FR copy.
+ * Which backend is active is config, not code — filling in TWILIO_ACCOUNT_SID,
+ * TWILIO_AUTH_TOKEN and TWILIO_SMS_FROM_NUMBER switches this to "twilio" and
+ * flips `isEnabled()` on with no call-site change (SRS §17, launch constraint).
  */
 @Injectable()
 export class SmsProvider implements NotificationChannelProvider {
   readonly channel = NotificationChannel.SMS;
-  readonly providerName = 'sms-stub';
 
-  constructor(private readonly env: NodeJS.ProcessEnv = process.env) {}
+  private readonly backend: SmsProviderName;
+
+  constructor(private readonly env: NodeJS.ProcessEnv = process.env) {
+    this.backend = getSmsProviderName(env);
+  }
+
+  get providerName(): string {
+    return this.backend === 'twilio' ? 'twilio' : 'sms-stub';
+  }
 
   isEnabled(): boolean {
     return isSmsEnabled(this.env);
@@ -39,18 +46,33 @@ export class SmsProvider implements NotificationChannelProvider {
     return recipient.phone;
   }
 
-  send(address: string, message: RenderedMessage): Promise<void> {
+  async send(address: string, message: RenderedMessage): Promise<void> {
     if (message.channel !== 'SMS') {
       throw new Error(`SmsProvider received a ${message.channel} message`);
     }
 
-    // The stub "delivers" by recording the attempt. The NotificationLog row is
-    // still written by the processor, so enabling the flag produces a complete,
-    // inspectable delivery trail before a real provider is ever connected.
-    logger.info('SMS stub invoked (no real delivery — provider deferred)', {
-      payload: { recipientSuffix: address.slice(-4), length: message.content.text.length },
-    });
+    if (this.backend === 'stub') {
+      // The stub "delivers" by recording the attempt. The NotificationLog row
+      // is still written by the processor, so enabling the flag without
+      // credentials still produces a complete, inspectable delivery trail.
+      logger.info('SMS stub invoked (no real delivery — Twilio not configured)', {
+        payload: { recipientSuffix: address.slice(-4), length: message.content.text.length },
+      });
+      return;
+    }
 
-    return Promise.resolve();
+    const accountSid = this.env.TWILIO_ACCOUNT_SID;
+    const authToken = this.env.TWILIO_AUTH_TOKEN;
+    const from = this.env.TWILIO_SMS_FROM_NUMBER;
+    if (!accountSid || !authToken || !from) {
+      // Guarded by getSmsProviderName() at construction time, so this only
+      // fires if env changed after the provider was built.
+      throw new Error('Twilio SMS credentials are not fully configured');
+    }
+
+    await sendTwilioMessage(
+      { accountSid, authToken },
+      { to: address, from, body: message.content.text },
+    );
   }
 }

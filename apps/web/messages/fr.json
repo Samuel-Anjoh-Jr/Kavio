@@ -178,7 +178,7 @@
       "title": "Bon retour",
       "subtitle": "Connectez-vous pour publier des missions, envoyer des devis et gérer votre travail.",
       "identifierLabel": "Téléphone ou e-mail",
-      "identifierPlaceholder": "+237 6XX XX XX XX ou vous@exemple.com",
+      "identifierPlaceholder": "6XX XXX XXX ou vous@exemple.com",
       "identifierRequired": "Saisissez votre téléphone ou votre e-mail.",
       "passwordLabel": "Mot de passe",
       "passwordRequired": "Saisissez votre mot de passe.",
@@ -193,8 +193,10 @@
       "title": "Saisissez votre code",
       "subtitle": "Nous vous avons envoyé un code à 6 chiffres. Saisissez-le pour confirmer que c'est bien vous.",
       "identifierLabel": "Téléphone ou e-mail",
+      "identifierLabelEmail": "Adresse e-mail",
+      "identifierPlaceholderEmail": "vous@exemple.com",
       "codeLabel": "Code de vérification",
-      "codeHint": "Consultez vos e-mails, ou vos messages une fois le SMS activé.",
+      "codeHint": "Consultez vos e-mails, ou vos messages une fois le SMS ou WhatsApp activé.",
       "sentHint": "Nous avons envoyé un code à {destination}.",
       "submit": "Vérifier et continuer",
       "submitting": "Vérification du code…",
@@ -212,7 +214,7 @@
       "title": "Réinitialiser votre mot de passe",
       "subtitle": "Indiquez-nous comment vous joindre et nous enverrons un lien de réinitialisation.",
       "identifierLabel": "Téléphone ou e-mail",
-      "identifierPlaceholder": "+237 6XX XX XX XX ou vous@exemple.com",
+      "identifierPlaceholder": "6XX XXX XXX ou vous@exemple.com",
       "identifierRequired": "Saisissez votre téléphone ou votre e-mail.",
       "submit": "Envoyer le lien",
       "submitting": "Envoi…",
@@ -1804,13 +1806,15 @@
         "IN_APP": "Dans l’app",
         "WEB_PUSH": "Push",
         "EMAIL": "E-mail",
-        "SMS": "SMS"
+        "SMS": "SMS",
+        "WHATSAPP": "WhatsApp"
       },
       "channelHint": {
         "IN_APP": "Affiché dans votre centre de notifications",
         "WEB_PUSH": "Envoyé à cet appareil",
         "EMAIL": "Envoyé à votre e-mail",
-        "SMS": "Message texte"
+        "SMS": "Message texte",
+        "WHATSAPP": "Message WhatsApp"
       },
       "comingSoon": "Bientôt",
       "smsDeferred": "Les notifications SMS arrivent bientôt.",

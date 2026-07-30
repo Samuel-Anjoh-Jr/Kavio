@@ -147,7 +147,7 @@ describe('AuthService.signUp', () => {
     });
     const createMany: CreateManyMock = jest
       .fn<Promise<{ count: number }>, [CreateManyArgs]>()
-      .mockResolvedValue({ count: 44 });
+      .mockResolvedValue({ count: 55 });
     const service = makeService(makePrisma(create, createMany));
 
     await service.signUp({ roleIntent: 'find_work', phone: '655 555 555' });
@@ -155,13 +155,17 @@ describe('AuthService.signUp', () => {
     expect(createMany).toHaveBeenCalledTimes(1);
     const arg = createMany.mock.calls[0]![0];
     expect(arg.skipDuplicates).toBe(true);
-    // 4 channels (IN_APP, EMAIL, WEB_PUSH, SMS) × 11 categories, every row bound
-    // to the new identity. IN_APP is seeded like any other channel — the inbox is
-    // a delivery channel, not a special case, so it sits in the same grid (NOT-03).
-    expect(arg.data).toHaveLength(44);
+    // 5 channels (IN_APP, EMAIL, WEB_PUSH, SMS, WHATSAPP) × 11 categories, every
+    // row bound to the new identity. IN_APP is seeded like any other channel —
+    // the inbox is a delivery channel, not a special case, so it sits in the
+    // same grid (NOT-03).
+    expect(arg.data).toHaveLength(55);
     expect(arg.data.every((row) => row.userId === 'user-3')).toBe(true);
-    // SMS is deferred, so its rows seed disabled.
+    // SMS and WhatsApp are both deferred, so their rows seed disabled.
     expect(arg.data.filter((row) => row.channel === 'SMS').every((row) => !row.enabled)).toBe(true);
+    expect(arg.data.filter((row) => row.channel === 'WHATSAPP').every((row) => !row.enabled)).toBe(
+      true,
+    );
     // The inbox is on by default: it is the fallback when push is denied.
     expect(arg.data.filter((row) => row.channel === 'IN_APP').length).toBe(11);
   });

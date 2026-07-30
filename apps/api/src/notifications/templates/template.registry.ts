@@ -5,6 +5,7 @@ import type {
   RenderedMessage,
   SmsContent,
   WebPushContent,
+  WhatsappContent,
 } from '../notification.types';
 import { codeBlock, escapeHtml, paragraphs, renderEmailLayout } from './email-layout';
 
@@ -142,6 +143,10 @@ type Renderers<K extends TemplateKey> = {
     (v: TemplateVariables<K>) => WebPushContent
   >;
   readonly [NotificationChannel.SMS]?: Record<Locale, (v: TemplateVariables<K>) => SmsContent>;
+  readonly [NotificationChannel.WHATSAPP]?: Record<
+    Locale,
+    (v: TemplateVariables<K>) => WhatsappContent
+  >;
 };
 
 export interface TemplateDefinition<K extends TemplateKey = TemplateKey> {
@@ -198,6 +203,10 @@ const testNotification: TemplateDefinition<'system.test_notification'> = {
       fr: (v) => ({ title: 'Test Kavio', body: v.message }),
     },
     [NotificationChannel.SMS]: {
+      en: (v) => ({ text: `Kavio test: ${v.message}` }),
+      fr: (v) => ({ text: `Test Kavio : ${v.message}` }),
+    },
+    [NotificationChannel.WHATSAPP]: {
       en: (v) => ({ text: `Kavio test: ${v.message}` }),
       fr: (v) => ({ text: `Test Kavio : ${v.message}` }),
     },
@@ -283,6 +292,14 @@ const authOtpCode: TemplateDefinition<'auth.otp_code'> = {
       }),
     },
     [NotificationChannel.SMS]: {
+      en: (v) => ({
+        text: `${v.code} is your Kavio code. It expires in ${v.expiresInMinutes} min. Never share it.`,
+      }),
+      fr: (v) => ({
+        text: `${v.code} est votre code Kavio. Il expire dans ${v.expiresInMinutes} min. Ne le partagez jamais.`,
+      }),
+    },
+    [NotificationChannel.WHATSAPP]: {
       en: (v) => ({
         text: `${v.code} is your Kavio code. It expires in ${v.expiresInMinutes} min. Never share it.`,
       }),
@@ -2007,12 +2024,13 @@ export function getTemplate<K extends TemplateKey>(key: K): TemplateDefinition<K
 export function getSupportedChannels(key: TemplateKey): NotificationChannel[] {
   const { render } = getTemplate(key);
 
-  // Only the three channels that own renderers are keys of `Renderers` — IN_APP
+  // The four channels that own renderers are keys of `Renderers` — IN_APP
   // is derived below, so it is deliberately not in this list.
   const RENDERABLE = [
     NotificationChannel.EMAIL,
     NotificationChannel.WEB_PUSH,
     NotificationChannel.SMS,
+    NotificationChannel.WHATSAPP,
   ] as const;
 
   const supported: NotificationChannel[] = RENDERABLE.filter(
@@ -2060,6 +2078,12 @@ export function renderTemplate(
       if (!byLocale) return null;
       const fn = byLocale[locale] ?? byLocale.en;
       return { channel: 'SMS', content: fn(variables as never) };
+    }
+    case NotificationChannel.WHATSAPP: {
+      const byLocale = render[NotificationChannel.WHATSAPP];
+      if (!byLocale) return null;
+      const fn = byLocale[locale] ?? byLocale.en;
+      return { channel: 'WHATSAPP', content: fn(variables as never) };
     }
     case NotificationChannel.IN_APP: {
       // Deliberately no IN_APP renderers: the inbox reuses the push copy (see

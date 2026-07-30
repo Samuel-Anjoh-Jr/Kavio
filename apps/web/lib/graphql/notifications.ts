@@ -6,7 +6,7 @@ import { gql } from '@apollo/client';
  * apps/api/src/notifications/models/notification.model.ts.
  */
 
-export type NotificationChannel = 'IN_APP' | 'WEB_PUSH' | 'EMAIL' | 'SMS';
+export type NotificationChannel = 'IN_APP' | 'WEB_PUSH' | 'EMAIL' | 'SMS' | 'WHATSAPP';
 
 export type NotificationCategory =
   | 'SECURITY'

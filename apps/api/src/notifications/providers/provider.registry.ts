@@ -5,6 +5,7 @@ import { EmailProvider } from './email.provider';
 import { InAppProvider } from './in-app.provider';
 import { SmsProvider } from './sms.provider';
 import { WebPushProvider } from './web-push.provider';
+import { WhatsappProvider } from './whatsapp.provider';
 
 /**
  * The single place providers are registered against channels. The dispatcher and
@@ -20,11 +21,13 @@ export class NotificationProviderRegistry {
     webPush: WebPushProvider,
     sms: SmsProvider,
     inApp: InAppProvider,
+    whatsapp: WhatsappProvider,
   ) {
-    // SMS is registered like any other provider; it simply reports isEnabled()
-    // false until the feature flag is flipped. IN_APP is registered the same way
-    // — the inbox is a channel, not a special case in the dispatcher.
-    for (const provider of [email, webPush, sms, inApp]) {
+    // SMS and WHATSAPP are registered like any other provider; each simply
+    // reports isEnabled() false until its feature flag is flipped. IN_APP is
+    // registered the same way — the inbox is a channel, not a special case in
+    // the dispatcher.
+    for (const provider of [email, webPush, sms, inApp, whatsapp]) {
       this.providers.set(provider.channel, provider);
     }
   }
