@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: kavio-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: apps/api
+    # Monorepo build: hop back to the workspace root so pnpm sees the lockfile
+    # and turbo can build @kavio/database (Prisma generate) before @kavio/api.
+    buildCommand: cd ../.. && corepack enable && pnpm install --frozen-lockfile && pnpm turbo run build --filter=@kavio/api
+    # rootDir puts the start command's cwd back at apps/api, where `nest build`
+    # (run above) wrote dist/main.js.
+    startCommand: node dist/main.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.13.0
+      # Render injects PORT automatically; apps/api/src/main.ts already reads
+      # process.env.PORT, so nothing to set here.
+      #
+      # Everything else (DATABASE_URL, DIRECT_URL, REDIS_URL, JWT_*, CAMPAY_*,
+      # VAPID_*, S3_*/SUPABASE_*, MAPBOX_TOKEN, RESEND_API_KEY, ...) is a secret
+      # or environment-specific value and is intentionally NOT listed here.
+      # Paste your filled-in .env into Render's dashboard: Environment tab ->
+      # "Add from .env" accepts a raw KEY=VALUE blob in one paste.
