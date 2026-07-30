@@ -3668,7 +3668,7 @@ async function main() {
   }
 
   console.log(
-    `   Admin content .. ${announcements.length} announcements, ${faqs.length} FAQs, ${testimonials.length} testimonials, ${portfolioItems.length} portfolio items`,
+    `   Admin content .. ${announcements.length} announcements, ${marketingContent.faqs.length} FAQs, ${marketingContent.testimonials.length} testimonials, ${portfolioItems.length} portfolio items`,
   );
 
   // ── Phase 17: Finalize wallet balances ────────────────────────────────────
