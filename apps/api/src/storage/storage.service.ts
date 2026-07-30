@@ -166,6 +166,11 @@ export class StorageService implements OnModuleInit {
     const s3Key = `${policy.prefix}/${ownerId}/${randomUUID()}${extensionFor(detected)}`;
     const checksum = createHash('sha256').update(file.buffer).digest('hex');
 
+    // What actually gets persisted as `s3Key` in the DB. Same as the generated
+    // pathname for every driver except vercel-blob, which is swapped below for
+    // the real URL `put()` hands back — see the comment on `urlFor()` for why.
+    let storedKey: string = s3Key;
+
     switch (this.driver) {
       case 's3': {
         // Customer-managed keys for identity documents where one is configured, so
@@ -190,8 +195,13 @@ export class StorageService implements OnModuleInit {
         );
         break;
       }
-      case 'vercel-blob':
-        await vercelBlobPut(s3Key, file.buffer, {
+      case 'vercel-blob': {
+        // `head()`/`del()` on this SDK take the blob's actual URL, not the
+        // pathname used to create it — passing the bare pathname is exactly
+        // what produced "Vercel Blob: Url is malformed" in production. `put()`
+        // is the only call that ever learns the real URL, so it is captured
+        // here and persisted as `s3Key` instead of the generated pathname.
+        const result = await vercelBlobPut(s3Key, file.buffer, {
           access: policy.visibility === MediaVisibility.PUBLIC ? 'public' : 'private',
           contentType: detected,
           token: this.vercelBlobConfig.token,
@@ -199,7 +209,9 @@ export class StorageService implements OnModuleInit {
           // and no risk in reusing the exact pathname we generated.
           addRandomSuffix: false,
         });
+        storedKey = result.url;
         break;
+      }
       case 'supabase':
         await this.supabasePut(s3Key, file.buffer, detected);
         break;
@@ -216,7 +228,7 @@ export class StorageService implements OnModuleInit {
     });
 
     return {
-      s3Key,
+      s3Key: storedKey,
       mimeType: detected,
       sizeBytes: file.size,
       visibility: policy.visibility,
@@ -261,6 +273,18 @@ export class StorageService implements OnModuleInit {
    * than waiting for some previously-issued link to expire.
    */
   async urlFor(s3Key: string, visibility: MediaVisibility): Promise<string | null> {
+    // Seed/demo data — and any driver that hands back a real URL at write time
+    // (see `store()`'s vercel-blob case below) — stores the fully-qualified
+    // URL directly in s3Key rather than a driver-relative key. That is the
+    // documented convention in packages/database/prisma/seed.mjs ("if s3Key
+    // starts with http, redirect/serve as-is"); this was the one place it was
+    // never actually implemented, so every seeded avatar/cover/portfolio/job
+    // photo fell through to a driver call that doesn't know what to do with a
+    // Pravatar/Picsum URL.
+    if (/^https?:\/\//i.test(s3Key)) {
+      return s3Key;
+    }
+
     switch (this.driver) {
       case 'local':
         // The local driver has no HTTP surface on purpose: dev uploads are
