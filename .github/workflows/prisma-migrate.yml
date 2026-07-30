@@ -20,6 +20,25 @@ jobs:
     name: Migrate deploy + schema-drift gate
     runs-on: ubuntu-latest
     environment: production
+    # Disposable target for the drift gate below: it replays prisma/migrations
+    # from scratch and compares the result to the real DB, so drift is judged
+    # against what the migrations actually produce (raw-SQL PostGIS GIST
+    # indexes included) rather than against schema.prisma's declarative model,
+    # which cannot represent an Unsupported-type spatial index at all.
+    services:
+      shadow-db:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kavio_shadow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,3 +73,4 @@ jobs:
         run: pnpm db:migrate:diff
         env:
           DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
+          SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kavio_shadow?schema=public
