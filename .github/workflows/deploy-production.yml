@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Manual re-run of migrate deploy + the schema-drift gate against production,
+  # without needing a push — e.g. after fixing a secret the last run failed on.
+  workflow_dispatch: {}
 
 concurrency:
   group: deploy-production-${{ github.ref }}
@@ -52,7 +55,9 @@ jobs:
   db-migrate:
     name: Migrate database + schema-drift gate
     needs: validate
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     environment: production
     outputs:

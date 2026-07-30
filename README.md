@@ -15,7 +15,7 @@ packages/api-client        Shared client config, GraphQL operations, REST mutati
 packages/database          Prisma client, migrations, PostGIS/OSM SQL views, seeds.
 packages/typescript-config Shared tsconfig.
 scripts/                   sync-env.mjs, keygen.cjs, docker-db-backup.sh, clean.js
-.github/workflows/         deploy-production.yml, prisma-migrate.yml, manual-seed.yml
+.github/workflows/         deploy-production.yml, manual-seed.yml
 docker-compose.yml         Local Postgres (PostGIS) + Redis for Docker Desktop
 docs/                      SRS & System Architecture (source of truth), build prompt queue
 ```
@@ -58,8 +58,7 @@ Web: http://localhost:3000 Â· API: http://localhost:4000 (GraphQL at /graphql) Â
 
 ## CI/CD
 
-- **deploy-production.yml**: on main, validate (types+lint) then migrate (only when prisma files changed) with a schema-drift gate; API auto-deploys via Railway, web via Vercel.
-- **prisma-migrate.yml**: path-triggered migrate deploy + drift verification.
+- **deploy-production.yml**: on main (or manual dispatch), validate (types+lint) then migrate (only when prisma files changed) with a schema-drift gate; API auto-deploys via Railway, web via Vercel.
 - **manual-seed.yml**: manual dispatch, requires typing CONFIRM.
 
 Migrations run in CI before servers boot, never at request time.
