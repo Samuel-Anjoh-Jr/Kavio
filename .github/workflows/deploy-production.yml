@@ -18,6 +18,46 @@ env:
   NODE_VERSION: '22'
 
 jobs:
+  # Answers "did this push touch packages/database/prisma" straight from the
+  # push webhook payload (no checkout, no API call) so db-migrate's job-level
+  # `if:` can skip booting a runner — and its Postgres+PostGIS shadow-db
+  # service container — entirely when it didn't. The workflow's own `paths:`
+  # trigger can't do this, since `validate` still needs to run on every
+  # push/PR regardless of path.
+  check-prisma-changes:
+    name: Detect packages/database/prisma changes
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - name: Check paths from the push payload
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          COMMITS_JSON: ${{ toJson(github.event.commits) }}
+        shell: bash
+        run: |
+          # workflow_dispatch has no commit list to inspect — always run, same
+          # as the deleted prisma-migrate.yml's unconditional workflow_dispatch.
+          if [ "$EVENT_NAME" != "push" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Fail open (assume changed) on a payload shape we don't recognise,
+          # rather than silently skipping a migration.
+          if [ -z "$COMMITS_JSON" ] || [ "$COMMITS_JSON" = "null" ] || [ "$COMMITS_JSON" = "[]" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if echo "$COMMITS_JSON" | jq -e \
+            '[.[] | (.added + .removed + .modified)[]] | any(startswith("packages/database/prisma/"))' \
+            > /dev/null; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   validate:
     name: Install, generate, type-check, lint
     runs-on: ubuntu-latest
@@ -54,14 +94,13 @@ jobs:
 
   db-migrate:
     name: Migrate database + schema-drift gate
-    needs: validate
+    needs: [validate, check-prisma-changes]
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+      needs.check-prisma-changes.outputs.changed == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     runs-on: ubuntu-latest
     environment: production
-    outputs:
-      prisma-changed: ${{ steps.check-paths.outputs.prisma }}
     # Disposable target for the drift gate below: it replays prisma/migrations
     # from scratch and compares the result to the real DB, so drift is judged
     # against what the migrations actually produce (raw-SQL PostGIS GIST
@@ -84,50 +123,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # Job-level `if:` can't use the workflow's `paths:` trigger filter (that only applies
-      # to the whole workflow), so detect prisma changes for this specific push here.
-      - name: Detect packages/database/prisma changes
-        id: check-paths
-        shell: bash
-        run: |
-          BEFORE="${{ github.event.before }}"
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            echo "prisma=true" >> "$GITHUB_OUTPUT"
-          elif git diff --name-only "$BEFORE" "${{ github.sha }}" -- packages/database/prisma | grep -q .; then
-            echo "prisma=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "prisma=false" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Setup pnpm
-        if: steps.check-paths.outputs.prisma == 'true'
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
       - name: Setup Node
-        if: steps.check-paths.outputs.prisma == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
       - name: Install dependencies
-        if: steps.check-paths.outputs.prisma == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Run database migrations (prisma migrate deploy)
-        if: steps.check-paths.outputs.prisma == 'true'
         run: pnpm db:migrate:deploy
         env:
           DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
 
       - name: Schema-drift gate (prisma migrate diff --exit-code)
-        if: steps.check-paths.outputs.prisma == 'true'
         run: pnpm db:migrate:diff
         env:
           DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL || secrets.DIRECT_URL || secrets.DATABASE_URL }}
