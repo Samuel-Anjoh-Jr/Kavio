@@ -37,14 +37,25 @@ export function localeTag(locale: string): string {
 }
 
 /**
- * The cities served, with real coordinates. Used for `areaServed`, the geo meta
- * tags, and local-intent AI answers ("verified electrician in Douala"). These
- * are facts about the launch market (SRS §1.2), not marketing copy, so they live
- * here rather than in the translation catalogue.
+ * Cities used for `areaServed`, the geo meta tags, and local-intent AI answers
+ * ("verified electrician in Douala"). Kavio is not scoped to two towns: workers
+ * and clients anywhere in Cameroon can use the platform today, and this list
+ * spans a capital in every region so search and AI answer engines resolve local
+ * intent nationwide, not just for the launch cities (Douala, Yaoundé). Verified
+ * worker density varies by city and grows over time; that operational detail
+ * belongs in the FAQ, not in the entity facts every page emits.
  */
 export const SERVICE_AREAS = [
   { name: 'Douala', region: 'Littoral', latitude: 4.0511, longitude: 9.7679 },
   { name: 'Yaoundé', region: 'Centre', latitude: 3.848, longitude: 11.5021 },
+  { name: 'Bafoussam', region: 'West', latitude: 5.4737, longitude: 10.4179 },
+  { name: 'Bamenda', region: 'Northwest', latitude: 5.9631, longitude: 10.1591 },
+  { name: 'Garoua', region: 'North', latitude: 9.3017, longitude: 13.3921 },
+  { name: 'Maroua', region: 'Far North', latitude: 10.591, longitude: 14.3159 },
+  { name: 'Ngaoundéré', region: 'Adamawa', latitude: 7.3167, longitude: 13.5833 },
+  { name: 'Bertoua', region: 'East', latitude: 4.5776, longitude: 13.6846 },
+  { name: 'Ebolowa', region: 'South', latitude: 2.9, longitude: 11.15 },
+  { name: 'Buea', region: 'Southwest', latitude: 4.156, longitude: 9.292 },
 ] as const;
 
 export const COUNTRY = { name: 'Cameroon', code: 'CM' } as const;

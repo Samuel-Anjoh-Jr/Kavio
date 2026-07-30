@@ -73,16 +73,19 @@ export function organizationNode(options: {
       '@type': 'Place',
       name: `${SERVICE_AREAS[0].name}, ${COUNTRY.name}`,
     },
-    areaServed: SERVICE_AREAS.map((area) => ({
-      '@type': 'City',
-      name: area.name,
-      geo: {
-        '@type': 'GeoCoordinates',
-        latitude: area.latitude,
-        longitude: area.longitude,
-      },
-      containedInPlace: { '@type': 'Country', name: COUNTRY.name },
-    })),
+    areaServed: [
+      { '@type': 'Country', name: COUNTRY.name },
+      ...SERVICE_AREAS.map((area) => ({
+        '@type': 'City',
+        name: area.name,
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: area.latitude,
+          longitude: area.longitude,
+        },
+        containedInPlace: { '@type': 'Country', name: COUNTRY.name },
+      })),
+    ],
     knowsLanguage: ['en-CM', 'fr-CM'],
     ...(knowsAbout && knowsAbout.length > 0 ? { knowsAbout } : {}),
     contactPoint: {
@@ -228,7 +231,10 @@ export function serviceNode(options: {
     description,
     inLanguage: localeTag(locale),
     provider: { '@id': ORG_ID },
-    areaServed: SERVICE_AREAS.map((area) => ({ '@type': 'City', name: area.name })),
+    areaServed: [
+      { '@type': 'Country', name: COUNTRY.name },
+      ...SERVICE_AREAS.map((area) => ({ '@type': 'City', name: area.name })),
+    ],
     availableChannel: {
       '@type': 'ServiceChannel',
       serviceUrl: `${SITE_URL}/${locale}/app/explore`,

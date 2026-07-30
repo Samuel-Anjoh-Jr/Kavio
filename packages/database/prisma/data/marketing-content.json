@@ -1,13 +1,13 @@
 {
-  "_comment": "Launch FAQ and testimonials for the marketing landing page (PROMPT 92.1; SRS §26.2). Ids are fixed rather than generated so the seed's upsert is idempotent — a re-run edits the row it wrote last time instead of adding a near-duplicate every time. At least 8 testimonials is a requirement, not a round number: the marquee loops, and with fewer the same faces come round often enough to read as filler.",
+  "_comment": "Launch FAQ and testimonials for the marketing landing page (PROMPT 92.1; SRS §26.2). Ids are fixed rather than generated so the seed's upsert is idempotent, a re-run edits the row it wrote last time instead of adding a near-duplicate every time. At least 8 testimonials is a requirement, not a round number: the marquee loops, and with fewer the same faces come round often enough to read as filler.",
   "faqs": [
     {
       "id": "af157a55-5d6d-5492-b6c7-a0d3acb04dae",
       "category": "general",
       "questionEn": "What is Kavio?",
       "questionFr": "Qu’est-ce que Kavio ?",
-      "answerEn": "Kavio connects households and businesses in Douala and Yaoundé with skilled workers whose identity, work and track record have been verified. Every worker carries a Trust Score you can inspect before you hire.",
-      "answerFr": "Kavio met en relation les ménages et les entreprises de Douala et Yaoundé avec des artisans dont l’identité, le travail et les antécédents sont vérifiés. Chaque artisan porte un Score de Confiance que vous pouvez consulter avant d’embaucher."
+      "answerEn": "Kavio connects households and businesses across Cameroon with skilled workers whose identity, work and track record have been verified. Every worker carries a Trust Score you can inspect before you hire.",
+      "answerFr": "Kavio met en relation les ménages et les entreprises de tout le Cameroun avec des artisans dont l’identité, le travail et les antécédents sont vérifiés. Chaque artisan porte un Score de Confiance que vous pouvez consulter avant d’embaucher."
     },
     {
       "id": "637961dd-bc56-56bc-978e-82764cc0df29",
@@ -30,8 +30,8 @@
       "category": "payments",
       "questionEn": "What does it cost?",
       "questionFr": "Combien cela coûte-t-il ?",
-      "answerEn": "Browsing, posting a job and receiving quotes are free. Kavio takes a service fee of about 10% on completed work, and it is shown to you in full before you pay — never added afterwards.",
-      "answerFr": "La navigation, la publication d’une mission et la réception de devis sont gratuites. Kavio prélève des frais de service d’environ 10 % sur les travaux terminés, affichés intégralement avant le paiement — jamais ajoutés ensuite."
+      "answerEn": "Browsing, posting a job and receiving quotes are free. Kavio takes a service fee of about 10% on completed work, and it is shown to you in full before you pay: never added afterwards.",
+      "answerFr": "La navigation, la publication d’une mission et la réception de devis sont gratuites. Kavio prélève des frais de service d’environ 10 % sur les travaux terminés, affichés intégralement avant le paiement : jamais ajoutés ensuite."
     },
     {
       "id": "15012ea2-716f-548e-8c21-8518902f534b",
@@ -54,8 +54,8 @@
       "category": "general",
       "questionEn": "Which cities do you cover?",
       "questionFr": "Quelles villes couvrez-vous ?",
-      "answerEn": "Douala and Yaoundé at launch, with the surrounding areas covered by workers who list them in their service radius. Other cities follow as we verify workers there.",
-      "answerFr": "Douala et Yaoundé au lancement, ainsi que les zones environnantes couvertes par les artisans qui les incluent dans leur rayon d’intervention. D’autres villes suivront à mesure que nous y vérifions des artisans."
+      "answerEn": "Kavio is open to workers and clients anywhere in Cameroon. Verified coverage is deepest in Douala and Yaoundé today, with other cities and regions filling in fast as more workers there complete verification, so it's worth browsing and posting a job wherever you are.",
+      "answerFr": "Kavio est ouvert aux artisans et aux clients partout au Cameroun. La couverture vérifiée est aujourd’hui la plus dense à Douala et Yaoundé, et d’autres villes et régions se développent rapidement à mesure que davantage d’artisans y complètent leur vérification. Ça vaut donc le coup de parcourir la plateforme et de publier une mission où que vous soyez."
     },
     {
       "id": "46d5a5ad-580a-5c61-a596-966c5254e381",

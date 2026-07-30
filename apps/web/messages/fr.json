@@ -1,7 +1,7 @@
 {
   "Metadata": {
-    "title": "Kavio — Services locaux de confiance au Cameroun",
-    "description": "Trouvez des travailleurs vérifiés et fiables pour des services locaux à Douala et Yaoundé."
+    "title": "Kavio : Services locaux de confiance au Cameroun",
+    "description": "Trouvez des travailleurs vérifiés et fiables pour des services locaux partout au Cameroun."
   },
   "HomePage": {
     "heading": "Bienvenue sur Kavio",
@@ -29,7 +29,7 @@
   },
   "Styleguide": {
     "title": "Système de design TMDS",
-    "description": "Kavio Modern Design System — tokens et primitives restylés, prévisualisés en direct dans le thème actuel.",
+    "description": "Kavio Modern Design System : tokens et primitives restylés, prévisualisés en direct dans le thème actuel.",
     "colorsHeading": "Couleurs",
     "typographyHeading": "Typographie",
     "typographyHeadingSample": "Exemple de titre",
@@ -80,7 +80,7 @@
     "toastTitle": "Vérification soumise",
     "toastDescription": "Nous vous informerons dès que l'examen sera terminé.",
     "motionHeading": "Préréglages de mouvement",
-    "motionReducedNotice": "Votre système est réglé pour réduire les animations — les préréglages ci-dessous s'appliquent instantanément.",
+    "motionReducedNotice": "Votre système est réglé pour réduire les animations, les préréglages ci-dessous s'appliquent instantanément.",
     "motionPageTransitionLabel": "Transition de page (fondu + échelle + flou)",
     "motionPageTransitionTrigger": "Rejouer",
     "motionCardHoverLabel": "Survol de carte (élévation + échelle 1,02)",
@@ -172,7 +172,7 @@
       "submit": "Créer le compte",
       "submitting": "Création de votre compte…",
       "haveAccount": "Vous avez déjà un compte ?",
-      "bothRolesNote": "Un seul compte, les deux côtés. Recrutez aujourd’hui et proposez vos propres compétences demain — changez quand vous voulez, sans revérification."
+      "bothRolesNote": "Un seul compte, les deux côtés. Recrutez aujourd’hui et proposez vos propres compétences demain. Changez quand vous voulez, sans revérification."
     },
     "login": {
       "title": "Bon retour",
@@ -353,7 +353,7 @@
   },
   "Explore": {
     "title": "Trouvez de l'aide de confiance près de chez vous",
-    "subtitle": "Cherchez des professionnels vérifiés, parcourez les offres et ouvrez les profils complets — sans compte. Créez-en un quand vous serez prêt à recruter.",
+    "subtitle": "Cherchez des professionnels vérifiés, parcourez les offres et ouvrez les profils complets, sans compte. Créez-en un quand vous serez prêt à recruter.",
     "searchLabel": "Rechercher un service ou un professionnel",
     "searchPlaceholder": "Plombier, électricien, tailleur…",
     "postJob": "Publier une offre",
@@ -362,7 +362,7 @@
     "jobsHeading": "Offres récentes",
     "jobsEmpty": "Aucune offre publiée pour le moment dans votre zone. Publiez la vôtre, elle attendra le bon professionnel.",
     "mapLabel": "Carte des professionnels de cette zone",
-    "mapUnavailable": "La carte n'est pas disponible pour le moment — la liste à côté montre les mêmes professionnels.",
+    "mapUnavailable": "La carte n'est pas disponible pour le moment, mais la liste à côté montre les mêmes professionnels.",
     "searchThisArea": "Chercher dans cette zone",
     "viewToggleLabel": "Choisir la vue liste ou carte",
     "view": {
@@ -410,7 +410,7 @@
     "budgetLabel": "Budget (XAF)",
     "budgetHint": "Une estimation suffit. Francs entiers uniquement.",
     "submit": "Publier cette mission",
-    "resumed": "Bon retour — nous avons restauré la mission que vous rédigiez.",
+    "resumed": "Bon retour, nous avons restauré la mission que vous rédigiez.",
     "pendingBackend": "Votre brouillon est prêt. La publication ouvrira avec la vérification.",
     "steps": {
       "details": "Détails",
@@ -440,7 +440,7 @@
     "budgetMinLabel": "De (XAF)",
     "budgetMaxLabel": "À (XAF)",
     "budgetOrderError": "Le maximum ne peut pas être inférieur au minimum.",
-    "budgetWholeHint": "Francs entiers uniquement — le XAF n’a pas de centimes.",
+    "budgetWholeHint": "Francs entiers uniquement : le XAF n’a pas de centimes.",
     "reviewHeading": "Vérifier et publier",
     "notSet": "Non renseigné",
     "locationLabel": "Lieu",
@@ -493,7 +493,7 @@
     "stepsLabel": "Étapes d'inscription",
     "saving": "Enregistrement…",
     "saved": "Enregistré",
-    "saveFailed": "Nous n'avons pas pu enregistrer votre dernière modification. Elle est toujours à l'écran — vérifiez votre connexion, la sauvegarde sera retentée.",
+    "saveFailed": "Nous n'avons pas pu enregistrer votre dernière modification. Elle est toujours à l'écran. Vérifiez votre connexion, la sauvegarde sera retentée.",
     "saveFailedShort": "Non enregistré",
     "finish": "Terminer la configuration",
     "finished": "Configuration terminée",
@@ -800,10 +800,10 @@
   },
   "VerificationScreen": {
     "heading": "Votre vérification",
-    "subtitle": "Chaque étape terminée rend votre profil plus fiable — et vous ouvre plus de travail.",
+    "subtitle": "Chaque étape terminée rend votre profil plus fiable, et vous ouvre plus de travail.",
     "progressHeading": "Profil complété",
     "stepsDone": "{done} étapes sur {total} terminées",
-    "actionNeeded": "{count, plural, =1 {Une étape vous attend} other {# étapes vous attendent}} — voir ci-dessous.",
+    "actionNeeded": "{count, plural, =1 {Une étape vous attend} other {# étapes vous attendent}}, voir ci-dessous.",
     "awaitingReview": "{count, plural, =1 {Une étape est chez notre équipe} other {# étapes sont chez notre équipe}}. Nous vous préviendrons dès que ce sera fait.",
     "unlocksHeading": "Ce que vous débloquez",
     "unlocksBody": "Terminez vos vérifications pour y accéder.",
@@ -819,7 +819,7 @@
       "ID_SUBMITTED": "Téléversez le recto et le verso de votre carte nationale d'identité.",
       "ID_APPROVED": "Une fois votre pièce téléversée, notre équipe la vérifie.",
       "SELFIE_LIVENESS": "Prenez un selfie rapide pour confirmer que c'est bien vous.",
-      "ADDRESS": "Montrez-nous où vous habitez — une facture ou un courrier suffit.",
+      "ADDRESS": "Montrez-nous où vous habitez : une facture ou un courrier suffit.",
       "PORTFOLIO": "Ajoutez des photos de vos réalisations.",
       "FIELD_VERIFICATION": "L'un de nos agents vous rencontre en personne.",
       "BUSINESS_REGISTRATION": "Téléversez votre document d'enregistrement d'entreprise."
@@ -866,7 +866,7 @@
     "documentTitle": "Document soumis",
     "documentSubject": "Soumis par {name}",
     "documentLoading": "Ouverture sécurisée…",
-    "documentError": "Ce document n'a pas pu être ouvert. Le lien a peut-être expiré — fermez et réessayez.",
+    "documentError": "Ce document n'a pas pu être ouvert. Le lien a peut-être expiré. Fermez et réessayez.",
     "documentOpen": "Ouvrir le document",
     "documentNoUrl": "Ce pilote de stockage n'a pas d'adresse web. Utilisez le stockage local pour prévisualiser les documents.",
     "documentAlt": "{kind} soumis",
@@ -890,19 +890,19 @@
       "WRONG_DOCUMENT_TYPE": "Mauvais type de document",
       "FIELD_CHECK_FAILED": "Visite sur le terrain non réalisée",
       "OTHER": "Autre",
-      "SUSPECTED_FRAUD": "Fraude suspectée — escalader",
-      "CONFIRMED_FRAUDULENT": "Falsification confirmée — suspendre"
+      "SUSPECTED_FRAUD": "Fraude suspectée : escalader",
+      "CONFIRMED_FRAUDULENT": "Falsification confirmée : suspendre"
     },
     "adjustTrustScore": "Ajuster le score de confiance",
     "adjustDialogTitle": "Ajustement exceptionnel du score de confiance",
     "adjustDialogSubtitle": "Applique une pénalité pour fraude ou un bonus « vérifié sur le terrain » sous forme d'événement explicite et auditable.",
     "adjustDialogSubtitleNamed": "Pour {name}. Applique une pénalité pour fraude ou un bonus « vérifié sur le terrain » sous forme d'événement explicite et auditable.",
-    "adjustWarning": "Il s'agit d'une action exceptionnelle sur le signal de confiance central de la plateforme. Elle est enregistrée de façon permanente et ne peut pas être modifiée — seulement compensée par un nouvel ajustement.",
+    "adjustWarning": "Il s'agit d'une action exceptionnelle sur le signal de confiance central de la plateforme. Elle est enregistrée de façon permanente et ne peut pas être modifiée, seulement compensée par un nouvel ajustement.",
     "deltaLabel": "Points",
     "deltaPlaceholder": "ex. -20 ou +15",
-    "deltaHint": "Un nombre entier, positif pour un bonus ou négatif pour une pénalité. Jusqu'à {max} points par ajustement — faites deux ajustements plus petits et justifiés séparément pour un changement plus important.",
+    "deltaHint": "Un nombre entier, positif pour un bonus ou négatif pour une pénalité. Jusqu'à {max} points par ajustement. Faites deux ajustements plus petits et justifiés séparément pour un changement plus important.",
     "adjustReasonLabel": "Motif",
-    "adjustReasonPlaceholder": "Expliquez le constat exceptionnel — ceci est enregistré sur l'événement et dans le journal d'audit.",
+    "adjustReasonPlaceholder": "Expliquez le constat exceptionnel : ceci est enregistré sur l'événement et dans le journal d'audit.",
     "adjustReasonHint": "Obligatoire, au moins 10 caractères. Réservé au personnel, non visible par la personne concernée.",
     "applyAdjustment": "Appliquer l'ajustement",
     "applying": "Application…",
@@ -917,7 +917,7 @@
     "or": "ou",
     "confirmPin": "Choisir cet endroit",
     "mapLabel": "Carte pour choisir une position",
-    "mapUnavailable": "La carte n'est pas disponible pour le moment. Choisissez plutôt un repère proche — cela marche aussi bien.",
+    "mapUnavailable": "La carte n'est pas disponible pour le moment. Choisissez plutôt un repère proche. Cela marche aussi bien.",
     "landmarkHeading": "Repères à proximité",
     "landmarkHint": "Choisissez le repère que les gens utilisent pour vous trouver. C'est ainsi qu'on indique le chemin ici.",
     "landmarkEmpty": "Aucun repère connu près de cet endroit pour l'instant.",
@@ -959,13 +959,13 @@
     "loadMore": "Afficher plus",
     "retry": "Réessayer",
     "errorTitle": "Impossible de charger les résultats",
-    "errorBody": "Une erreur est survenue de notre côté. Votre recherche est toujours là — réessayez dans un instant.",
+    "errorBody": "Une erreur est survenue de notre côté. Votre recherche est toujours là. Réessayez dans un instant.",
     "filteredOutTitle": "Personne ne correspond à tous les filtres",
     "filteredOutBody": "Il y a des professionnels ici, mais aucun ne coche toutes vos cases. Essayez d'assouplir un filtre.",
     "serviceMissingTitle": "Personne ne propose encore ce service",
-    "serviceMissingBody": "Personne sur Kavio ne fait encore ce travail — nulle part. Nous accueillons de nouveaux professionnels chaque semaine, revenez bientôt.",
+    "serviceMissingBody": "Personne sur Kavio ne fait encore ce travail, nulle part. Nous accueillons de nouveaux professionnels chaque semaine, revenez bientôt.",
     "noProvidersTitle": "Aucun prestataire ici pour l'instant",
-    "noProvidersBody": "Personne ne propose ce service dans votre zone pour l'instant. Revenez bientôt — nous grandissons vite à Douala et Yaoundé.",
+    "noProvidersBody": "Personne ne propose ce service dans votre zone pour l'instant. Revenez bientôt, nous grandissons vite partout au Cameroun.",
     "noProvidersBodyNearest": "Personne ne propose ce service dans votre zone, mais le prestataire le plus proche est à environ {distance}.",
     "widenRadius": "Chercher dans un rayon de {value} km",
     "distance": {
@@ -1165,7 +1165,7 @@
       "rccm": "Enregistrement de l'entreprise (RCCM)",
       "address": "Adresse de l'entreprise"
     },
-    "documentsExplainer": "Nous montrons quels enregistrements notre équipe a vérifiés et approuvés — jamais les documents eux-mêmes. Ceux-ci restent privés.",
+    "documentsExplainer": "Nous montrons quels enregistrements notre équipe a vérifiés et approuvés, jamais les documents eux-mêmes. Ceux-ci restent privés.",
     "documentsEmpty": "Aucun enregistrement soumis pour l'instant.",
     "verified": "Vérifié",
     "verifiedOn": "Vérifié le {date}",
@@ -1245,7 +1245,7 @@
     "milestoneCaption": {
       "ACCEPTED": "Le professionnel a accepté et arrive.",
       "IN_PROGRESS": "Le travail a commencé.",
-      "COMPLETED": "Travail terminé — confirmez pour libérer le paiement.",
+      "COMPLETED": "Travail terminé : confirmez pour libérer le paiement.",
       "RELEASED": "Fonds versés au professionnel."
     },
     "status": {
@@ -1296,7 +1296,7 @@
     "decline": "Refuser",
     "apply": "Postuler",
     "applyTitle": "Postuler à cette mission",
-    "applyMessagePlaceholder": "Dites au client pourquoi vous êtes la bonne personne — au moins une phrase.",
+    "applyMessagePlaceholder": "Dites au client pourquoi vous êtes la bonne personne, au moins une phrase.",
     "submitApplication": "Envoyer la candidature",
     "applicationSent": "Candidature envoyée.",
     "applicationWithdrawn": "Candidature retirée.",
@@ -1390,12 +1390,12 @@
     "feeDisclaimer": "Les frais font tourner Kavio et protègent votre paiement.",
     "escrowAssurance": "Votre argent est conservé en toute sécurité sous séquestre et libéré seulement quand vous confirmez le travail.",
     "acceptAndPay": "Accepter et approvisionner le séquestre",
-    "accepted": "Devis accepté — payez maintenant pour financer le séquestre.",
+    "accepted": "Devis accepté : payez maintenant pour financer le séquestre.",
     "acceptFailed": "Impossible d’accepter ce devis. Veuillez réessayer.",
     "counter": "Négocier",
     "counterTitle": "Demander une contre-proposition",
     "counterPriceLabel": "Prix suggéré (XAF)",
-    "counterPriceHint": "Facultatif — proposez un prix qui vous conviendrait.",
+    "counterPriceHint": "Facultatif : proposez un prix qui vous conviendrait.",
     "counterMessageLabel": "Message",
     "counterMessagePlaceholder": "Dites ce que vous souhaitez modifier.",
     "sendCounter": "Envoyer la demande",
@@ -1420,7 +1420,7 @@
     "inEscrow": "Sous séquestre",
     "addMoney": "Ajouter de l’argent",
     "withdraw": "Retirer",
-    "pendingAmount": "—",
+    "pendingAmount": "-",
     "amountLabel": "Montant (XAF)",
     "amountHint": "Francs entiers uniquement.",
     "amountRequired": "Saisissez un montant supérieur à zéro.",
@@ -1463,7 +1463,7 @@
     "escrowException": {
       "CANCELLED": "Cette réservation a été annulée.",
       "REFUNDED": "Les fonds bloqués ont été remboursés.",
-      "DISPUTED": "Cette réservation est en litige — les fonds sont gelés."
+      "DISPUTED": "Cette réservation est en litige : les fonds sont gelés."
     },
     "viewDispute": "Voir le litige",
     "agreedPrice": "Prix convenu",
@@ -1475,7 +1475,7 @@
     "payNowTitle": "Financer le séquestre",
     "payNowHint": "Nous débiterons votre moyen de paiement par défaut et conserverons les fonds sous séquestre jusqu’à ce que vous confirmiez la fin des travaux.",
     "confirmPay": "Payer maintenant",
-    "paymentRequested": "Paiement demandé — confirmation en cours.",
+    "paymentRequested": "Paiement demandé : confirmation en cours.",
     "paymentFailed": "Impossible de démarrer le paiement. Veuillez réessayer.",
     "filterType": "Type",
     "filterStatus": "Statut",
@@ -1585,7 +1585,7 @@
     },
     "admin": {
       "title": "Régler le litige",
-      "titleForJob": "Régler le litige — {job}",
+      "titleForJob": "Régler le litige : {job}",
       "queueTitle": "Litiges",
       "queueSubtitle": "Examinez et réglez les litiges. Chacun a gelé le séquestre d’un client jusqu’à votre décision.",
       "backToQueue": "Retour à la file",
@@ -1847,7 +1847,7 @@
       },
       "sound": {
         "title": "Sons de notification",
-        "body": "Choisissez un son par catégorie pour quand Kavio est ouvert. Les notifications en arrière-plan utilisent toujours le son de votre appareil — aucun navigateur ne permet à un site de le changer.",
+        "body": "Choisissez un son par catégorie pour quand Kavio est ouvert. Les notifications en arrière-plan utilisent toujours le son de votre appareil. Aucun navigateur ne permet à un site de le changer.",
         "note": "Les sons ne jouent que lorsque Kavio est ouvert dans un onglet. « Par défaut » laisse le choix à votre appareil.",
         "options": {
           "default": "Par défaut (appareil)",
@@ -1987,7 +1987,7 @@
     "removePhoto": "Retirer cette photo",
     "submit": "Publier l'avis",
     "submitting": "Publication…",
-    "submitSuccess": "Merci — votre avis est en ligne.",
+    "submitSuccess": "Merci. Votre avis est en ligne.",
     "submitSuccessBody": "Il apparaît désormais sur le profil du professionnel.",
     "notEligibleTitle": "Vous ne pouvez pas évaluer cette mission",
     "backToJob": "Retour à la mission",
@@ -2000,7 +2000,7 @@
     },
     "reviewCount": "{count, plural, =0 {Aucun avis} one {# avis} other {# avis}}",
     "summaryEmpty": "Pas encore d'avis",
-    "summaryEmptyBody": "Ce professionnel n'a pas encore été évalué — cela ne veut pas dire qu'il a été mal noté.",
+    "summaryEmptyBody": "Ce professionnel n'a pas encore été évalué, cela ne veut pas dire qu'il a été mal noté.",
     "listEmpty": "Pas encore d'avis",
     "listEmptyBody": "Les avis apparaissent ici dès qu'un client en laisse un après une mission terminée.",
     "listError": "Impossible de charger les avis pour le moment. Réessayez dans un instant.",
@@ -2012,7 +2012,7 @@
   },
   "BusinessConsole": {
     "dashboardTitle": "Tableau de bord de l'entreprise",
-    "dashboardSubtitle": "Vos annonces, vos recrutements et vos dépenses — directement issus des missions.",
+    "dashboardSubtitle": "Vos annonces, vos recrutements et vos dépenses : directement issus des missions.",
     "loadError": "Impossible de charger le tableau de bord pour le moment. Réessayez dans un instant.",
     "noBusiness": "Vous n'avez pas encore de profil d'entreprise. Terminez l'inscription entreprise pour ouvrir la console.",
     "verifiedBusiness": "Entreprise vérifiée",
@@ -2214,7 +2214,7 @@
       "caveat": "Ceci reflète ce que l'API observe de ses propres dépendances. La disponibilité et la latence viennent du monitoring d'infrastructure."
     },
     "analyticsTitle": "Analyses et rapports",
-    "analyticsSubtitle": "Croissance, activité, revenus et confiance sur la plateforme — avec export.",
+    "analyticsSubtitle": "Croissance, activité, revenus et confiance sur la plateforme, avec export.",
     "exportCsv": "Exporter en CSV",
     "csv": {
       "section": "section",
@@ -2230,7 +2230,7 @@
     "highRiskHeading": "Comptes à risque élevé",
     "highRiskCaption": "Classés selon le nombre de signaux indépendants qui coïncident. Un signal est un fait ; trois signaux sans lien forment un schéma.",
     "suspiciousJobsHeading": "Missions à examiner",
-    "suspiciousJobsCaption": "Repérées par le comportement — signalements et litiges — jamais en devinant d'après le texte.",
+    "suspiciousJobsCaption": "Repérées par le comportement (signalements et litiges), jamais en devinant d'après le texte.",
     "blockedHeading": "Comptes bloqués",
     "blockedCaption": "Issus du journal de modération : le motif et l'administrateur qui a décidé accompagnent chaque décision.",
     "heatmapHeading": "Activité de la plateforme",
@@ -2356,13 +2356,13 @@
     "categoriesCaption": "Les catégories sont retirées, jamais supprimées, afin que les missions et services qui les utilisaient restent lisibles.",
     "newCategory": "Nouvelle catégorie",
     "newCategoryTitle": "Ajouter une catégorie de service",
-    "newCategorySubtitle": "Les deux langues sont obligatoires — la plateforme est bilingue pour tous.",
+    "newCategorySubtitle": "Les deux langues sont obligatoires : la plateforme est bilingue pour tous.",
     "slugLabel": "Identifiant (slug)",
     "slugHint": "Permanent. Les filtres enregistrés et les missions y font référence : il ne peut jamais être renommé.",
     "nameEnLabel": "Nom (anglais)",
     "nameFrLabel": "Nom (français)",
     "parentLabel": "Métier parent",
-    "noParent": "Aucun — c'est un métier de premier niveau",
+    "noParent": "Aucun : c'est un métier de premier niveau",
     "noCategories": "Aucune catégorie pour l'instant",
     "retire": "Retirer",
     "retired": "Retirée",
@@ -2377,7 +2377,7 @@
     "titleFr": "Titre (français)",
     "bodyEn": "Message (anglais)",
     "bodyFr": "Message (français)",
-    "bilingualHint": "Les deux langues sont obligatoires — une annonce dans une seule langue est illisible pour la moitié de vos utilisateurs.",
+    "bilingualHint": "Les deux langues sont obligatoires : une annonce dans une seule langue est illisible pour la moitié de vos utilisateurs.",
     "audienceLabel": "Qui la voit",
     "audience": {
       "ALL": "Tout le monde",
@@ -2423,7 +2423,7 @@
       "general": "Général"
     },
     "notSet": "Valeur par défaut intégrée",
-    "usingDefault": "Jamais modifié — valeur par défaut intégrée.",
+    "usingDefault": "Jamais modifié : valeur par défaut intégrée.",
     "lastChangedBy": "Modifié par {name} le {date}",
     "settingSaved": "Enregistré.",
     "enabled": "Activé",
@@ -2525,12 +2525,12 @@
     },
     "maintenance": {
       "title": "De retour très vite",
-      "description": "Kavio est en maintenance planifiée. Revenez dans quelques minutes — vos données sont en sécurité."
+      "description": "Kavio est en maintenance planifiée. Revenez dans quelques minutes. Vos données sont en sécurité."
     },
     "offline": {
-      "banner": "Hors ligne — contenu enregistré affiché",
-      "bannerWithPending": "Hors ligne — contenu enregistré · {count, plural, one {# modification en attente} other {# modifications en attente}} de synchronisation",
-      "syncing": "De retour en ligne — synchronisation de {count, plural, one {# modification} other {# modifications}}…"
+      "banner": "Hors ligne, contenu enregistré affiché",
+      "bannerWithPending": "Hors ligne, contenu enregistré · {count, plural, one {# modification en attente} other {# modifications en attente}} de synchronisation",
+      "syncing": "De retour en ligne, synchronisation de {count, plural, one {# modification} other {# modifications}}…"
     },
     "error": {
       "title": "Une erreur est survenue",
@@ -2554,12 +2554,12 @@
   },
   "Marketing": {
     "meta": {
-      "title": "Artisans qualifiés vérifiés à Douala et Yaoundé",
+      "title": "Artisans qualifiés vérifiés partout au Cameroun",
       "description": "Engagez des électriciens, plombiers, soudeurs vérifiés et plus encore. Devis transparents, paiements sous séquestre et un Score de Confiance à vérifier avant de réserver.",
       "ogHeadline": "La confiance, pas juste des annonces.",
       "ogTagline": "Artisans vérifiés, devis transparents, paiements sous séquestre.",
       "serviceName": "Embauche d’artisans vérifiés avec paiement sous séquestre",
-      "keywords": "artisans vérifiés Cameroun, main-d’œuvre qualifiée Douala, électricien Yaoundé, plombier Cameroun, soudeur Douala, paiement sous séquestre Cameroun, Score de Confiance, engager artisan Cameroun, services à domicile Douala Yaoundé, services locaux Cameroun"
+      "keywords": "artisans vérifiés Cameroun, main-d’œuvre qualifiée partout au Cameroun, électricien Douala, plombier Yaoundé, soudeur Bafoussam, mécanicien Bamenda, paiement sous séquestre Cameroun, Score de Confiance, engager artisan Cameroun, services à domicile partout au Cameroun, services locaux Douala Yaoundé Bafoussam Bamenda Garoua"
     },
     "nav": {
       "primary": "Principal",
@@ -2575,9 +2575,9 @@
       "faq": "FAQ"
     },
     "hero": {
-      "badge": "Douala et Yaoundé",
+      "badge": "Disponible dans tout le Cameroun",
       "heading": "Trouvez un artisan à qui vous pouvez vraiment faire confiance.",
-      "subheading": "Identité vérifiée, portfolios réels, devis fixes et paiements sous séquestre — la couche de confiance est le produit.",
+      "subheading": "Identité vérifiée, portfolios réels, devis fixes et paiements sous séquestre : la couche de confiance est le produit.",
       "primaryCta": "Explorer les artisans",
       "secondaryCta": "Créer un compte",
       "noAccountNote": "Aucun compte requis pour parcourir. Connectez-vous uniquement pour agir.",
@@ -2597,7 +2597,7 @@
     },
     "trustEngine": {
       "heading": "La confiance se gagne par étapes, et vous les voyez toutes.",
-      "body": "Le Moteur de Confiance évalue chaque artisan sur l’identité, les preuves professionnelles, le comportement sur la plateforme et la fiabilité financière — et se met à jour en continu.",
+      "body": "Le Moteur de Confiance évalue chaque artisan sur l’identité, les preuves professionnelles, le comportement sur la plateforme et la fiabilité financière, et se met à jour en continu.",
       "link": "Voir comment fonctionne le Score de Confiance",
       "stages": {
         "15": {
@@ -2624,7 +2624,7 @@
     },
     "portfolio": {
       "heading": "Du vrai travail, pas des photos de stock.",
-      "body": "Chaque portfolio est la preuve d’une vraie mission — glissez pour voir l’avant/après.",
+      "body": "Chaque portfolio est la preuve d’une vraie mission : glissez pour voir l’avant/après.",
       "before": "Avant",
       "after": "Après",
       "beforeAlt": "Avant : travaux de {trade}",
@@ -2638,7 +2638,7 @@
       "steps": {
         "hold": {
           "title": "Vous payez sous séquestre",
-          "body": "Quand vous acceptez un devis, votre paiement est conservé par Kavio — pas versé à l’artisan."
+          "body": "Quand vous acceptez un devis, votre paiement est conservé par Kavio, pas versé à l’artisan."
         },
         "work": {
           "title": "Les travaux se déroulent",
@@ -2646,11 +2646,11 @@
         },
         "release": {
           "title": "Vous libérez le paiement",
-          "body": "Satisfait ? Libérez les fonds. Insatisfait ? Ouvrez un litige — l’argent reste conservé."
+          "body": "Satisfait ? Libérez les fonds. Insatisfait ? Ouvrez un litige. L’argent reste conservé."
         }
       },
       "feeHeading": "Des frais de service d’environ 10 %, affichés avant le paiement.",
-      "feeBody": "Un seul frais transparent sur les travaux terminés — jamais ajouté après coup, jamais une surprise sur le pas de la porte."
+      "feeBody": "Un seul frais transparent sur les travaux terminés : jamais ajouté après coup, jamais une surprise sur le pas de la porte."
     },
     "testimonials": {
       "heading": "La confiance des clients comme des artisans.",
@@ -2662,11 +2662,11 @@
       "heading": "Vos questions, nos réponses.",
       "body": "Tout ce que vous voulez savoir avant de commencer.",
       "emptyTitle": "Pas encore de questions",
-      "emptyDescription": "Revenez bientôt — nous ajoutons des réponses aux questions les plus fréquentes."
+      "emptyDescription": "Revenez bientôt, nous ajoutons des réponses aux questions les plus fréquentes."
     },
     "cta": {
       "heading": "Trouvez dès aujourd’hui un artisan de confiance.",
-      "body": "Parcourez des artisans vérifiés à Douala et Yaoundé. Aucun compte requis pour commencer.",
+      "body": "Parcourez des artisans vérifiés partout au Cameroun. Aucun compte requis pour commencer.",
       "button": "Explorer les artisans",
       "note": "Navigation gratuite · Connexion uniquement pour agir"
     },

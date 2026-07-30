@@ -179,10 +179,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
       <section id="hero" className="relative overflow-hidden px-4 pb-20 pt-12 sm:px-6 sm:pt-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
           <Reveal className="flex flex-col gap-6">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-sm font-medium text-accent">
-              <MapPin className="size-4" aria-hidden="true" />
-              {t('hero.badge')}
-            </span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-sm font-medium text-accent">
+                <MapPin className="size-4" aria-hidden="true" />
+                {t('hero.badge')}
+              </span>
+              <span className="text-sm font-medium text-muted-foreground">
+                {t('footer.tagline')}
+              </span>
+            </div>
 
             <h1 className="text-balance font-heading text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
               {t('hero.heading')}
