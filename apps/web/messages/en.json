@@ -1,7 +1,7 @@
 {
   "Metadata": {
-    "title": "Kavio — Trusted local services in Cameroon",
-    "description": "Find verified, trusted workers for local services in Douala and Yaoundé."
+    "title": "Kavio: Trusted local services in Cameroon",
+    "description": "Find verified, trusted workers for local services across Cameroon."
   },
   "HomePage": {
     "heading": "Welcome to Kavio",
@@ -29,7 +29,7 @@
   },
   "Styleguide": {
     "title": "TMDS design system",
-    "description": "Kavio Modern Design System — tokens and restyled primitives, previewed live in the current theme.",
+    "description": "Kavio Modern Design System: tokens and restyled primitives, previewed live in the current theme.",
     "colorsHeading": "Colours",
     "typographyHeading": "Typography",
     "typographyHeadingSample": "Heading sample",
@@ -80,7 +80,7 @@
     "toastTitle": "Verification submitted",
     "toastDescription": "We'll notify you once review is complete.",
     "motionHeading": "Motion presets",
-    "motionReducedNotice": "Your system is set to reduce motion — presets below apply instantly instead of animating.",
+    "motionReducedNotice": "Your system is set to reduce motion, so presets below apply instantly instead of animating.",
     "motionPageTransitionLabel": "Page transition (fade + scale + blur)",
     "motionPageTransitionTrigger": "Replay",
     "motionCardHoverLabel": "Card hover (lift + scale 1.02)",
@@ -140,7 +140,7 @@
     "brandPanel": {
       "slogan": "Where good work starts",
       "headline": "Trust you can verify, not just claim.",
-      "body": "Kavio verifies identity, skills and work history so you know exactly who you are hiring — or who is hiring you.",
+      "body": "Kavio verifies identity, skills and work history so you know exactly who you are hiring, or who is hiring you.",
       "points": {
         "verified": "Progressive verification, from phone to in-person field checks",
         "escrow": "Payments held in escrow and released only when the job is done",
@@ -172,7 +172,7 @@
       "submit": "Create account",
       "submitting": "Creating your account…",
       "haveAccount": "Already have an account?",
-      "bothRolesNote": "One account, both sides. Hire someone today and offer your own skills tomorrow — switch whenever you like, without verifying again."
+      "bothRolesNote": "One account, both sides. Hire someone today and offer your own skills tomorrow. Switch whenever you like, without verifying again."
     },
     "login": {
       "title": "Welcome back",
@@ -258,7 +258,7 @@
     "inputsHeading": "What counts so far",
     "nextActionsHeading": "Next actions ({points} pts available)",
     "pillarsHeading": "The four parts of your score",
-    "pillarsBody": "Every point comes from something that actually happened — a check that passed, a job you finished, a client who came back.",
+    "pillarsBody": "Every point comes from something that actually happened: a check that passed, a job you finished, a client who came back.",
     "topActionHeading": "Do this next",
     "topActionWorth": "Worth up to {points} points.",
     "nextTierHeading": "Next level",
@@ -353,7 +353,7 @@
   },
   "Explore": {
     "title": "Find trusted help near you",
-    "subtitle": "Search verified workers, browse posted jobs and open full profiles — no account needed. Create one when you're ready to hire.",
+    "subtitle": "Search verified workers, browse posted jobs and open full profiles, no account needed. Create one when you're ready to hire.",
     "searchLabel": "Search for a service or worker",
     "searchPlaceholder": "Plumber, electrician, tailor…",
     "postJob": "Post a job",
@@ -362,7 +362,7 @@
     "jobsHeading": "Recently posted jobs",
     "jobsEmpty": "No jobs posted yet in your area. Post one now and it'll be waiting for the right professional.",
     "mapLabel": "Map of workers in this area",
-    "mapUnavailable": "The map isn't available right now — the list beside it shows the same workers.",
+    "mapUnavailable": "The map isn't available right now, but the list beside it shows the same workers.",
     "searchThisArea": "Search this area",
     "viewToggleLabel": "Choose list or map view",
     "view": {
@@ -410,7 +410,7 @@
     "budgetLabel": "Budget (XAF)",
     "budgetHint": "A rough figure is fine. Whole francs only.",
     "submit": "Post this job",
-    "resumed": "Welcome back — we restored the job you were writing.",
+    "resumed": "Welcome back, we restored the job you were writing.",
     "pendingBackend": "Your draft is ready. Job posting opens once verification and posting go live.",
     "steps": {
       "details": "Details",
@@ -440,7 +440,7 @@
     "budgetMinLabel": "From (XAF)",
     "budgetMaxLabel": "To (XAF)",
     "budgetOrderError": "The maximum cannot be less than the minimum.",
-    "budgetWholeHint": "Whole francs only — XAF has no centimes.",
+    "budgetWholeHint": "Whole francs only: XAF has no centimes.",
     "reviewHeading": "Review and post",
     "notSet": "Not set",
     "locationLabel": "Location",
@@ -493,7 +493,7 @@
     "stepsLabel": "Onboarding steps",
     "saving": "Saving…",
     "saved": "Saved",
-    "saveFailed": "We could not save your last change. It is still on this screen — check your connection and it will retry.",
+    "saveFailed": "We could not save your last change. It is still on this screen. Check your connection and it will retry.",
     "saveFailedShort": "Not saved",
     "finish": "Finish setup",
     "finished": "Setup complete",
@@ -711,7 +711,7 @@
     "capturedByAgent": "Recorded in person by a Kavio agent",
     "taperExplainer": "Endorsements help most when you're starting out. As you complete jobs, your own track record counts for more and endorsements count for less.",
     "influence": "Contributing {points} of {cap} points",
-    "taperedOut": "Your completed jobs now speak for you — endorsements no longer add points."
+    "taperedOut": "Your completed jobs now speak for you: endorsements no longer add points."
   },
   "Badge": {
     "FOUNDING_PROFESSIONAL": {
@@ -770,7 +770,7 @@
       "name": "Community Endorsed",
       "description": "Endorsed by five people in the community."
     },
-    "permanent": "Badges are permanent — once earned, they stay."
+    "permanent": "Badges are permanent: once earned, they stay."
   },
   "TrustHistory": {
     "heading": "Your trust history",
@@ -800,10 +800,10 @@
   },
   "VerificationScreen": {
     "heading": "Your verification",
-    "subtitle": "Each step you finish makes your profile easier to trust — and unlocks more work.",
+    "subtitle": "Each step you finish makes your profile easier to trust, and unlocks more work.",
     "progressHeading": "Profile completion",
     "stepsDone": "{done} of {total} steps done",
-    "actionNeeded": "{count, plural, =1 {One step needs you} other {# steps need you}} — see below.",
+    "actionNeeded": "{count, plural, =1 {One step needs you} other {# steps need you}}, see below.",
     "awaitingReview": "{count, plural, =1 {One step is with our team} other {# steps are with our team}}. We'll let you know as soon as they're done.",
     "unlocksHeading": "What you unlock",
     "unlocksBody": "Finish your checks to open these up.",
@@ -819,7 +819,7 @@
       "ID_SUBMITTED": "Upload the front and back of your national ID.",
       "ID_APPROVED": "Once your ID is uploaded, our team checks it.",
       "SELFIE_LIVENESS": "Take a quick selfie so we know it's really you.",
-      "ADDRESS": "Show us where you're based — a bill or a letter works.",
+      "ADDRESS": "Show us where you're based: a bill or a letter works.",
       "PORTFOLIO": "Add photos of work you've done.",
       "FIELD_VERIFICATION": "One of our agents meets you in person.",
       "BUSINESS_REGISTRATION": "Upload your business registration document."
@@ -866,7 +866,7 @@
     "documentTitle": "Submitted document",
     "documentSubject": "Submitted by {name}",
     "documentLoading": "Opening securely…",
-    "documentError": "This document could not be opened. The link may have expired — close and try again.",
+    "documentError": "This document could not be opened. The link may have expired. Close and try again.",
     "documentOpen": "Open document",
     "documentNoUrl": "This storage driver has no web address. Use the local file store to preview documents.",
     "documentAlt": "Submitted {kind}",
@@ -890,19 +890,19 @@
       "WRONG_DOCUMENT_TYPE": "Wrong document type",
       "FIELD_CHECK_FAILED": "Field visit could not be completed",
       "OTHER": "Other",
-      "SUSPECTED_FRAUD": "Suspected fraud — escalate",
-      "CONFIRMED_FRAUDULENT": "Confirmed forgery — suspend"
+      "SUSPECTED_FRAUD": "Suspected fraud: escalate",
+      "CONFIRMED_FRAUDULENT": "Confirmed forgery: suspend"
     },
     "adjustTrustScore": "Adjust Trust Score",
     "adjustDialogTitle": "Exceptional Trust Score adjustment",
     "adjustDialogSubtitle": "This applies a fraud penalty or a Field-Verified bonus as an explicit, auditable event.",
     "adjustDialogSubtitleNamed": "For {name}. This applies a fraud penalty or a Field-Verified bonus as an explicit, auditable event.",
-    "adjustWarning": "This is an exceptional action against the platform's core trust signal. It is recorded permanently and cannot be edited — only offset by a further adjustment.",
+    "adjustWarning": "This is an exceptional action against the platform's core trust signal. It is recorded permanently and cannot be edited, only offset by a further adjustment.",
     "deltaLabel": "Points",
     "deltaPlaceholder": "e.g. -20 or +15",
-    "deltaHint": "A whole number, positive for a bonus or negative for a penalty. Up to {max} points per adjustment — make two smaller, separately reasoned adjustments for a larger move.",
+    "deltaHint": "A whole number, positive for a bonus or negative for a penalty. Up to {max} points per adjustment. Make two smaller, separately reasoned adjustments for a larger move.",
     "adjustReasonLabel": "Reason",
-    "adjustReasonPlaceholder": "Explain the exceptional finding — this is stored on the event and the audit log.",
+    "adjustReasonPlaceholder": "Explain the exceptional finding: this is stored on the event and the audit log.",
     "adjustReasonHint": "Required, at least 10 characters. This is staff-facing and is not shown to the subject.",
     "applyAdjustment": "Apply adjustment",
     "applying": "Applying…",
@@ -917,7 +917,7 @@
     "or": "or",
     "confirmPin": "Use this spot",
     "mapLabel": "Map for choosing a location",
-    "mapUnavailable": "The map isn't available right now. Pick a nearby landmark instead — it works just as well.",
+    "mapUnavailable": "The map isn't available right now. Pick a nearby landmark instead. It works just as well.",
     "landmarkHeading": "Nearby landmarks",
     "landmarkHint": "Pick the landmark people use to find you. This is how directions are given here.",
     "landmarkEmpty": "No known landmarks near this spot yet.",
@@ -959,13 +959,13 @@
     "loadMore": "Show more",
     "retry": "Try again",
     "errorTitle": "We couldn't load results",
-    "errorBody": "Something went wrong on our side. Your search is still here — try again in a moment.",
+    "errorBody": "Something went wrong on our side. Your search is still here. Try again in a moment.",
     "filteredOutTitle": "No one matches every filter",
     "filteredOutBody": "There are workers here, but none of them match everything you asked for. Try relaxing a filter.",
     "serviceMissingTitle": "No one offers this yet",
-    "serviceMissingBody": "Nobody on Kavio does this work yet — anywhere. We're onboarding new professionals every week, so check back soon.",
+    "serviceMissingBody": "Nobody on Kavio does this work yet, anywhere. We're onboarding new professionals every week, so check back soon.",
     "noProvidersTitle": "No providers here yet",
-    "noProvidersBody": "No one offers this service in your area yet. Check back soon — we're growing fast in Douala and Yaoundé.",
+    "noProvidersBody": "No one offers this service in your area yet. Check back soon, we're growing fast across Cameroon.",
     "noProvidersBodyNearest": "No one offers this in your area yet, but the nearest provider is about {distance} away.",
     "widenRadius": "Search within {value} km",
     "distance": {
@@ -1050,6 +1050,7 @@
     "unnamed": "Kavio professional",
     "notFoundTitle": "Profile not found",
     "metaFallback": "{name} on Kavio",
+    "metaTitleWithTrade": "{name} · Verified {trade} in {city}",
     "loadErrorTitle": "We couldn't load this profile",
     "loadErrorBody": "Something went wrong on our side. Please try again in a moment.",
     "memberSince": "Joined {date}",
@@ -1165,7 +1166,7 @@
       "rccm": "Business registration (RCCM)",
       "address": "Business address"
     },
-    "documentsExplainer": "We show which registrations our team checked and approved — never the documents themselves. Those stay private.",
+    "documentsExplainer": "We show which registrations our team checked and approved, never the documents themselves. Those stay private.",
     "documentsEmpty": "No registrations submitted yet.",
     "verified": "Verified",
     "verifiedOn": "Verified {date}",
@@ -1245,7 +1246,7 @@
     "milestoneCaption": {
       "ACCEPTED": "The worker accepted and is on the way.",
       "IN_PROGRESS": "Work has started.",
-      "COMPLETED": "Work is done — confirm to release payment.",
+      "COMPLETED": "Work is done: confirm to release payment.",
       "RELEASED": "Funds released to the worker."
     },
     "status": {
@@ -1296,7 +1297,7 @@
     "decline": "Decline",
     "apply": "Apply",
     "applyTitle": "Apply to this job",
-    "applyMessagePlaceholder": "Tell the client why you're a good fit — at least a sentence.",
+    "applyMessagePlaceholder": "Tell the client why you're a good fit, at least a sentence.",
     "submitApplication": "Send application",
     "applicationSent": "Application sent.",
     "applicationWithdrawn": "Application withdrawn.",
@@ -1390,12 +1391,12 @@
     "feeDisclaimer": "The fee keeps Kavio running and your payment protected.",
     "escrowAssurance": "Your money is held safely in escrow and only released when you confirm the work.",
     "acceptAndPay": "Accept & fund escrow",
-    "accepted": "Quote accepted — pay now to fund the escrow.",
+    "accepted": "Quote accepted: pay now to fund the escrow.",
     "acceptFailed": "We could not accept this quote. Please try again.",
     "counter": "Counter",
     "counterTitle": "Ask for a counter-offer",
     "counterPriceLabel": "Suggested price (XAF)",
-    "counterPriceHint": "Optional — suggest a price you would accept.",
+    "counterPriceHint": "Optional: suggest a price you would accept.",
     "counterMessageLabel": "Message",
     "counterMessagePlaceholder": "Say what you would like changed.",
     "sendCounter": "Send request",
@@ -1420,7 +1421,7 @@
     "inEscrow": "In escrow",
     "addMoney": "Add money",
     "withdraw": "Withdraw",
-    "pendingAmount": "—",
+    "pendingAmount": "-",
     "amountLabel": "Amount (XAF)",
     "amountHint": "Whole francs only.",
     "amountRequired": "Enter an amount greater than zero.",
@@ -1463,7 +1464,7 @@
     "escrowException": {
       "CANCELLED": "This booking was cancelled.",
       "REFUNDED": "The held funds were refunded.",
-      "DISPUTED": "This booking is in dispute — funds are frozen."
+      "DISPUTED": "This booking is in dispute: funds are frozen."
     },
     "viewDispute": "View dispute",
     "agreedPrice": "Agreed price",
@@ -1475,7 +1476,7 @@
     "payNowTitle": "Fund the escrow",
     "payNowHint": "We'll charge your default payment method and hold the funds in escrow until you confirm the work is done.",
     "confirmPay": "Pay now",
-    "paymentRequested": "Payment requested — confirming shortly.",
+    "paymentRequested": "Payment requested: confirming shortly.",
     "paymentFailed": "We could not start the payment. Please try again.",
     "filterType": "Type",
     "filterStatus": "Status",
@@ -1585,7 +1586,7 @@
     },
     "admin": {
       "title": "Resolve dispute",
-      "titleForJob": "Resolve dispute — {job}",
+      "titleForJob": "Resolve dispute: {job}",
       "queueTitle": "Disputes",
       "queueSubtitle": "Review and resolve disputes. Each one has frozen a client’s escrow until you decide.",
       "backToQueue": "Back to the queue",
@@ -1847,7 +1848,7 @@
       },
       "sound": {
         "title": "Notification sounds",
-        "body": "Pick a sound per category for when Kavio is open. Background notifications always use your device's own sound — no browser lets a website change that.",
+        "body": "Pick a sound per category for when Kavio is open. Background notifications always use your device's own sound. No browser lets a website change that.",
         "note": "Sounds only play while Kavio is open in a tab. \"Default\" leaves it to your device.",
         "options": {
           "default": "Default (device)",
@@ -1987,7 +1988,7 @@
     "removePhoto": "Remove this photo",
     "submit": "Post review",
     "submitting": "Posting…",
-    "submitSuccess": "Thank you — your review is live.",
+    "submitSuccess": "Thank you. Your review is live.",
     "submitSuccessBody": "It now appears on the professional's profile.",
     "notEligibleTitle": "You can't review this job",
     "backToJob": "Back to the job",
@@ -2000,7 +2001,7 @@
     },
     "reviewCount": "{count, plural, =0 {No reviews} one {# review} other {# reviews}}",
     "summaryEmpty": "No reviews yet",
-    "summaryEmptyBody": "This professional hasn't been reviewed yet — not that they were rated poorly.",
+    "summaryEmptyBody": "This professional hasn't been reviewed yet, not that they were rated poorly.",
     "listEmpty": "No reviews yet",
     "listEmptyBody": "Reviews appear here once a client has left one after a completed job.",
     "listError": "We couldn't load the reviews just now. Please try again shortly.",
@@ -2012,7 +2013,7 @@
   },
   "BusinessConsole": {
     "dashboardTitle": "Company dashboard",
-    "dashboardSubtitle": "Your posts, your hires and what you have spent — live from the jobs themselves.",
+    "dashboardSubtitle": "Your posts, your hires and what you have spent: live from the jobs themselves.",
     "loadError": "We couldn't load the dashboard just now. Please try again shortly.",
     "noBusiness": "You don't have a company profile yet. Finish business onboarding to open the console.",
     "verifiedBusiness": "Verified business",
@@ -2025,7 +2026,7 @@
     "inProgressJobs": "In progress",
     "completedJobs": "Completed",
     "spendHeading": "Spend",
-    "spendCaption": "Aggregated from the escrow on your jobs. This is not a company balance — nothing is paid into or out of it.",
+    "spendCaption": "Aggregated from the escrow on your jobs. This is not a company balance: nothing is paid into or out of it.",
     "totalSpent": "Settled to professionals",
     "committedToEscrow": "Held in escrow",
     "committedHint": "Funded, not yet released",
@@ -2153,7 +2154,7 @@
     "jobsByLocation": "Jobs by location",
     "revenueBySource": "Revenue by payment rail",
     "trustDistribution": "Trust Score distribution",
-    "trustDistributionCaption": "Bands of ten. Suspended scores are excluded — a suspended score is a finding, not a measurement.",
+    "trustDistributionCaption": "Bands of ten. Suspended scores are excluded: a suspended score is a finding, not a measurement.",
     "topPerformers": "Top performers",
     "noCategoryData": "No categorised jobs in this period.",
     "noLocationData": "No located jobs in this period.",
@@ -2214,7 +2215,7 @@
       "caveat": "This is what the API can see about its own dependencies. Uptime and latency come from the infrastructure monitor."
     },
     "analyticsTitle": "Analytics & reports",
-    "analyticsSubtitle": "Growth, activity, revenue and trust across the platform — with export.",
+    "analyticsSubtitle": "Growth, activity, revenue and trust across the platform, with export.",
     "exportCsv": "Export CSV",
     "csv": {
       "section": "section",
@@ -2230,7 +2231,7 @@
     "highRiskHeading": "High-risk accounts",
     "highRiskCaption": "Ranked by how many independent signals coincide. One signal is a fact; three unrelated ones is a pattern.",
     "suspiciousJobsHeading": "Jobs worth a look",
-    "suspiciousJobsCaption": "Surfaced by behaviour — reports and disputes — never by guessing at wording.",
+    "suspiciousJobsCaption": "Surfaced by behaviour (reports and disputes), never by guessing at wording.",
     "blockedHeading": "Blocked accounts",
     "blockedCaption": "From the moderation trail, so the reason and the admin who decided travel with each one.",
     "heatmapHeading": "Platform activity",
@@ -2356,13 +2357,13 @@
     "categoriesCaption": "Categories are retired, never deleted, so the jobs and services that used them keep resolving.",
     "newCategory": "New category",
     "newCategoryTitle": "Add a service category",
-    "newCategorySubtitle": "Both languages are required — the platform is bilingual for every user.",
+    "newCategorySubtitle": "Both languages are required: the platform is bilingual for every user.",
     "slugLabel": "Slug",
     "slugHint": "Permanent. Saved filters and job posts reference it, so it can never be renamed.",
     "nameEnLabel": "Name (English)",
     "nameFrLabel": "Name (French)",
     "parentLabel": "Parent trade",
-    "noParent": "None — this is a top-level trade",
+    "noParent": "None: this is a top-level trade",
     "noCategories": "No categories yet",
     "retire": "Retire",
     "retired": "Retired",
@@ -2377,7 +2378,7 @@
     "titleFr": "Title (French)",
     "bodyEn": "Message (English)",
     "bodyFr": "Message (French)",
-    "bilingualHint": "Both languages are required — an announcement in one language is one half your users cannot read.",
+    "bilingualHint": "Both languages are required: an announcement in one language is one half your users cannot read.",
     "audienceLabel": "Who sees it",
     "audience": {
       "ALL": "Everyone",
@@ -2423,7 +2424,7 @@
       "general": "General"
     },
     "notSet": "Using the built-in default",
-    "usingDefault": "Never changed — using the built-in default.",
+    "usingDefault": "Never changed: using the built-in default.",
     "lastChangedBy": "Last changed by {name} on {date}",
     "settingSaved": "Saved.",
     "enabled": "Enabled",
@@ -2525,12 +2526,12 @@
     },
     "maintenance": {
       "title": "We’ll be right back",
-      "description": "Kavio is down for scheduled maintenance. Please check back in a few minutes — your data is safe."
+      "description": "Kavio is down for scheduled maintenance. Please check back in a few minutes. Your data is safe."
     },
     "offline": {
-      "banner": "You’re offline — showing saved content",
-      "bannerWithPending": "You’re offline — showing saved content · {count, plural, one {# change waiting} other {# changes waiting}} to sync",
-      "syncing": "Back online — syncing {count, plural, one {# change} other {# changes}}…"
+      "banner": "You’re offline, showing saved content",
+      "bannerWithPending": "You’re offline, showing saved content · {count, plural, one {# change waiting} other {# changes waiting}} to sync",
+      "syncing": "Back online, syncing {count, plural, one {# change} other {# changes}}…"
     },
     "error": {
       "title": "Something went wrong",
@@ -2554,12 +2555,11 @@
   },
   "Marketing": {
     "meta": {
-      "title": "Verified skilled workers in Douala & Yaoundé",
+      "title": "Verified skilled workers across Cameroon",
       "description": "Hire verified electricians, plumbers, welders and more. Transparent quotes, escrow-protected payments, and a Trust Score you can check before you book.",
       "ogHeadline": "Trust, not just listings.",
       "ogTagline": "Verified skilled workers, transparent quotes, escrow-protected payments.",
-      "serviceName": "Verified skilled-worker hiring with escrow protection",
-      "keywords": "verified workers Cameroon, skilled labour Douala, electrician Yaoundé, plumber Cameroon, welder Douala, escrow payment Cameroon, Trust Score, hire artisan Cameroon, home services Douala Yaoundé, local services Cameroon"
+      "serviceName": "Verified skilled-worker hiring with escrow protection"
     },
     "nav": {
       "primary": "Primary",
@@ -2575,9 +2575,9 @@
       "faq": "FAQ"
     },
     "hero": {
-      "badge": "Douala & Yaoundé",
+      "badge": "Now live across Cameroon",
       "heading": "Find a worker you can actually trust.",
-      "subheading": "Verified identity, real portfolios, fixed quotes and escrow-protected payments — the trust layer is the product.",
+      "subheading": "Verified identity, real portfolios, fixed quotes and escrow-protected payments: the trust layer is the product.",
       "primaryCta": "Explore workers",
       "secondaryCta": "Create an account",
       "noAccountNote": "No account needed to browse. You only sign in when you’re ready to act.",
@@ -2588,6 +2588,10 @@
       "trustScoreCaption": "Verified · Tier 3",
       "verifiedBadge": "ID verified"
     },
+    "areas": {
+      "heading": "Where we work",
+      "body": "Kavio is open nationwide. Verified coverage is deepest in these cities today, and it grows every week as more workers complete verification."
+    },
     "proof": {
       "heading": "Kavio by the numbers",
       "verified": "Verified workers",
@@ -2597,7 +2601,7 @@
     },
     "trustEngine": {
       "heading": "Trust is earned in stages, and you can see every one.",
-      "body": "The Trust Engine scores every worker across identity, professional evidence, marketplace behaviour and financial reliability — and updates continuously as they work.",
+      "body": "The Trust Engine scores every worker across identity, professional evidence, marketplace behaviour and financial reliability, and updates continuously as they work.",
       "link": "See how the Trust Score works",
       "stages": {
         "15": {
@@ -2624,7 +2628,7 @@
     },
     "portfolio": {
       "heading": "Real work, not stock photos.",
-      "body": "Every portfolio is evidence of a real job — drag to see the before and after.",
+      "body": "Every portfolio is evidence of a real job: drag to see the before and after.",
       "before": "Before",
       "after": "After",
       "beforeAlt": "Before: {trade} work",
@@ -2638,7 +2642,7 @@
       "steps": {
         "hold": {
           "title": "You pay into escrow",
-          "body": "When you accept a quote, your payment is held by Kavio — not sent to the worker."
+          "body": "When you accept a quote, your payment is held by Kavio, not sent to the worker."
         },
         "work": {
           "title": "The work happens",
@@ -2646,11 +2650,11 @@
         },
         "release": {
           "title": "You release payment",
-          "body": "Happy with the work? Release the funds. Not happy? Open a dispute — the money stays held."
+          "body": "Happy with the work? Release the funds. Not happy? Open a dispute. The money stays held."
         }
       },
       "feeHeading": "A ~10% service fee, shown before you pay.",
-      "feeBody": "One transparent fee on completed work — never added after the fact, never a surprise at the door."
+      "feeBody": "One transparent fee on completed work: never added after the fact, never a surprise at the door."
     },
     "testimonials": {
       "heading": "Trusted by clients and workers alike.",
@@ -2662,11 +2666,11 @@
       "heading": "Questions, answered.",
       "body": "Everything you might want to know before you start.",
       "emptyTitle": "No questions yet",
-      "emptyDescription": "Check back soon — we’re adding answers to the most common questions."
+      "emptyDescription": "Check back soon, we’re adding answers to the most common questions."
     },
     "cta": {
       "heading": "Find a worker you can trust today.",
-      "body": "Browse verified workers in Douala and Yaoundé. No account needed to start looking.",
+      "body": "Browse verified workers across Cameroon. No account needed to start looking.",
       "button": "Explore workers",
       "note": "Free to browse · You only sign in to act"
     },

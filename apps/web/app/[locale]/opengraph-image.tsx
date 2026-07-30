@@ -3,6 +3,7 @@ import path from 'node:path';
 import { ImageResponse } from 'next/og';
 import { getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+import { COUNTRY } from '@/lib/site-config';
 
 // public/brand/kavio-mark.png is 480x369 (source: cropped transparent mark).
 const MARK_ASPECT_RATIO = 480 / 369;
@@ -64,9 +65,7 @@ export default async function OpengraphImage({ params }: { params: Promise<{ loc
       </div>
 
       <div style={{ display: 'flex', gap: 12 }}>
-        <span style={{ fontSize: 26, color: '#00c2a8' }}>Douala</span>
-        <span style={{ fontSize: 26, color: '#7d84a3' }}>·</span>
-        <span style={{ fontSize: 26, color: '#00c2a8' }}>Yaoundé</span>
+        <span style={{ fontSize: 26, color: '#00c2a8' }}>{COUNTRY.name}</span>
       </div>
     </div>,
     size,

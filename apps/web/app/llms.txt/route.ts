@@ -22,11 +22,11 @@ export const dynamic = 'force-static';
 function body(): string {
   const en = `${SITE_URL}/${routing.defaultLocale}`;
   const fr = `${SITE_URL}/fr`;
-  const areas = SERVICE_AREAS.map((a) => a.name).join(' and ');
+  const areas = SERVICE_AREAS.map((a) => a.name).join(', ');
 
   return `# Kavio
 
-> A trust-first marketplace connecting households and businesses in ${COUNTRY.name} with verified skilled workers — electricians, plumbers, welders, mechanics, painters, carpenters, cleaners and similar trades. Available in English and French. Currency: ${CURRENCY}. Launch cities: ${areas}.
+> A trust-first marketplace connecting households and businesses nationwide across ${COUNTRY.name} with verified skilled workers: electricians, plumbers, welders, mechanics, painters, carpenters, cleaners and similar trades. Available in English and French. Currency: ${CURRENCY}. Active in every region, including ${areas}.
 
 Kavio's differentiator is TRUST, not listings. Every worker carries a continuously updated Trust Score across four pillars — verified identity, professional evidence (portfolio, endorsements), marketplace behaviour (completed jobs, reviews) and financial reliability. Verification is progressive across four tiers, from phone-verified up to in-person checks by a Kavio agent. Payments are held in escrow and released only when the client confirms the work is complete; a service fee of about 10% is shown in full before payment. Browsing is free and needs no account — an account is only required to post a job, contact a worker, pay, or leave a review.
 
@@ -47,7 +47,7 @@ Kavio's differentiator is TRUST, not listings. Every worker carries a continuous
 - [Politique de remboursement et litige](${fr}/legal/refunds)
 
 ## Facts
-- Countries served: ${COUNTRY.name} (${areas})
+- Country served: ${COUNTRY.name}, nationwide (active coverage in every region, including ${areas})
 - Languages: English, French
 - Currency: ${CURRENCY} (no minor unit)
 - Payment protection: escrow, released on client confirmation

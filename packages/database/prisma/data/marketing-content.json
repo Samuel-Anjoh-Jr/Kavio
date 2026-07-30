@@ -1,13 +1,13 @@
 {
-  "_comment": "Launch FAQ and testimonials for the marketing landing page (PROMPT 92.1; SRS §26.2). Ids are fixed rather than generated so the seed's upsert is idempotent — a re-run edits the row it wrote last time instead of adding a near-duplicate every time. At least 8 testimonials is a requirement, not a round number: the marquee loops, and with fewer the same faces come round often enough to read as filler.",
+  "_comment": "Launch FAQ and testimonials for the marketing landing page (PROMPT 92.1; SRS §26.2). Ids are fixed rather than generated so the seed's upsert is idempotent, a re-run edits the row it wrote last time instead of adding a near-duplicate every time. At least 8 testimonials is a requirement, not a round number: the marquee loops, and with fewer the same faces come round often enough to read as filler.",
   "faqs": [
     {
       "id": "af157a55-5d6d-5492-b6c7-a0d3acb04dae",
       "category": "general",
       "questionEn": "What is Kavio?",
       "questionFr": "Qu’est-ce que Kavio ?",
-      "answerEn": "Kavio connects households and businesses in Douala and Yaoundé with skilled workers whose identity, work and track record have been verified. Every worker carries a Trust Score you can inspect before you hire.",
-      "answerFr": "Kavio met en relation les ménages et les entreprises de Douala et Yaoundé avec des artisans dont l’identité, le travail et les antécédents sont vérifiés. Chaque artisan porte un Score de Confiance que vous pouvez consulter avant d’embaucher."
+      "answerEn": "Kavio connects households and businesses across Cameroon with skilled workers whose identity, work and track record have been verified. Every worker carries a Trust Score you can inspect before you hire.",
+      "answerFr": "Kavio met en relation les ménages et les entreprises de tout le Cameroun avec des artisans dont l’identité, le travail et les antécédents sont vérifiés. Chaque artisan porte un Score de Confiance que vous pouvez consulter avant d’embaucher."
     },
     {
       "id": "637961dd-bc56-56bc-978e-82764cc0df29",
@@ -30,8 +30,8 @@
       "category": "payments",
       "questionEn": "What does it cost?",
       "questionFr": "Combien cela coûte-t-il ?",
-      "answerEn": "Browsing, posting a job and receiving quotes are free. Kavio takes a service fee of about 10% on completed work, and it is shown to you in full before you pay — never added afterwards.",
-      "answerFr": "La navigation, la publication d’une mission et la réception de devis sont gratuites. Kavio prélève des frais de service d’environ 10 % sur les travaux terminés, affichés intégralement avant le paiement — jamais ajoutés ensuite."
+      "answerEn": "Browsing, posting a job and receiving quotes are free. Kavio takes a service fee of about 10% on completed work, and it is shown to you in full before you pay: never added afterwards.",
+      "answerFr": "La navigation, la publication d’une mission et la réception de devis sont gratuites. Kavio prélève des frais de service d’environ 10 % sur les travaux terminés, affichés intégralement avant le paiement : jamais ajoutés ensuite."
     },
     {
       "id": "15012ea2-716f-548e-8c21-8518902f534b",
@@ -54,8 +54,8 @@
       "category": "general",
       "questionEn": "Which cities do you cover?",
       "questionFr": "Quelles villes couvrez-vous ?",
-      "answerEn": "Douala and Yaoundé at launch, with the surrounding areas covered by workers who list them in their service radius. Other cities follow as we verify workers there.",
-      "answerFr": "Douala et Yaoundé au lancement, ainsi que les zones environnantes couvertes par les artisans qui les incluent dans leur rayon d’intervention. D’autres villes suivront à mesure que nous y vérifions des artisans."
+      "answerEn": "Kavio is open to workers and clients anywhere in Cameroon. Verified coverage is deepest in Douala and Yaoundé today, with other cities and regions filling in fast as more workers there complete verification, so it's worth browsing and posting a job wherever you are.",
+      "answerFr": "Kavio est ouvert aux artisans et aux clients partout au Cameroun. La couverture vérifiée est aujourd’hui la plus dense à Douala et Yaoundé, et d’autres villes et régions se développent rapidement à mesure que davantage d’artisans y complètent leur vérification. Ça vaut donc le coup de parcourir la plateforme et de publier une mission où que vous soyez."
     },
     {
       "id": "46d5a5ad-580a-5c61-a596-966c5254e381",
@@ -147,6 +147,42 @@
       "rating": 4.3,
       "contentEn": "We needed six rooms repainted before a conference. One job post, one verified team, one fixed price agreed up front. It was finished a day early.",
       "contentFr": "Il fallait repeindre six chambres avant une conférence. Une seule annonce, une équipe vérifiée, un prix fixe convenu d’avance. Le chantier s’est terminé avec un jour d’avance."
+    },
+    {
+      "id": "95cca39d-b696-4892-9647-3e2673a19e63",
+      "author": "Hamadou Yaya",
+      "roleEn": "Shop owner, Bafoussam",
+      "roleFr": "Commerçant, Bafoussam",
+      "rating": 4.8,
+      "contentEn": "I used to only trust people a neighbour introduced me to. Now I check a worker's Trust Score before I call, and I have hired two electricians from Kavio I had never met in person before they showed up.",
+      "contentFr": "Avant, je ne faisais confiance qu'aux personnes présentées par un voisin. Maintenant je consulte le Score de Confiance avant d'appeler, et j'ai embauché deux électriciens sur Kavio que je n'avais jamais rencontrés avant leur arrivée."
+    },
+    {
+      "id": "bae53799-a375-4af4-935e-f9dc6ade5247",
+      "author": "Delphine Ngassa",
+      "roleEn": "Landlord, Bamenda",
+      "roleFr": "Propriétaire bailleur, Bamenda",
+      "rating": 4.6,
+      "contentEn": "I manage four rental houses from Douala, so I cannot be on site to supervise repairs. Escrow means I only release payment once my tenant confirms the work is actually done.",
+      "contentFr": "Je gère quatre maisons en location depuis Douala, donc je ne peux pas être sur place pour surveiller les réparations. Le séquestre me permet de ne libérer le paiement qu'une fois mon locataire confirme que le travail est vraiment terminé."
+    },
+    {
+      "id": "27bc7af6-d63b-4034-8c8a-fdb635e8058f",
+      "author": "Oumarou Bello",
+      "roleEn": "Mechanic, Garoua",
+      "roleFr": "Mécanicien, Garoua",
+      "rating": 4.7,
+      "contentEn": "Most of my old clients assumed a good mechanic could only be found in Douala or Yaoundé. My Kavio profile and verified reviews now bring me clients from across the North region.",
+      "contentFr": "La plupart de mes anciens clients pensaient qu'on ne trouvait un bon mécanicien qu'à Douala ou Yaoundé. Mon profil Kavio et mes avis vérifiés m'amènent maintenant des clients de toute la région du Nord."
+    },
+    {
+      "id": "d717ac75-1756-4361-b317-76c18915a601",
+      "author": "Gisèle Manga",
+      "roleEn": "Guesthouse owner, Kribi",
+      "roleFr": "Propriétaire de résidence, Kribi",
+      "rating": 4.9,
+      "contentEn": "Tourists book our rooms all year, so a broken shower cannot wait a week. I posted the job in the morning and had a verified plumber from Kribi on site before lunch.",
+      "contentFr": "Les touristes réservent nos chambres toute l'année, une douche en panne ne peut donc pas attendre une semaine. J'ai publié la mission le matin et un plombier vérifié de Kribi est arrivé sur place avant midi."
     }
   ]
 }

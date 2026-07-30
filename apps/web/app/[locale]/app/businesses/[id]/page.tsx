@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { BusinessProfileScreen } from '@/components/profile/business-profile-screen';
+import { buildMetadata } from '@/lib/seo';
 import { loadBusinessProfile } from './load-business-profile';
 
 /**
@@ -24,15 +25,17 @@ export async function generateMetadata({
 
   const description = load.profile.description ?? t('metaFallback', { name: load.profile.name });
 
-  return {
+  // Routed through the same buildMetadata every other public page uses, so a
+  // business profile carries canonical, hreflang and rich-preview robots
+  // directives instead of the bare object this used to return.
+  return buildMetadata({
+    locale,
+    path: `/app/businesses/${id}`,
     title: load.profile.name,
     description,
-    openGraph: {
-      title: load.profile.name,
-      description,
-      ...(load.profile.logoUrl ? { images: [load.profile.logoUrl] } : {}),
-    },
-  };
+    type: 'profile',
+    ...(load.profile.logoUrl ? { image: load.profile.logoUrl } : {}),
+  });
 }
 
 export default async function BusinessProfilePage({

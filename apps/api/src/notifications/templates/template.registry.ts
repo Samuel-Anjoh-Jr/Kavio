@@ -324,7 +324,7 @@ const authPasswordReset: TemplateDefinition<'auth.password_reset'> = {
           heading: 'Reset your password',
           bodyHtml: paragraphs(
             `Use the button below to choose a new password. This link expires in ${v.expiresInMinutes} minutes.`,
-            'If you did not request a password reset, ignore this email — your password stays unchanged.',
+            'If you did not request a password reset, ignore this email, your password stays unchanged.',
           ),
           cta: { label: 'Reset password', url: v.resetUrl },
         }),
@@ -728,7 +728,7 @@ const trustBadgeUnlocked: TemplateDefinition<'trust.badge_unlocked'> = {
           heading: `You unlocked ${escapeHtml(localized(BADGE_NAMES.en, v.badge))}`,
           bodyHtml: paragraphs(
             'This badge now shows on your profile, where every client who finds you can see it.',
-            'Badges are permanent — once you have earned one, it stays.',
+            'Badges are permanent: once you have earned one, it stays.',
           ),
         }),
         text: `You unlocked the ${localized(BADGE_NAMES.en, v.badge)} badge on Kavio.`,
@@ -868,7 +868,7 @@ const verificationInfoRequested: TemplateDefinition<'verification.info_requested
           bodyHtml: paragraphs(
             'Our reviewer asked for this:',
             escapeHtml(v.infoRequest),
-            'Add it from your verification screen and we will pick it straight back up — you keep your place in the queue.',
+            'Add it from your verification screen and we will pick it straight back up, you keep your place in the queue.',
           ),
         }),
         text: `We need one more thing for your Kavio verification: ${v.infoRequest}`,
@@ -882,7 +882,7 @@ const verificationInfoRequested: TemplateDefinition<'verification.info_requested
           bodyHtml: paragraphs(
             'Notre équipe a demandé ceci :',
             escapeHtml(v.infoRequest),
-            'Ajoutez-le depuis votre écran de vérification et nous reprendrons aussitôt — vous gardez votre place dans la file.',
+            'Ajoutez-le depuis votre écran de vérification et nous reprendrons aussitôt, vous gardez votre place dans la file.',
           ),
         }),
         text: `Il nous manque un élément pour votre vérification Kavio : ${v.infoRequest}`,
@@ -1144,8 +1144,8 @@ const quoteAccepted: TemplateDefinition<'quote.accepted'> = {
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
-      en: (v) => ({ title: 'Quote accepted', body: `"${v.jobTitle}" — ${xaf(v.price, 'en')}.` }),
-      fr: (v) => ({ title: 'Devis accepté', body: `« ${v.jobTitle} » — ${xaf(v.price, 'fr')}.` }),
+      en: (v) => ({ title: 'Quote accepted', body: `"${v.jobTitle}", ${xaf(v.price, 'en')}.` }),
+      fr: (v) => ({ title: 'Devis accepté', body: `« ${v.jobTitle} », ${xaf(v.price, 'fr')}.` }),
     },
   },
 };
@@ -1163,7 +1163,7 @@ const quoteDeclined: TemplateDefinition<'quote.declined'> = {
           heading: 'About your quote',
           bodyHtml: paragraphs(
             `The client did not go ahead with your quote for "${escapeHtml(v.jobTitle)}" this time.`,
-            'Plenty of other jobs are looking for someone with your skills — keep going.',
+            'Plenty of other jobs are looking for someone with your skills. Keep going.',
           ),
         }),
         text: `The client declined your quote for "${v.jobTitle}" on Kavio.`,
@@ -1176,7 +1176,7 @@ const quoteDeclined: TemplateDefinition<'quote.declined'> = {
           heading: 'À propos de votre devis',
           bodyHtml: paragraphs(
             `Le client n’a pas donné suite à votre devis pour « ${escapeHtml(v.jobTitle)} » cette fois.`,
-            'D’autres missions cherchent vos compétences — continuez.',
+            'D’autres missions cherchent vos compétences. Continuez.',
           ),
         }),
         text: `Le client a décliné votre devis pour « ${v.jobTitle} » sur Kavio.`,
@@ -1316,7 +1316,7 @@ const paymentReceived: TemplateDefinition<'payment.received'> = {
   render: {
     [NotificationChannel.EMAIL]: {
       en: (v) => ({
-        subject: 'Payment secured — you can start',
+        subject: 'Payment secured, you can start',
         html: renderEmailLayout({
           locale: 'en',
           preheader: 'The client’s payment is held in escrow.',
@@ -1329,7 +1329,7 @@ const paymentReceived: TemplateDefinition<'payment.received'> = {
         text: `Payment of ${xaf(v.amount, 'en')} for "${v.jobTitle}" is secured in escrow. You can start.`,
       }),
       fr: (v) => ({
-        subject: 'Paiement sécurisé — vous pouvez commencer',
+        subject: 'Paiement sécurisé, vous pouvez commencer',
         html: renderEmailLayout({
           locale: 'fr',
           preheader: 'Le paiement du client est sous séquestre.',
@@ -1343,10 +1343,10 @@ const paymentReceived: TemplateDefinition<'payment.received'> = {
       }),
     },
     [NotificationChannel.WEB_PUSH]: {
-      en: (v) => ({ title: 'Payment secured', body: `"${v.jobTitle}" — you can start.` }),
+      en: (v) => ({ title: 'Payment secured', body: `"${v.jobTitle}", you can start.` }),
       fr: (v) => ({
         title: 'Paiement sécurisé',
-        body: `« ${v.jobTitle} » — vous pouvez commencer.`,
+        body: `« ${v.jobTitle} », vous pouvez commencer.`,
       }),
     },
   },
