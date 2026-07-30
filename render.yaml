@@ -7,7 +7,7 @@ services:
     rootDir: apps/api
     # Monorepo build: hop back to the workspace root so pnpm sees the lockfile
     # and turbo can build @kavio/database (Prisma generate) before @kavio/api.
-    buildCommand: cd ../.. && corepack enable && pnpm install --frozen-lockfile && pnpm turbo run build --filter=@kavio/api
+    buildCommand: cd ../.. && npm install -g corepack@latest && corepack enable && pnpm install --frozen-lockfile && pnpm turbo run build --filter=@kavio/api
     # rootDir puts the start command's cwd back at apps/api, where `nest build`
     # (run above) wrote dist/main.js.
     startCommand: node dist/main.js
