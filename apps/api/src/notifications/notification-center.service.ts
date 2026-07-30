@@ -125,6 +125,19 @@ export class NotificationCenterService {
     };
   }
 
+  /**
+   * Whether an OTP can currently reach a phone number (SMS or WhatsApp is
+   * live), so a pre-auth screen can decide between offering "phone or email"
+   * and "email only" for OTP sign-in (ACC-04). Public — a signed-out visitor on
+   * the login screen needs this before any account context exists.
+   */
+  otpPhoneChannelAvailable(): boolean {
+    return (
+      this.providers.isChannelEnabled(NotificationChannel.SMS) ||
+      this.providers.isChannelEnabled(NotificationChannel.WHATSAPP)
+    );
+  }
+
   // ───────────────────────────────────────────────────────────────────────────
   // Writes
   // ───────────────────────────────────────────────────────────────────────────

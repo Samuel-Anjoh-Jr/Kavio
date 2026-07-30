@@ -122,7 +122,7 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
         type="tel"
         inputMode="tel"
         autoComplete="tel"
-        placeholder="6XX XX XX XX"
+        placeholder="6XX XXX XXX"
         hint={t('phoneHint')}
         error={errors.phone?.message && t('phoneInvalid')}
         {...register('phone')}

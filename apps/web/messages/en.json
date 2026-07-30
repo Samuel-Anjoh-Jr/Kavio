@@ -178,7 +178,7 @@
       "title": "Welcome back",
       "subtitle": "Sign in to post jobs, send quotes and manage your work.",
       "identifierLabel": "Phone number or email",
-      "identifierPlaceholder": "+237 6XX XX XX XX or you@example.com",
+      "identifierPlaceholder": "6XX XXX XXX or you@example.com",
       "identifierRequired": "Enter your phone number or email.",
       "passwordLabel": "Password",
       "passwordRequired": "Enter your password.",
@@ -193,8 +193,10 @@
       "title": "Enter your code",
       "subtitle": "We sent you a 6-digit code. Enter it below to confirm it is really you.",
       "identifierLabel": "Phone number or email",
+      "identifierLabelEmail": "Email address",
+      "identifierPlaceholderEmail": "you@example.com",
       "codeLabel": "Verification code",
-      "codeHint": "Check your email, or your messages once SMS is enabled.",
+      "codeHint": "Check your email, or your messages once SMS or WhatsApp is enabled.",
       "sentHint": "We sent a code to {destination}.",
       "submit": "Verify and continue",
       "submitting": "Checking your code…",
@@ -212,7 +214,7 @@
       "title": "Reset your password",
       "subtitle": "Tell us how to reach you and we will send a reset link.",
       "identifierLabel": "Phone number or email",
-      "identifierPlaceholder": "+237 6XX XX XX XX or you@example.com",
+      "identifierPlaceholder": "6XX XXX XXX or you@example.com",
       "identifierRequired": "Enter your phone number or email.",
       "submit": "Send reset link",
       "submitting": "Sending…",
@@ -1804,13 +1806,15 @@
         "IN_APP": "In-app",
         "WEB_PUSH": "Push",
         "EMAIL": "Email",
-        "SMS": "SMS"
+        "SMS": "SMS",
+        "WHATSAPP": "WhatsApp"
       },
       "channelHint": {
         "IN_APP": "Shown in your Notification Center",
         "WEB_PUSH": "Sent to this device",
         "EMAIL": "Sent to your email",
-        "SMS": "Text message"
+        "SMS": "Text message",
+        "WHATSAPP": "WhatsApp message"
       },
       "comingSoon": "Coming soon",
       "smsDeferred": "SMS notifications are coming soon.",

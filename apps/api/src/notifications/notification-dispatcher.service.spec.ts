@@ -9,6 +9,7 @@ import { InAppProvider } from './providers/in-app.provider';
 import { NotificationProviderRegistry } from './providers/provider.registry';
 import { SmsProvider } from './providers/sms.provider';
 import { WebPushProvider } from './providers/web-push.provider';
+import { WhatsappProvider } from './providers/whatsapp.provider';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { QueueService } from '../queue/queue.service';
 import type { NotificationDeliveryJob } from './notification.types';
@@ -102,6 +103,7 @@ function makeHarness(
     new WebPushProvider(prisma, sounds, env),
     new SmsProvider(env),
     new InAppProvider(prisma, sounds),
+    new WhatsappProvider(env),
   );
 
   const dispatcher = new NotificationDispatcher(
@@ -284,6 +286,86 @@ describe('NotificationDispatcher', () => {
         NotificationChannel.IN_APP,
         NotificationChannel.EMAIL,
         NotificationChannel.SMS,
+      ]);
+    });
+  });
+
+  describe('WhatsApp feature flag', () => {
+    const event = () =>
+      new NotificationRequestedEvent({
+        userId: USER.id,
+        templateKey: 'system.test_notification',
+        variables: { message: 'hello' },
+      });
+
+    it('skips WhatsApp entirely while the flag is OFF', async () => {
+      const h = makeHarness({ NOTIFICATIONS_WHATSAPP_ENABLED: 'false' });
+
+      await h.dispatcher.dispatch(event());
+
+      expect(h.jobs().map((j) => j.channel)).toEqual([
+        NotificationChannel.IN_APP,
+        NotificationChannel.EMAIL,
+      ]);
+    });
+
+    it('routes to the WhatsApp stub when the flag is flipped ON, with no call-site change', async () => {
+      const h = makeHarness({ NOTIFICATIONS_WHATSAPP_ENABLED: 'true' });
+
+      await h.dispatcher.dispatch(event());
+
+      const jobs = h.jobs();
+      const whatsapp = jobs.find((j) => j.channel === NotificationChannel.WHATSAPP);
+      expect(whatsapp).toBeDefined();
+      expect(whatsapp?.providerName).toBe('whatsapp-stub');
+      expect(whatsapp?.address).toBe(USER.phone);
+      expect(jobs.map((j) => j.channel)).toEqual([
+        NotificationChannel.IN_APP,
+        NotificationChannel.EMAIL,
+        NotificationChannel.WHATSAPP,
+      ]);
+    });
+  });
+
+  describe('security-critical templates reach phone channels once live', () => {
+    const otpEvent = () =>
+      new NotificationRequestedEvent({
+        userId: USER.id,
+        templateKey: 'auth.otp_code',
+        variables: { code: '123456', expiresInMinutes: 10 },
+      });
+
+    it('delivers by email only while SMS and WhatsApp are both OFF', async () => {
+      const h = makeHarness({});
+
+      await h.dispatcher.dispatch(otpEvent());
+
+      expect(h.jobs().map((j) => j.channel)).toEqual([NotificationChannel.EMAIL]);
+    });
+
+    it('adds SMS on top of email once the flag is flipped — preferences still bypassed', async () => {
+      const h = makeHarness(
+        { NOTIFICATIONS_SMS_ENABLED: 'true' },
+        { disabled: [NotificationChannel.SMS] },
+      );
+
+      await h.dispatcher.dispatch(otpEvent());
+
+      expect(h.findPreferences).not.toHaveBeenCalled();
+      expect(h.jobs().map((j) => j.channel)).toEqual([
+        NotificationChannel.EMAIL,
+        NotificationChannel.SMS,
+      ]);
+    });
+
+    it('adds WhatsApp on top of email once the flag is flipped', async () => {
+      const h = makeHarness({ NOTIFICATIONS_WHATSAPP_ENABLED: 'true' });
+
+      await h.dispatcher.dispatch(otpEvent());
+
+      expect(h.jobs().map((j) => j.channel)).toEqual([
+        NotificationChannel.EMAIL,
+        NotificationChannel.WHATSAPP,
       ]);
     });
   });

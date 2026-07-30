@@ -37,6 +37,8 @@ describe('template registry', () => {
           expect(rendered.content.body.trim().length).toBeGreaterThan(0);
         } else if (rendered?.channel === 'SMS') {
           expect(rendered.content.text.trim().length).toBeGreaterThan(0);
+        } else if (rendered?.channel === 'WHATSAPP') {
+          expect(rendered.content.text.trim().length).toBeGreaterThan(0);
         } else if (rendered?.channel === 'IN_APP') {
           // IN_APP has no renderers of its own — it reuses the push copy — so
           // this asserts the derivation produced real content in both locales

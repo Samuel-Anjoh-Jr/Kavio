@@ -7,6 +7,7 @@ import { InAppProvider } from './providers/in-app.provider';
 import { NotificationProviderRegistry } from './providers/provider.registry';
 import { SmsProvider } from './providers/sms.provider';
 import { WebPushProvider } from './providers/web-push.provider';
+import { WhatsappProvider } from './providers/whatsapp.provider';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { QueueService } from '../queue/queue.service';
 import type { NotificationDeliveryJob } from './notification.types';
@@ -59,6 +60,7 @@ function makeProcessor(env: NodeJS.ProcessEnv = { NOTIFICATIONS_EMAIL_PROVIDER: 
     new WebPushProvider(prisma, sounds, env),
     new SmsProvider(env),
     new InAppProvider(prisma, sounds),
+    new WhatsappProvider(env),
   );
 
   const registerWorker = jest.fn();

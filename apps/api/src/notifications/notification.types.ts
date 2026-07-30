@@ -36,6 +36,11 @@ export interface SmsContent {
   text: string;
 }
 
+/** Same shape as SMS — both are short plain-text channels (WhatsApp session/template copy). */
+export interface WhatsappContent {
+  text: string;
+}
+
 /**
  * A row in the in-app Notification Center (NOT-02). Same shape as a push notice
  * by design, not by accident: both are "one line, one deep link", so IN_APP
@@ -49,13 +54,15 @@ export interface InAppContent {
   url?: string;
 }
 
-export type RenderedContent = EmailContent | WebPushContent | SmsContent | InAppContent;
+export type RenderedContent =
+  EmailContent | WebPushContent | SmsContent | WhatsappContent | InAppContent;
 
 /** Discriminated union so a provider can narrow to the content it understands. */
 export type RenderedMessage =
   | { channel: 'EMAIL'; content: EmailContent }
   | { channel: 'WEB_PUSH'; content: WebPushContent }
   | { channel: 'SMS'; content: SmsContent }
+  | { channel: 'WHATSAPP'; content: WhatsappContent }
   | { channel: 'IN_APP'; content: InAppContent };
 
 // ─────────────────────────────────────────────────────────────────────────────

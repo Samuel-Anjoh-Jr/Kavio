@@ -20,6 +20,7 @@ const DEFAULT_CHANNEL_PRIORITY: NotificationChannel[] = [
   NotificationChannel.WEB_PUSH,
   NotificationChannel.EMAIL,
   NotificationChannel.SMS,
+  NotificationChannel.WHATSAPP,
 ];
 
 export function getChannelPriority(env: NodeJS.ProcessEnv = process.env): NotificationChannel[] {
@@ -45,6 +46,17 @@ export function getChannelPriority(env: NodeJS.ProcessEnv = process.env): Notifi
  */
 export function isSmsEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return env.NOTIFICATIONS_SMS_ENABLED === 'true';
+}
+
+/**
+ * WhatsApp feature flag. Same launch posture as SMS: registered and fully
+ * wired, but OFF until a Business API vendor (e.g. 360dialog, Twilio) is
+ * connected and its credentials are set. Flipping this on routes
+ * WhatsApp-capable templates to the stub with zero call-site changes, exactly
+ * like the SMS flip.
+ */
+export function isWhatsappEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.NOTIFICATIONS_WHATSAPP_ENABLED === 'true';
 }
 
 /**
@@ -99,14 +111,19 @@ export function isImportantCategory(category: NotificationCategory): boolean {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Channel × category defaults for a brand-new identity. SMS rows are seeded
- * disabled because the channel is deferred; a user who has never touched their
- * settings therefore sees nothing change when the flag is flipped platform-wide.
- * SECURITY is seeded enabled for completeness, but security notices bypass this
- * table entirely and always go by email.
+ * Channel × category defaults for a brand-new identity. SMS and WHATSAPP rows
+ * are seeded disabled because both channels are deferred; a user who has never
+ * touched their settings therefore sees nothing change when either flag is
+ * flipped platform-wide. SECURITY is seeded enabled for completeness, but
+ * security notices bypass this table entirely and always go by email.
  */
 const OPT_OUT_BY_DEFAULT: ReadonlySet<NotificationCategory> = new Set([
   NotificationCategory.MARKETING,
+]);
+
+const DEFERRED_CHANNELS: ReadonlySet<NotificationChannel> = new Set([
+  NotificationChannel.SMS,
+  NotificationChannel.WHATSAPP,
 ]);
 
 export function buildDefaultPreferences(
@@ -120,7 +137,7 @@ export function buildDefaultPreferences(
         userId,
         channel,
         category,
-        enabled: channel !== NotificationChannel.SMS && !OPT_OUT_BY_DEFAULT.has(category),
+        enabled: !DEFERRED_CHANNELS.has(channel) && !OPT_OUT_BY_DEFAULT.has(category),
       });
     }
   }

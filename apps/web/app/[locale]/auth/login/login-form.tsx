@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@apollo/client/react';
 import { signIn } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -12,7 +13,16 @@ import { FormBanner } from '@/components/auth/form-banner';
 import { PasswordField } from '@/components/auth/password-field';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
+import {
+  PHONE_OTP_AVAILABLE_QUERY,
+  type OtpPhoneChannelAvailableQueryResult,
+} from '@/lib/graphql/auth';
 import { peekIntent, safeReturnTo } from '@/lib/intent';
+
+/** No "@" means it was typed as a phone number, not an email address. */
+function looksLikeEmail(identifier: string): boolean {
+  return identifier.includes('@');
+}
 
 const schema = z.object({
   identifier: z.string().trim().min(1),
@@ -44,6 +54,15 @@ export function LoginForm({
   const translateError = useAuthErrorMessage();
   const router = useRouter();
   const [banner, setBanner] = useState<string | null>(null);
+
+  // Undefined while loading defaults to "unavailable" — the safe assumption,
+  // since a phone-looking identifier cannot yet receive an OTP without SMS or
+  // WhatsApp connected (ACC-04).
+  const { data: channelData } = useQuery<OtpPhoneChannelAvailableQueryResult>(
+    PHONE_OTP_AVAILABLE_QUERY,
+    { fetchPolicy: 'cache-first' },
+  );
+  const phoneOtpAvailable = channelData?.otpPhoneChannelAvailable ?? false;
 
   const {
     register,
@@ -147,8 +166,12 @@ export function LoginForm({
         disabled={isSubmitting}
         onClick={() => {
           const identifier = getValues('identifier');
+          // A phone-looking identifier can't yet receive a code without SMS or
+          // WhatsApp connected — drop it so the next screen asks for an email
+          // instead of firing an OTP request that can never be delivered.
+          const carryIdentifier = identifier && (phoneOtpAvailable || looksLikeEmail(identifier));
           router.push(
-            `/auth/verify?purpose=LOGIN${identifier ? `&identifier=${encodeURIComponent(identifier)}` : ''}${
+            `/auth/verify?purpose=LOGIN${carryIdentifier ? `&identifier=${encodeURIComponent(identifier)}` : ''}${
               next ? `&next=${encodeURIComponent(next)}` : ''
             }`,
           );

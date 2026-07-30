@@ -302,9 +302,10 @@ model AuditLog {
 // lands in NotificationLog — templateKey only, never rendered content.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Delivery channels behind the NotificationChannel interface. SMS is registered
-/// but feature-flagged OFF at launch (deferred, paid API later); phone numbers are
-/// already stored in E.164 so enabling it needs no call-site change.
+/// Delivery channels behind the NotificationChannel interface. SMS and WHATSAPP
+/// are registered but feature-flagged OFF at launch (deferred, paid API later);
+/// phone numbers are already stored in E.164 so enabling either needs no
+/// call-site change.
 /// IN_APP is a channel like any other — a provider that writes a Notification row
 /// instead of calling out to a network. Modelling the inbox as a channel rather
 /// than a side-effect is what lets NOT-02's per-channel preference grid include
@@ -315,6 +316,7 @@ enum NotificationChannel {
   WEB_PUSH
   SMS
   IN_APP
+  WHATSAPP
 }
 
 /// Preference categories (typed enum per SRS §26.1, never free-text). SECURITY is

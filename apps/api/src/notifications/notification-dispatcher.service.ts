@@ -213,8 +213,14 @@ export class NotificationDispatcher {
     const template = getTemplate(event.templateKey);
     const supported = new Set(getSupportedChannels(event.templateKey));
 
+    // Email always wins the race for security-critical templates — a user must
+    // never be able to mute the message that protects their account. SMS and
+    // WhatsApp are ADDITIVE on top of that, not a replacement: they only fire
+    // when the template actually renders for that channel (getSupportedChannels)
+    // and the provider is enabled, so a phone-only identity with no email set
+    // can still receive an OTP once either phone channel is live.
     const candidates = template.securityCritical
-      ? [NotificationChannel.EMAIL]
+      ? [NotificationChannel.EMAIL, NotificationChannel.SMS, NotificationChannel.WHATSAPP]
       : this.channelPriority;
 
     const allowed = template.securityCritical

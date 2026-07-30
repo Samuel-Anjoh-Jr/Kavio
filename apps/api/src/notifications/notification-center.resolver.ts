@@ -1,6 +1,6 @@
 import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { CurrentUser } from '../auth/decorators/auth.decorators';
+import { CurrentUser, Public } from '../auth/decorators/auth.decorators';
 import { NotificationCenterService, type NotificationFilter } from './notification-center.service';
 import { NotificationFeedView, NotificationSettingsView } from './models/notification.model';
 
@@ -8,9 +8,11 @@ import { NotificationFeedView, NotificationSettingsView } from './models/notific
  * Notification Center READS (GraphQL, per the DUAL API RULE; NOT-02). Writes —
  * mark-as-read and preference toggles — are on NotificationsController.
  *
- * Nothing here is @Public(): an inbox is private, and every query resolves only
- * the caller's own rows (scoped in the service's WHERE, never by an argument the
- * client supplies).
+ * Every inbox query here is private and resolves only the caller's own rows
+ * (scoped in the service's WHERE, never by an argument the client supplies).
+ * `otpPhoneChannelAvailable` is the one deliberate @Public() exception: it is
+ * platform-wide config, not account data, and the login screen needs it before
+ * any session exists (ACC-04).
  */
 @Resolver()
 export class NotificationCenterResolver {
@@ -44,6 +46,16 @@ export class NotificationCenterResolver {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<NotificationSettingsView> {
     return this.center.settings(user);
+  }
+
+  @Public()
+  @Query(() => Boolean, {
+    description:
+      'Whether an OTP can currently reach a phone number (SMS or WhatsApp is live). ' +
+      'Drives whether auth screens offer "phone or email" or "email only" for OTP sign-in (ACC-04).',
+  })
+  otpPhoneChannelAvailable(): boolean {
+    return this.center.otpPhoneChannelAvailable();
   }
 }
 

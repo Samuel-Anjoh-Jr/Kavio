@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery } from '@apollo/client/react';
 import { signIn } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,10 @@ import { FormBanner } from '@/components/auth/form-banner';
 import { ResendCountdown } from '@/components/auth/resend-countdown';
 import { useRouter } from '@/i18n/navigation';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
+import {
+  PHONE_OTP_AVAILABLE_QUERY,
+  type OtpPhoneChannelAvailableQueryResult,
+} from '@/lib/graphql/auth';
 import { peekIntent, safeReturnTo } from '@/lib/intent';
 import { restPost } from '@/lib/rest-api';
 
@@ -45,6 +50,18 @@ export function VerifyForm({
   const [pending, setPending] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Undefined while loading defaults to "unavailable" — the safe assumption,
+  // matching the login screen's identifier field (ACC-04).
+  const { data: channelData } = useQuery<OtpPhoneChannelAvailableQueryResult>(
+    PHONE_OTP_AVAILABLE_QUERY,
+    { fetchPolicy: 'cache-first' },
+  );
+  const phoneOtpAvailable = channelData?.otpPhoneChannelAvailable ?? false;
+  // Only the LOGIN "sign in with a code" flow needs a channel-aware ask here —
+  // PHONE_VERIFICATION always arrives with the identifier already known from
+  // sign-up, so this branch never renders for it in practice.
+  const emailOnly = purpose === 'LOGIN' && !phoneOtpAvailable;
+
   const requestCode = useCallback(
     async (target: string) => {
       if (!target) return;
@@ -57,7 +74,10 @@ export function VerifyForm({
           purpose,
         });
         setIssue(result);
-        setBanner({ tone: 'success', message: tResend('sentTo', { destination: result.destination }) });
+        setBanner({
+          tone: 'success',
+          message: tResend('sentTo', { destination: result.destination }),
+        });
       } catch (error) {
         setBanner({ tone: 'error', message: translateError(error) });
       } finally {
@@ -109,13 +129,16 @@ export function VerifyForm({
     <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
       {banner && <FormBanner tone={banner.tone} message={banner.message} />}
 
-      {/* Editable when we arrived without one — e.g. "sign in with a code". */}
+      {/* Editable when we arrived without one — e.g. "sign in with a code".
+          Restricted to email while neither SMS nor WhatsApp is live: a phone
+          number typed here could never receive the code (ACC-04). */}
       {!initialIdentifier && (
         <Field
-          label={t('identifierLabel')}
-          type="text"
+          label={emailOnly ? t('identifierLabelEmail') : t('identifierLabel')}
+          type={emailOnly ? 'email' : 'text'}
           inputMode="email"
           autoComplete="username"
+          placeholder={emailOnly ? t('identifierPlaceholderEmail') : undefined}
           value={identifier}
           onChange={(event) => setIdentifier(event.target.value)}
         />

@@ -18,6 +18,7 @@ import { InAppProvider } from './providers/in-app.provider';
 import { NotificationProviderRegistry } from './providers/provider.registry';
 import { SmsProvider } from './providers/sms.provider';
 import { WebPushProvider } from './providers/web-push.provider';
+import { WhatsappProvider } from './providers/whatsapp.provider';
 
 /**
  * Notifications module (SRS §17, §26.1, NOT-01, NOT-02).
@@ -46,6 +47,7 @@ import { WebPushProvider } from './providers/web-push.provider';
       inject: [PrismaService, NotificationSoundPreferenceService],
     },
     { provide: SmsProvider, useFactory: () => new SmsProvider(process.env) },
+    { provide: WhatsappProvider, useFactory: () => new WhatsappProvider(process.env) },
     // IN_APP takes no env: the inbox is a database write, so there is no
     // credential to configure and nothing to feature-flag.
     InAppProvider,

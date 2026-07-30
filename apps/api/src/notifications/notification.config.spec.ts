@@ -4,11 +4,12 @@ import {
   getChannelPriority,
   getEmailProviderName,
   isSmsEnabled,
+  isWhatsappEnabled,
 } from './notification.config';
 
 describe('notification config', () => {
   describe('getChannelPriority', () => {
-    it('defaults to in-app → push → email → SMS', () => {
+    it('defaults to in-app → push → email → SMS → WhatsApp', () => {
       // IN_APP leads: it is the only channel that cannot fail for want of a
       // subscription or a mailbox, so the notice is always waiting in the
       // Notification Center whatever happens on the outward channels (NOT-02).
@@ -17,6 +18,7 @@ describe('notification config', () => {
         NotificationChannel.WEB_PUSH,
         NotificationChannel.EMAIL,
         NotificationChannel.SMS,
+        NotificationChannel.WHATSAPP,
       ]);
     });
 
@@ -28,9 +30,9 @@ describe('notification config', () => {
     });
 
     it('falls back to the default when the override is empty or all-invalid', () => {
-      expect(getChannelPriority({ NOTIFICATIONS_CHANNEL_PRIORITY: '   ' })).toHaveLength(4);
+      expect(getChannelPriority({ NOTIFICATIONS_CHANNEL_PRIORITY: '   ' })).toHaveLength(5);
       expect(getChannelPriority({ NOTIFICATIONS_CHANNEL_PRIORITY: 'CARRIER_PIGEON' })).toHaveLength(
-        4,
+        5,
       );
     });
   });
@@ -41,6 +43,15 @@ describe('notification config', () => {
       expect(isSmsEnabled({ NOTIFICATIONS_SMS_ENABLED: 'false' })).toBe(false);
       expect(isSmsEnabled({ NOTIFICATIONS_SMS_ENABLED: '1' })).toBe(false);
       expect(isSmsEnabled({ NOTIFICATIONS_SMS_ENABLED: 'true' })).toBe(true);
+    });
+  });
+
+  describe('isWhatsappEnabled', () => {
+    it('is OFF unless explicitly enabled (same launch constraint as SMS)', () => {
+      expect(isWhatsappEnabled({})).toBe(false);
+      expect(isWhatsappEnabled({ NOTIFICATIONS_WHATSAPP_ENABLED: 'false' })).toBe(false);
+      expect(isWhatsappEnabled({ NOTIFICATIONS_WHATSAPP_ENABLED: '1' })).toBe(false);
+      expect(isWhatsappEnabled({ NOTIFICATIONS_WHATSAPP_ENABLED: 'true' })).toBe(true);
     });
   });
 
@@ -67,9 +78,11 @@ describe('notification config', () => {
       expect(new Set(rows.map((r) => `${r.channel}:${r.category}`)).size).toBe(rows.length);
     });
 
-    it('seeds SMS disabled because the channel is deferred', () => {
+    it('seeds SMS and WhatsApp disabled because both channels are deferred', () => {
       const sms = rows.filter((r) => r.channel === NotificationChannel.SMS);
+      const whatsapp = rows.filter((r) => r.channel === NotificationChannel.WHATSAPP);
       expect(sms.every((r) => r.enabled === false)).toBe(true);
+      expect(whatsapp.every((r) => r.enabled === false)).toBe(true);
     });
 
     it('seeds marketing opt-out but transactional categories opt-in', () => {

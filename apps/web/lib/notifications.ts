@@ -27,6 +27,7 @@ export const PREFERENCE_CHANNELS: readonly NotificationChannel[] = [
   'WEB_PUSH',
   'EMAIL',
   'SMS',
+  'WHATSAPP',
 ];
 
 /** Categories a user can tune, in the order the settings screen lists them. */
