@@ -1,5 +1,3 @@
-// Schema-only touch to (re-)trigger the Prisma Migrate workflow after
-// correcting the DIRECT_URL Actions secret again for the Supabase connection.
 generator client {
   provider = "prisma-client-js"
 }
@@ -720,6 +718,9 @@ model VerificationRecord {
 
   /// "Latest attempt per check type for this subject" — the tier-gate read path.
   @@index([subjectId, checkType, createdAt])
+  /// search.searchable_worker's EXISTS(ID_APPROVED + VERIFIED) check, which now
+  /// runs on every discovery read (20260728020000_worker_visibility_and_fair_ranking).
+  @@index([subjectId, checkType, status], name: "VerificationRecord_subject_check_status_idx")
   /// The admin review queue.
   @@index([status, createdAt])
   /// The pipeline board, one column per stage (AGT-03).
@@ -1796,6 +1797,9 @@ model Job {
 
   /// The public job board: open jobs, newest published first.
   @@index([status, publishedAt])
+  /// The board query actually filters on visibility (PUBLIC) first — this is
+  /// the index it hits (20260728030000_job_visibility_and_posting_fee).
+  @@index([visibility, status, publishedAt(sort: Desc)])
   /// "My jobs", the poster's own list including drafts (JOB-07).
   @@index([posterId, status, createdAt])
   /// Browse-a-category and the matched-jobs feed workers see (JOB-04).

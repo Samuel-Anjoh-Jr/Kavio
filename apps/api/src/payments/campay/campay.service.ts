@@ -2,7 +2,13 @@ import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { AppException } from '../../lib/app-exception';
 import { createLogger } from '../../lib/logger';
-import { getCampayConfig, isCampayLive, type CampayConfig } from '../payments.config';
+import {
+  getCampayConfig,
+  getCampayDemoAmountXaf,
+  isCampayDemo,
+  isCampayLive,
+  type CampayConfig,
+} from '../payments.config';
 import {
   normaliseCampayStatus,
   type CampayCollectRequest,
@@ -40,10 +46,17 @@ export interface CampayInitiation {
 @Injectable()
 export class CampayService {
   private readonly config: CampayConfig = getCampayConfig();
+  private readonly demo: boolean = isCampayDemo(this.config);
+  private readonly demoAmountXaf: number = getCampayDemoAmountXaf();
   private token: { value: string; fetchedAt: number } | null = null;
 
   get live(): boolean {
     return isCampayLive(this.config);
+  }
+
+  /** True when live calls land on Campay's shared sandbox, which caps every amount. */
+  get demoMode(): boolean {
+    return this.demo;
   }
 
   /** Collect money from a payer's Mobile Money line (client funding, add-money). */
@@ -56,8 +69,9 @@ export class CampayService {
     if (!this.live) {
       return this.stubInitiation(input.externalReference);
     }
+    const wireAmount = this.demoWireAmount(input.amountXaf, input.externalReference);
     const body: CampayCollectRequest = {
-      amount: String(input.amountXaf),
+      amount: String(wireAmount),
       currency: 'XAF',
       from: this.toCampayMsisdn(input.phone),
       description: input.description,
@@ -82,8 +96,9 @@ export class CampayService {
     if (!this.live) {
       return this.stubInitiation(input.externalReference);
     }
+    const wireAmount = this.demoWireAmount(input.amountXaf, input.externalReference);
     const body: CampayWithdrawRequest = {
-      amount: String(input.amountXaf),
+      amount: String(wireAmount),
       currency: 'XAF',
       to: this.toCampayMsisdn(input.phone),
       description: input.description,
@@ -142,6 +157,29 @@ export class CampayService {
   }
 
   // ── Internals ────────────────────────────────────────────────────────────────
+
+  /**
+   * The amount actually PUT ON THE WIRE to Campay. On the shared sandbox this is
+   * always the fixed demo amount, whatever the caller requested — the sandbox
+   * rejects anything else — while every internal record (ledger, escrow, wallet
+   * balance) keeps using the real requested amount, because callers never read
+   * an amount back off `CampayInitiation`. This is what lets a demo run a genuine
+   * USSD prompt + settlement for a 25 000 XAF quote while only ever moving the
+   * sandbox's real 25 XAF.
+   */
+  private demoWireAmount(requestedAmountXaf: number, externalReference: string): number {
+    if (!this.demo) {
+      return requestedAmountXaf;
+    }
+    logger.info('Campay sandbox: capping wire amount to the demo limit', {
+      payload: {
+        externalReference,
+        requestedAmountXaf,
+        wireAmountXaf: this.demoAmountXaf,
+      },
+    });
+    return this.demoAmountXaf;
+  }
 
   /**
    * A deterministic stub: the reference IS the external reference so the

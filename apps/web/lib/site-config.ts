@@ -1,4 +1,5 @@
 import { routing } from '@/i18n/routing';
+import { normalizeEnvUrl } from '@/lib/env-url';
 
 /**
  * The single source of the site's ENTITY facts — the things Google's Knowledge
@@ -17,10 +18,7 @@ import { routing } from '@/i18n/routing';
  * 404s is worse for trust than no `sameAs` at all.
  */
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(
-  /\/$/,
-  '',
-);
+export const SITE_URL = normalizeEnvUrl(process.env.NEXT_PUBLIC_SITE_URL, 'http://localhost:3000');
 
 /** BCP-47 tags for the two supported languages, region-qualified for Cameroon. */
 export const LOCALE_TAGS: Record<string, string> = {

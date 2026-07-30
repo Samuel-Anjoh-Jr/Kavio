@@ -8,6 +8,7 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { WorkerCardData } from '@/lib/discovery';
+import { normalizeEnvUrl } from '@/lib/env-url';
 import { hasMapToken, type MapViewport } from './map-canvas';
 
 const MapCanvas = dynamic(() => import('./map-canvas'), {
@@ -38,7 +39,7 @@ const DENSITY_SOURCE = 'kavio-density';
 const WORKER_SOURCE = 'kavio-workers';
 
 function apiBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
+  return normalizeEnvUrl(process.env.NEXT_PUBLIC_API_URL, 'http://localhost:4000');
 }
 
 /**

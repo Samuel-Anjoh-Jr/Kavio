@@ -1,4 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
+import { normalizeEnvUrl } from '@/lib/env-url';
 
 /**
  * Browser WebSocket client factory (PROMPT 71; SRS §13, §16).
@@ -12,8 +13,9 @@ import { io, type Socket } from 'socket.io-client';
 
 /** Where the socket server lives. Falls back to the API origin, then localhost. */
 function socketBaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+  return normalizeEnvUrl(
+    process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL,
+    'http://localhost:4000',
   );
 }
 

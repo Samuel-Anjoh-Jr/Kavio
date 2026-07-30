@@ -37,6 +37,32 @@ export function isCampayLive(config: CampayConfig = getCampayConfig()): boolean 
 }
 
 /**
+ * True when the configured base URL is Campay's own shared sandbox
+ * (https://demo.campay.net), as opposed to a real Campay production account.
+ * The sandbox settles REAL Mobile Money prompts — unlike CampayService's
+ * offline stub (isCampayLive() === false) — but only ever accepts a fixed
+ * small test amount, so a request for the real quoted amount is simply
+ * rejected there. CampayService uses this to cap what is actually SENT to
+ * Campay at getCampayDemoAmountXaf() while every internal record (ledger,
+ * escrow, wallet balance) still carries the real amount, so a walkthrough can
+ * show a genuine USSD prompt and settlement for a quote of any size without
+ * moving real money.
+ */
+export function isCampayDemo(config: CampayConfig = getCampayConfig()): boolean {
+  try {
+    return new URL(config.baseUrl).hostname === 'demo.campay.net';
+  } catch {
+    return false;
+  }
+}
+
+/** The fixed amount Campay's shared sandbox accepts, whatever was actually requested. */
+export function getCampayDemoAmountXaf(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = Number(env.CAMPAY_DEMO_AMOUNT_XAF ?? 25);
+  return Number.isInteger(raw) && raw > 0 ? raw : 25;
+}
+
+/**
  * The platform service fee in basis points (SRS §15.1 "~10%, admin configurable"),
  * read from the environment. This is the FLOOR default: `PlatformSettingsService
  * .platformFeeBps()` is what call sites actually use, and falls back to this

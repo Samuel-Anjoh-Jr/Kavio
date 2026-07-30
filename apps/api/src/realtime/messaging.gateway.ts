@@ -15,6 +15,7 @@ import { MessagingService } from '../messaging/messaging.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PresenceService } from './presence.service';
 import { authenticateSocket, userRoom } from './ws-auth';
+import { wsCorsOptions } from './ws-cors.config';
 
 const logger = createLogger('messaging-gateway');
 
@@ -39,7 +40,7 @@ interface SocketData {
  *   • fan out new messages from the MESSAGE_SENT domain event — the gateway never
  *     writes a message itself; the REST controller does, then this delivers it.
  */
-@WebSocketGateway({ namespace: '/messaging', cors: { origin: true } })
+@WebSocketGateway({ namespace: '/messaging', cors: wsCorsOptions() })
 export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server!: Server;

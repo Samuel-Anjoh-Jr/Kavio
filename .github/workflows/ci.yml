@@ -77,6 +77,6 @@ jobs:
         run: pnpm audit --audit-level high
 
   # Database migration + hosting-provider deploy wiring (Railway/Vercel Git integration,
-  # path-triggered migrate workflow, schema-drift gate, manual seed) live in the dedicated
-  # deploy-production.yml / prisma-migrate.yml / manual-seed.yml workflows (PROMPT 02.1),
+  # migrate deploy, schema-drift gate, manual seed) live in the dedicated
+  # deploy-production.yml / manual-seed.yml workflows (PROMPT 02.1),
   # so this CI gate stays scoped to validate + security-scan on every PR/push to main.
