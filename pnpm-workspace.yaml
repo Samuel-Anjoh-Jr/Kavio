@@ -7,6 +7,9 @@ overrides:
   # next@16.2.11 pins postcss@8.4.31 directly (CVE fixed in 8.4.32+); force the
   # patched line repo-wide until Next ships a release that bumps it itself.
   postcss: ^8.5.20
+  # eslint's minimatch chain pulls a vulnerable brace-expansion (DoS via
+  # unbounded expansion, GHSA-mh99-v99m-4gvg); force the patched line.
+  brace-expansion: ^5.0.8
 allowBuilds:
   # Its postinstall only builds the parser Apollo Studio usage reporting needs,
   # and we do not enable that — GraphQL serves fine without the build step.
