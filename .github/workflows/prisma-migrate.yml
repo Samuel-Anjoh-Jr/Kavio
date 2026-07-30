@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'packages/database/prisma/**'
+  workflow_dispatch: {}
 
 concurrency:
   group: prisma-migrate-${{ github.ref }}
