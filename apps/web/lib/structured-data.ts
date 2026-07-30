@@ -251,6 +251,68 @@ export function serviceNode(options: {
   };
 }
 
+/**
+ * An individual worker's public profile, as a `LocalBusiness` (SRS §26.4/§26.6).
+ *
+ * `Person` was the more obvious type here and was deliberately rejected: Google
+ * only renders the star-rating rich result for a fixed list of types, and
+ * `Person` is not on it, while `LocalBusiness` is. A sole-trader worker on a
+ * services marketplace genuinely IS the business, so this is not a stretch of
+ * the type, and it is the one modelling choice that makes a worker's Trust
+ * Score and rating eligible to show up as stars in a search result rather than
+ * a plain blue link.
+ *
+ * `aggregateRating` is included ONLY when the caller passes a real
+ * `reviewCount` backing the rating (`reviews.ratedJobCount` from the profile
+ * query), never a proxy like total completed jobs. Structured data that
+ * overstates what the page visibly shows is exactly what draws a manual
+ * action for spammy markup, and this page does not yet list individual
+ * written reviews, so the count must be the one the visible rating is
+ * actually drawn from.
+ */
+export function localBusinessNode(options: {
+  url: string;
+  name: string;
+  description: string;
+  image?: string | null;
+  trade?: string | null;
+  city?: string | null;
+  region?: string | null;
+  ratingValue?: number | null;
+  reviewCount?: number | null;
+}): JsonLdNode {
+  const { url, name, description, image, trade, city, region, ratingValue, reviewCount } = options;
+
+  return {
+    '@type': 'LocalBusiness',
+    '@id': `${url}#business`,
+    name,
+    description,
+    ...(image ? { image } : {}),
+    ...(trade ? { knowsAbout: [trade] } : {}),
+    ...(city
+      ? {
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: city,
+            ...(region ? { addressRegion: region } : {}),
+            addressCountry: COUNTRY.code,
+          },
+          areaServed: { '@type': 'City', name: city },
+        }
+      : {}),
+    ...(ratingValue && reviewCount
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue,
+            reviewCount,
+          },
+        }
+      : {}),
+  };
+}
+
 /** Wraps nodes into one `@graph` document. */
 export function graph(nodes: JsonLdNode[]): JsonLdNode {
   return { '@context': 'https://schema.org', '@graph': nodes };

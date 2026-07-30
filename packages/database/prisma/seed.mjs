@@ -21,8 +21,17 @@
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { randomBytes, randomInt, randomUUID, scrypt } from 'crypto';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const prisma = new PrismaClient();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+/** The real launch FAQ + testimonial copy: see the seeding block below for why. */
+const marketingContent = JSON.parse(
+  readFileSync(path.join(__dirname, 'data/marketing-content.json'), 'utf-8'),
+);
 
 const DEFAULT_PASSWORD = 'Kavio2026!';
 
@@ -3503,81 +3512,67 @@ async function main() {
     await prisma.announcement.create({ data: ann });
   }
 
-  const faqs = [
-    {
-      questionEn: 'How does Kavio verify workers?',
-      questionFr: 'Comment Kavio vérifie-t-il les travailleurs?',
-      answerEn:
-        'We use a multi-tier verification process including phone, ID, and field verification.',
-      answerFr:
-        "Nous utilisons un processus de vérification à plusieurs niveaux incluant le téléphone, la pièce d'identité et la vérification sur le terrain.",
-      category: 'verification',
-      order: 1,
-      isPublished: true,
-      createdAt: daysAgo(60),
-      updatedAt: daysAgo(60),
-    },
-    {
-      questionEn: 'Is my payment secure?',
-      questionFr: 'Mon paiement est-il sécurisé?',
-      answerEn:
-        'Yes, payments are held in escrow and released only when you confirm the job is completed.',
-      answerFr:
-        'Oui, les paiements sont conservés sous séquestre et ne sont libérés que lorsque vous confirmez que le travail est terminé.',
-      category: 'payments',
-      order: 2,
-      isPublished: true,
-      createdAt: daysAgo(60),
-      updatedAt: daysAgo(60),
-    },
-    {
-      questionEn: 'How do I become a worker?',
-      questionFr: 'Comment devenir travailleur?',
-      answerEn:
-        'Sign up, complete your profile, and pass the verification steps to start receiving job offers.',
-      answerFr:
-        "Inscrivez-vous, complétez votre profil et passez les étapes de vérification pour commencer à recevoir des offres d'emploi.",
-      category: 'onboarding',
-      order: 3,
-      isPublished: true,
-      createdAt: daysAgo(60),
-      updatedAt: daysAgo(60),
-    },
-  ];
-  for (const faq of faqs) {
-    await prisma.faq.create({ data: faq });
+  // The real launch FAQ and testimonial copy lives in data/marketing-content.json
+  // (PROMPT 92.1; SRS §26.2) rather than inline here, so marketing and
+  // engineering edit one shared file instead of two drifting copies. Upserted
+  // by the fixed `id` each row carries, matching that file's own idempotency
+  // contract: a re-run of this seed edits the row it wrote last time instead
+  // of piling up near-duplicates.
+  for (const [index, faq] of marketingContent.faqs.entries()) {
+    await prisma.faq.upsert({
+      where: { id: faq.id },
+      create: {
+        id: faq.id,
+        questionEn: faq.questionEn,
+        questionFr: faq.questionFr,
+        answerEn: faq.answerEn,
+        answerFr: faq.answerFr,
+        category: faq.category ?? null,
+        order: index + 1,
+        isPublished: true,
+        createdAt: daysAgo(60),
+        updatedAt: daysAgo(60),
+      },
+      update: {
+        questionEn: faq.questionEn,
+        questionFr: faq.questionFr,
+        answerEn: faq.answerEn,
+        answerFr: faq.answerFr,
+        category: faq.category ?? null,
+        order: index + 1,
+        updatedAt: daysAgo(60),
+      },
+    });
   }
 
-  const testimonials = [
-    {
-      author: 'Jean Dupont',
-      roleEn: 'Plumber, Douala',
-      roleFr: 'Plombier, Douala',
-      avatarUrl: avatarUrl(),
-      contentEn: 'Kavio helped me find reliable work. The escrow system gives me peace of mind.',
-      contentFr: "Kavio m'a aidé à trouver un travail fiable. Le système de séquestre me rassure.",
-      rating: 4.8,
-      order: 1,
-      visible: true,
-      createdAt: daysAgo(45),
-      updatedAt: daysAgo(45),
-    },
-    {
-      author: 'Marie Ngono',
-      roleEn: 'Business Owner, Yaoundé',
-      roleFr: "Chef d'entreprise, Yaoundé",
-      avatarUrl: avatarUrl(),
-      contentEn: 'I have hired several workers through Kavio and the quality is excellent.',
-      contentFr: "J'ai embauché plusieurs travailleurs via Kavio et la qualité est excellente.",
-      rating: 4.5,
-      order: 2,
-      visible: true,
-      createdAt: daysAgo(30),
-      updatedAt: daysAgo(30),
-    },
-  ];
-  for (const t of testimonials) {
-    await prisma.testimonial.create({ data: t });
+  for (const [index, t] of marketingContent.testimonials.entries()) {
+    await prisma.testimonial.upsert({
+      where: { id: t.id },
+      create: {
+        id: t.id,
+        author: t.author,
+        roleEn: t.roleEn,
+        roleFr: t.roleFr,
+        avatarUrl: avatarUrl(),
+        contentEn: t.contentEn,
+        contentFr: t.contentFr,
+        rating: t.rating,
+        order: index + 1,
+        visible: true,
+        createdAt: daysAgo(45),
+        updatedAt: daysAgo(45),
+      },
+      update: {
+        author: t.author,
+        roleEn: t.roleEn,
+        roleFr: t.roleFr,
+        contentEn: t.contentEn,
+        contentFr: t.contentFr,
+        rating: t.rating,
+        order: index + 1,
+        updatedAt: daysAgo(45),
+      },
+    });
   }
 
   // Same copy the landing page previously hardcoded, now admin-editable rows.

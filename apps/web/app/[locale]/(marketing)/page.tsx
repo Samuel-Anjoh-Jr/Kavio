@@ -16,6 +16,8 @@ import { StarRating } from '@/components/ui/star-rating';
 import { JsonLd } from '@/components/seo/json-ld';
 import { localised } from '@/lib/graphql/marketing';
 import { buildMetadata, canonicalFor } from '@/lib/seo';
+import { seoKeywords } from '@/lib/seo-keywords';
+import { SERVICE_AREAS } from '@/lib/site-config';
 import {
   faqPageNode,
   graph,
@@ -82,7 +84,7 @@ export async function generateMetadata({
     path: '/',
     title: t('title'),
     description: t('description'),
-    keywords: t('keywords'),
+    keywords: seoKeywords(locale === 'fr' ? 'fr' : 'en'),
   });
 }
 
@@ -249,6 +251,35 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               {t('hero.verifiedBadge')}
             </span>
           </div>
+        </div>
+      </section>
+
+      {/* ── Areas we serve ───────────────────────────────────────────────── */}
+      {/* Real, visible, indexable content (not just metadata) naming every
+          region Kavio covers: the on-page signal that carries far more SEO
+          weight than a keywords meta tag ever will. */}
+      <section
+        aria-labelledby="areas-heading"
+        className="border-y border-border bg-muted/40 px-4 py-14 sm:px-6"
+      >
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-5 text-center">
+          <h2
+            id="areas-heading"
+            className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
+          >
+            {t('areas.heading')}
+          </h2>
+          <p className="max-w-2xl text-balance text-muted-foreground">{t('areas.body')}</p>
+          <ul className="flex flex-wrap items-center justify-center gap-2">
+            {SERVICE_AREAS.map((area) => (
+              <li
+                key={area.name}
+                className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-surface-foreground"
+              >
+                {area.name}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

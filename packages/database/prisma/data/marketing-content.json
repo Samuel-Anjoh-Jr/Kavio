@@ -147,6 +147,42 @@
       "rating": 4.3,
       "contentEn": "We needed six rooms repainted before a conference. One job post, one verified team, one fixed price agreed up front. It was finished a day early.",
       "contentFr": "Il fallait repeindre six chambres avant une conférence. Une seule annonce, une équipe vérifiée, un prix fixe convenu d’avance. Le chantier s’est terminé avec un jour d’avance."
+    },
+    {
+      "id": "95cca39d-b696-4892-9647-3e2673a19e63",
+      "author": "Hamadou Yaya",
+      "roleEn": "Shop owner, Bafoussam",
+      "roleFr": "Commerçant, Bafoussam",
+      "rating": 4.8,
+      "contentEn": "I used to only trust people a neighbour introduced me to. Now I check a worker's Trust Score before I call, and I have hired two electricians from Kavio I had never met in person before they showed up.",
+      "contentFr": "Avant, je ne faisais confiance qu'aux personnes présentées par un voisin. Maintenant je consulte le Score de Confiance avant d'appeler, et j'ai embauché deux électriciens sur Kavio que je n'avais jamais rencontrés avant leur arrivée."
+    },
+    {
+      "id": "bae53799-a375-4af4-935e-f9dc6ade5247",
+      "author": "Delphine Ngassa",
+      "roleEn": "Landlord, Bamenda",
+      "roleFr": "Propriétaire bailleur, Bamenda",
+      "rating": 4.6,
+      "contentEn": "I manage four rental houses from Douala, so I cannot be on site to supervise repairs. Escrow means I only release payment once my tenant confirms the work is actually done.",
+      "contentFr": "Je gère quatre maisons en location depuis Douala, donc je ne peux pas être sur place pour surveiller les réparations. Le séquestre me permet de ne libérer le paiement qu'une fois mon locataire confirme que le travail est vraiment terminé."
+    },
+    {
+      "id": "27bc7af6-d63b-4034-8c8a-fdb635e8058f",
+      "author": "Oumarou Bello",
+      "roleEn": "Mechanic, Garoua",
+      "roleFr": "Mécanicien, Garoua",
+      "rating": 4.7,
+      "contentEn": "Most of my old clients assumed a good mechanic could only be found in Douala or Yaoundé. My Kavio profile and verified reviews now bring me clients from across the North region.",
+      "contentFr": "La plupart de mes anciens clients pensaient qu'on ne trouvait un bon mécanicien qu'à Douala ou Yaoundé. Mon profil Kavio et mes avis vérifiés m'amènent maintenant des clients de toute la région du Nord."
+    },
+    {
+      "id": "d717ac75-1756-4361-b317-76c18915a601",
+      "author": "Gisèle Manga",
+      "roleEn": "Guesthouse owner, Kribi",
+      "roleFr": "Propriétaire de résidence, Kribi",
+      "rating": 4.9,
+      "contentEn": "Tourists book our rooms all year, so a broken shower cannot wait a week. I posted the job in the morning and had a verified plumber from Kribi on site before lunch.",
+      "contentFr": "Les touristes réservent nos chambres toute l'année, une douche en panne ne peut donc pas attendre une semaine. J'ai publié la mission le matin et un plombier vérifié de Kribi est arrivé sur place avant midi."
     }
   ]
 }

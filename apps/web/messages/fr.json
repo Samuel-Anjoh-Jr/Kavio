@@ -1050,6 +1050,7 @@
     "unnamed": "Professionnel Kavio",
     "notFoundTitle": "Profil introuvable",
     "metaFallback": "{name} sur Kavio",
+    "metaTitleWithTrade": "{name} · {trade} vérifié à {city}",
     "loadErrorTitle": "Impossible de charger ce profil",
     "loadErrorBody": "Une erreur est survenue de notre côté. Réessayez dans un instant.",
     "memberSince": "Inscrit en {date}",
@@ -2558,8 +2559,7 @@
       "description": "Engagez des électriciens, plombiers, soudeurs vérifiés et plus encore. Devis transparents, paiements sous séquestre et un Score de Confiance à vérifier avant de réserver.",
       "ogHeadline": "La confiance, pas juste des annonces.",
       "ogTagline": "Artisans vérifiés, devis transparents, paiements sous séquestre.",
-      "serviceName": "Embauche d’artisans vérifiés avec paiement sous séquestre",
-      "keywords": "artisans vérifiés Cameroun, main-d’œuvre qualifiée partout au Cameroun, électricien Douala, plombier Yaoundé, soudeur Bafoussam, mécanicien Bamenda, paiement sous séquestre Cameroun, Score de Confiance, engager artisan Cameroun, services à domicile partout au Cameroun, services locaux Douala Yaoundé Bafoussam Bamenda Garoua"
+      "serviceName": "Embauche d’artisans vérifiés avec paiement sous séquestre"
     },
     "nav": {
       "primary": "Principal",
@@ -2587,6 +2587,10 @@
       "trustScoreLabel": "Score de Confiance {score} sur 100",
       "trustScoreCaption": "Vérifié · Niveau 3",
       "verifiedBadge": "Identité vérifiée"
+    },
+    "areas": {
+      "heading": "Où nous intervenons",
+      "body": "Kavio est disponible dans tout le pays. La couverture vérifiée est aujourd’hui la plus dense dans ces villes, et elle s’étend chaque semaine à mesure que davantage d’artisans complètent leur vérification."
     },
     "proof": {
       "heading": "Kavio en chiffres",

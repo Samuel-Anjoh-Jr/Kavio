@@ -40,14 +40,19 @@ export function localeTag(locale: string): string {
  * Cities used for `areaServed`, the geo meta tags, and local-intent AI answers
  * ("verified electrician in Douala"). Kavio is not scoped to two towns: workers
  * and clients anywhere in Cameroon can use the platform today, and this list
- * spans a capital in every region so search and AI answer engines resolve local
- * intent nationwide, not just for the launch cities (Douala, Yaoundé). Verified
- * worker density varies by city and grows over time; that operational detail
- * belongs in the FAQ, not in the entity facts every page emits.
+ * covers multiple cities in every one of Cameroon's 10 regions so search and AI
+ * answer engines resolve local intent nationwide, not just for the two launch
+ * cities. Verified worker density varies by city and grows over time; that
+ * operational detail belongs in the FAQ, not in the entity facts every page
+ * emits.
+ *
+ * Index 0 is the primary/founding location (`foundingLocation`, the ICBM geo
+ * meta tag): Yaoundé. Order otherwise carries no meaning; every entry maps into
+ * `areaServed` the same way.
  */
 export const SERVICE_AREAS = [
-  { name: 'Douala', region: 'Littoral', latitude: 4.0511, longitude: 9.7679 },
   { name: 'Yaoundé', region: 'Centre', latitude: 3.848, longitude: 11.5021 },
+  { name: 'Douala', region: 'Littoral', latitude: 4.0511, longitude: 9.7679 },
   { name: 'Bafoussam', region: 'West', latitude: 5.4737, longitude: 10.4179 },
   { name: 'Bamenda', region: 'Northwest', latitude: 5.9631, longitude: 10.1591 },
   { name: 'Garoua', region: 'North', latitude: 9.3017, longitude: 13.3921 },
@@ -56,6 +61,21 @@ export const SERVICE_AREAS = [
   { name: 'Bertoua', region: 'East', latitude: 4.5776, longitude: 13.6846 },
   { name: 'Ebolowa', region: 'South', latitude: 2.9, longitude: 11.15 },
   { name: 'Buea', region: 'Southwest', latitude: 4.156, longitude: 9.292 },
+  { name: 'Limbe', region: 'Southwest', latitude: 4.0227, longitude: 9.2148 },
+  { name: 'Kribi', region: 'South', latitude: 2.9375, longitude: 9.9074 },
+  { name: 'Edéa', region: 'Littoral', latitude: 3.7981, longitude: 10.1319 },
+  { name: 'Nkongsamba', region: 'Littoral', latitude: 4.9547, longitude: 9.9403 },
+  { name: 'Dschang', region: 'West', latitude: 5.4415, longitude: 10.0536 },
+  { name: 'Foumban', region: 'West', latitude: 5.7263, longitude: 10.9022 },
+  { name: 'Kumba', region: 'Southwest', latitude: 4.6363, longitude: 9.447 },
+  { name: 'Kumbo', region: 'Northwest', latitude: 6.2, longitude: 10.6667 },
+  { name: 'Mbalmayo', region: 'Centre', latitude: 3.5167, longitude: 11.5 },
+  { name: 'Bafia', region: 'Centre', latitude: 4.75, longitude: 11.2333 },
+  { name: 'Sangmélima', region: 'South', latitude: 2.9333, longitude: 11.9833 },
+  { name: 'Guider', region: 'North', latitude: 9.9333, longitude: 13.95 },
+  { name: 'Meiganga', region: 'Adamawa', latitude: 6.5167, longitude: 14.3 },
+  { name: 'Kousséri', region: 'Far North', latitude: 12.0833, longitude: 15.0333 },
+  { name: 'Abong-Mbang', region: 'East', latitude: 3.9833, longitude: 13.1833 },
 ] as const;
 
 export const COUNTRY = { name: 'Cameroon', code: 'CM' } as const;
