@@ -92,6 +92,35 @@ function sample(arr, n) {
   return shuffle(arr).slice(0, Math.min(n, arr.length));
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Bounded concurrency for independent per-row DB writes.
+//
+// Kept deliberately small: the production database's connection string caps
+// Prisma's pool at `connection_limit=3` (see DIRECT_DATABASE_URL), and this
+// script is the only client using it while it runs. Firing every row's writes
+// with an unbounded Promise.all queued far more concurrent queries than the
+// pool has connections, and once the queue backed up past the 10s pool
+// timeout the seed died with P2024 ("Timed out fetching a new connection").
+// A worker-pool of DB_CONCURRENCY keeps just that many requests in flight at
+// once — still far fewer round trips than doing everything one row at a time.
+const DB_CONCURRENCY = 3;
+
+/** Maps `items` through `mapper` with at most `limit` calls in flight at
+ * once, preserving input order in the returned array (like Promise.all). */
+async function mapWithConcurrency(items, limit, mapper) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  async function worker() {
+    for (;;) {
+      const i = nextIndex++;
+      if (i >= items.length) return;
+      results[i] = await mapper(items[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 /** Weighted choice: options = [[value, weight], ...] */
 function weightedPick(options) {
   const total = options.reduce((s, [, w]) => s + w, 0);
@@ -1755,13 +1784,14 @@ async function main() {
   // synchronously up front, before anything is awaited.
   const workerInProgressFlags = workers.map((w) => w.tierTarget === 'TIER_0' && pct(0.4));
   const inProgressCount = workerInProgressFlags.filter(Boolean).length;
-  await Promise.all([
-    ...workers.map((w, i) =>
-      createOnboarding(w, 'WORKER', { inProgress: workerInProgressFlags[i] }),
+  const onboardingJobs = [
+    ...workers.map(
+      (w, i) => () => createOnboarding(w, 'WORKER', { inProgress: workerInProgressFlags[i] }),
     ),
-    ...clients.map((c) => createOnboarding(c, 'CLIENT', {})),
-    ...businesses.map((b) => createOnboarding(b.owner, 'BUSINESS', {})),
-  ]);
+    ...clients.map((c) => () => createOnboarding(c, 'CLIENT', {})),
+    ...businesses.map((b) => () => createOnboarding(b.owner, 'BUSINESS', {})),
+  ];
+  await mapWithConcurrency(onboardingJobs, DB_CONCURRENCY, (job) => job());
   console.log(
     `   Onboarding flows: ${workers.length + clients.length + businesses.length} (${inProgressCount} still in progress — autosave demo)\n`,
   );
@@ -1799,143 +1829,143 @@ async function main() {
   const workerProfiles = new Map(); // userId -> WorkerProfile row
   const workerPortfolioCount = new Map();
   // Each worker's profile/services/availability/portfolio are independent of
-  // every other worker's, so the whole pass fans out concurrently.
-  await Promise.all(
-    workers
-      .filter((worker) => !suspendedUsers.has(worker.id)) // banned identity keeps no public profile
-      .map(async (worker) => {
-        const geo = randomItem(neighbourhoods);
-        const coords = coordsNear(geo);
-        const isFr = worker.locale === 'fr';
-        const primaryCategory = randomItem(topCategories);
-        const yearsExperience = randomInt(1, 22);
+  // every other worker's, so the pass fans out with bounded concurrency.
+  await mapWithConcurrency(
+    workers.filter((worker) => !suspendedUsers.has(worker.id)), // banned identity keeps no public profile
+    DB_CONCURRENCY,
+    async (worker) => {
+      const geo = randomItem(neighbourhoods);
+      const coords = coordsNear(geo);
+      const isFr = worker.locale === 'fr';
+      const primaryCategory = randomItem(topCategories);
+      const yearsExperience = randomInt(1, 22);
 
-        let coverAssetId = null;
-        if (pct(0.55)) {
-          const cover = await createMedia(worker.id, 'WORKER_COVER', coverUrl(worker.id), {
-            visibility: 'PUBLIC',
-          });
-          coverAssetId = cover.id;
-        }
+      let coverAssetId = null;
+      if (pct(0.55)) {
+        const cover = await createMedia(worker.id, 'WORKER_COVER', coverUrl(worker.id), {
+          visibility: 'PUBLIC',
+        });
+        coverAssetId = cover.id;
+      }
 
-        const wp = await prisma.workerProfile.create({
+      const wp = await prisma.workerProfile.create({
+        data: {
+          userId: worker.id,
+          headline: isFr
+            ? `${primaryCategory.nameFr} professionnel(le)`
+            : `Professional ${primaryCategory.nameEn}`,
+          bio: isFr ? randomItem(BIO_FR) : randomItem(BIO_EN),
+          yearsExperience,
+          city: coords.city,
+          area: geo.nameEn,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          locationSource: 'HUMAN_INPUT',
+          landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`,
+          locationUpdatedAt: worker.createdAt,
+          geoRegionId: geo.id,
+          coverAssetId,
+          createdAt: worker.createdAt,
+        },
+      });
+      workerProfiles.set(worker.id, wp);
+
+      // Services — the worker's own categories, 1-3 of them.
+      const numServices = randomInt(1, 3);
+      const chosenCategories = sample(allCategories, numServices);
+      for (const cat of chosenCategories) {
+        await prisma.service.create({
           data: {
-            userId: worker.id,
-            headline: isFr
-              ? `${primaryCategory.nameFr} professionnel(le)`
-              : `Professional ${primaryCategory.nameEn}`,
-            bio: isFr ? randomItem(BIO_FR) : randomItem(BIO_EN),
-            yearsExperience,
-            city: coords.city,
-            area: geo.nameEn,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            locationSource: 'HUMAN_INPUT',
-            landmark: `${randomItem(LANDMARK_TEMPLATES)} ${geo.nameFr}`,
-            locationUpdatedAt: worker.createdAt,
-            geoRegionId: geo.id,
-            coverAssetId,
-            createdAt: worker.createdAt,
+            workerProfileId: wp.id,
+            categoryId: cat.id,
+            name: isFr ? `Service de ${cat.nameFr.toLowerCase()}` : `${cat.nameEn} service`,
+            description: isFr
+              ? `Intervention rapide et soignée en ${cat.nameFr.toLowerCase()}.`
+              : `Fast, careful ${cat.nameEn.toLowerCase()} work.`,
+            startingPrice: roundXaf(randomInt(3000, 25000)),
+            isActive: true,
           },
         });
-        workerProfiles.set(worker.id, wp);
+        bumpCategoryWorkerCount(cat.id);
+      }
 
-        // Services — the worker's own categories, 1-3 of them.
-        const numServices = randomInt(1, 3);
-        const chosenCategories = sample(allCategories, numServices);
-        for (const cat of chosenCategories) {
-          await prisma.service.create({
+      // Weekly availability — 5 of 7 days.
+      for (const day of sample([0, 1, 2, 3, 4, 5, 6], 5)) {
+        await prisma.availability.create({
+          data: {
+            workerProfileId: wp.id,
+            dayOfWeek: day,
+            startTime: '08:00',
+            endTime: pct(0.5) ? '17:00' : '18:30',
+          },
+        });
+      }
+
+      // Occasional one-off exceptions (public holidays), bilingual note.
+      if (pct(0.15)) {
+        await prisma.availabilityException.create({
+          data: {
+            workerProfileId: wp.id,
+            date: daysFromNow(randomInt(5, 40)),
+            isAvailable: false,
+            note: isFr ? 'Fête du Travail — fermé' : 'Public holiday — closed',
+          },
+        });
+      }
+
+      // Portfolio — the top survey-validated driver of who gets hired (PRO-02).
+      const numPortfolio = randomInt(
+        worker.tierTarget === 'TIER_0' ? 0 : 1,
+        worker.tierTarget === 'TIER_3' ? 5 : 3,
+      );
+      if (numPortfolio > 0) {
+        const doBeforeAfter = pct(0.4);
+        const groupKey = doBeforeAfter ? randomUUID() : null;
+        const projectTitle = doBeforeAfter
+          ? isFr
+            ? 'Rénovation complète'
+            : 'Full renovation'
+          : null;
+        for (let p = 0; p < numPortfolio; p++) {
+          const media = await createMedia(
+            worker.id,
+            'PORTFOLIO_IMAGE',
+            portfolioUrl(`${worker.id}-${p}`),
+            { visibility: 'PUBLIC' },
+          );
+          await prisma.portfolioItem.create({
             data: {
               workerProfileId: wp.id,
-              categoryId: cat.id,
-              name: isFr ? `Service de ${cat.nameFr.toLowerCase()}` : `${cat.nameEn} service`,
-              description: isFr
-                ? `Intervention rapide et soignée en ${cat.nameFr.toLowerCase()}.`
-                : `Fast, careful ${cat.nameEn.toLowerCase()} work.`,
-              startingPrice: roundXaf(randomInt(3000, 25000)),
-              isActive: true,
-            },
-          });
-          bumpCategoryWorkerCount(cat.id);
-        }
-
-        // Weekly availability — 5 of 7 days.
-        for (const day of sample([0, 1, 2, 3, 4, 5, 6], 5)) {
-          await prisma.availability.create({
-            data: {
-              workerProfileId: wp.id,
-              dayOfWeek: day,
-              startTime: '08:00',
-              endTime: pct(0.5) ? '17:00' : '18:30',
+              mediaAssetId: media.id,
+              type: 'PHOTO',
+              caption: isFr
+                ? 'Travail terminé pour un client à ' + coords.city
+                : 'Finished work for a client in ' + coords.city,
+              groupKey: doBeforeAfter && p < 2 ? groupKey : null,
+              projectTitle: doBeforeAfter && p < 2 ? projectTitle : null,
+              slot: doBeforeAfter && p === 0 ? 'BEFORE' : doBeforeAfter && p === 1 ? 'AFTER' : null,
+              sortOrder: p,
             },
           });
         }
-
-        // Occasional one-off exceptions (public holidays), bilingual note.
-        if (pct(0.15)) {
-          await prisma.availabilityException.create({
-            data: {
-              workerProfileId: wp.id,
-              date: daysFromNow(randomInt(5, 40)),
-              isAvailable: false,
-              note: isFr ? 'Fête du Travail — fermé' : 'Public holiday — closed',
-            },
-          });
-        }
-
-        // Portfolio — the top survey-validated driver of who gets hired (PRO-02).
-        const numPortfolio = randomInt(
-          worker.tierTarget === 'TIER_0' ? 0 : 1,
-          worker.tierTarget === 'TIER_3' ? 5 : 3,
-        );
-        if (numPortfolio > 0) {
-          const doBeforeAfter = pct(0.4);
-          const groupKey = doBeforeAfter ? randomUUID() : null;
-          const projectTitle = doBeforeAfter
-            ? isFr
-              ? 'Rénovation complète'
-              : 'Full renovation'
-            : null;
-          for (let p = 0; p < numPortfolio; p++) {
-            const media = await createMedia(
-              worker.id,
-              'PORTFOLIO_IMAGE',
-              portfolioUrl(`${worker.id}-${p}`),
-              { visibility: 'PUBLIC' },
-            );
-            await prisma.portfolioItem.create({
-              data: {
-                workerProfileId: wp.id,
-                mediaAssetId: media.id,
-                type: 'PHOTO',
-                caption: isFr
-                  ? 'Travail terminé pour un client à ' + coords.city
-                  : 'Finished work for a client in ' + coords.city,
-                groupKey: doBeforeAfter && p < 2 ? groupKey : null,
-                projectTitle: doBeforeAfter && p < 2 ? projectTitle : null,
-                slot:
-                  doBeforeAfter && p === 0 ? 'BEFORE' : doBeforeAfter && p === 1 ? 'AFTER' : null,
-                sortOrder: p,
-              },
-            });
-          }
-          workerPortfolioCount.set(worker.id, numPortfolio);
-          markCheckPassed(worker.id, 'PORTFOLIO');
-          await addTrustEvent(worker.id, 'PORTFOLIO_ADDED', 'PROFESSIONAL', 3, {
-            sourceType: 'PortfolioItem',
-            occurredAt: hoursAfter(worker.createdAt, 48),
-          });
-        }
-      }),
+        workerPortfolioCount.set(worker.id, numPortfolio);
+        markCheckPassed(worker.id, 'PORTFOLIO');
+        await addTrustEvent(worker.id, 'PORTFOLIO_ADDED', 'PROFESSIONAL', 3, {
+          sourceType: 'PortfolioItem',
+          occurredAt: hoursAfter(worker.createdAt, 48),
+        });
+      }
+    },
   );
 
-  await Promise.all(
-    Array.from(categoryWorkerCountDelta.entries()).map(([categoryId, delta]) =>
+  await mapWithConcurrency(
+    Array.from(categoryWorkerCountDelta.entries()),
+    DB_CONCURRENCY,
+    ([categoryId, delta]) =>
       prisma.serviceCategory.update({
         where: { id: categoryId },
         data: { workerCount: { increment: delta } },
       }),
-    ),
   );
   console.log(
     `   Worker profiles . ${workerProfiles.size} (services, availability, portfolio attached)\n`,
@@ -1965,7 +1995,9 @@ async function main() {
     clientProfiles.set(user.id, cp);
     return cp;
   }
-  await Promise.all([...clients, ...dualRoleWorkers].map((u) => createClientProfile(u)));
+  await mapWithConcurrency([...clients, ...dualRoleWorkers], DB_CONCURRENCY, (u) =>
+    createClientProfile(u),
+  );
   console.log(`   Client profiles . ${clientProfiles.size}\n`);
 
   // ── Phase 8: jobs, applications, invitations, quotes, bookings, escrow,
@@ -2829,10 +2861,12 @@ async function main() {
 
   // Every identity's score/tier/badges are independent of every other
   // identity's — nothing here reads another user's just-written row — so the
-  // whole finalization pass fans out concurrently instead of paying one full
-  // network round trip per identity, per row.
-  const finalizationResults = await Promise.all(
-    allIdentities.map(async (user) => {
+  // whole finalization pass fans out with bounded concurrency instead of
+  // paying one full network round trip per identity, per row, in series.
+  const finalizationResults = await mapWithConcurrency(
+    allIdentities,
+    DB_CONCURRENCY,
+    async (user) => {
       const ledger = ledgerFor(user.id);
       const isSuspended = suspendedUsers.has(user.id);
       const { tier, total, avgRating } = isSuspended
@@ -2872,22 +2906,18 @@ async function main() {
       if (ledger.completedJobs >= 10) badgeTypes.push('JOBS_10');
       const approvedEndorsements = approvedEndorsementsBySubject.get(user.id) ?? 0;
       if (approvedEndorsements >= 5) badgeTypes.push('COMMUNITY_ENDORSED');
-      await Promise.all(
-        badgeTypes.map((type) =>
-          prisma.userBadge.upsert({
-            where: { subjectId_type: { subjectId: user.id, type } },
-            update: {},
-            create: {
-              subjectId: user.id,
-              type,
-              sourceType: 'TrustEngineDerivation',
-              awardedAt: NOW,
-            },
-          }),
-        ),
-      );
+      // Sequential on purpose: this already runs inside a DB_CONCURRENCY-wide
+      // worker pool, so fanning these out too would multiply the number of
+      // simultaneous connections this identity alone holds.
+      for (const type of badgeTypes) {
+        await prisma.userBadge.upsert({
+          where: { subjectId_type: { subjectId: user.id, type } },
+          update: {},
+          create: { subjectId: user.id, type, sourceType: 'TrustEngineDerivation', awardedAt: NOW },
+        });
+      }
       return isSuspended;
-    }),
+    },
   );
   const suspendedCount = finalizationResults.filter(Boolean).length;
   console.log(
@@ -2906,129 +2936,130 @@ async function main() {
   console.log('💬 Creating conversations and messages...');
   // Each job's conversation thread is independent of every other job's — the
   // running `t`/`lastMessage` closures are scoped per-thread — so the threads
-  // fan out concurrently. Promise.all preserves the input array's order, so
-  // conversations[1] below still refers to the same thread it always did.
-  const conversations = await Promise.all(
-    jobsCreated
-      .filter((j) => j.hiredWorker)
-      .map(async (jc) => {
-        const { job, poster, hiredWorker, acceptedQuote, finalStatus, startAt } = jc;
-        const posterUser = poster.posterUser;
-        const isFr = poster.isFr;
-        const conv = await prisma.conversation.create({
-          data: { jobId: job.id, createdAt: hoursAfter(startAt, 3) },
-        });
+  // fan out with bounded concurrency. mapWithConcurrency preserves the input
+  // array's order, so conversations[1] below still refers to the same thread
+  // it always did.
+  const conversations = await mapWithConcurrency(
+    jobsCreated.filter((j) => j.hiredWorker),
+    DB_CONCURRENCY,
+    async (jc) => {
+      const { job, poster, hiredWorker, acceptedQuote, finalStatus, startAt } = jc;
+      const posterUser = poster.posterUser;
+      const isFr = poster.isFr;
+      const conv = await prisma.conversation.create({
+        data: { jobId: job.id, createdAt: hoursAfter(startAt, 3) },
+      });
+      await prisma.conversationParticipant.create({
+        data: {
+          conversationId: conv.id,
+          userId: posterUser.id,
+          role: 'MEMBER',
+          createdAt: hoursAfter(startAt, 3),
+        },
+      });
+      await prisma.conversationParticipant.create({
+        data: {
+          conversationId: conv.id,
+          userId: hiredWorker.id,
+          role: 'MEMBER',
+          createdAt: hoursAfter(startAt, 3),
+        },
+      });
+      if (finalStatus === 'DISPUTED') {
         await prisma.conversationParticipant.create({
           data: {
             conversationId: conv.id,
-            userId: posterUser.id,
-            role: 'MEMBER',
-            createdAt: hoursAfter(startAt, 3),
+            userId: admin.id,
+            role: 'OBSERVER',
+            createdAt: hoursAfter(startAt, 215),
           },
         });
-        await prisma.conversationParticipant.create({
+      }
+
+      let t = hoursAfter(startAt, 3);
+      let lastMessage = null;
+      const send = async (sender, kind, body, metadata = null, withImage = false) => {
+        const msg = await prisma.message.create({
           data: {
             conversationId: conv.id,
-            userId: hiredWorker.id,
-            role: 'MEMBER',
-            createdAt: hoursAfter(startAt, 3),
+            senderId: sender.id,
+            kind,
+            body,
+            metadata,
+            status: 'READ',
+            deliveredAt: hoursAfter(t, 0.2),
+            readAt: hoursAfter(t, 0.5),
+            createdAt: t,
           },
         });
-        if (finalStatus === 'DISPUTED') {
-          await prisma.conversationParticipant.create({
-            data: {
-              conversationId: conv.id,
-              userId: admin.id,
-              role: 'OBSERVER',
-              createdAt: hoursAfter(startAt, 215),
-            },
+        if (withImage) {
+          const media = await createMedia(sender.id, 'MESSAGE_IMAGE', messageImageUrl(msg.id), {
+            visibility: 'PRIVATE',
+          });
+          await prisma.messageAttachment.create({
+            data: { messageId: msg.id, mediaAssetId: media.id },
           });
         }
+        lastMessage = msg;
+        t = hoursAfter(t, randomInt(1, 20));
+        return msg;
+      };
 
-        let t = hoursAfter(startAt, 3);
-        let lastMessage = null;
-        const send = async (sender, kind, body, metadata = null, withImage = false) => {
-          const msg = await prisma.message.create({
-            data: {
-              conversationId: conv.id,
-              senderId: sender.id,
-              kind,
-              body,
-              metadata,
-              status: 'READ',
-              deliveredAt: hoursAfter(t, 0.2),
-              readAt: hoursAfter(t, 0.5),
-              createdAt: t,
-            },
-          });
-          if (withImage) {
-            const media = await createMedia(sender.id, 'MESSAGE_IMAGE', messageImageUrl(msg.id), {
-              visibility: 'PRIVATE',
-            });
-            await prisma.messageAttachment.create({
-              data: { messageId: msg.id, mediaAssetId: media.id },
-            });
-          }
-          lastMessage = msg;
-          t = hoursAfter(t, randomInt(1, 20));
-          return msg;
-        };
-
+      await send(
+        posterUser,
+        'TEXT',
+        isFr
+          ? 'Bonjour, je suis intéressé(e) par votre devis.'
+          : 'Hi, I\u2019m interested in your quote.',
+      );
+      if (acceptedQuote) await send(hiredWorker, 'QUOTE', null, { quoteId: acceptedQuote.id });
+      await send(
+        posterUser,
+        'TEXT',
+        isFr ? 'Ça marche, on peut commencer quand ?' : 'Sounds good — when can we start?',
+      );
+      await send(
+        hiredWorker,
+        'TEXT',
+        isFr ? 'Je peux venir dès demain matin.' : 'I can come by tomorrow morning.',
+      );
+      if (pct(0.5))
+        await send(
+          posterUser,
+          'IMAGE',
+          isFr ? 'Voici une photo du problème.' : 'Here\u2019s a photo of the issue.',
+          null,
+          true,
+        );
+      if (['IN_PROGRESS', 'COMPLETED', 'RELEASED'].includes(finalStatus) && pct(0.5)) {
+        await send(hiredWorker, 'LOCATION', null, { lat: job.latitude, lng: job.longitude });
+      }
+      await send(
+        hiredWorker,
+        'TEXT',
+        isFr ? "J'arrive dans 15 minutes." : 'On my way — about 15 minutes out.',
+      );
+      if (['COMPLETED', 'RELEASED'].includes(finalStatus)) {
+        await send(posterUser, 'TEXT', isFr ? 'Merci, super travail !' : 'Thanks, great work!');
+      }
+      if (finalStatus === 'DISPUTED') {
         await send(
           posterUser,
           'TEXT',
           isFr
-            ? 'Bonjour, je suis intéressé(e) par votre devis.'
-            : 'Hi, I\u2019m interested in your quote.',
+            ? 'Je ne suis pas satisfait, il manque du travail.'
+            : 'I\u2019m not satisfied — some of the work is missing.',
         );
-        if (acceptedQuote) await send(hiredWorker, 'QUOTE', null, { quoteId: acceptedQuote.id });
-        await send(
-          posterUser,
-          'TEXT',
-          isFr ? 'Ça marche, on peut commencer quand ?' : 'Sounds good — when can we start?',
-        );
-        await send(
-          hiredWorker,
-          'TEXT',
-          isFr ? 'Je peux venir dès demain matin.' : 'I can come by tomorrow morning.',
-        );
-        if (pct(0.5))
-          await send(
-            posterUser,
-            'IMAGE',
-            isFr ? 'Voici une photo du problème.' : 'Here\u2019s a photo of the issue.',
-            null,
-            true,
-          );
-        if (['IN_PROGRESS', 'COMPLETED', 'RELEASED'].includes(finalStatus) && pct(0.5)) {
-          await send(hiredWorker, 'LOCATION', null, { lat: job.latitude, lng: job.longitude });
-        }
-        await send(
-          hiredWorker,
-          'TEXT',
-          isFr ? "J'arrive dans 15 minutes." : 'On my way — about 15 minutes out.',
-        );
-        if (['COMPLETED', 'RELEASED'].includes(finalStatus)) {
-          await send(posterUser, 'TEXT', isFr ? 'Merci, super travail !' : 'Thanks, great work!');
-        }
-        if (finalStatus === 'DISPUTED') {
-          await send(
-            posterUser,
-            'TEXT',
-            isFr
-              ? 'Je ne suis pas satisfait, il manque du travail.'
-              : 'I\u2019m not satisfied — some of the work is missing.',
-          );
-        }
-        await prisma.conversation.update({
-          where: { id: conv.id },
-          data: {
-            lastMessageAt: t,
-            lastMessagePreview: (lastMessage.body ?? 'Media message').slice(0, 60),
-          },
-        });
-        return { conv, job, posterUser, hiredWorker, finalStatus };
-      }),
+      }
+      await prisma.conversation.update({
+        where: { id: conv.id },
+        data: {
+          lastMessageAt: t,
+          lastMessagePreview: (lastMessage.body ?? 'Media message').slice(0, 60),
+        },
+      });
+      return { conv, job, posterUser, hiredWorker, finalStatus };
+    },
   );
 
   // A block, following a soured job (MSG-04).
