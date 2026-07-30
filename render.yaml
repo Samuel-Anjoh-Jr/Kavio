@@ -3,7 +3,7 @@ services:
     name: kavio-api
     runtime: node
     plan: free
-    region: oregon
+    region: frankfurt
     rootDir: apps/api
     # Monorepo build: hop back to the workspace root so pnpm sees the lockfile
     # and turbo can build @kavio/database (Prisma generate) before @kavio/api.
