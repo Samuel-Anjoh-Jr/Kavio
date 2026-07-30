@@ -3,9 +3,25 @@ import {
   buildDefaultPreferences,
   getChannelPriority,
   getEmailProviderName,
+  getSmsProviderName,
+  getWhatsappProviderName,
+  hasTwilioSmsConfig,
+  hasTwilioWhatsappConfig,
   isSmsEnabled,
   isWhatsappEnabled,
 } from './notification.config';
+
+const TWILIO_SMS_ENV = {
+  TWILIO_ACCOUNT_SID: 'AC-test',
+  TWILIO_AUTH_TOKEN: 'token',
+  TWILIO_SMS_FROM_NUMBER: '+15017122661',
+};
+
+const TWILIO_WHATSAPP_ENV = {
+  TWILIO_ACCOUNT_SID: 'AC-test',
+  TWILIO_AUTH_TOKEN: 'token',
+  TWILIO_WHATSAPP_FROM_NUMBER: '+14155238886',
+};
 
 describe('notification config', () => {
   describe('getChannelPriority', () => {
@@ -37,21 +53,70 @@ describe('notification config', () => {
     });
   });
 
+  describe('hasTwilioSmsConfig / hasTwilioWhatsappConfig', () => {
+    it('requires every value, not just the shared account credentials', () => {
+      expect(hasTwilioSmsConfig({})).toBe(false);
+      expect(
+        hasTwilioSmsConfig({ TWILIO_ACCOUNT_SID: 'AC-test', TWILIO_AUTH_TOKEN: 'token' }),
+      ).toBe(false);
+      expect(hasTwilioSmsConfig(TWILIO_SMS_ENV)).toBe(true);
+
+      expect(hasTwilioWhatsappConfig({})).toBe(false);
+      expect(hasTwilioWhatsappConfig(TWILIO_SMS_ENV)).toBe(false);
+      expect(hasTwilioWhatsappConfig(TWILIO_WHATSAPP_ENV)).toBe(true);
+    });
+  });
+
+  describe('getSmsProviderName / getWhatsappProviderName', () => {
+    it('picks twilio only once its own credentials are complete', () => {
+      expect(getSmsProviderName({})).toBe('stub');
+      expect(getSmsProviderName(TWILIO_SMS_ENV)).toBe('twilio');
+      // Having WhatsApp's from-number doesn't make SMS usable, and vice versa.
+      expect(getSmsProviderName(TWILIO_WHATSAPP_ENV)).toBe('stub');
+
+      expect(getWhatsappProviderName({})).toBe('stub');
+      expect(getWhatsappProviderName(TWILIO_WHATSAPP_ENV)).toBe('twilio');
+      expect(getWhatsappProviderName(TWILIO_SMS_ENV)).toBe('stub');
+    });
+  });
+
   describe('isSmsEnabled', () => {
-    it('is OFF unless explicitly enabled (launch constraint)', () => {
+    it('is OFF at launch with no credentials and no override', () => {
       expect(isSmsEnabled({})).toBe(false);
-      expect(isSmsEnabled({ NOTIFICATIONS_SMS_ENABLED: 'false' })).toBe(false);
-      expect(isSmsEnabled({ NOTIFICATIONS_SMS_ENABLED: '1' })).toBe(false);
+    });
+
+    it('auto-enables once the Twilio SMS credentials are all present', () => {
+      expect(isSmsEnabled(TWILIO_SMS_ENV)).toBe(true);
+      // Missing the from-number: still OFF, not a half-working channel.
+      expect(isSmsEnabled({ TWILIO_ACCOUNT_SID: 'AC-test', TWILIO_AUTH_TOKEN: 'token' })).toBe(
+        false,
+      );
+    });
+
+    it('lets an explicit override win either direction', () => {
       expect(isSmsEnabled({ NOTIFICATIONS_SMS_ENABLED: 'true' })).toBe(true);
+      expect(isSmsEnabled({ ...TWILIO_SMS_ENV, NOTIFICATIONS_SMS_ENABLED: 'false' })).toBe(false);
+      // Any other value is not a recognised override, so it falls through to
+      // auto-detection rather than being treated as truthy.
+      expect(isSmsEnabled({ NOTIFICATIONS_SMS_ENABLED: '1' })).toBe(false);
     });
   });
 
   describe('isWhatsappEnabled', () => {
-    it('is OFF unless explicitly enabled (same launch constraint as SMS)', () => {
+    it('is OFF at launch with no credentials and no override', () => {
       expect(isWhatsappEnabled({})).toBe(false);
-      expect(isWhatsappEnabled({ NOTIFICATIONS_WHATSAPP_ENABLED: 'false' })).toBe(false);
-      expect(isWhatsappEnabled({ NOTIFICATIONS_WHATSAPP_ENABLED: '1' })).toBe(false);
+    });
+
+    it('auto-enables once the Twilio WhatsApp credentials are all present', () => {
+      expect(isWhatsappEnabled(TWILIO_WHATSAPP_ENV)).toBe(true);
+    });
+
+    it('lets an explicit override win either direction', () => {
       expect(isWhatsappEnabled({ NOTIFICATIONS_WHATSAPP_ENABLED: 'true' })).toBe(true);
+      expect(
+        isWhatsappEnabled({ ...TWILIO_WHATSAPP_ENV, NOTIFICATIONS_WHATSAPP_ENABLED: 'false' }),
+      ).toBe(false);
+      expect(isWhatsappEnabled({ NOTIFICATIONS_WHATSAPP_ENABLED: '1' })).toBe(false);
     });
   });
 

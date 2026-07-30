@@ -1,36 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationChannel } from '@kavio/database';
 import { createLogger } from '../../lib/logger';
-import { isWhatsappEnabled } from '../notification.config';
+import {
+  getWhatsappProviderName,
+  isWhatsappEnabled,
+  type WhatsappProviderName,
+} from '../notification.config';
 import type {
   NotificationChannelProvider,
   RecipientContext,
   RenderedMessage,
 } from '../notification.types';
+import { sendTwilioMessage, toWhatsappAddress } from './twilio.util';
 
 const logger = createLogger('notifications:whatsapp');
 
 /**
- * The WhatsApp channel — REGISTERED but feature-flagged OFF (same launch
- * posture as SMS). WhatsApp needs a Business API vendor (a Meta BSP such as
- * 360dialog or Twilio) with real credentials, so it is deferred.
+ * The WhatsApp channel. Same two-backend shape as SmsProvider (and
+ * EmailProvider's console/resend split):
+ *  - "stub": logs the attempt and delivers nothing. Runs until Twilio is
+ *    configured for WhatsApp, and still runs if NOTIFICATIONS_WHATSAPP_ENABLED
+ *    is forced "true" without credentials (kept for local dispatch testing).
+ *  - "twilio": real delivery over Twilio's WhatsApp API (same Messages
+ *    endpoint as SMS, addressed with a `whatsapp:` prefix).
  *
- * This stub exists so the seam is real rather than hypothetical: it is a fully
- * registered provider the dispatcher already considers on every dispatch and
- * skips only because `isEnabled()` is false. Setting NOTIFICATIONS_WHATSAPP_ENABLED=true
- * routes WhatsApp-capable templates here immediately, with zero call-site
- * changes — recipients are already stored in E.164, so the number a BSP needs
- * is already send-ready.
- *
- * When a vendor is connected, only `send()` below changes: it makes the real
- * HTTP call to that vendor's API using the WHATSAPP_API_* env vars.
+ * Filling in TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and
+ * TWILIO_WHATSAPP_FROM_NUMBER switches this to "twilio" and flips
+ * `isEnabled()` on with no call-site change — recipients are already stored
+ * in E.164, so the number Twilio needs is already send-ready.
  */
 @Injectable()
 export class WhatsappProvider implements NotificationChannelProvider {
   readonly channel = NotificationChannel.WHATSAPP;
-  readonly providerName = 'whatsapp-stub';
 
-  constructor(private readonly env: NodeJS.ProcessEnv = process.env) {}
+  private readonly backend: WhatsappProviderName;
+
+  constructor(private readonly env: NodeJS.ProcessEnv = process.env) {
+    this.backend = getWhatsappProviderName(env);
+  }
+
+  get providerName(): string {
+    return this.backend === 'twilio' ? 'twilio' : 'whatsapp-stub';
+  }
 
   isEnabled(): boolean {
     return isWhatsappEnabled(this.env);
@@ -41,18 +52,33 @@ export class WhatsappProvider implements NotificationChannelProvider {
     return recipient.phone;
   }
 
-  send(address: string, message: RenderedMessage): Promise<void> {
+  async send(address: string, message: RenderedMessage): Promise<void> {
     if (message.channel !== 'WHATSAPP') {
       throw new Error(`WhatsappProvider received a ${message.channel} message`);
     }
 
-    // The stub "delivers" by recording the attempt. The NotificationLog row is
-    // still written by the processor, so enabling the flag produces a complete,
-    // inspectable delivery trail before a real vendor is ever connected.
-    logger.info('WhatsApp stub invoked (no real delivery — provider deferred)', {
-      payload: { recipientSuffix: address.slice(-4), length: message.content.text.length },
-    });
+    if (this.backend === 'stub') {
+      // The stub "delivers" by recording the attempt. The NotificationLog row
+      // is still written by the processor, so enabling the flag without
+      // credentials still produces a complete, inspectable delivery trail.
+      logger.info('WhatsApp stub invoked (no real delivery — Twilio not configured)', {
+        payload: { recipientSuffix: address.slice(-4), length: message.content.text.length },
+      });
+      return;
+    }
 
-    return Promise.resolve();
+    const accountSid = this.env.TWILIO_ACCOUNT_SID;
+    const authToken = this.env.TWILIO_AUTH_TOKEN;
+    const from = this.env.TWILIO_WHATSAPP_FROM_NUMBER;
+    if (!accountSid || !authToken || !from) {
+      // Guarded by getWhatsappProviderName() at construction time, so this
+      // only fires if env changed after the provider was built.
+      throw new Error('Twilio WhatsApp credentials are not fully configured');
+    }
+
+    await sendTwilioMessage(
+      { accountSid, authToken },
+      { to: toWhatsappAddress(address), from: toWhatsappAddress(from), body: message.content.text },
+    );
   }
 }

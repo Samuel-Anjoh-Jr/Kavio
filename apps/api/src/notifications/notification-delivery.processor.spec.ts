@@ -170,4 +170,61 @@ describe('NotificationDeliveryProcessor', () => {
 
     expect(updatedRow()).toMatchObject({ status: NotificationStatus.SENT });
   });
+
+  it('delivers a real OTP over Twilio SMS once the credentials are filled in', async () => {
+    const fetchMock = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify({ sid: 'SM-1' }), { status: 201 }));
+
+    const { processor, updatedRow } = makeProcessor({
+      TWILIO_ACCOUNT_SID: 'AC-test',
+      TWILIO_AUTH_TOKEN: 'token',
+      TWILIO_SMS_FROM_NUMBER: '+15017122661',
+    });
+
+    await processor.process(
+      makeJob({
+        channel: NotificationChannel.SMS,
+        providerName: 'twilio',
+        address: '+237655555555',
+        templateKey: 'auth.otp_code',
+        variables: { code: '123456', expiresInMinutes: 10 },
+      }),
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const body = new URLSearchParams(fetchMock.mock.calls[0]![1]!.body as string);
+    expect(body.get('To')).toBe('+237655555555');
+    expect(body.get('From')).toBe('+15017122661');
+    expect(body.get('Body')).toContain('123456');
+    expect(updatedRow()).toMatchObject({ status: NotificationStatus.SENT });
+  });
+
+  it('delivers a real OTP over Twilio WhatsApp once the credentials are filled in', async () => {
+    const fetchMock = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify({ sid: 'SM-2' }), { status: 201 }));
+
+    const { processor, updatedRow } = makeProcessor({
+      TWILIO_ACCOUNT_SID: 'AC-test',
+      TWILIO_AUTH_TOKEN: 'token',
+      TWILIO_WHATSAPP_FROM_NUMBER: '+14155238886',
+    });
+
+    await processor.process(
+      makeJob({
+        channel: NotificationChannel.WHATSAPP,
+        providerName: 'twilio',
+        address: '+237655555555',
+        templateKey: 'auth.otp_code',
+        variables: { code: '123456', expiresInMinutes: 10 },
+      }),
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const body = new URLSearchParams(fetchMock.mock.calls[0]![1]!.body as string);
+    expect(body.get('To')).toBe('whatsapp:+237655555555');
+    expect(body.get('From')).toBe('whatsapp:+14155238886');
+    expect(updatedRow()).toMatchObject({ status: NotificationStatus.SENT });
+  });
 });
