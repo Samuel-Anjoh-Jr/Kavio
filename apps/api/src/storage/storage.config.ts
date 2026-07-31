@@ -106,6 +106,16 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     visibility: MediaVisibility.PRIVATE,
     prefix: 'quotes',
   },
+  [MediaAssetKind.JOB_APPLICATION_ATTACHMENT]: {
+    // A CV, reference letter or ID scan a worker attaches when applying — for
+    // the roles with no portfolio to browse, this is the only evidence a
+    // poster gets before shortlisting. Seen only by the poster and the
+    // applicant, so PRIVATE and its own prefix, never the public job board.
+    mimeTypes: DOCUMENT_TYPES,
+    maxBytes: 10 * MB,
+    visibility: MediaVisibility.PRIVATE,
+    prefix: 'applications',
+  },
   [MediaAssetKind.DISPUTE_EVIDENCE]: {
     // Evidence in a dispute thread (a photo of the finished work, a receipt).
     // PRIVATE: seen only by the two parties and the admin resolving the case, and

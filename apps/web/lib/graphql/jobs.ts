@@ -233,6 +233,11 @@ export interface JobPostingEligibilityResult {
 export type JobApplicationStatus =
   'SUBMITTED' | 'UNDER_REVIEW' | 'SHORTLISTED' | 'NOT_SELECTED' | 'HIRED' | 'WITHDRAWN';
 
+export interface JobApplicationAttachment {
+  id: string;
+  url: string | null;
+}
+
 export interface JobApplication {
   id: string;
   jobId: string;
@@ -240,6 +245,7 @@ export interface JobApplication {
   status: JobApplicationStatus;
   message: string;
   worker: WorkerPreview | null;
+  attachments: JobApplicationAttachment[];
   createdAt: string;
 }
 
@@ -263,6 +269,10 @@ const APPLICATION_FIELDS = `
   message
   worker {
     ${WORKER_PREVIEW_FIELDS}
+  }
+  attachments {
+    id
+    url
   }
   createdAt
 `;

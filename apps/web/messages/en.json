@@ -1298,6 +1298,9 @@
     "apply": "Apply",
     "applyTitle": "Apply to this job",
     "applyMessagePlaceholder": "Tell the client why you're a good fit, at least a sentence.",
+    "addAttachment": "Attach a CV or reference (optional)",
+    "attachmentHint": "Optional. Useful if you don't have a portfolio to show — a CV, reference letter or ID.",
+    "removeAttachment": "Remove file",
     "submitApplication": "Send application",
     "applicationSent": "Application sent.",
     "applicationWithdrawn": "Application withdrawn.",
@@ -1313,6 +1316,7 @@
       "WITHDRAWN": "Withdrawn"
     },
     "applicantsHeading": "{count, plural, one {# applicant} other {# applicants}}",
+    "applicantAttachment": "Attachment {index}",
     "invitationsSentHeading": "{count, plural, one {# invitation sent} other {# invitations sent}}",
     "unnamedWorker": "Kavio professional",
     "notSelected": "Not selected",

@@ -1446,6 +1446,13 @@ enum MediaAssetKind {
   JOB_PHOTO
   /// A file a worker attaches to a quote (QTE-01): a sketch, a parts list.
   QUOTE_ATTACHMENT
+  /// A file a worker attaches to a JOB APPLICATION (JOB-04): a CV, a reference
+  /// letter, an ID scan. Not PORTFOLIO_IMAGE and not scored by the Trust
+  /// Engine — this exists for the roles Kavio serves that have no portfolio to
+  /// browse (a night watchman, a cashier, a driver), where a poster deciding
+  /// between applicants has nothing but the message unless the worker attaches
+  /// something. PRIVATE, seen only by the poster and the applicant.
+  JOB_APPLICATION_ATTACHMENT
   /// Evidence attached to a dispute message (PAY-03, ADM-05): a photo of the
   /// finished work, a receipt. PRIVATE — seen only by the two parties and the
   /// admin resolving the case, never public the way a job photo is.
@@ -1505,16 +1512,17 @@ model MediaAsset {
 
   createdAt DateTime @default(now())
 
-  owner              User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  portfolio          PortfolioItem[]
-  verifications      VerificationDocument[]
-  workerCovers       WorkerProfile[]        @relation("WorkerProfileCover")
-  businessLogos      BusinessProfile[]      @relation("BusinessProfileLogo")
-  jobPhotos          JobPhoto[]
-  quoteAttachments   QuoteAttachment[]
-  disputeEvidence    DisputeAttachment[]
-  messageAttachments MessageAttachment[]
-  reviewPhotos       ReviewPhoto[]
+  owner                  User                       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  portfolio              PortfolioItem[]
+  verifications          VerificationDocument[]
+  workerCovers           WorkerProfile[]            @relation("WorkerProfileCover")
+  businessLogos          BusinessProfile[]          @relation("BusinessProfileLogo")
+  jobPhotos              JobPhoto[]
+  quoteAttachments       QuoteAttachment[]
+  applicationAttachments JobApplicationAttachment[]
+  disputeEvidence        DisputeAttachment[]
+  messageAttachments     MessageAttachment[]
+  reviewPhotos           ReviewPhoto[]
 
   @@index([ownerId, kind, createdAt])
   /// The Documents area lists live files only (TRU-08).
@@ -1889,9 +1897,10 @@ model JobApplication {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  job    Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  worker User    @relation("JobApplicationWorker", fields: [workerId], references: [id], onDelete: Cascade)
-  quotes Quote[]
+  job         Job                         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  worker      User                        @relation("JobApplicationWorker", fields: [workerId], references: [id], onDelete: Cascade)
+  quotes      Quote[]
+  attachments JobApplicationAttachment[]
 
   /// One application per worker per job. A worker with second thoughts revises
   /// the one they have; re-applying to shout louder is not a feature.
@@ -1900,6 +1909,26 @@ model JobApplication {
   @@index([jobId, status, createdAt])
   /// The worker's "my applications" tracker (JOB-04).
   @@index([workerId, status, createdAt])
+}
+
+/// An optional file attached to a JobApplication (JOB-04) — a CV, a reference,
+/// an ID scan. Its own join table rather than a column on JobApplication,
+/// matching JobPhoto/QuoteAttachment: a worker may attach more than one file,
+/// and this keeps upload validation, ownership and signed access on the same
+/// rails as every other attachment in the system.
+model JobApplicationAttachment {
+  id            String @id @default(uuid()) @db.Uuid
+  applicationId String @db.Uuid
+  mediaAssetId  String @db.Uuid
+
+  createdAt DateTime @default(now())
+
+  application JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  mediaAsset  MediaAsset     @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  /// The same file cannot be attached twice to the same application.
+  @@unique([applicationId, mediaAssetId])
+  @@index([applicationId])
 }
 
 /// A poster inviting a specific worker to a job (JOB-03).

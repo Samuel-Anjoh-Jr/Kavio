@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { JobApplicationStatus, JobStatus, Prisma } from '@kavio/database';
+import { JobApplicationStatus, JobStatus, MediaAssetKind, Prisma } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
@@ -79,10 +79,25 @@ export class ApplicationsService {
       );
     }
 
+    const attachmentIds = await this.assertOwnedAttachments(user.id, dto.attachmentAssetIds);
+
     try {
-      const application = await this.prisma.client.jobApplication.create({
-        data: { jobId, workerId: user.id, message: dto.message },
-        select: APPLICATION_SELECT,
+      const application = await this.prisma.client.$transaction(async (tx) => {
+        const created = await tx.jobApplication.create({
+          data: { jobId, workerId: user.id, message: dto.message },
+          select: APPLICATION_SELECT,
+        });
+
+        if (attachmentIds.length > 0) {
+          await tx.jobApplicationAttachment.createMany({
+            data: attachmentIds.map((mediaAssetId) => ({
+              applicationId: created.id,
+              mediaAssetId,
+            })),
+          });
+        }
+
+        return created;
       });
 
       this.events.emit(
@@ -192,6 +207,43 @@ export class ApplicationsService {
     );
 
     return updated;
+  }
+
+  /** Verifies each attachment is the worker's own JOB_APPLICATION_ATTACHMENT upload. */
+  private async assertOwnedAttachments(
+    userId: string,
+    ids: string[] | undefined,
+  ): Promise<string[]> {
+    if (!ids || ids.length === 0) {
+      return [];
+    }
+    const unique = [...new Set(ids)];
+    const assets = await this.prisma.client.mediaAsset.findMany({
+      where: { id: { in: unique }, ownerId: userId, deletedAt: null },
+      select: { id: true, kind: true },
+    });
+    const byId = new Map(assets.map((a) => [a.id, a.kind]));
+
+    for (const id of unique) {
+      const kind = byId.get(id);
+      if (!kind) {
+        throw new AppException(
+          HttpStatus.NOT_FOUND,
+          'MEDIA_NOT_FOUND',
+          'An attachment was not found.',
+          { attachmentAssetIds: ['Upload the file again.'] },
+        );
+      }
+      if (kind !== MediaAssetKind.JOB_APPLICATION_ATTACHMENT) {
+        throw new AppException(
+          HttpStatus.BAD_REQUEST,
+          'MEDIA_WRONG_KIND',
+          'That file cannot be attached to an application.',
+          { attachmentAssetIds: ['Upload it as an application attachment.'] },
+        );
+      }
+    }
+    return unique;
   }
 
   private jobNotFound(): AppException {
