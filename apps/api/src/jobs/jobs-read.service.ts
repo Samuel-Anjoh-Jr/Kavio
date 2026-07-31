@@ -7,6 +7,7 @@ import { StorageService } from '../storage/storage.service';
 import { ClientReliabilityService } from './client-reliability.service';
 import type {
   ClientReliabilityView,
+  JobApplicationAttachmentView,
   JobApplicationView,
   JobInvitationView,
   JobListView,
@@ -180,19 +181,23 @@ export class JobsReadService {
     const applications = await this.prisma.client.jobApplication.findMany({
       where: { jobId },
       orderBy: { createdAt: 'desc' },
+      include: this.applicationAttachmentInclude(),
     });
 
     const previews = await this.workerPreviews(applications.map((a) => a.workerId));
 
-    return applications.map((a) => ({
-      id: a.id,
-      jobId: a.jobId,
-      jobTitle: null,
-      status: a.status,
-      message: a.message,
-      worker: previews.get(a.workerId) ?? null,
-      createdAt: a.createdAt,
-    }));
+    return Promise.all(
+      applications.map(async (a) => ({
+        id: a.id,
+        jobId: a.jobId,
+        jobTitle: null,
+        status: a.status,
+        message: a.message,
+        worker: previews.get(a.workerId) ?? null,
+        attachments: await this.mapApplicationAttachments(a.attachments),
+        createdAt: a.createdAt,
+      })),
+    );
   }
 
   /** The worker's own application tracker (JOB-04). */
@@ -200,18 +205,21 @@ export class JobsReadService {
     const applications = await this.prisma.client.jobApplication.findMany({
       where: { workerId: user.id },
       orderBy: { createdAt: 'desc' },
-      include: { job: { select: { title: true } } },
+      include: { job: { select: { title: true } }, ...this.applicationAttachmentInclude() },
     });
 
-    return applications.map((a) => ({
-      id: a.id,
-      jobId: a.jobId,
-      jobTitle: a.job.title,
-      status: a.status,
-      message: a.message,
-      worker: null,
-      createdAt: a.createdAt,
-    }));
+    return Promise.all(
+      applications.map(async (a) => ({
+        id: a.id,
+        jobId: a.jobId,
+        jobTitle: a.job.title,
+        status: a.status,
+        message: a.message,
+        worker: null,
+        attachments: await this.mapApplicationAttachments(a.attachments),
+        createdAt: a.createdAt,
+      })),
+    );
   }
 
   /**
@@ -280,6 +288,27 @@ export class JobsReadService {
   // ───────────────────────────────────────────────────────────────────────────
   // Internals
   // ───────────────────────────────────────────────────────────────────────────
+
+  private applicationAttachmentInclude() {
+    return {
+      attachments: {
+        orderBy: { createdAt: 'asc' as const },
+        include: { mediaAsset: { select: { s3Key: true, visibility: true } } },
+      },
+    };
+  }
+
+  /** Resolves each attachment's signed URL. Application files are PRIVATE. */
+  private async mapApplicationAttachments(
+    attachments: Array<{ id: string; mediaAsset: { s3Key: string; visibility: MediaVisibility } }>,
+  ): Promise<JobApplicationAttachmentView[]> {
+    return Promise.all(
+      attachments.map(async (a) => ({
+        id: a.id,
+        url: await this.storage.urlFor(a.mediaAsset.s3Key, a.mediaAsset.visibility),
+      })),
+    );
+  }
 
   private listInclude() {
     return {

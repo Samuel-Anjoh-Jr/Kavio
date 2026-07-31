@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
+import { FileText } from 'lucide-react';
 import { RemoteImage } from '@/components/ui/remote-image';
 import { Button } from '@/components/ui/button';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
@@ -142,6 +143,25 @@ export function JobPosterApplicants({ jobId }: { jobId: string }) {
                       />
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">{application.message}</p>
+                    {application.attachments.length > 0 && (
+                      <ul className="mt-2 flex flex-wrap gap-2">
+                        {application.attachments.map((attachment, index) =>
+                          attachment.url ? (
+                            <li key={attachment.id}>
+                              <a
+                                href={attachment.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-medium text-foreground hover:bg-muted"
+                              >
+                                <FileText aria-hidden className="size-3.5" />
+                                {t('applicantAttachment', { index: index + 1 })}
+                              </a>
+                            </li>
+                          ) : null,
+                        )}
+                      </ul>
+                    )}
                   </div>
                 </div>
 

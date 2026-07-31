@@ -17,6 +17,13 @@ export const applyToJobSchema = z.object({
     .trim()
     .min(10, 'Tell the client why you’re a good fit — at least a sentence.')
     .max(2000, 'Keep your message under 2000 characters.'),
+  /**
+   * Already-uploaded JOB_APPLICATION_ATTACHMENT assets (JOB-04) — optional. A
+   * plumber has a portfolio to browse; a night watchman or a cashier often
+   * does not, and a CV or reference is the only extra evidence they can give
+   * a poster deciding between applicants.
+   */
+  attachmentAssetIds: z.array(z.uuid()).max(5, 'Attach up to 5 files.').optional(),
 });
 
 export type ApplyToJobDto = z.infer<typeof applyToJobSchema>;

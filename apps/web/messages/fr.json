@@ -1298,6 +1298,9 @@
     "apply": "Postuler",
     "applyTitle": "Postuler à cette mission",
     "applyMessagePlaceholder": "Dites au client pourquoi vous êtes la bonne personne, au moins une phrase.",
+    "addAttachment": "Joindre un CV ou une référence (facultatif)",
+    "attachmentHint": "Facultatif. Utile si vous n’avez pas de portfolio à montrer — un CV, une lettre de référence ou une pièce d’identité.",
+    "removeAttachment": "Retirer le fichier",
     "submitApplication": "Envoyer la candidature",
     "applicationSent": "Candidature envoyée.",
     "applicationWithdrawn": "Candidature retirée.",
@@ -1313,6 +1316,7 @@
       "WITHDRAWN": "Retirée"
     },
     "applicantsHeading": "{count, plural, one {# candidat} other {# candidats}}",
+    "applicantAttachment": "Pièce jointe {index}",
     "invitationsSentHeading": "{count, plural, one {# invitation envoyée} other {# invitations envoyées}}",
     "unnamedWorker": "Professionnel Kavio",
     "notSelected": "Non retenu",

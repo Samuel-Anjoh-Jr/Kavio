@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
-import { Receipt } from 'lucide-react';
+import { FileText, Receipt, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { useToast } from '@/components/ui/use-toast';
 import { useIntentReplay, useRequireAuth } from '@/components/auth/require-auth';
 import { QuoteComposer } from '@/components/quotes/quote-composer';
+import { AssetUploader } from '@/components/uploads/asset-uploader';
 import { ApiError } from '@/lib/api-error';
 import type { JobStatus } from '@/lib/jobs';
 import {
@@ -21,7 +22,9 @@ import {
   type MyJobInvitationsQueryResult,
 } from '@/lib/graphql/jobs';
 import { MY_QUOTES_QUERY, type MyQuotesQueryResult } from '@/lib/graphql/quotes';
-import { restPost } from '@/lib/rest-api';
+import { restPost, type UploadResult } from '@/lib/rest-api';
+
+const MAX_APPLICATION_ATTACHMENTS = 5;
 
 const QUOTABLE_STATUSES: readonly JobStatus[] = ['OPEN', 'QUOTED'];
 
@@ -55,6 +58,7 @@ export function JobWorkerActions({ jobId, jobStatus }: { jobId: string; jobStatu
 
   const [applyOpen, setApplyOpen] = useState(false);
   const [applyMessage, setApplyMessage] = useState('');
+  const [applyAttachments, setApplyAttachments] = useState<UploadResult[]>([]);
   const [busy, setBusy] = useState(false);
 
   const { data: appData, refetch: refetchApps } = useQuery<MyApplicationsQueryResult>(
@@ -105,9 +109,14 @@ export function JobWorkerActions({ jobId, jobStatus }: { jobId: string; jobStatu
     if (message.length < 10) return;
     setBusy(true);
     try {
-      await restPost(`jobs/${jobId}/applications`, { message });
+      await restPost(`jobs/${jobId}/applications`, {
+        message,
+        attachmentAssetIds:
+          applyAttachments.length > 0 ? applyAttachments.map((a) => a.id) : undefined,
+      });
       setApplyOpen(false);
       setApplyMessage('');
+      setApplyAttachments([]);
       await refetchApps();
       toast({ title: t('applicationSent') });
     } catch (err) {
@@ -203,6 +212,41 @@ export function JobWorkerActions({ jobId, jobStatus }: { jobId: string; jobStatu
                     placeholder={t('applyMessagePlaceholder')}
                     className="w-full rounded-input border border-input bg-surface px-4 py-3 text-sm text-surface-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
+
+                  {applyAttachments.length > 0 && (
+                    <ul className="flex flex-col gap-2">
+                      {applyAttachments.map((attachment) => (
+                        <li
+                          key={attachment.id}
+                          className="flex items-center gap-2 rounded-card border border-border bg-muted/40 px-3 py-2 text-sm text-foreground"
+                        >
+                          <FileText aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+                          <span className="min-w-0 flex-1 truncate">{attachment.mimeType}</span>
+                          <button
+                            type="button"
+                            aria-label={t('removeAttachment')}
+                            onClick={() =>
+                              setApplyAttachments((c) => c.filter((a) => a.id !== attachment.id))
+                            }
+                            className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-background hover:text-foreground"
+                          >
+                            <X aria-hidden className="size-3.5" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {applyAttachments.length < MAX_APPLICATION_ATTACHMENTS && (
+                    <AssetUploader
+                      kind="JOB_APPLICATION_ATTACHMENT"
+                      label={t('addAttachment')}
+                      accept="image/jpeg,image/png,image/webp,application/pdf"
+                      onUploaded={(result) => setApplyAttachments((c) => [...c, result])}
+                    />
+                  )}
+                  <p className="text-xs text-muted-foreground">{t('attachmentHint')}</p>
+
                   <Button
                     onClick={() => void submitApplication()}
                     disabled={busy || applyMessage.trim().length < 10}

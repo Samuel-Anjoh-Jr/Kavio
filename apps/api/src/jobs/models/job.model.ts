@@ -232,6 +232,21 @@ export class JobListView {
 }
 
 @ObjectType({
+  description:
+    'A file attached to a job application (JOB-04) — a CV or reference for a role with no portfolio to browse.',
+})
+export class JobApplicationAttachmentView {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Signed URL — application files are private.',
+  })
+  url!: string | null;
+}
+
+@ObjectType({
   description: "A worker's application, as they track it (JOB-04), or as a poster reviews it.",
 })
 export class JobApplicationView {
@@ -255,6 +270,12 @@ export class JobApplicationView {
     description: 'The applicant card. Present on the poster’s applicant list (JOB-03).',
   })
   worker!: WorkerPreviewView | null;
+
+  @Field(() => [JobApplicationAttachmentView], {
+    description:
+      'Optional CV/reference files the applicant attached (JOB-04) — for retail-type roles (night watch, server, cashier) with no portfolio to review.',
+  })
+  attachments!: JobApplicationAttachmentView[];
 
   @Field(() => Date)
   createdAt!: Date;
