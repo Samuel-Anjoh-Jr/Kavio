@@ -1,10 +1,10 @@
-TrustPro
+Kavio
 A Trust-Based Local Services & Skilled-Labour Marketplace for Cameroon
 
 Software Requirements Specification
 & System Architecture
 Consolidated, build-ready specification (IEEE 830-inspired)
-Version 3.0  ·  July 2026
+Version 3.2  ·  August 2026 (see §27 for the changelog)
 Pillars:  Trust  ·  Discovery  ·  Transactions  ·  Progress
  
 Contents
@@ -14,15 +14,15 @@ Contents
 PART I   Software Requirements Specification
 1. Introduction
 1.1 Purpose
-This document specifies the functional and non-functional requirements and the target architecture for TrustPro, a trust-first marketplace that connects Cameroonian households and businesses with verified skilled workers. It consolidates four inputs into one coherent, non-duplicated specification: the team’s internal Trust Engine and progressive-verification analysis, the technical stack decision record (the “2026 Universal Stack”), the functional decisions from the project team meeting, and a 27-respondent user survey (“Shaping the Future of Local Services in Cameroon”). It is written to be executed directly with an AI-assisted development workflow and is the single source of truth for product, engineering, and QA.
+This document specifies the functional and non-functional requirements and the target architecture for Kavio, a trust-first marketplace that connects Cameroonian households and businesses with verified skilled workers. It consolidates four inputs into one coherent, non-duplicated specification: the team’s internal Trust Engine and progressive-verification analysis, the technical stack decision record (the “2026 Universal Stack”), the functional decisions from the project team meeting, and a 27-respondent user survey (“Shaping the Future of Local Services in Cameroon”). It is written to be executed directly with an AI-assisted development workflow and is the single source of truth for product, engineering, and QA.
 
 1.2 Product scope
-TrustPro is a two-sided marketplace for the Cameroonian informal and skilled-labour market (electricians, plumbers, welders, mechanics, painters, carpenters, cleaners, and similar trades). It is delivered as two distinct but connected experiences over one platform:
+Kavio is a two-sided marketplace for the Cameroonian informal and skilled-labour market (electricians, plumbers, welders, mechanics, painters, carpenters, cleaners, and similar trades). It is delivered as two distinct but connected experiences over one platform:
 •	Marketing website, a conversion-optimised, SEO-facing public site (value proposition, how-it-works, safety, categories, testimonials, CTA) that is separate from the installable app shell and requires no authentication.
 •	Application, an installable Progressive Web App (discovery, role-based dashboards, verification, messaging, escrow payments, trust and safety). WEB-ONLY: there is no native mobile app; the PWA installs on phones and desktops and “mobile” always means the responsive PWA in a phone browser.
 Delivery phasing (reconciled)
 The platform is delivered as a Web PWA only. The API remains deliberately client-agnostic so a native app could be added someday without rearchitecting, but no native app is planned or specified in this document. The marketing landing page stays outside the service-worker scope so it remains a fast, crawlable page.
-The competitive advantage is trust, not the listing. TrustPro is not Fiverr, Upwork, or TaskRabbit; the trust layer (a continuously updated Trust Engine, verified identity, portfolio evidence, transparent pricing, and escrow) is the product. Every requirement serves one of four pillars: Trust, Discovery, Transactions, Progress.
+The competitive advantage is trust, not the listing. Kavio is not Fiverr, Upwork, or TaskRabbit; the trust layer (a continuously updated Trust Engine, verified identity, portfolio evidence, transparent pricing, and escrow) is the product. Every requirement serves one of four pillars: Trust, Discovery, Transactions, Progress.
 1.3 Market rationale (survey evidence)
 A 27-respondent survey validated which signals most influence adoption; each respondent selected exactly three features. The counts drive prioritisation: the four strongest are treated as primary pillars and Must-Have (Part III, §22), while live tracking is validated as lower priority and deferred.
 Feature (survey wording)	Resp.	% of 27	Product consequence
@@ -61,7 +61,7 @@ TMDS	Trust Motion Design System, the product’s design language (Part III).
  
 2. Overall Description
 2.1 Product perspective
-TrustPro is a new, independently built system. Its core differentiator, per the team’s internal analysis, is not identity verification alone but a continuously updated Trust Engine: a scoring and tiering system that combines identity, professional reputation, marketplace behaviour, and financial reliability, and that rewards workers for increasing their verification level rather than gatekeeping them from entry. It is built as a monorepo spanning a Next.js web app and a NestJS API over PostgreSQL/PostGIS, integrating Campay (payments), OSM/CARTO/Mapbox/BigDataCloud (geospatial), and AWS S3 (media). The location model is layered and human-augmented (Part II, §12).
+Kavio is a new, independently built system. Its core differentiator, per the team’s internal analysis, is not identity verification alone but a continuously updated Trust Engine: a scoring and tiering system that combines identity, professional reputation, marketplace behaviour, and financial reliability, and that rewards workers for increasing their verification level rather than gatekeeping them from entry. It is built as a monorepo spanning a Next.js web app and a NestJS API over PostgreSQL/PostGIS, integrating Campay (payments), OSM/CARTO/Mapbox/BigDataCloud (geospatial), and AWS S3 (media). The location model is layered and human-augmented (Part II, §12).
 2.2 Product vision and the trust journey
 Every screen reinforces one journey; the UI communicates safety before the user reads any text.
 Discover → Verify trust → Hire → Secure payment → Complete job → Build reputation
@@ -105,7 +105,7 @@ An unauthenticated visitor. Can browse worker profiles and posted jobs and use s
 •	The design system (TMDS) is mandatory: all colour, spacing, radius, type, motion, and component behaviour derive from tokens, with no hardcoded values.
 •	Baseline engineering quality is non-negotiable: OWASP Top 10 mitigations, a clean high/critical scan status (e.g. Snyk) in CI/CD, full responsive design, and robust profile management.
 2.7 Assumptions and dependencies
-•	A final brand name and visual identity will be supplied; this document uses TrustPro as the standard token.
+•	The brand name and visual identity are final: Kavio (see BRAND_GUIDELINES.md for the mark, palette, and voice).
 •	Campay is available and supports collection and payout in XAF for the covered operators.
 •	OSM coverage and CARTO/Mapbox rendering suffice for the target cities; BigDataCloud serves reverse-geocoding.
 •	Field agents exist operationally to perform in-person verification and inspection.
@@ -206,7 +206,7 @@ MSG-06	Users shall be able to report a conversation or an individual message; re
 ID	Requirement
 PAY-01	The system shall support secure in-app payment via Campay, holding funds in escrow from acceptance/payment until the Client confirms completion, then releasing to the Worker minus the platform fee. (SRS FR-36)
 PAY-02	The system shall present an Escrow timeline: Paid → Accepted → In Progress → Completed → Released, with a “funds are secure” assurance; a ~10% service fee is shown transparently before payment.
-PAY-03	Disputed jobs shall freeze the TrustProciated escrowed funds pending Admin resolution; all payment and escrow events shall be written to an auditable, tamper-evident trail. (SRS FR-37, FR-38)
+PAY-03	Disputed jobs shall freeze the associated escrowed funds pending Admin resolution; all payment and escrow events shall be written to an auditable, tamper-evident trail. (SRS FR-37, FR-38)
 PAY-04	Campay shall be integrated for collection and payout via Mobile Money (MTN, Orange), card, and bank in XAF; users shall manage Payment Methods with a default and secure storage.
 PAY-05	The Wallet shall show available balance, escrow overview (in-escrow amount), Add Money, Withdraw, and a last-transaction summary; a Transaction History (payments, holds/releases, refunds, withdrawals, fees) shall provide filters, status chips, and per-item detail.
 PAY-06	Payment and escrow transitions shall be verified server-side against Campay webhooks/callbacks and be idempotent; failures shall show explicit plain-language reasons (declined, insufficient funds, operator timeout with retry), never a silent failure.
@@ -311,7 +311,7 @@ NFR-MNT-02	Shared types, GraphQL operations, and the Prisma client shall live in
 •	Admin and agent surfaces are data-dense, productivity-first (admin uses a dark, chart-heavy interface).
 •	All colour, spacing, radius, type, motion, and component behaviour derive from tokens; light and dark themes both shipped.
 5.2 Software interfaces (external services)
-Service	Role in TrustPro
+Service	Role in Kavio
 Campay	Payments: Mobile Money (MTN/Orange), card, bank, collection, escrow funding, and payout in XAF; webhooks confirm state.
 OpenStreetMap (OSM)	Authoritative baseline geodata: administrative boundaries, roads, POIs, extracted into PostGIS.
 PostGIS	Spatial storage/indexing (GIST) and queries over OSM geometry and live coordinates.
@@ -336,13 +336,14 @@ UserRole	userId, role (WORKER|CLIENT|BUSINESS|AGENT|ADMIN), isActive	belongs to 
 WorkerProfile	userId, headline, bio, tierId, trustScore, onTimePct, location (geo)	has Services, PortfolioItems, Availability, Documents, Reviews
 ClientProfile	userId, defaultLocation (geo)	belongs to User
 BusinessProfile	ownerId, name, type, rccm, description, verifiedAt, location (geo)	has TeamMembers, Jobs, Documents
-AgentProfile	userId, coverageRegionId, qualityScore	has Assignments; performs Verifications
 ServiceCategory	id, name(en/fr), icon, workerCount	has Services
 Service	id, workerId, categoryId, name, description, startingPrice, isActive	belongs to WorkerProfile & ServiceCategory
 PortfolioItem	id, workerId, type (photo|video|project), mediaKey, caption, group	belongs to WorkerProfile
 Availability	id, workerId, dayOfWeek, startTime, endTime, exceptions[]	belongs to WorkerProfile
 TrustScore	id, subjectId, subjectType, identity, professional, marketplace, financial, total	1:1 with Worker/Business; has TrustEvents
-VerificationRecord	id, subjectId, checkType, status, reviewedBy, reviewedAt, reason	belongs to subject; linked to Agent
+VerificationRecord	id, subjectId, checkType, status, reviewedBy, reviewedAt, reason	belongs to subject; reviewedBy is an identity with the AGENT/ADMIN role — there is no separate agent profile entity
+TierConfig	id, tier, minScore, requiredChecks[], minCompletedJobs?, minAverageRating?, labelKey	admin-editable tier gates (§21.4); one row per Tier
+AgentInvitation	id, name, email, phone?, tokenHash, status, invitedById, acceptedUserId?	admin-issued; binds to a User identity on acceptance
 Document	id, ownerId, kind (id|selfie|address|cert|portfolio|business), s3Key, status, visibility	belongs to owner
 Endorsement	id, subjectId, authorId, relationship, quote, rating	belongs to subject & author
 Job	id, clientId|businessId, categoryId, title, description, location (geo), budgetMin, budgetMax, urgency, status	has Applications, Quotes, Booking, Photos
@@ -351,6 +352,7 @@ Quote	id, jobId, workerId, price, durationEst, includes[], message, status	belon
 Booking	id, jobId, quoteId, workerId, clientId, agreedPrice, status	1:1 with accepted Quote; has EscrowHold
 Conversation	id, jobId?, participantAId, participantBId, lastMessageAt	has Messages
 Message	id, conversationId, senderId?, kind (text|image|voice|location|quote|job|payment), body/mediaKey, status	belongs to Conversation
+Block	id, blockerId, blockedId, reason?	one row per ordered pair (MSG-03 block user)
 Wallet	id, ownerId, balance, currency=XAF	has Transactions; has PaymentMethods
 PaymentMethod	id, walletId, kind (mtn|orange|card|bank), maskedRef, isDefault	belongs to Wallet
 Transaction	id, walletId, type (payment|escrow_hold|escrow_release|refund|withdrawal|fee), amount, status, ref	belongs to Wallet; links Booking
@@ -365,9 +367,14 @@ SOSAlert	id, userId, location (geo), status (active|resolved|false_alarm), creat
 EmergencyContact	id, userId, name, phone	belongs to User
 LocationPing	id, subjectId, jobId?, geo, accuracy, source, ts	telemetry for tracking (PostGIS)
 GeoRegion	id, name, boundary (geo), parentId	administrative area from OSM
-TeamMember	id, businessId, userId, role, accessLevel, status, joinedAt	belongs to BusinessProfile
-Referral	id, referrerId, code, refereeId?, rewardAmount, status	belongs to User
+BusinessTeamMember	id, businessProfileId, userId?, name, email?, phone?, role, accessLevel, status	belongs to BusinessProfile; userId is null until an invitation is accepted
+DeviceRegistration	id, userId, platform, endpoint, p256dh, auth, deviceName?, isActive	one row per Web Push subscription; multi-device registry (§17)
 AuditLog	id, actorId, action, target, requestId, meta, ts	cross-cutting
+SystemSetting	key, value (json), category, description?, updatedById?	admin-writable, runtime-read platform config (e.g. jobs.postingFeeXaf, verification.contactChannel)
+Faq / Testimonial / PortfolioShowcase	admin-editable EN/FR content + display order	backs the database-driven marketing content rule (§26.2); never hardcoded arrays
+Announcement	id, titleEn/Fr, bodyEn/Fr, audience, status, expiresAt?, publishedAt?, authorId	admin-authored in-app announcements
+
+Not yet built: SET-03's "Invite & Earn" referral flow has no backing entity or endpoints yet.
 6.2 Data integrity rules
 •	A Review must reference a Completed job and its two participants (prevents fabricated reviews), feeds Marketplace Trust.
 •	An EscrowHold transitions only via the defined state machine (Part II); “released” requires client confirmation or admin resolution.
@@ -377,7 +384,7 @@ AuditLog	id, actorId, action, target, requestId, meta, ts	cross-cutting
  
 PART II   System Architecture
 7. Architecture Overview
-TrustPro is a TypeScript-first monorepo with three deployable apps (web, mobile, API) and shared packages, over a PostgreSQL/PostGIS core. The API exposes a deliberate dual surface: GraphQL for all reads and REST for all writes. Spatial computation is delegated to PostGIS and CARTO; maps are pure presentation. The design is chosen for mobile-data efficiency, offline-first resilience, and geospatial performance.
+Kavio is a TypeScript-first monorepo with two deployable apps (web, API) and shared packages, over a PostgreSQL/PostGIS core. There is no native mobile app or third deployable — "mobile" always means the responsive, installable PWA served by the web app. The API exposes a deliberate dual surface: GraphQL for all reads and REST for all writes. Spatial computation is delegated to PostGIS and CARTO; maps are pure presentation. The design is chosen for mobile-data efficiency, offline-first resilience, and geospatial performance.
 7.1 High-level component view (Mermaid)
 flowchart TB
   subgraph Clients
@@ -418,7 +425,7 @@ flowchart TB
 8. Package & Workspace Architecture
 A root pnpm-workspace.yaml orchestrates apps and shared packages with deterministic symlinking. Both apps are executed on the Bun runtime (bun dev, bun run build) for fast compilation and server rendering; Turborepo runs workspace tasks (dev/build/lint/type-check) with caching. Husky runs pre-commit checks.
 8.1 Repository blueprint
-TrustPro/
+Kavio/
 ├─ apps/
 │  ├─ web/        # Next.js (App Router, Bun), marketing + app + Mapbox GL JS
 │  └─ api/        # NestJS (Bun), REST controllers + GraphQL resolvers + PostGIS
@@ -469,7 +476,8 @@ auth	JWT issue/refresh, OTP, 2FA, session guards, RBAC.
 users / roles	Accounts, multi-role, role switching, RBAC policies.
 profiles	Worker/Client/Business/Agent profiles, services, availability, portfolio.
 trust	Trust Score computation, verification checks, tiers, endorsements, badges, trust events.
-discovery	Search, filters, recommendations, nearby (delegates spatial to PostGIS/CARTO).
+catalog	The admin-managed service-category taxonomy that search and job posting are scoped to.
+search	Discovery: fuzzy/debounced search, filters, ranking, recommendations, nearby (delegates spatial to PostGIS/CARTO).
 jobs	Job lifecycle, applications, bookings, state machine.
 quotes	Quotes, counter-offers, acceptance → booking + escrow init.
 messaging	Conversations, messages, attachments (REST writes + WS delivery).
@@ -478,10 +486,14 @@ reviews	Reviews tied to completed jobs; feeds trust.
 safety	SOS alerts, emergency contacts, live tracking consent.
 notifications	Event-driven dispatcher, NotificationChannel providers (web push/email, SMS stub), NotificationLog, localized template store, preferences.
 business	Team members, access levels, invitations, company verification, business analytics.
-agents	Assignments, verification pipeline, field ops, performance.
-admin	Dashboards, verification queue, disputes, fraud & risk, categories, reports, audit, announcements, settings.
+verification	Progressive verification pipeline, ID review, Founding Professional intake — field-agent and admin review work lives here too; there is no separate agents module.
+moderation	Universal reporting (any visible surface, ADM-08) grouped by reported item, and append-only moderation actions.
+marketing	Admin-managed FAQ, testimonials, and landing-page portfolio showcase content.
+admin	Dashboards, agent invitations, fraud & risk, categories, reports, audit, announcements; reads across every other module but writes stay owned by the module whose domain they belong to (verification, trust, payments, and moderation own their own write paths).
+settings	Runtime-read platform settings (SystemSetting), e.g. the posting fee and verification contact channel.
 geo	OSM/PostGIS/CARTO integration, reverse-geocode, region resolution.
-realtime	WebSocket gateways for messaging, job status, notifications, telemetry.
+realtime	WebSocket gateways for messaging, tracking, notifications.
+queue / redis	BullMQ job queues and the shared Redis client (notification dispatch, webhook retries, rate limiting, WS pub/sub adapter).
 11. Data & Persistence
 •	PostgreSQL is the system of record; PostGIS adds spatial storage, GIST indexing, and queries over OSM geometry and live coordinates.
 •	Prisma is the ORM and emits a shared client (packages/database). Complex PostGIS operations bypass Prisma field access and run via reviewed raw SQL or database views.
@@ -701,9 +713,9 @@ Won’t Have (Phase 1)	Native iOS/Android apps, explicitly deferred in the origi
 Each functional module maps to backend modules and primary surfaces (duplicate mockups merged into one canonical screen per feature).
 FR module	Backend module(s)	Primary surfaces
 ACC	auth, users, roles	Landing CTA, guest browse, sign-up, OTP, role select, role switcher
-DIS	discovery, geo	Discovery home, location setter, filters, map/list, categories
+DIS	search, catalog, geo	Discovery home, location setter, filters, map/list, categories
 PRO	profiles	Worker profile, services, availability, portfolio, business profile
-TRU	trust, agents	Trust Score ring/breakdown, verification, documents, endorsements
+TRU	trust, verification	Trust Score ring/breakdown, verification, documents, endorsements
 JOB	jobs	Post-job stepper (Tier 2+ gate), applications, job-in-progress
 QTE	quotes	Quote inboxes, send/accept, counter-offer
 MSG	messaging, realtime	Inbox, conversation, voice/quote/payment cards
@@ -712,7 +724,7 @@ REV	reviews	Review submit, profile reviews summary
 SOS	safety, realtime	SOS button, safety center, SOS history, live tracking
 NOT	notifications	In-app inbox + web push + email + notification center + preferences (SMS deferred)
 BIZ	business	Business dashboard, team, company verification, analytics
-AGT	agents	Agent dashboard, pipeline, routes, inspections, founding intake
+AGT	verification, admin	Agent dashboard, pipeline, routes, inspections, founding intake
 ADM	admin, moderation	Dashboard, categories, verification queue, disputes, moderation workspace (grouped reports), fraud, reports
 SET / SYS	users, admin, platform	Settings, invite & earn, PWA/offline, system states
 23.2 Suggested delivery phasing
@@ -732,7 +744,7 @@ End of document.
 24. Local Development Environment & Tooling
 24.1 Docker Compose (local Postgres + Redis)
 A docker-compose.yml at the repo root provisions local infrastructure for Docker Desktop:
-•	postgres: postgis/postgis image (PostGIS preinstalled), port 5432, named volume for data, healthcheck (pg_isready), POSTGRES_DB=trustpro.
+•	postgres: postgis/postgis:16-3.4 image, port 5432, named volume for data, healthcheck (pg_isready), POSTGRES_DB=kavio.
 •	redis: redis:7-alpine, port 6379, appendonly persistence, healthcheck.
 Redis serves three roles in the architecture: BullMQ queues (notification dispatch + webhook retries), the rate-limit store, and the WebSocket pub/sub adapter for horizontal gateway scaling.
 24.2 Root package.json scripts (canonical set)
@@ -749,13 +761,13 @@ The root scripts are the single entry point for all workflows; contributors and 
 24.3 Environment management
 One root .env.example documents every variable (DATABASE_URL, DIRECT_URL, REDIS_URL, JWT secrets, VAPID keys, CAMPAY_*, S3_*, MAPBOX_TOKEN, CARTO_*, BIGDATACLOUD_KEY, RESEND_API_KEY). scripts/sync-env.mjs fans values out to apps; secrets never live in more than one file; nothing secret is committed.
 25. CI/CD Workflows (GitHub Actions)
-Three workflows, adapted from the proven template:
-•	deploy-production.yml: on push/PR to main. Job validate (pnpm install --frozen-lockfile → db:generate → type-check → lint); job db-migrate (main only, and only when the commit touches packages/database/prisma): prisma migrate deploy against DIRECT_URL, then a schema-drift gate: prisma migrate diff --from-url $DIRECT_URL --to-schema-datamodel schema.prisma --exit-code, failing the pipeline on drift; job summary writes a deployment summary (API auto-deployed by Railway branch integration; web by Vercel Git integration).
-•	prisma-migrate.yml: path-triggered (packages/database/prisma/**) migrate-deploy + the same drift check, for schema-only pushes.
+Three workflows:
+•	ci.yml: on every push/PR to main. Job validate: install (frozen lockfile) → db:generate → type-check → lint → test → prisma validate. This is the PR gate; it never touches a real database (DATABASE_URL/DIRECT_URL point at a dummy connection string since prisma validate only parses the schema).
+•	deploy-production.yml: on push to main (plus manual workflow_dispatch to re-run migrate + the drift gate without a push). A path-detection job reads the push's own commit list to decide whether packages/database/prisma changed; only then does job db-migrate boot a runner (with a Postgres+PostGIS shadow-db service container) to run prisma migrate deploy against DIRECT_URL followed by a schema-drift gate (prisma migrate diff --from-url $DIRECT_URL --to-schema-datamodel schema.prisma --exit-code), failing the pipeline on drift. A job summary records the run; the API auto-deploys via Railway's branch integration and the web app via Vercel's Git integration — this workflow does not deploy either app itself.
 •	manual-seed.yml: workflow_dispatch gated by typing CONFIRM; runs db:generate then db:seed against production. Never runs automatically.
 Rules: migrations run in CI before servers boot, never at request time; migration_lock.toml committed (provider=postgresql); .sql files UTF-8 without BOM; secrets via repository secrets only.
 26. Production Engineering Addendum (battle-tested lessons applied)
-These field-proven rules from the startup engineering guide are binding for TrustPro and referenced by the build prompts.
+These field-proven rules from the startup engineering guide are binding for Kavio and referenced by the build prompts.
 26.1 Notifications (dispatcher discipline)
 Covered in §17; in addition: seed default preferences at user creation; category names are a typed enum; store templateKey in logs, not rendered content; an admin dashboard reads NotificationLog for sent/failed/pending by channel, template, and date.
 26.2 Frontend system rules
@@ -782,3 +794,5 @@ Branded transactional emails only (tokens, logo, header/footer, mobile-responsiv
 Legal pages (Terms, Privacy, Refund/Dispute policy) ship at launch as static pages; a lightweight analytics event layer tracks the conversion funnel (landing CTA → sign-up → verification steps → first job/quote → first escrow) with events named in one typed constant; social-preview (OG) images per key public route.
 27. Version 3 changelog
 Web-only scope enforced end to end (native mobile removed); Redis + BullMQ layer added (queues, rate limiting, WS adapter); notifications rebuilt around the dispatcher pattern with NotificationLog, localized template store, multi-device web-push registry, E.164 phone normalisation, SMS deferred behind a feature flag; local dev environment defined (Docker Compose postgres+redis, canonical root scripts, env:sync, husky, keygen); CI/CD workflows specified (deploy-production with drift gate, path-triggered migrate, confirm-gated manual seed); production engineering addendum (§26) binding the startup-guide lessons; guest exploration view vs authenticated role-based homes confirmed (§3.1-3.2 access model). Version 3.1 adds: the in-app inbox as a first-class delivery CHANNEL behind the NotificationChannel interface (NOT-03) so the Notification Center honours the same preference grid as push and email; central deep-link resolution shared by push, the service worker and the inbox (NOT-04); and universal reporting with an append-only moderation trail (ADM-08, MSG-06) — reports are one polymorphic record over any visible surface, grouped by the reported ITEM so many complaints about one photo are one case, settled by one decision that both records the penalty and notifies the reported party.
+
+Version 3.2 (this revision) reconciles the document with the shipped codebase: rebranded TrustPro → Kavio throughout, including the standing brand-token assumption in §2.7 (the name is now final, not provisional); corrected §7/§8 to two deployable apps (web, API) — there was never a third "mobile" deployable, only the confusing wording; the backend module map (§10.2, §23.1) now matches app.module.ts — "discovery" is the search module plus the catalog (taxonomy) module it depends on, and there is no standalone "agents" module: field-agent and admin verification work lives in the verification module, with moderation, marketing (FAQ/testimonials/showcase) and settings added as modules in their own right; the domain model (§6.1) drops the never-built AgentProfile in favour of the AGENT/ADMIN UserRole plus AgentInvitation, adds TierConfig, Block, DeviceRegistration, SystemSetting, Faq/Testimonial/PortfolioShowcase and Announcement (all shipped), renames TeamMember → BusinessTeamMember, and flags the SET-03 referral flow as not yet built rather than documenting a Referral entity that does not exist; §24.1 corrects POSTGRES_DB to kavio; §25 corrects the CI/CD workflow list to what actually runs — ci.yml (the PR/push gate: typecheck, lint, test, prisma validate) plus deploy-production.yml (which now also owns the path-triggered migrate step the deleted prisma-migrate.yml used to) and manual-seed.yml.

@@ -1,10 +1,12 @@
-# TrustPro, Full Build-Prompt Queue (Claude Code)
+# Kavio, Full Build-Prompt Queue (Claude Code)
+
+> **Historical build-planning document.** This queue seeded the project's initial implementation; the phases below have since been built out (see git history). It is kept for the reasoning behind each build step, not as a live backlog. For the current state of the architecture, read [`CLAUDE.md`](../CLAUDE.md) and [`Kavio_SRS_Architecture_v3.md`](./Kavio_SRS_Architecture_v3.md) — those are the living sources of truth. The project was originally built and specified under the working name "TrustPro"; the shipped brand is **Kavio**, updated below.
 
 A complete, ordered queue of **atomic prompts**. Each prompt is **one focused task** sized for a single Claude Code session and a single PR, so the agent stays focused and you review small diffs. Run them top to bottom; each lists what it depends on by number.
 
-**Platform:** TrustPro is **web-only**. It is a Next.js app, used in any browser and **installable as a PWA** on mobile or desktop. There is **no native mobile app** (no Expo / React Native). All references to "mobile" mean the responsive PWA on a phone browser.
+**Platform:** Kavio is **web-only**. It is a Next.js app, used in any browser and **installable as a PWA** on mobile or desktop. There is **no native mobile app** (no Expo / React Native). All references to "mobile" mean the responsive PWA on a phone browser.
 
-**Source of truth:** the TrustPro SRS & System Architecture document. Requirement IDs (e.g. `TRU-02`, `PAY-01`) and the tier / Trust Score tables are authoritative; prompts reference them instead of restating them.
+**Source of truth:** the Kavio SRS & System Architecture document. Requirement IDs (e.g. `TRU-02`, `PAY-01`) and the tier / Trust Score tables are authoritative; prompts reference them instead of restating them.
 
 ---
 
@@ -13,7 +15,7 @@ A complete, ordered queue of **atomic prompts**. Each prompt is **one focused ta
 This primes every session. Paste it into `CLAUDE.md` at the repo root once, then start the queue at PROMPT 01.
 
 ```text
-PROJECT: TrustPro, a trust-first local-services / skilled-labour marketplace for Cameroon (Douala and Yaoundé first).
+PROJECT: Kavio, a trust-first local-services / skilled-labour marketplace for Cameroon (Douala and Yaoundé first).
 WEB-ONLY: a Next.js App Router app, installable as a PWA on mobile/desktop, or used on the web. NO native mobile app.
 The moat is TRUST, not listings: a continuously updated Trust Engine (identity, professional, marketplace, financial),
 progressive verification (Tiers 0-3), portfolio evidence, transparent quotes, and escrow. Bilingual EN/FR. Currency XAF only.
@@ -88,7 +90,7 @@ DEFINITION OF DONE (every PR): typechecks; lints; tests for new logic; reads via
   contrast, reduced-motion); requestId logging; no secrets committed; PR references the SRS requirement IDs + the PROMPT number.
 
 CONVENTIONS: TypeScript everywhere. One NestJS module per SRS module. Shared types + GraphQL ops + Prisma client in packages/*.
-  Brand token: "TrustPro". Add each feature's Prisma models + migration inside the prompt that introduces the feature (incremental schema).
+  Brand token: "Kavio". Add each feature's Prisma models + migration inside the prompt that introduces the feature (incremental schema).
 ```
 
 ---
