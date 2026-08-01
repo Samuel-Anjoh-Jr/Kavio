@@ -5,6 +5,7 @@ import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { hashSecret } from '../lib/secret-hash.util';
 import { PrismaService } from '../prisma/prisma.service';
+import { RedisService } from '../redis/redis.service';
 import type { SessionTokens } from './auth.types';
 import { TokenService, TokenVerificationError } from './token.service';
 
@@ -15,6 +16,38 @@ interface SessionUser {
   status: UserStatus;
   tier: VerificationTier;
   roles: { role: Role; isActive: boolean }[];
+}
+
+/**
+ * A refresh token is single-use, but the client legitimately calls it more than
+ * once for the same expiry: Next.js middleware and an RSC render can both hit
+ * `jwt()` for one navigation, or two open tabs read the session moments apart.
+ * Each of those presents the IDENTICAL, still-valid refresh token. Without
+ * coordination, whichever request loses the race would find the token already
+ * rotated and get its whole session family revoked as a suspected theft — a
+ * self-inflicted logout, not a security event.
+ *
+ * These keys make rotation single-flight across the whole fleet (not just one
+ * process): the first request to touch a given token wins the lock, performs
+ * the one real rotation, and caches its result; every other concurrent request
+ * for that same token waits briefly and hands back the identical result
+ * instead of racing its own rotation.
+ */
+const REFRESH_LOCK_TTL_MS = 5_000;
+const REFRESH_RESULT_TTL_MS = 20_000;
+const REFRESH_LOCK_WAIT_ATTEMPTS = 10;
+const REFRESH_LOCK_WAIT_INTERVAL_MS = 300;
+
+function refreshLockKey(tokenHash: string): string {
+  return `auth:refresh:lock:${tokenHash}`;
+}
+
+function refreshResultKey(tokenHash: string): string {
+  return `auth:refresh:result:${tokenHash}`;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -31,6 +64,7 @@ export class SessionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tokens: TokenService,
+    private readonly redis: RedisService,
   ) {}
 
   /** Starts a brand-new session family (login, OTP verification, 2FA completion). */
@@ -41,7 +75,8 @@ export class SessionService {
 
   /**
    * Rotates a refresh token. Anything suspicious ends the family rather than
-   * merely refusing this one call.
+   * merely refusing this one call — but see the single-flight lock below for
+   * what "suspicious" deliberately excludes.
    */
   async refresh(refreshToken: string, userAgent?: string): Promise<SessionTokens> {
     let claims;
@@ -52,6 +87,32 @@ export class SessionService {
     }
 
     const tokenHash = hashSecret(refreshToken);
+    const lockKey = refreshLockKey(tokenHash);
+    const resultKey = refreshResultKey(tokenHash);
+
+    // `SET NX` is the mutex: exactly one concurrent caller for this exact token
+    // gets 'OK' and does the real work below. Everyone else — another tab,
+    // middleware racing an RSC render, a retried request — waits for that
+    // winner's cached result rather than presenting the same token to the
+    // rotation logic itself, which would find it already rotated and revoke
+    // the whole family out from under a perfectly legitimate client.
+    const acquired = await this.redis.client.set(lockKey, '1', 'PX', REFRESH_LOCK_TTL_MS, 'NX');
+
+    if (acquired !== 'OK') {
+      return this.awaitPeerResult(resultKey);
+    }
+
+    try {
+      const result = await this.rotate(tokenHash, claims.sid, userAgent);
+      await this.redis.client.set(resultKey, JSON.stringify(result), 'PX', REFRESH_RESULT_TTL_MS);
+      return result;
+    } finally {
+      await this.redis.client.del(lockKey);
+    }
+  }
+
+  /** The actual single-use rotation, run by whichever caller won the lock. */
+  private async rotate(tokenHash: string, sid: string, userAgent?: string): Promise<SessionTokens> {
     const stored = await this.prisma.client.refreshToken.findUnique({
       where: { tokenHash },
       select: {
@@ -72,7 +133,10 @@ export class SessionService {
     }
 
     if (stored.rotatedAt || stored.revokedAt) {
-      // Replay of an already-rotated token — treat the lineage as compromised.
+      // The single-flight lock rules out the benign "my own concurrent
+      // request got here first" case — a rotated-or-revoked token reaching
+      // this point was genuinely presented twice, which only happens if it
+      // leaked.
       await this.revokeFamily(stored.familyId);
       logger.warn('Refresh token reuse detected — family revoked', {
         payload: { userId: stored.userId, familyId: stored.familyId },
@@ -101,8 +165,28 @@ export class SessionService {
         data: { rotatedAt: new Date() },
       });
 
-      return this.issuePair(user, claims.sid ?? stored.familyId, userAgent);
+      return this.issuePair(user, sid ?? stored.familyId, userAgent);
     });
+  }
+
+  /**
+   * Waits for the lock's winner to publish its result, then hands back the
+   * identical token pair. Every peer that lost the race ends up here instead
+   * of touching the database itself.
+   */
+  private async awaitPeerResult(resultKey: string): Promise<SessionTokens> {
+    for (let attempt = 0; attempt < REFRESH_LOCK_WAIT_ATTEMPTS; attempt += 1) {
+      const cached = await this.redis.client.get(resultKey);
+      if (cached) {
+        return JSON.parse(cached) as SessionTokens;
+      }
+      await sleep(REFRESH_LOCK_WAIT_INTERVAL_MS);
+    }
+
+    // The winner never published a result in time (it crashed, or is simply
+    // slow) — the caller can retry, but making it up would be worse than
+    // asking it to sign in again.
+    throw this.expired();
   }
 
   /** Logout: kills the presented token's whole family (this device's session). */

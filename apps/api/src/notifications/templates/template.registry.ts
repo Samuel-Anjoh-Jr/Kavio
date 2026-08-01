@@ -480,13 +480,13 @@ const authTwoFactorChanged: TemplateDefinition<'auth.two_factor_changed'> = {
 const TIER_NAMES: Record<Locale, Record<string, string>> = {
   en: {
     TIER_0: 'Basic Profile',
-    TIER_1: 'ID Submitted',
+    TIER_1: 'Contact Verified',
     TIER_2: 'Verified Professional',
     TIER_3: 'Field Verified',
   },
   fr: {
     TIER_0: 'Profil de base',
-    TIER_1: 'Pièce d’identité soumise',
+    TIER_1: 'Coordonnées vérifiées',
     TIER_2: 'Professionnel vérifié',
     TIER_3: 'Vérifié sur le terrain',
   },
@@ -642,7 +642,7 @@ const BADGE_NAMES: Record<Locale, Record<string, string>> = {
 /** Check names, EN/FR, for the approval and rejection notices. */
 const CHECK_NAMES: Record<Locale, Record<string, string>> = {
   en: {
-    PHONE: 'phone number',
+    PHONE: 'contact details',
     ID_SUBMITTED: 'ID document',
     ID_APPROVED: 'national ID',
     SELFIE_LIVENESS: 'selfie',
@@ -652,7 +652,7 @@ const CHECK_NAMES: Record<Locale, Record<string, string>> = {
     BUSINESS_REGISTRATION: 'business registration',
   },
   fr: {
-    PHONE: 'numéro de téléphone',
+    PHONE: 'coordonnées',
     ID_SUBMITTED: 'pièce d’identité',
     ID_APPROVED: 'carte nationale d’identité',
     SELFIE_LIVENESS: 'photo de visage',

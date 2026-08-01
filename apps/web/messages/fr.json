@@ -104,7 +104,7 @@
       "INVALID_TOKEN": "Votre connexion n'a pas pu être vérifiée. Reconnectez-vous.",
       "UNAUTHENTICATED": "Connectez-vous pour continuer.",
       "ACCOUNT_SUSPENDED": "Ce compte n'est pas actif. Contactez le support.",
-      "ACCOUNT_NOT_VERIFIED": "Vérifiez votre numéro de téléphone avant de vous connecter.",
+      "ACCOUNT_NOT_VERIFIED": "Vérifiez vos coordonnées avant de vous connecter.",
       "TWO_FACTOR_REQUIRED": "Saisissez le code que nous vous avons envoyé pour terminer la connexion.",
       "INVALID_CODE": "Ce code n'est pas correct. Demandez-en un nouveau.",
       "CODE_EXPIRED": "Ce code a expiré. Demandez-en un nouveau.",
@@ -269,7 +269,7 @@
     "viewBreakdown": "Voir votre Score de Confiance",
     "tier": {
       "TIER_0": "Profil de base",
-      "TIER_1": "Téléphone vérifié",
+      "TIER_1": "Coordonnées vérifiées",
       "TIER_2": "Professionnel vérifié",
       "TIER_3": "Vérifié sur le terrain"
     },
@@ -293,7 +293,7 @@
     "pillarUnscored": "Sera pris en compte dès l’activation des paiements.",
     "improve": {
       "ACCOUNT_CREATED": "Créez votre compte.",
-      "PHONE_VERIFIED": "Vérifiez votre numéro de téléphone.",
+      "PHONE_VERIFIED": "Vérifiez vos coordonnées.",
       "ID_VERIFIED": "Téléversez votre carte nationale d’identité pour approbation.",
       "FIELD_VERIFIED": "Planifiez une vérification en personne.",
       "PORTFOLIO_ADDED": "Ajoutez des photos de vos réalisations.",
@@ -307,7 +307,7 @@
       "COMPLETED_JOBS": "Réalisez {required} missions. Vous en avez {current}.",
       "AVERAGE_RATING": "Maintenez une note moyenne de {required}★.",
       "CHECK": {
-        "PHONE": "Vérifiez votre numéro de téléphone.",
+        "PHONE": "Vérifiez vos coordonnées.",
         "ID_SUBMITTED": "Téléversez votre carte nationale d’identité.",
         "ID_APPROVED": "Attendez l’approbation de votre pièce d’identité.",
         "SELFIE_LIVENESS": "Prenez un selfie de vérification.",
@@ -661,7 +661,7 @@
   },
   "Verification": {
     "check": {
-      "PHONE": "Numéro de téléphone",
+      "PHONE": "Coordonnées",
       "ID_SUBMITTED": "Pièce d'identité envoyée",
       "ID_APPROVED": "Carte nationale d'identité approuvée",
       "SELFIE_LIVENESS": "Vérification par photo",
@@ -777,7 +777,7 @@
     "empty": "Votre historique de confiance apparaîtra ici au fur et à mesure de vos vérifications et de vos travaux.",
     "event": {
       "ACCOUNT_CREATED": "Inscription sur Kavio",
-      "PHONE_VERIFIED": "Numéro de téléphone vérifié",
+      "PHONE_VERIFIED": "Coordonnées vérifiées",
       "ID_VERIFIED": "Carte nationale d'identité approuvée",
       "FIELD_VERIFIED": "Vérifié en personne par un agent",
       "PORTFOLIO_ADDED": "Portfolio ajouté",
@@ -990,7 +990,7 @@
     "minTrustScore": "Score de confiance minimum : {value}",
     "minTier": "{tier} et plus",
     "tier": {
-      "TIER_1": "Téléphone vérifié",
+      "TIER_1": "Coordonnées vérifiées",
       "TIER_2": "Identité vérifiée",
       "TIER_3": "Vérifié sur le terrain"
     },
@@ -1083,7 +1083,7 @@
     "yearsExperience": "Années d'expérience",
     "verificationsHeading": "Vérifications validées",
     "check": {
-      "PHONE": "Numéro de téléphone",
+      "PHONE": "Coordonnées",
       "ID_SUBMITTED": "Pièce d'identité téléversée",
       "ID_APPROVED": "Carte nationale d'identité approuvée",
       "SELFIE_LIVENESS": "Vérification par selfie",

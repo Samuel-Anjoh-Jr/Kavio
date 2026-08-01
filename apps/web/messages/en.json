@@ -104,7 +104,7 @@
       "INVALID_TOKEN": "Your sign-in could not be verified. Sign in again.",
       "UNAUTHENTICATED": "Sign in to continue.",
       "ACCOUNT_SUSPENDED": "This account is not active. Contact support.",
-      "ACCOUNT_NOT_VERIFIED": "Verify your phone number before signing in.",
+      "ACCOUNT_NOT_VERIFIED": "Verify your contact details before signing in.",
       "TWO_FACTOR_REQUIRED": "Enter the code we sent you to finish signing in.",
       "INVALID_CODE": "That code is not correct. Request a new one.",
       "CODE_EXPIRED": "That code has expired. Request a new one.",
@@ -269,7 +269,7 @@
     "viewBreakdown": "View your Trust Score",
     "tier": {
       "TIER_0": "Basic Profile",
-      "TIER_1": "Phone Verified",
+      "TIER_1": "Contact Verified",
       "TIER_2": "Verified Professional",
       "TIER_3": "Field Verified"
     },
@@ -293,7 +293,7 @@
     "pillarUnscored": "Starts counting once payments go live.",
     "improve": {
       "ACCOUNT_CREATED": "Create your account.",
-      "PHONE_VERIFIED": "Verify your phone number.",
+      "PHONE_VERIFIED": "Verify your contact details.",
       "ID_VERIFIED": "Upload your national ID for approval.",
       "FIELD_VERIFIED": "Book an in-person verification visit.",
       "PORTFOLIO_ADDED": "Add photos of work you have done.",
@@ -307,7 +307,7 @@
       "COMPLETED_JOBS": "Complete {required} jobs. You have {current}.",
       "AVERAGE_RATING": "Keep an average rating of {required}★.",
       "CHECK": {
-        "PHONE": "Verify your phone number.",
+        "PHONE": "Verify your contact details.",
         "ID_SUBMITTED": "Upload your national ID.",
         "ID_APPROVED": "Wait for your ID to be approved.",
         "SELFIE_LIVENESS": "Take a verification selfie.",
@@ -661,7 +661,7 @@
   },
   "Verification": {
     "check": {
-      "PHONE": "Phone number",
+      "PHONE": "Contact details",
       "ID_SUBMITTED": "ID document uploaded",
       "ID_APPROVED": "National ID approved",
       "SELFIE_LIVENESS": "Selfie check",
@@ -777,7 +777,7 @@
     "empty": "Your trust history will appear here as you verify your details and complete work.",
     "event": {
       "ACCOUNT_CREATED": "Joined Kavio",
-      "PHONE_VERIFIED": "Phone number verified",
+      "PHONE_VERIFIED": "Contact details verified",
       "ID_VERIFIED": "National ID approved",
       "FIELD_VERIFIED": "Verified in person by an agent",
       "PORTFOLIO_ADDED": "Portfolio added",
@@ -990,7 +990,7 @@
     "minTrustScore": "Minimum Trust Score: {value}",
     "minTier": "{tier} and above",
     "tier": {
-      "TIER_1": "Phone verified",
+      "TIER_1": "Contact verified",
       "TIER_2": "ID verified",
       "TIER_3": "Field verified"
     },
@@ -1083,7 +1083,7 @@
     "yearsExperience": "Years of experience",
     "verificationsHeading": "Verified checks",
     "check": {
-      "PHONE": "Phone number",
+      "PHONE": "Contact details",
       "ID_SUBMITTED": "ID document uploaded",
       "ID_APPROVED": "National ID approved",
       "SELFIE_LIVENESS": "Selfie check",

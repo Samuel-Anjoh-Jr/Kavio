@@ -64,12 +64,20 @@ export function WorkerCard({ worker, compact = false, className }: WorkerCardPro
   const portfolio = worker.portfolioPreview ?? [];
   const visiblePortfolio = expanded ? portfolio.slice(0, 6) : portfolio.slice(0, 3);
 
-  function onPointerEnter() {
+  // Pointer Events fire for touch too: a finger landing on a card during a
+  // scroll counts as "enter" and lifting off (or the scroll carrying it past
+  // the card) counts as "leave". Restricting this to an actual mouse is what
+  // stops cards from snapping open and shut while a touch user is just
+  // scrolling past them — touch and keyboard users get the explicit
+  // more/less button below instead, since there is no hover on a phone.
+  function onPointerEnter(event: React.PointerEvent) {
+    if (event.pointerType !== 'mouse') return;
     setExpanded(true);
     if (cardRef.current && !reducedMotion) cardHoverIn(cardRef.current);
   }
 
-  function onPointerLeave() {
+  function onPointerLeave(event: React.PointerEvent) {
+    if (event.pointerType !== 'mouse') return;
     setExpanded(false);
     if (cardRef.current && !reducedMotion) cardHoverOut(cardRef.current);
   }
