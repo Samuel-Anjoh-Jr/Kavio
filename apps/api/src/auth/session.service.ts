@@ -90,6 +90,21 @@ export class SessionService {
     const lockKey = refreshLockKey(tokenHash);
     const resultKey = refreshResultKey(tokenHash);
 
+    // A late duplicate of a token THIS SAME PROCESS already rotated a moment
+    // ago — the background session poll and an RSC render both waking on the
+    // same stale cookie, one arriving after the other's lock was already
+    // released — is answered from that still-warm result, not sent into
+    // `rotate()` to be mistaken for theft. This has to run before the lock
+    // is even attempted: the lock only protects callers who overlap with the
+    // ORIGINAL winner while it still holds it (up to REFRESH_LOCK_TTL_MS), but
+    // a caller arriving after that winner already finished and released the
+    // lock would otherwise acquire it fresh and walk straight into `rotate()`,
+    // which has no memory of the earlier success — only the result cache does.
+    const cachedResult = await this.redis.client.get(resultKey);
+    if (cachedResult) {
+      return JSON.parse(cachedResult) as SessionTokens;
+    }
+
     // `SET NX` is the mutex: exactly one concurrent caller for this exact token
     // gets 'OK' and does the real work below. Everyone else — another tab,
     // middleware racing an RSC render, a retried request — waits for that
