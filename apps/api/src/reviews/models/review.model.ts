@@ -95,4 +95,11 @@ export class ReviewEligibilityView {
     description: 'Who the review would be about. Derived from the booking, never supplied.',
   })
   subjectId!: string | null;
+
+  @Field(() => Boolean, {
+    nullable: true,
+    description:
+      'Whether the subject is the worker (vs. the client) — only a worker has a public profile to route to after posting.',
+  })
+  subjectIsWorker!: boolean | null;
 }

@@ -147,7 +147,10 @@ export class ReviewsService {
       result: { reviewId, jobId: dto.jobId, subjectId, rating: dto.rating, excellent },
     });
 
-    return { id: reviewId };
+    // The web client redirects straight to the subject's profile on success
+    // (CreatedReview in apps/web/lib/reviews.ts) — omitting subjectId here sent
+    // it to /app/workers/undefined instead.
+    return { id: reviewId, rating: dto.rating, subjectId };
   }
 
   /**

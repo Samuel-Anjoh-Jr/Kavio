@@ -53,6 +53,8 @@ export interface ReviewEligibility {
   reason: ReviewEligibilityReason;
   /** Who the review would be about. Derived from the booking, never supplied. */
   subjectId: string | null;
+  /** Whether that subject is the worker (vs. the client). Null when subjectId is. */
+  subjectIsWorker: boolean | null;
 }
 
 export const REVIEW_SUMMARY_QUERY = gql`
@@ -101,6 +103,7 @@ export const REVIEW_ELIGIBILITY_QUERY = gql`
       allowed
       reason
       subjectId
+      subjectIsWorker
     }
   }
 `;

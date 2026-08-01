@@ -74,6 +74,12 @@ export interface ReviewEligibilityDecision {
   readonly reason: ReviewEligibilityReason;
   /** Who the review would be about. Null whenever the review is not allowed. */
   readonly subjectId: string | null;
+  /**
+   * Whether that subject is the worker (vs. the client). Only a worker has a
+   * public profile to route to after posting — a review of the client has
+   * nowhere equivalent to send the reviewer. Null whenever subjectId is.
+   */
+  readonly subjectIsWorker: boolean | null;
 }
 
 /** The booking facts the decision needs. Deliberately not the Prisma row. */
@@ -97,21 +103,21 @@ export function decideReviewEligibility(
   alreadyReviewed: boolean,
 ): ReviewEligibilityDecision {
   if (!booking) {
-    return { allowed: false, reason: 'NO_BOOKING', subjectId: null };
+    return { allowed: false, reason: 'NO_BOOKING', subjectId: null, subjectIsWorker: null };
   }
 
   const isClient = booking.clientId === authorId;
   const isWorker = booking.workerId === authorId;
   if (!isClient && !isWorker) {
-    return { allowed: false, reason: 'NOT_A_PARTICIPANT', subjectId: null };
+    return { allowed: false, reason: 'NOT_A_PARTICIPANT', subjectId: null, subjectIsWorker: null };
   }
 
   if (!REVIEWABLE_BOOKING_STATUSES.includes(booking.status)) {
-    return { allowed: false, reason: 'NOT_COMPLETED', subjectId: null };
+    return { allowed: false, reason: 'NOT_COMPLETED', subjectId: null, subjectIsWorker: null };
   }
 
   if (alreadyReviewed) {
-    return { allowed: false, reason: 'ALREADY_REVIEWED', subjectId: null };
+    return { allowed: false, reason: 'ALREADY_REVIEWED', subjectId: null, subjectIsWorker: null };
   }
 
   // The counterparty, never the caller's claim about who they are rating.
@@ -119,6 +125,7 @@ export function decideReviewEligibility(
     allowed: true,
     reason: 'ELIGIBLE',
     subjectId: isClient ? booking.workerId : booking.clientId,
+    subjectIsWorker: isClient,
   };
 }
 
