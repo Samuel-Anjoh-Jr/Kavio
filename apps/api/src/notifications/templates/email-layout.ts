@@ -104,7 +104,7 @@ export function renderEmailLayout(options: EmailLayoutOptions): string {
             <tr>
               <td style="padding: 32px 32px 0 32px;">
                 <span style="font-size: 20px; font-weight: 700; color: ${TOKENS.indigo}; letter-spacing: -0.02em;">
-                  Trust<span style="color: ${TOKENS.neutral900};">Pro</span>
+                  Kav<span style="color: ${TOKENS.neutral900};">io</span>
                 </span>
               </td>
             </tr>

@@ -196,7 +196,7 @@
       "identifierLabelEmail": "Adresse e-mail",
       "identifierPlaceholderEmail": "vous@exemple.com",
       "codeLabel": "Code de vérification",
-      "codeHint": "Consultez vos e-mails, ou vos messages une fois le SMS ou WhatsApp activé.",
+      "codeHint": "Saisissez le code dès qu'il arrive.",
       "sentHint": "Nous avons envoyé un code à {destination}.",
       "submit": "Vérifier et continuer",
       "submitting": "Vérification du code…",
