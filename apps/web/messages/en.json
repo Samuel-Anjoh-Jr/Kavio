@@ -357,7 +357,7 @@
     },
     "descriptions": {
       "WORKER": "Offer your services and apply for jobs",
-      "CLIENT": "Post jobs and hire verified workers",
+      "CLIENT": "Find and hire verified workers",
       "BUSINESS": "Manage your company profile and team"
     }
   },
@@ -366,11 +366,10 @@
     "subtitle": "Search verified workers, browse posted jobs and open full profiles, no account needed. Create one when you're ready to hire.",
     "searchLabel": "Search for a service or worker",
     "searchPlaceholder": "Plumber, electrician, tailor…",
-    "postJob": "Post a job",
     "workersHeading": "Workers near you",
     "workersEmpty": "No workers to show yet. Set your location to see who works near you.",
     "jobsHeading": "Recently posted jobs",
-    "jobsEmpty": "No jobs posted yet in your area. Post one now and it'll be waiting for the right professional.",
+    "jobsEmpty": "No job vacancies posted in your area yet. Check back soon.",
     "mapLabel": "Map of workers in this area",
     "mapUnavailable": "The map isn't available right now, but the list beside it shows the same workers.",
     "searchThisArea": "Search this area",
@@ -394,7 +393,7 @@
     "title": "Posted jobs",
     "subtitle": "Browse what people near you need done.",
     "post": "Post a job",
-    "empty": "No open jobs in your area right now. Check back soon, or post one yourself."
+    "empty": "No open jobs in your area right now. Check back soon."
   },
   "RequestQuote": {
     "title": "Request a quote from {name}",
@@ -484,7 +483,7 @@
     },
     "subtitle": {
       "WORKER": "Build your profile, win jobs and grow your Trust Score.",
-      "CLIENT": "Post what you need and hire verified workers near you.",
+      "CLIENT": "Find and hire verified workers near you.",
       "BUSINESS": "Manage your company profile, documents and team."
     },
     "onboardingHeading": "Finish setting up your profile",
@@ -496,7 +495,7 @@
     "jobsCard": "Jobs",
     "jobsCardBody": {
       "WORKER": "Find open jobs that match your services.",
-      "CLIENT": "Review the jobs you have posted.",
+      "CLIENT": "Track the work you have requested.",
       "BUSINESS": "Track your company's job posts."
     }
   },
@@ -594,7 +593,7 @@
       "subtitle": "Two quick steps and you are ready to hire.",
       "completed": "You are all set. Time to find someone great.",
       "unlocks": {
-        "post_jobs": "Post jobs and receive quotes",
+        "post_jobs": "Request quotes from verified workers",
         "nearby_workers": "See the closest workers first"
       },
       "steps": {
@@ -1232,11 +1231,10 @@
     },
     "client": {
       "discoverHeading": "Find a worker",
-      "postJob": "Post a job",
       "jobsHeading": "My jobs",
       "postedJobsPendingTitle": "My posted jobs",
-      "postedJobsEmptyTitle": "No jobs posted yet",
-      "postedJobsEmptyBody": "Post a job or request a quote from a worker's profile to get started.",
+      "postedJobsEmptyTitle": "No jobs yet",
+      "postedJobsEmptyBody": "Find a worker and request a quote from their profile to get started.",
       "untitledJob": "Untitled job",
       "quotesPendingTitle": "Booked work",
       "quotesHint": "Jobs currently in progress"

@@ -225,17 +225,10 @@ async function ClientHome() {
 
   return (
     <>
-      <HomeSection
-        title={t('client.discoverHeading')}
-        action={
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/app/jobs/new">
-              {t('client.postJob')}
-              <ArrowRight aria-hidden />
-            </Link>
-          </Button>
-        }
-      >
+      {/* No "post a job" action here: an individual client hires by finding a
+          worker and requesting a quote from their profile (JOB-01) — DiscoverRail
+          is the whole of that action, not a teaser for a broadcast posting flow. */}
+      <HomeSection title={t('client.discoverHeading')}>
         <DiscoverRail />
       </HomeSection>
 

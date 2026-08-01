@@ -36,8 +36,10 @@ import { restPost } from '@/lib/rest-api';
  * The client already chose the counterparty — that is what a DIRECT job is
  * (JOB-01's posting gate exists precisely to distinguish this from the public
  * board, and needs no verification for it). So this describes the work,
- * creates the job, publishes it DIRECT, and invites this one worker in a
- * single submit — the worker then answers with a priced quote through the
+ * creates the job, and publishes it DIRECT with `workerId` set — the server
+ * requires that from a client and creates the invitation itself in the same
+ * call, so there is never a moment where a client's job is live with no
+ * worker attached. The worker then answers with a priced quote through the
  * normal QTE-01…QTE-03 negotiation, same as any other job.
  */
 export function RequestQuoteDialog({
@@ -89,8 +91,10 @@ export function RequestQuoteDialog({
         budgetMax: budgetValue ?? undefined,
       });
 
-      await restPost(`jobs/${job.id}/publish`, { visibility: 'DIRECT' });
-      await restPost(`jobs/${job.id}/invitations`, { workerId: workerUserId });
+      // workerId travels WITH the publish call: the server requires a client's
+      // DIRECT publish to name the one worker it is for (JOB-01 anti-lure), and
+      // creates the invitation itself in the same request.
+      await restPost(`jobs/${job.id}/publish`, { visibility: 'DIRECT', workerId: workerUserId });
 
       reset();
       onOpenChange(false);

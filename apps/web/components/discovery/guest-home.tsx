@@ -3,10 +3,9 @@
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { ArrowRight, Briefcase, List, Map as MapIcon, Plus } from 'lucide-react';
+import { ArrowRight, Briefcase, List, Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useRouter } from '@/i18n/navigation';
-import { useRequireAuth } from '@/components/auth/require-auth';
 import { emptyRecentWorkers, readRecentWorkers, searchResultToCard } from '@/lib/discovery';
 import type { WorkerCardData } from '@/lib/discovery';
 import { isValidCoordinate } from '@/lib/geo';
@@ -48,7 +47,6 @@ const NO_SUBSCRIBE = () => () => {};
 export function GuestHome() {
   const t = useTranslations('Explore');
   const router = useRouter();
-  const requireAuth = useRequireAuth();
   const { location } = useBrowsingLocation();
 
   const [queryText, setQueryText] = useState('');
@@ -147,7 +145,7 @@ export function GuestHome() {
         </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">{t('subtitle')}</p>
 
-        {/* (c) location setter · (d) search bar · (e) post-job button */}
+        {/* (c) location setter · (d) search bar */}
         <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
           <SearchBar
             value={queryText}
@@ -157,24 +155,7 @@ export function GuestHome() {
             className="flex-1"
           />
 
-          <div className="flex flex-wrap items-center gap-3">
-            <LocationSetter className="min-w-0 flex-1 sm:flex-none" />
-
-            {/* Posting is a state-changing action: the intent is captured and
-                replayed after sign-in, so the job the guest had in mind is not
-                lost to the detour (ACC-02). */}
-            <Button
-              size="lg"
-              onClick={() =>
-                requireAuth('post_job', () => router.push('/app/jobs/new'), {
-                  returnTo: '/app/jobs/new',
-                })
-              }
-            >
-              <Plus aria-hidden />
-              {t('postJob')}
-            </Button>
-          </div>
+          <LocationSetter className="min-w-0 flex-1 lg:flex-none" />
         </div>
       </section>
 
@@ -294,17 +275,6 @@ export function GuestHome() {
               <Briefcase aria-hidden className="size-8 text-muted-foreground" />
             </span>
             <p className="max-w-md text-sm text-muted-foreground">{t('jobsEmpty')}</p>
-            <Button
-              variant="outline"
-              onClick={() =>
-                requireAuth('post_job', () => router.push('/app/jobs/new'), {
-                  returnTo: '/app/jobs/new',
-                })
-              }
-            >
-              <Plus aria-hidden />
-              {t('postJob')}
-            </Button>
           </div>
         ) : (
           // Capped height rather than an open-ended list: this is a teaser

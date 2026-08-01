@@ -357,7 +357,7 @@
     },
     "descriptions": {
       "WORKER": "Proposez vos services et postulez aux missions",
-      "CLIENT": "Publiez des missions et recrutez des artisans vérifiés",
+      "CLIENT": "Trouvez et recrutez des artisans vérifiés",
       "BUSINESS": "Gérez le profil et l'équipe de votre entreprise"
     }
   },
@@ -366,11 +366,10 @@
     "subtitle": "Cherchez des professionnels vérifiés, parcourez les offres et ouvrez les profils complets, sans compte. Créez-en un quand vous serez prêt à recruter.",
     "searchLabel": "Rechercher un service ou un professionnel",
     "searchPlaceholder": "Plombier, électricien, tailleur…",
-    "postJob": "Publier une offre",
     "workersHeading": "Professionnels près de vous",
     "workersEmpty": "Aucun professionnel à afficher. Définissez votre position pour voir qui travaille près de vous.",
     "jobsHeading": "Offres récentes",
-    "jobsEmpty": "Aucune offre publiée pour le moment dans votre zone. Publiez la vôtre, elle attendra le bon professionnel.",
+    "jobsEmpty": "Aucune offre d'emploi publiée pour le moment dans votre zone. Revenez bientôt.",
     "mapLabel": "Carte des professionnels de cette zone",
     "mapUnavailable": "La carte n'est pas disponible pour le moment, mais la liste à côté montre les mêmes professionnels.",
     "searchThisArea": "Chercher dans cette zone",
@@ -394,7 +393,7 @@
     "title": "Missions publiées",
     "subtitle": "Découvrez ce dont les gens près de chez vous ont besoin.",
     "post": "Publier une mission",
-    "empty": "Aucune mission ouverte dans votre zone pour le moment. Revenez bientôt, ou publiez la vôtre."
+    "empty": "Aucune mission ouverte dans votre zone pour le moment. Revenez bientôt."
   },
   "RequestQuote": {
     "title": "Demander un devis à {name}",
@@ -484,7 +483,7 @@
     },
     "subtitle": {
       "WORKER": "Complétez votre profil, gagnez des missions et faites monter votre Score de Confiance.",
-      "CLIENT": "Publiez ce dont vous avez besoin et recrutez des artisans vérifiés près de chez vous.",
+      "CLIENT": "Trouvez et recrutez des artisans vérifiés près de chez vous.",
       "BUSINESS": "Gérez le profil, les documents et l'équipe de votre entreprise."
     },
     "onboardingHeading": "Terminez la configuration de votre profil",
@@ -496,7 +495,7 @@
     "jobsCard": "Missions",
     "jobsCardBody": {
       "WORKER": "Trouvez des missions ouvertes correspondant à vos services.",
-      "CLIENT": "Consultez les missions que vous avez publiées.",
+      "CLIENT": "Suivez les travaux que vous avez demandés.",
       "BUSINESS": "Suivez les missions publiées par votre entreprise."
     }
   },
@@ -594,7 +593,7 @@
       "subtitle": "Deux étapes rapides et vous êtes prêt à recruter.",
       "completed": "Tout est prêt. À vous de trouver la bonne personne.",
       "unlocks": {
-        "post_jobs": "Publier des missions et recevoir des devis",
+        "post_jobs": "Demander des devis à des artisans vérifiés",
         "nearby_workers": "Voir d'abord les artisans les plus proches"
       },
       "steps": {
@@ -1232,11 +1231,10 @@
     },
     "client": {
       "discoverHeading": "Trouver un professionnel",
-      "postJob": "Publier une offre",
       "jobsHeading": "Mes offres",
       "postedJobsPendingTitle": "Mes offres publiées",
-      "postedJobsEmptyTitle": "Aucune offre publiée pour le moment",
-      "postedJobsEmptyBody": "Publiez une offre ou demandez un devis depuis le profil d'un professionnel pour commencer.",
+      "postedJobsEmptyTitle": "Aucune offre pour le moment",
+      "postedJobsEmptyBody": "Trouvez un professionnel et demandez un devis depuis son profil pour commencer.",
       "untitledJob": "Mission sans titre",
       "quotesPendingTitle": "Travaux réservés",
       "quotesHint": "Missions actuellement en cours"
