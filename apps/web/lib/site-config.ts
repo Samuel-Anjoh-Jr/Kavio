@@ -51,31 +51,122 @@ export function localeTag(locale: string): string {
  * `areaServed` the same way.
  */
 export const SERVICE_AREAS = [
-  { name: 'Yaoundé', region: 'Centre', latitude: 3.848, longitude: 11.5021 },
-  { name: 'Douala', region: 'Littoral', latitude: 4.0511, longitude: 9.7679 },
-  { name: 'Bafoussam', region: 'West', latitude: 5.4737, longitude: 10.4179 },
-  { name: 'Bamenda', region: 'Northwest', latitude: 5.9631, longitude: 10.1591 },
-  { name: 'Garoua', region: 'North', latitude: 9.3017, longitude: 13.3921 },
-  { name: 'Maroua', region: 'Far North', latitude: 10.591, longitude: 14.3159 },
-  { name: 'Ngaoundéré', region: 'Adamawa', latitude: 7.3167, longitude: 13.5833 },
-  { name: 'Bertoua', region: 'East', latitude: 4.5776, longitude: 13.6846 },
-  { name: 'Ebolowa', region: 'South', latitude: 2.9, longitude: 11.15 },
-  { name: 'Buea', region: 'Southwest', latitude: 4.156, longitude: 9.292 },
-  { name: 'Limbe', region: 'Southwest', latitude: 4.0227, longitude: 9.2148 },
-  { name: 'Kribi', region: 'South', latitude: 2.9375, longitude: 9.9074 },
-  { name: 'Edéa', region: 'Littoral', latitude: 3.7981, longitude: 10.1319 },
-  { name: 'Nkongsamba', region: 'Littoral', latitude: 4.9547, longitude: 9.9403 },
-  { name: 'Dschang', region: 'West', latitude: 5.4415, longitude: 10.0536 },
-  { name: 'Foumban', region: 'West', latitude: 5.7263, longitude: 10.9022 },
-  { name: 'Kumba', region: 'Southwest', latitude: 4.6363, longitude: 9.447 },
-  { name: 'Kumbo', region: 'Northwest', latitude: 6.2, longitude: 10.6667 },
-  { name: 'Mbalmayo', region: 'Centre', latitude: 3.5167, longitude: 11.5 },
-  { name: 'Bafia', region: 'Centre', latitude: 4.75, longitude: 11.2333 },
-  { name: 'Sangmélima', region: 'South', latitude: 2.9333, longitude: 11.9833 },
-  { name: 'Guider', region: 'North', latitude: 9.9333, longitude: 13.95 },
-  { name: 'Meiganga', region: 'Adamawa', latitude: 6.5167, longitude: 14.3 },
-  { name: 'Kousséri', region: 'Far North', latitude: 12.0833, longitude: 15.0333 },
-  { name: 'Abong-Mbang', region: 'East', latitude: 3.9833, longitude: 13.1833 },
+  { name: 'Yaoundé', slug: 'yaounde', region: 'Centre', latitude: 3.848, longitude: 11.5021 },
+  { name: 'Douala', slug: 'douala', region: 'Littoral', latitude: 4.0511, longitude: 9.7679 },
+  {
+    name: 'Bafoussam',
+    slug: 'bafoussam',
+    region: 'West',
+    latitude: 5.4737,
+    longitude: 10.4179,
+  },
+  {
+    name: 'Bamenda',
+    slug: 'bamenda',
+    region: 'Northwest',
+    latitude: 5.9631,
+    longitude: 10.1591,
+  },
+  { name: 'Garoua', slug: 'garoua', region: 'North', latitude: 9.3017, longitude: 13.3921 },
+  { name: 'Maroua', slug: 'maroua', region: 'Far North', latitude: 10.591, longitude: 14.3159 },
+  {
+    name: 'Ngaoundéré',
+    slug: 'ngaoundere',
+    region: 'Adamawa',
+    latitude: 7.3167,
+    longitude: 13.5833,
+  },
+  { name: 'Bertoua', slug: 'bertoua', region: 'East', latitude: 4.5776, longitude: 13.6846 },
+  { name: 'Ebolowa', slug: 'ebolowa', region: 'South', latitude: 2.9, longitude: 11.15 },
+  { name: 'Buea', slug: 'buea', region: 'Southwest', latitude: 4.156, longitude: 9.292 },
+  { name: 'Limbe', slug: 'limbe', region: 'Southwest', latitude: 4.0227, longitude: 9.2148 },
+  { name: 'Kribi', slug: 'kribi', region: 'South', latitude: 2.9375, longitude: 9.9074 },
+  { name: 'Edéa', slug: 'edea', region: 'Littoral', latitude: 3.7981, longitude: 10.1319 },
+  {
+    name: 'Nkongsamba',
+    slug: 'nkongsamba',
+    region: 'Littoral',
+    latitude: 4.9547,
+    longitude: 9.9403,
+  },
+  { name: 'Dschang', slug: 'dschang', region: 'West', latitude: 5.4415, longitude: 10.0536 },
+  { name: 'Foumban', slug: 'foumban', region: 'West', latitude: 5.7263, longitude: 10.9022 },
+  { name: 'Kumba', slug: 'kumba', region: 'Southwest', latitude: 4.6363, longitude: 9.447 },
+  { name: 'Kumbo', slug: 'kumbo', region: 'Northwest', latitude: 6.2, longitude: 10.6667 },
+  { name: 'Mbalmayo', slug: 'mbalmayo', region: 'Centre', latitude: 3.5167, longitude: 11.5 },
+  { name: 'Bafia', slug: 'bafia', region: 'Centre', latitude: 4.75, longitude: 11.2333 },
+  {
+    name: 'Sangmélima',
+    slug: 'sangmelima',
+    region: 'South',
+    latitude: 2.9333,
+    longitude: 11.9833,
+  },
+  { name: 'Guider', slug: 'guider', region: 'North', latitude: 9.9333, longitude: 13.95 },
+  { name: 'Meiganga', slug: 'meiganga', region: 'Adamawa', latitude: 6.5167, longitude: 14.3 },
+  {
+    name: 'Kousséri',
+    slug: 'kousseri',
+    region: 'Far North',
+    latitude: 12.0833,
+    longitude: 15.0333,
+  },
+  {
+    name: 'Abong-Mbang',
+    slug: 'abong-mbang',
+    region: 'East',
+    latitude: 3.9833,
+    longitude: 13.1833,
+  },
+] as const;
+
+/** Looks up a service area by its URL slug, for a locale-agnostic city landing page. */
+export function findServiceAreaBySlug(slug: string): (typeof SERVICE_AREAS)[number] | undefined {
+  return SERVICE_AREAS.find((area) => area.slug === slug);
+}
+
+/**
+ * The top-level trades a city × trade SEO page is generated for (PROMPT rec:
+ * competitive-analysis §3). Mirrors `TOP_CATEGORIES` in
+ * packages/database/prisma/seed.mjs — kept as a small hardcoded list here
+ * rather than a live query for the same reason SERVICE_AREAS is: page
+ * ENUMERATION (which routes exist, their nav/metadata copy) must survive a
+ * build with no API reachable, while the LIVE content on each page (worker
+ * count, sample profiles) still comes from a real, gracefully-degrading
+ * GraphQL read. Update both lists together if a top-level trade is added.
+ */
+export const SERVICE_TRADES = [
+  { slug: 'plumbing', nameEn: 'Plumbing', nameFr: 'Plomberie' },
+  { slug: 'electrical', nameEn: 'Electrical', nameFr: 'Électricité' },
+  { slug: 'carpentry', nameEn: 'Carpentry', nameFr: 'Menuiserie' },
+  { slug: 'painting', nameEn: 'Painting', nameFr: 'Peinture' },
+  { slug: 'cleaning', nameEn: 'Cleaning', nameFr: 'Nettoyage' },
+  { slug: 'gardening', nameEn: 'Gardening', nameFr: 'Jardinage' },
+  { slug: 'moving', nameEn: 'Moving', nameFr: 'Déménagement' },
+  { slug: 'security', nameEn: 'Security', nameFr: 'Sécurité' },
+  { slug: 'appliance-repair', nameEn: 'Appliance Repair', nameFr: 'Réparation d’Électroménager' },
+  { slug: 'masonry', nameEn: 'Masonry', nameFr: 'Maçonnerie' },
+  { slug: 'tiling', nameEn: 'Tiling', nameFr: 'Carrelage' },
+  { slug: 'welding', nameEn: 'Welding', nameFr: 'Soudure' },
+] as const;
+
+/** Looks up a trade by its URL slug. */
+export function findServiceTradeBySlug(slug: string): (typeof SERVICE_TRADES)[number] | undefined {
+  return SERVICE_TRADES.find((trade) => trade.slug === slug);
+}
+
+/** Cities pre-rendered at build time for every trade (PROMPT rec: §3). Every
+ * OTHER city × trade combination still resolves on first request and is then
+ * ISR-cached — `dynamicParams` stays at its default `true` — so the full grid
+ * becomes real, crawlable pages without a 288-page build.
+ */
+export const SEO_LANDING_BUILD_CITY_SLUGS = [
+  'yaounde',
+  'douala',
+  'bafoussam',
+  'bamenda',
+  'garoua',
+  'maroua',
 ] as const;
 
 export const COUNTRY = { name: 'Cameroon', code: 'CM' } as const;

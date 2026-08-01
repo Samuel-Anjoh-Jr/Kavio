@@ -50,6 +50,14 @@
       "answerFr": "À partir de quatre piliers : identité vérifiée, preuves professionnelles comme le portfolio et les recommandations, comportement sur la plateforme dont les missions terminées et les avis, et fiabilité financière. Il se met à jour en continu et le détail est visible sur chaque profil."
     },
     {
+      "id": "2a62896b-c24d-4c11-8ad7-6b57fe771d47",
+      "category": "trust",
+      "questionEn": "How is Kavio different from a directory of local businesses?",
+      "questionFr": "En quoi Kavio diffère-t-il d’un annuaire d’entreprises locales ?",
+      "answerEn": "A directory lets anyone list themselves, and nothing on the page has actually been checked. On Kavio, a worker's profile only shows what has been verified: a real government ID, a live selfie, a confirmed address, and portfolio evidence of finished work, all rolled into a Trust Score you can see before you ever get in touch. Self-listed is not the same thing as verified.",
+      "answerFr": "Un annuaire permet à n’importe qui de s’inscrire soi-même, sans que rien sur la page ne soit réellement vérifié. Sur Kavio, le profil d’un artisan n’affiche que ce qui a été contrôlé : une pièce d’identité officielle, un selfie en direct, une adresse confirmée et des preuves de travaux réalisés, le tout résumé dans un Score de Confiance visible avant même de le contacter. S’inscrire soi-même ne veut pas dire être vérifié."
+    },
+    {
       "id": "32d533af-a561-5d6a-bd55-790c0da6f1a3",
       "category": "general",
       "questionEn": "Which cities do you cover?",

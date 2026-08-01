@@ -159,6 +159,32 @@ export function formatXaf(amount: number | null | undefined, locale: string): st
   }).format(Math.round(amount));
 }
 
+/**
+ * Formats a worker's median invitation-response time as a concrete, checkable
+ * claim ("responds within 2 hours") rather than vague marketing copy — the
+ * bucket is a rounded-up upper bound of the real median, never the raw minute
+ * count, so the claim stays true on the individual reply that took longer.
+ */
+export function formatResponseTime(
+  minutes: number | null | undefined,
+  t: (
+    key: 'withinHour' | 'withinHours' | 'withinDay' | 'withinDays' | 'aboutAWeek',
+    values?: { value: string },
+  ) => string,
+): string | null {
+  if (typeof minutes !== 'number' || !Number.isFinite(minutes) || minutes < 0) return null;
+
+  if (minutes <= 60) return t('withinHour');
+  if (minutes < 24 * 60) return t('withinHours', { value: String(Math.ceil(minutes / 60)) });
+
+  if (minutes < 7 * 24 * 60) {
+    const days = Math.ceil(minutes / (24 * 60));
+    return days === 1 ? t('withinDay') : t('withinDays', { value: String(days) });
+  }
+
+  return t('aboutAWeek');
+}
+
 /** One decimal, in the viewer's locale — "4,8" in French, "4.8" in English. */
 export function formatRating(rating: number | null | undefined, locale: string): string | null {
   if (typeof rating !== 'number' || !Number.isFinite(rating)) return null;
