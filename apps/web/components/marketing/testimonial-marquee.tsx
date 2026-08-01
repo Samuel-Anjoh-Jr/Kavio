@@ -112,7 +112,12 @@ export function TestimonialMarquee({ testimonials }: { testimonials: Testimonial
     <div
       // The edge fade, per the requirement. A mask rather than gradient overlays
       // so it works over any section background without a colour to match.
-      className="relative [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
+      // `overflow-hidden` is load-bearing, not cosmetic: the track below is
+      // `w-max` (its natural width, every card side by side) so the transform
+      // loop has room to run — without a clipping ancestor, that multi-thousand
+      // -pixel track becomes the page's intrinsic width and forces mobile
+      // browsers to zoom the entire layout out to fit it.
+      className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       // Keyboard users get the same courtesy as mouse users: focusing a card

@@ -112,7 +112,7 @@ export default async function LocaleLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${interTight.variable} ${ibmPlexSans.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-background text-foreground">
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             {children}
