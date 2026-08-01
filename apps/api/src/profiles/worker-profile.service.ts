@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   EndorsementStatus,
+  JobInvitationStatus,
   MediaVisibility,
   PortfolioItemType,
   PortfolioSlot,
@@ -13,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { groupByDay } from './availability.util';
 import type { PortfolioGroupView, WorkerProfileView } from './models/worker-profile.model';
+import { computeResponseTimeStat } from './response-time.util';
 
 const logger = createLogger('profiles.worker');
 
@@ -115,10 +117,11 @@ const WORKER_PROFILE_SELECT = {
  * let a stranger into their home. Six sequential requests on a Douala 3G
  * connection turns that decision into a wait, and people leave.
  *
- * What that costs is one big select and three small side queries that CANNOT be
+ * What that costs is one big select and four small side queries that CANNOT be
  * folded into it — endorsements and verifications hang off the USER, not the
- * profile, and upcoming exceptions need a date bound Prisma cannot express
- * inside a nested select. Four parallel statements, never N+1.
+ * profile, upcoming exceptions need a date bound Prisma cannot express inside a
+ * nested select, and answered invitations (for the response-time stat) are keyed
+ * by workerId rather than profile id. Five parallel statements, never N+1.
  */
 @Injectable()
 export class WorkerProfileService {
@@ -169,7 +172,7 @@ export class WorkerProfileService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [endorsements, verifications, exceptions] = await Promise.all([
+    const [endorsements, verifications, exceptions, answeredInvitations] = await Promise.all([
       this.prisma.client.endorsement.findMany({
         where: {
           subjectId: profile.userId,
@@ -211,6 +214,19 @@ export class WorkerProfileService {
           note: true,
         },
       }),
+      // The response-time stat (PRO-01): only invitations the worker actually
+      // ANSWERED (accept or decline) count — a CANCELLED or still-PENDING one
+      // says nothing about how fast this worker responds.
+      this.prisma.client.jobInvitation.findMany({
+        where: {
+          workerId: profile.userId,
+          status: { in: [JobInvitationStatus.ACCEPTED, JobInvitationStatus.DECLINED] },
+          respondedAt: { not: null },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 40,
+        select: { createdAt: true, respondedAt: true },
+      }),
     ]);
 
     const durationMs = Date.now() - started;
@@ -227,6 +243,12 @@ export class WorkerProfileService {
 
     const portfolio = await this.groupPortfolio(profile.portfolio);
     const portfolioCount = profile.portfolio.length;
+    const responseTime = computeResponseTimeStat(
+      answeredInvitations.map((invitation) => ({
+        createdAt: invitation.createdAt,
+        respondedAt: invitation.respondedAt as Date,
+      })),
+    );
 
     return {
       id: profile.id,
@@ -263,6 +285,8 @@ export class WorkerProfileService {
         // Engine applies to its financial pillar.
         onTimePercentage: null,
         onTimeScored: false,
+        respondsWithinMinutes: responseTime.respondsWithinMinutes,
+        responseTimeScored: responseTime.scored,
       },
       services: profile.services
         // A service filed under a retired category keeps its listing but loses

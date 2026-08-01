@@ -1063,7 +1063,15 @@
       "onTime": "On time",
       "percent": "{value}%",
       "verifications": "Verifications",
-      "endorsements": "Endorsements"
+      "endorsements": "Endorsements",
+      "responseTime": "Responds within"
+    },
+    "responseTime": {
+      "withinHour": "1 hour",
+      "withinHours": "{value} hours",
+      "withinDay": "1 day",
+      "withinDays": "{value} days",
+      "aboutAWeek": "About a week"
     },
     "tab": {
       "about": "About",
@@ -2772,6 +2780,21 @@
   },
   "Breadcrumbs": {
     "home": "Home"
+  },
+  "ServiceCityLanding": {
+    "meta": {
+      "title": "Verified {trade} in {city} | Kavio",
+      "description": "Find independently verified {trade} professionals in {city}, Cameroon. Real Trust Scores, transparent fixed quotes and escrow-protected payments — browse free, no account needed."
+    },
+    "title": "Verified {trade} professionals in {city}",
+    "intro": "Kavio checks identity, portfolio evidence and marketplace history before a professional in {trade} ever appears here — so you're choosing between verified track records in {city}, not just names on a list.",
+    "liveCount": "{count, plural, one {# verified professional found for {trade} in {city}} other {# verified professionals found for {trade} in {city}}}",
+    "noProvidersYet": "No workers have completed verification for {trade} in {city} yet — be the first to browse and post a job here, or check a nearby city.",
+    "cta": "Browse {trade} professionals in {city}",
+    "workersHeading": "Verified {trade} professionals in {city}",
+    "trustHeading": "Every profile here passed Kavio's Trust Engine",
+    "trustBody": "Identity checks against a government ID and a live selfie, a confirmed address, and real portfolio evidence — before financial and marketplace history even factor in. See exactly how the score is earned.",
+    "trustLink": "See how the Trust Score works"
   },
   "WorkerVerificationBanner": {
     "heading": "Your profile is not visible yet",

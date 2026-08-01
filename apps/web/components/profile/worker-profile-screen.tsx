@@ -1,14 +1,14 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { BadgeCheck, CalendarDays, MapPin, Star } from 'lucide-react';
+import { BadgeCheck, CalendarDays, Clock, MapPin, Star } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { RemoteImage } from '@/components/ui/remote-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TierBadge } from '@/components/trust/tier-badge';
 import { TrustScoreRing } from '@/components/trust/trust-score-ring';
 import { formatArea } from '@/lib/geo';
-import { formatRating, formatXaf, initials } from '@/lib/discovery';
+import { formatRating, formatResponseTime, formatXaf, initials } from '@/lib/discovery';
 import type { WorkerProfile } from '@/lib/graphql/discovery';
 import { ProfileReviews } from '@/components/reviews/profile-reviews';
 import { AvailabilityCalendar } from './availability-calendar';
@@ -29,10 +29,11 @@ import { ProfileActions } from './profile-actions';
  * workers would carry the cost. Contact happens through the platform.
  *
  * ── What is never faked ─────────────────────────────────────────────────────
- * An unrated worker shows "new", not "0.0 ★". On-time percentage is omitted
- * entirely while `onTimeScored` is false rather than rendered as a dash that
- * scans like a bad score. Both follow the same rule: a missing measurement must
- * never be displayed as a poor one.
+ * An unrated worker shows "new", not "0.0 ★". On-time percentage and the
+ * response-time stat are each omitted entirely while their `*Scored` flag is
+ * false, rather than rendered as a dash that scans like a bad score. All three
+ * follow the same rule: a missing measurement must never be displayed as a
+ * poor one.
  */
 export function WorkerProfileScreen({
   profile,
@@ -48,6 +49,9 @@ export function WorkerProfileScreen({
   const area = formatArea({ area: profile.area, city: profile.city });
   const rating = formatRating(profile.stats.averageRating, locale);
   const isNew = profile.stats.averageRating === null && profile.stats.completedJobs === 0;
+  const responseTime = formatResponseTime(profile.stats.respondsWithinMinutes, (key, values) =>
+    t(`responseTime.${key}`, values),
+  );
 
   const memberSince = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-CM' : 'en-CM', {
     year: 'numeric',
@@ -135,6 +139,16 @@ export function WorkerProfileScreen({
               value={t('stat.percent', {
                 value: String(Math.round(profile.stats.onTimePercentage)),
               })}
+            />
+          )}
+
+          {/* Rendered only once this worker has answered enough direct job
+              invitations for the median to mean anything (responseTimeScored). */}
+          {profile.stats.responseTimeScored && responseTime && (
+            <Stat
+              label={t('stat.responseTime')}
+              value={responseTime}
+              icon={<Clock aria-hidden className="size-4 text-accent" />}
             />
           )}
 

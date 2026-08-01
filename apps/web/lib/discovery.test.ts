@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { formatRating, formatXaf, initials } from './discovery';
+import { formatRating, formatResponseTime, formatXaf, initials } from './discovery';
+
+const t = (key: string, values?: { value: string }) => (values ? `${key}:${values.value}` : key);
 
 describe('formatXaf', () => {
   it('never shows decimals — XAF has no minor unit', () => {
@@ -29,6 +31,32 @@ describe('formatRating', () => {
   it('distinguishes unrated from badly rated', () => {
     expect(formatRating(null, 'en')).toBeNull();
     expect(formatRating(0, 'en')).toBe('0.0');
+  });
+});
+
+describe('formatResponseTime', () => {
+  it('returns null when there is no data, so the UI can omit the stat entirely', () => {
+    expect(formatResponseTime(null, t)).toBeNull();
+    expect(formatResponseTime(undefined, t)).toBeNull();
+  });
+
+  it('buckets an hour or less as withinHour, with no value interpolated', () => {
+    expect(formatResponseTime(45, t)).toBe('withinHour');
+    expect(formatResponseTime(60, t)).toBe('withinHour');
+  });
+
+  it('rounds UP to whole hours so the claim never understates the real median', () => {
+    expect(formatResponseTime(61, t)).toBe('withinHours:2');
+    expect(formatResponseTime(180, t)).toBe('withinHours:3');
+  });
+
+  it('switches to days at the 24-hour mark, singular for exactly one day', () => {
+    expect(formatResponseTime(24 * 60, t)).toBe('withinDay');
+    expect(formatResponseTime(24 * 60 + 1, t)).toBe('withinDays:2');
+  });
+
+  it('caps the claim at a week rather than a precise "9 days"', () => {
+    expect(formatResponseTime(8 * 24 * 60, t)).toBe('aboutAWeek');
   });
 });
 

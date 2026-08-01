@@ -1063,7 +1063,15 @@
       "onTime": "À l'heure",
       "percent": "{value} %",
       "verifications": "Vérifications",
-      "endorsements": "Recommandations"
+      "endorsements": "Recommandations",
+      "responseTime": "Répond sous"
+    },
+    "responseTime": {
+      "withinHour": "1 heure",
+      "withinHours": "{value} heures",
+      "withinDay": "1 jour",
+      "withinDays": "{value} jours",
+      "aboutAWeek": "Environ une semaine"
     },
     "tab": {
       "about": "À propos",
@@ -2772,6 +2780,21 @@
   },
   "Breadcrumbs": {
     "home": "Accueil"
+  },
+  "ServiceCityLanding": {
+    "meta": {
+      "title": "Professionnels {trade} vérifiés à {city} | Kavio",
+      "description": "Trouvez des professionnels {trade} vérifiés indépendamment à {city}, Cameroun. Scores de confiance réels, devis fixes transparents et paiements protégés par séquestre — navigation gratuite, sans compte."
+    },
+    "title": "Professionnels {trade} vérifiés à {city}",
+    "intro": "Kavio vérifie l’identité, les preuves de portfolio et l’historique sur la plateforme avant qu’un professionnel en {trade} n’apparaisse ici — vous choisissez entre des parcours vérifiés à {city}, pas de simples noms sur une liste.",
+    "liveCount": "{count, plural, one {# professionnel vérifié trouvé pour {trade} à {city}} other {# professionnels vérifiés trouvés pour {trade} à {city}}}",
+    "noProvidersYet": "Aucun artisan n’a encore terminé sa vérification pour {trade} à {city} — soyez le premier à parcourir la plateforme et à publier une mission ici, ou consultez une ville voisine.",
+    "cta": "Parcourir les professionnels {trade} à {city}",
+    "workersHeading": "Professionnels {trade} vérifiés à {city}",
+    "trustHeading": "Chaque profil ici a passé le Trust Engine de Kavio",
+    "trustBody": "Vérification d’identité avec une pièce officielle et un selfie en direct, adresse confirmée et preuves de travaux réels — avant même que l’historique financier et sur la plateforme n’entre en compte. Découvrez comment le score est obtenu.",
+    "trustLink": "Voir comment fonctionne le Score de Confiance"
   },
   "WorkerVerificationBanner": {
     "heading": "Votre profil n’est pas encore visible",

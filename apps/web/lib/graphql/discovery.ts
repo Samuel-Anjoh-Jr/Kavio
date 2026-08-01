@@ -429,6 +429,8 @@ export const WORKER_PROFILE_QUERY = gql`
         verifiedCheckCount
         onTimePercentage
         onTimeScored
+        respondsWithinMinutes
+        responseTimeScored
       }
       services {
         id
@@ -554,6 +556,9 @@ export interface WorkerProfile {
     /** Null until the jobs module can measure it — see onTimeScored. */
     onTimePercentage: number | null;
     onTimeScored: boolean;
+    /** Median minutes to answer a direct job invitation. Null until responseTimeScored. */
+    respondsWithinMinutes: number | null;
+    responseTimeScored: boolean;
   };
   services: WorkerProfileService[];
   portfolio: PortfolioGroup[];

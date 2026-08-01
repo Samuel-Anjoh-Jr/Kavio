@@ -191,6 +191,19 @@ export class WorkerHeadlineStatsView {
       'False while no completed-job data exists to measure punctuality. The UI must omit the stat rather than render a zero or a dash that reads as a bad score.',
   })
   onTimeScored!: boolean;
+
+  @Field(() => Int, {
+    nullable: true,
+    description:
+      'Median minutes between a client’s direct JobInvitation and this worker’s accept/decline (JOB-04). Distinct from SearchFilterRanges.responseTimeAvailable, which gates a marketplace-wide search FILTER still pending the Phase 5 messaging module — this is a per-worker stat computed today from real invitation timestamps. Null until responseTimeScored.',
+  })
+  respondsWithinMinutes!: number | null;
+
+  @Field({
+    description:
+      'False until the worker has answered enough invitations (see MIN_INVITATIONS_FOR_RESPONSE_STAT) for the median to mean anything. The UI must omit the stat rather than show a claim built on one data point.',
+  })
+  responseTimeScored!: boolean;
 }
 
 @ObjectType({
