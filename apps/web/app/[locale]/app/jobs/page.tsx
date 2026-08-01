@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { auth } from '@/auth';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { JobsBoard } from '@/components/discovery/jobs-board';
@@ -36,6 +37,11 @@ export default async function JobsPage({ params }: { params: Promise<{ locale: s
   setRequestLocale(locale);
 
   const t = await getTranslations('Jobs');
+  const session = await auth();
+  // Vacancy-style listings on the open board are a Business action (JOB-01):
+  // an individual client hires a specific worker they already chose, they
+  // never broadcast a job here — so the CTA to create one is Business-only.
+  const canPost = session?.user?.activeRole === 'BUSINESS';
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
@@ -46,9 +52,11 @@ export default async function JobsPage({ params }: { params: Promise<{ locale: s
           </h1>
           <p className="mt-2 text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <Button asChild>
-          <Link href="/app/jobs/new">{t('post')}</Link>
-        </Button>
+        {canPost && (
+          <Button asChild>
+            <Link href="/app/jobs/new">{t('post')}</Link>
+          </Button>
+        )}
       </div>
 
       <JobsBoard />

@@ -26,6 +26,7 @@ const schema = z
      * lands on. Both roles are granted server-side either way.
      */
     roleIntent: z.enum(['find_work', 'hire']),
+    name: z.string().trim().min(2).max(160),
     phone: z.string().trim().min(1),
     email: z.string().trim().email().optional().or(z.literal('')),
     password: z.string().min(8),
@@ -56,7 +57,14 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { roleIntent: defaultIntent, phone: '', email: '', password: '', website: '' },
+    defaultValues: {
+      roleIntent: defaultIntent,
+      name: '',
+      phone: '',
+      email: '',
+      password: '',
+      website: '',
+    },
   });
 
   async function onSubmit(values: FormValues) {
@@ -65,6 +73,7 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
     try {
       await restPost<SignUpResponse>('auth/signup', {
         roleIntent: values.roleIntent,
+        name: values.name,
         phone: values.phone,
         // An empty optional must be omitted, not sent as "" — the API's email
         // validator would reject the empty string as malformed.
@@ -116,6 +125,16 @@ export function SignUpForm({ defaultIntent }: { defaultIntent: 'find_work' | 'hi
       <p className="rounded-card border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
         {t('bothRolesNote')}
       </p>
+
+      <Field
+        label={t('nameLabel')}
+        type="text"
+        autoComplete="name"
+        placeholder={t('namePlaceholder')}
+        hint={t('nameHint')}
+        error={errors.name?.message && t('nameInvalid')}
+        {...register('name')}
+      />
 
       <Field
         label={t('phoneLabel')}

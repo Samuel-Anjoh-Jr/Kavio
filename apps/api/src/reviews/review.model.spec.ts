@@ -25,10 +25,20 @@ function booking(status: BookingStatus): ReviewEligibilityBooking {
 describe('review.model — eligibility (REV-02)', () => {
   it('lets each party review the other after a completed job', () => {
     const asClient = decideReviewEligibility(booking(BookingStatus.COMPLETED), CLIENT, false);
-    expect(asClient).toEqual({ allowed: true, reason: 'ELIGIBLE', subjectId: WORKER });
+    expect(asClient).toEqual({
+      allowed: true,
+      reason: 'ELIGIBLE',
+      subjectId: WORKER,
+      subjectIsWorker: true,
+    });
 
     const asWorker = decideReviewEligibility(booking(BookingStatus.COMPLETED), WORKER, false);
-    expect(asWorker).toEqual({ allowed: true, reason: 'ELIGIBLE', subjectId: CLIENT });
+    expect(asWorker).toEqual({
+      allowed: true,
+      reason: 'ELIGIBLE',
+      subjectId: CLIENT,
+      subjectIsWorker: false,
+    });
   });
 
   it('derives the subject from the booking rather than trusting the caller', () => {
@@ -40,7 +50,12 @@ describe('review.model — eligibility (REV-02)', () => {
 
   it('refuses a stranger to the booking', () => {
     const decision = decideReviewEligibility(booking(BookingStatus.RELEASED), STRANGER, false);
-    expect(decision).toEqual({ allowed: false, reason: 'NOT_A_PARTICIPANT', subjectId: null });
+    expect(decision).toEqual({
+      allowed: false,
+      reason: 'NOT_A_PARTICIPANT',
+      subjectId: null,
+      subjectIsWorker: null,
+    });
   });
 
   it('refuses when there is no booking at all', () => {
@@ -48,12 +63,18 @@ describe('review.model — eligibility (REV-02)', () => {
       allowed: false,
       reason: 'NO_BOOKING',
       subjectId: null,
+      subjectIsWorker: null,
     });
   });
 
   it('refuses a second review of the same job by the same author', () => {
     const decision = decideReviewEligibility(booking(BookingStatus.RELEASED), CLIENT, true);
-    expect(decision).toEqual({ allowed: false, reason: 'ALREADY_REVIEWED', subjectId: null });
+    expect(decision).toEqual({
+      allowed: false,
+      reason: 'ALREADY_REVIEWED',
+      subjectId: null,
+      subjectIsWorker: null,
+    });
   });
 
   it('allows exactly the finished states and refuses every other one', () => {

@@ -87,6 +87,20 @@ export const toggleTwoFactorSchema = z.object({
   password: z.string().min(1, 'Enter your password to confirm.'),
 });
 
+/** Same 2-160 bound the sign-up name field and onboarding's display-name step use. */
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(2, 'Enter your name.').max(160, 'That name is too long.'),
+});
+
+/** Shape only — normalisation and the uniqueness/verification rules live in
+ *  ProfileService, same split as sign-up. */
+export const changePhoneSchema = z.object({
+  phone: z
+    .string({ message: 'Enter your phone number.' })
+    .trim()
+    .min(1, 'Enter your phone number.'),
+});
+
 /** Roles a user may grant themselves. AGENT and ADMIN are assigned by Kavio
  *  only — self-service would be a privilege-escalation hole. */
 export const selfAssignableRoles = ['WORKER', 'CLIENT', 'BUSINESS'] as const;
@@ -106,6 +120,8 @@ export type LogoutDto = z.infer<typeof logoutSchema>;
 export type ForgotPasswordDto = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
 export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;
+export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;
+export type ChangePhoneDto = z.infer<typeof changePhoneSchema>;
 export type ToggleTwoFactorDto = z.infer<typeof toggleTwoFactorSchema>;
 export type SwitchRoleDto = z.infer<typeof switchRoleSchema>;
 export type AddRoleDto = z.infer<typeof addRoleSchema>;

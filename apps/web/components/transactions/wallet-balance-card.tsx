@@ -20,8 +20,15 @@ import { useToast } from '@/components/ui/use-toast';
 import { ApiError } from '@/lib/api-error';
 import { formatXaf } from '@/lib/discovery';
 import { parseBudget } from '@/lib/jobs';
-import { WALLET_QUERY, type WalletQueryResult } from '@/lib/graphql/payments';
-import { restPost } from '@/lib/rest-api';
+import {
+  DEFAULT_MOMO_METHOD_QUERY,
+  WALLET_QUERY,
+  type DefaultMomoMethod,
+  type DefaultMomoMethodQueryResult,
+  type WalletQueryResult,
+} from '@/lib/graphql/payments';
+import { restPatch, restPost } from '@/lib/rest-api';
+import { InlineAddMomoMethod } from './inline-add-method';
 
 /**
  * The wallet balance card (PAY-05): available balance, funds in escrow, and the
@@ -32,7 +39,7 @@ import { restPost } from '@/lib/rest-api';
  * escrow timelines below it already run on real data, so the wallet screen is
  * useful in the meantime.
  */
-export function WalletBalanceCard() {
+export function WalletBalanceCard({ canAddMoney }: { canAddMoney: boolean }) {
   const t = useTranslations('Transactions');
   const locale = useLocale();
   const { data, loading, error, refetch } = useQuery<WalletQueryResult>(WALLET_QUERY, {
@@ -73,16 +80,18 @@ export function WalletBalanceCard() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <MoveMoneyDialog
-            mode="add"
-            trigger={
-              <Button>
-                <ArrowDownToLine aria-hidden />
-                {t('addMoney')}
-              </Button>
-            }
-            onDone={() => void refetch()}
-          />
+          {canAddMoney && (
+            <MoveMoneyDialog
+              mode="add"
+              trigger={
+                <Button>
+                  <ArrowDownToLine aria-hidden />
+                  {t('addMoney')}
+                </Button>
+              }
+              onDone={() => void refetch()}
+            />
+          )}
           <MoveMoneyDialog
             mode="withdraw"
             trigger={
@@ -115,7 +124,45 @@ function MoveMoneyDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
 
+  // Which Mobile Money number this move will actually use — shown so it can be
+  // confirmed or corrected before money moves, rather than trusted silently.
+  const { data: methodData, loading: methodLoading } = useQuery<DefaultMomoMethodQueryResult>(
+    DEFAULT_MOMO_METHOD_QUERY,
+    { skip: !open, fetchPolicy: 'cache-and-network' },
+  );
+  const defaultMethod = methodData?.paymentMethods.find(
+    (m) => m.isDefault && (m.type === 'MTN_MOMO' || m.type === 'ORANGE_MONEY'),
+  );
+  // A method just added inline, in THIS open, before the query has had a
+  // chance to refetch it as the default — takes over from `defaultMethod` so
+  // the user can continue straight through rather than reopening the dialog.
+  const [addedMethod, setAddedMethod] = useState<DefaultMomoMethod | null>(null);
+  const effectiveMethod = addedMethod ?? defaultMethod;
+  const [phone, setPhone] = useState('');
+  // Tracks which method's number is currently reflected in `phone`, so a
+  // fresh load (a different id, or the dialog reopening after `onOpenChange`
+  // clears this) resyncs the field exactly once without fighting whatever
+  // the user is actively typing.
+  const [syncedMethodId, setSyncedMethodId] = useState<string | null>(null);
+
+  if (effectiveMethod && effectiveMethod.id !== syncedMethodId) {
+    setSyncedMethodId(effectiveMethod.id);
+    setPhone(effectiveMethod.phone ?? '');
+  }
+
   const value = parseBudget(amount);
+
+  function onOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) {
+      // Fresh confirmation every time the dialog is reopened, not whatever
+      // was last typed — a stale edit from a previous visit is exactly the
+      // kind of silent mistake this step exists to prevent.
+      setSyncedMethodId(null);
+      setPhone('');
+      setAddedMethod(null);
+    }
+  }
 
   async function submit() {
     if (!value) {
@@ -125,6 +172,10 @@ function MoveMoneyDialog({
     setBusy(true);
     setError(null);
     try {
+      const trimmedPhone = phone.trim();
+      if (effectiveMethod && trimmedPhone && trimmedPhone !== (effectiveMethod.phone ?? '')) {
+        await restPatch(`payment-methods/${effectiveMethod.id}`, { phone: trimmedPhone });
+      }
       await restPost(mode === 'add' ? 'wallet/add-money' : 'wallet/withdraw', { amount: value });
       setOpen(false);
       setAmount('');
@@ -139,7 +190,7 @@ function MoveMoneyDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -155,7 +206,19 @@ function MoveMoneyDialog({
             placeholder="10000"
             hint={t('amountHint')}
           />
-          <Button onClick={() => void submit()} disabled={busy || !value}>
+          {effectiveMethod ? (
+            <Field
+              label={mode === 'add' ? t('sourceNumberLabel') : t('payoutNumberLabel')}
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              hint={t('confirmNumberHint')}
+            />
+          ) : (
+            !methodLoading && <InlineAddMomoMethod onAdded={setAddedMethod} />
+          )}
+          <Button onClick={() => void submit()} disabled={busy || !value || !effectiveMethod}>
             {busy ? <Loader2 aria-hidden className="animate-spin" /> : null}
             {mode === 'add' ? t('continueToPay') : t('confirmWithdraw')}
           </Button>

@@ -63,6 +63,7 @@ export class ReviewsResolver {
       allowed: eligibility.allowed,
       reason: eligibility.reason,
       subjectId: eligibility.subjectId,
+      subjectIsWorker: eligibility.subjectIsWorker,
     };
   }
 }

@@ -6,12 +6,18 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { CurrentUser } from '../../auth/decorators/auth.decorators';
 import { ZodValidationPipe } from '../../lib/zod-validation.pipe';
-import { addPaymentMethodSchema, type AddPaymentMethodDto } from './dto/payment-method.dto';
+import {
+  addPaymentMethodSchema,
+  updatePaymentMethodPhoneSchema,
+  type AddPaymentMethodDto,
+  type UpdatePaymentMethodPhoneDto,
+} from './dto/payment-method.dto';
 import { PaymentMethodsService } from './payment-methods.service';
 
 /**
@@ -33,6 +39,16 @@ export class PaymentMethodsController {
     @Body(new ZodValidationPipe(addPaymentMethodSchema)) dto: AddPaymentMethodDto,
   ) {
     return this.methods.add(user, dto);
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  async updatePhone(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(updatePaymentMethodPhoneSchema)) dto: UpdatePaymentMethodPhoneDto,
+  ) {
+    return this.methods.updatePhone(user, id, dto);
   }
 
   @Post(':id/default')

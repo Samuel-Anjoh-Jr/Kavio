@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { JobVisibility, VerificationCheckType, VerificationStatus } from '@kavio/database';
+import { JobVisibility, Role, VerificationCheckType, VerificationStatus } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
@@ -145,6 +145,27 @@ export class JobPostingGateService {
         // The client renders these as a checklist; the codes key the EN/FR copy.
         verification: eligibility.steps.map((step) => step.messageKey),
       },
+    );
+  }
+
+  /**
+   * Asserts a CLIENT-role DIRECT publish names the one worker it is for
+   * (JOB-01 anti-lure, defense in depth). The UI never reaches a workerless
+   * publish for a client — Request a Quote always sends `workerId` — so this
+   * only ever fires against a direct API call. BUSINESS callers are exempt:
+   * their own recruiting flow is gated on the PUBLIC side above, and a
+   * business inviting a worker directly is not the broadcast shape this closes.
+   */
+  assertDirectHasWorker(role: Role, workerId: string | undefined): void {
+    if (role !== Role.CLIENT || workerId) {
+      return;
+    }
+
+    logger.info('Direct job publish blocked — no worker named', { payload: { role } });
+    throw new AppException(
+      HttpStatus.FORBIDDEN,
+      'WORKER_REQUIRED',
+      'Find a worker and request a quote from their profile. Kavio does not let clients broadcast open jobs.',
     );
   }
 }

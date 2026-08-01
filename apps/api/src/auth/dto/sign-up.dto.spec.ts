@@ -6,13 +6,18 @@ describe('signUpSchema via ZodValidationPipe', () => {
   const pipe = new ZodValidationPipe(signUpSchema);
 
   it('accepts a valid payload and strips unknown keys', () => {
-    const parsed = pipe.transform({ roleIntent: 'hire', phone: ' 655 555 555 ', extra: 'x' });
-    expect(parsed).toEqual({ roleIntent: 'hire', phone: '655 555 555' });
+    const parsed = pipe.transform({
+      roleIntent: 'hire',
+      name: 'Amina N.',
+      phone: ' 655 555 555 ',
+      extra: 'x',
+    });
+    expect(parsed).toEqual({ roleIntent: 'hire', name: 'Amina N.', phone: '655 555 555' });
   });
 
   it('rejects an unknown roleIntent with a field error', () => {
     try {
-      pipe.transform({ roleIntent: 'browse', phone: '655555555' });
+      pipe.transform({ roleIntent: 'browse', name: 'Amina N.', phone: '655555555' });
       fail('expected validation to throw');
     } catch (error) {
       expect(error).toBeInstanceOf(AppException);
@@ -23,16 +28,30 @@ describe('signUpSchema via ZodValidationPipe', () => {
 
   it('rejects a missing phone', () => {
     try {
-      pipe.transform({ roleIntent: 'find_work' });
+      pipe.transform({ roleIntent: 'find_work', name: 'Amina N.' });
       fail('expected validation to throw');
     } catch (error) {
       expect((error as AppException).fields).toHaveProperty('phone');
     }
   });
 
+  it('rejects a missing name', () => {
+    try {
+      pipe.transform({ roleIntent: 'find_work', phone: '655555555' });
+      fail('expected validation to throw');
+    } catch (error) {
+      expect((error as AppException).fields).toHaveProperty('name');
+    }
+  });
+
   it('rejects a filled honeypot (bot signal)', () => {
     try {
-      pipe.transform({ roleIntent: 'hire', phone: '655555555', website: 'http://spam' });
+      pipe.transform({
+        roleIntent: 'hire',
+        name: 'Amina N.',
+        phone: '655555555',
+        website: 'http://spam',
+      });
       fail('expected validation to throw');
     } catch (error) {
       expect((error as AppException).fields).toHaveProperty('website');

@@ -21,7 +21,7 @@ import { WalletBalanceCard } from './wallet-balance-card';
  */
 export function WalletScreen() {
   const t = useTranslations('Transactions');
-  const { status } = useSession();
+  const { data, status } = useSession();
 
   if (status === 'unauthenticated') {
     return (
@@ -36,9 +36,17 @@ export function WalletScreen() {
     );
   }
 
+  // Add money has nothing to spend itself on: funding a booking's escrow is
+  // always its own fresh Campay charge (bookings/:id/pay never reads or
+  // debits this balance), so a top-up would only ever come back out again via
+  // Withdraw. A Worker's balance is real money already earned (a payout),
+  // which is worth letting them move around; a Client/Business balance only
+  // ever gets credited by a refund, never spent — so only Withdraw applies.
+  const canAddMoney = data?.user?.activeRole === 'WORKER';
+
   return (
     <div className="flex flex-col gap-6">
-      <WalletBalanceCard />
+      <WalletBalanceCard canAddMoney={canAddMoney} />
 
       <Tabs defaultValue="escrow">
         <TabsList className="w-full">

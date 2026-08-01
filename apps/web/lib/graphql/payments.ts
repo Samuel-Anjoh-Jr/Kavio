@@ -129,7 +129,7 @@ export const PAYMENT_METHODS_QUERY = gql`
   query PaymentMethods {
     paymentMethods {
       id
-      kind
+      kind: type
       label
       maskedAccount
       isDefault
@@ -143,6 +143,33 @@ export interface PaymentMethod {
   label: string | null;
   maskedAccount: string | null;
   isDefault: boolean;
+}
+
+/**
+ * A second, narrower read of the same resolver, used only by the pre-payout
+ * confirmation step (MoveMoneyDialog). Kept separate from {@link PaymentMethod}
+ * above because it needs `phone`, which that shape doesn't carry.
+ */
+export const DEFAULT_MOMO_METHOD_QUERY = gql`
+  query DefaultMomoMethod {
+    paymentMethods {
+      id
+      type
+      phone
+      isDefault
+    }
+  }
+`;
+
+export interface DefaultMomoMethod {
+  id: string;
+  type: PaymentMethodKind;
+  phone: string | null;
+  isDefault: boolean;
+}
+
+export interface DefaultMomoMethodQueryResult {
+  paymentMethods: DefaultMomoMethod[];
 }
 
 export interface PaymentMethodsQueryResult {

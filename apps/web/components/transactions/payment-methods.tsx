@@ -183,7 +183,13 @@ function AddMethodDialog({ onDone }: { onDone: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      await restPost('payment-methods', { kind, account: account.trim() });
+      const isMobileMoney = kind === 'MTN_MOMO' || kind === 'ORANGE_MONEY';
+      await restPost('payment-methods', {
+        type: kind,
+        ...(isMobileMoney
+          ? { phone: account.trim() }
+          : { maskedAccount: account.trim().slice(-8) }),
+      });
       setOpen(false);
       setAccount('');
       toast({ title: t('methodAdded') });

@@ -20,6 +20,7 @@ import {
   type TransitionActor,
 } from './job-lifecycle.model';
 import { JobPostingGateService } from './job-posting-gate.service';
+import { InvitationsService } from './invitations.service';
 
 const logger = createLogger('jobs');
 
@@ -96,6 +97,8 @@ export class JobsService {
     private readonly reverseGeocode: ReverseGeocodeService,
     /** Resolves whether the poster may act for a business (BIZ-02). */
     private readonly businessAccess: BusinessAccessService,
+    /** Creates the worker invitation a CLIENT's DIRECT publish is required to name. */
+    private readonly invitations: InvitationsService,
   ) {}
 
   /**
@@ -238,17 +241,25 @@ export class JobsService {
   /**
    * Publishes a draft (JOB-01, JOB-02), at a chosen visibility.
    *
-   * DIRECT is the default and needs nothing: it is how a client with no
-   * verification hires a worker they already picked. PUBLIC puts the job on the
-   * board, which requires a verified business and charges the posting fee —
-   * the gate returns the unlock steps rather than a bare refusal.
+   * DIRECT is the default and needs nothing from a business: it is how any
+   * poster hires a worker they already picked. From a CLIENT it needs exactly
+   * one thing — `workerId`, the one worker this engagement is for — enforced
+   * here rather than trusted from the UI, so a client can never publish a
+   * workerless job for strangers to answer (JOB-01 anti-lure). PUBLIC puts the
+   * job on the board, which requires a verified business and charges the
+   * posting fee — the gate returns the unlock steps rather than a bare refusal.
    */
   async publish(
     user: AuthenticatedUser,
     jobId: string,
     visibility: JobVisibility = JobVisibility.DIRECT,
+    workerId?: string,
   ): Promise<JobRow> {
     const eligibility = await this.gate.assertCanPublish(user.id, visibility);
+
+    if (visibility === JobVisibility.DIRECT) {
+      this.gate.assertDirectHasWorker(user.activeRole, workerId);
+    }
 
     const job = await this.prisma.client.job.findFirst({
       where: { id: jobId, posterId: user.id },
@@ -291,6 +302,23 @@ export class JobsService {
       );
     }
 
+    // Checked before any write: a bad workerId must fail cleanly rather than
+    // leave a job published with no invitation to follow it up with.
+    if (workerId) {
+      const workerProfile = await this.prisma.client.workerProfile.findUnique({
+        where: { userId: workerId },
+        select: { userId: true },
+      });
+      if (!workerProfile) {
+        throw new AppException(
+          HttpStatus.NOT_FOUND,
+          'WORKER_NOT_FOUND',
+          'That worker was not found.',
+          { workerId: ['Choose a worker from search.'] },
+        );
+      }
+    }
+
     // Recorded BEFORE the transition so a published row is never briefly on the
     // board without the visibility and price it was published under.
     await this.prisma.client.job.update({
@@ -320,6 +348,12 @@ export class JobsService {
         requestId: getRequestId(),
       }),
     );
+
+    // The job is fresh (just DRAFT -> OPEN in this call), so it carries no
+    // invitation yet — this always succeeds unless workerId is stale.
+    if (workerId) {
+      await this.invitations.invite(user, job.id, { workerId });
+    }
 
     logger.info('Job published', {
       payload: {

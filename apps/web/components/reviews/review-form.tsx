@@ -79,8 +79,14 @@ export function ReviewForm({ jobId, jobTitle }: { jobId: string; jobTitle?: stri
       const created = await createReview(payload);
       setDone(true);
       // Straight to the profile the review now appears on — the point of
-      // leaving one is seeing it land.
-      router.push(`/app/workers/${created.subjectId}`);
+      // leaving one is seeing it land. Only a worker HAS a public profile;
+      // reviewing a client (the other direction this form serves) has nowhere
+      // equivalent to go, so that case lands back on the job instead.
+      if (eligibility?.subjectIsWorker) {
+        router.push(`/app/workers/${created.subjectId}`);
+      } else {
+        router.push(`/app/jobs/${jobId}`);
+      }
     } catch (err) {
       setError(translateError(err));
     } finally {

@@ -11,6 +11,16 @@ export const signUpSchema = z.object({
   roleIntent: z.enum(['find_work', 'hire'], {
     message: 'Choose whether you want to find work or hire.',
   }),
+  /**
+   * Collected once, here, rather than re-asked during onboarding: this is the
+   * identity-level name (User.name), what a worker or client is called across
+   * every role. Same 2-160 bound onboarding already used for it.
+   */
+  name: z
+    .string({ message: 'Enter your name.' })
+    .trim()
+    .min(2, 'Enter your name.')
+    .max(160, 'That name is too long.'),
   phone: z
     .string({ message: 'Enter your phone number.' })
     .trim()

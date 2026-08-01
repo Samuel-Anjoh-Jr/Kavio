@@ -117,6 +117,12 @@ function sampleVariables(key: string): Record<string, unknown> {
       return { code: '123456', expiresInMinutes: 10 };
     case 'auth.password_reset':
       return { resetUrl: 'https://kavio.cm/reset/abc', expiresInMinutes: 30 };
+    case 'admin.agent_invited':
+      return {
+        name: 'Paul Ngassa',
+        acceptUrl: 'https://kavio.cm/auth/agent-invite?token=abc',
+        expiresInDays: 14,
+      };
     case 'auth.new_device_login':
       return {
         deviceName: 'Chrome on Android',

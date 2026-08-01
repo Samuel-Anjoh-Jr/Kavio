@@ -146,6 +146,12 @@ export type TransitionJobDto = z.infer<typeof transitionJobSchema>;
  */
 export const publishJobSchema = z.object({
   visibility: z.enum([JobVisibility.DIRECT, JobVisibility.PUBLIC]).default(JobVisibility.DIRECT),
+  /**
+   * The one worker a DIRECT publish is for (JOB-01 anti-lure). Required from a
+   * CLIENT caller — enforced server-side, not just by the UI always sending it
+   * — so a client can never publish a workerless job for strangers to answer.
+   */
+  workerId: z.uuid().optional(),
 });
 
 export type PublishJobDto = z.infer<typeof publishJobSchema>;

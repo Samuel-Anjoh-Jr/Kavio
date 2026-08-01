@@ -8,6 +8,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { OtpService } from './otp.service';
 import { PasswordService } from './password.service';
+import { ProfileService } from './profile.service';
 import { SessionService } from './session.service';
 import { TokenService } from './token.service';
 
@@ -30,11 +31,20 @@ import { TokenService } from './token.service';
     AuthService,
     OtpService,
     PasswordService,
+    ProfileService,
     SessionService,
     TokenService,
     JwtAuthGuard,
     RolesGuard,
   ],
-  exports: [AuthService, OtpService, SessionService, TokenService, JwtAuthGuard, RolesGuard],
+  exports: [
+    AuthService,
+    OtpService,
+    ProfileService,
+    SessionService,
+    TokenService,
+    JwtAuthGuard,
+    RolesGuard,
+  ],
 })
 export class AuthModule {}

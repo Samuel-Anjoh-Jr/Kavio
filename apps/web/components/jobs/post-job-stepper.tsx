@@ -91,7 +91,6 @@ export function PostJobStepper() {
   );
   const eligibility = eligibilityData?.jobPostingEligibility;
   const canPostPublicly = eligibility?.allowed === true;
-  const [publishPublicly, setPublishPublicly] = useState(false);
   const locale = useLocale();
   const router = useRouter();
   const requireAuth = useRequireAuth();
@@ -119,6 +118,7 @@ export function PostJobStepper() {
   const photos: UploadedPhoto[] = draft.photoAssetIds.map(
     (id) => sessionPhotos.find((p) => p.id === id) ?? { id, url: null },
   );
+  const publishPublicly = draft.publishPublicly;
 
   // One writer for the draft: merge and persist to the store, which notifies the
   // useSyncExternalStore subscription so the UI re-renders from one value.
@@ -261,11 +261,61 @@ export function PostJobStepper() {
             {t('steps.details')}
           </h2>
 
+          {/* Asked before the title, not at review: which board this lands on
+              changes what a good title even looks like ("Fix a leaking tap"
+              vs "Waitress needed"), so the choice has to come first. Only a
+              verified business ever sees this — everyone else can only ever
+              invite the one worker they already chose (JOB-01's anti-lure
+              gate), and this toggle simply does not render for them. */}
+          {canPostPublicly && (
+            <div className="rounded-card border border-border bg-surface p-4">
+              <p className="font-medium text-foreground">{t('visibilityHeading')}</p>
+              <div className="mt-3 flex flex-col gap-2">
+                {([false, true] as const).map((isPublic) => (
+                  <button
+                    key={String(isPublic)}
+                    type="button"
+                    onClick={() => update({ publishPublicly: isPublic })}
+                    aria-pressed={publishPublicly === isPublic}
+                    className={cn(
+                      'rounded-input border px-4 py-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      publishPublicly === isPublic
+                        ? 'border-primary bg-primary/5'
+                        : 'border-input bg-surface hover:bg-muted',
+                    )}
+                  >
+                    <span className="block font-medium text-foreground">
+                      {isPublic ? t('visibilityPublicTitle') : t('visibilityDirectTitle')}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {isPublic ? t('visibilityPublicBody') : t('visibilityDirectBody')}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {publishPublicly && (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {t('postingFeeLabel')}:{' '}
+                  <span className="font-medium text-foreground">
+                    {/* 0 reads as "Free", never as "FCFA 0" — a price of zero
+                        stated as a number still reads as a charge. */}
+                    {eligibility && eligibility.feeXaf > 0
+                      ? t('postingFeeValue', {
+                          amount: new Intl.NumberFormat(locale).format(eligibility.feeXaf),
+                        })
+                      : t('postingFeeFree')}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
+
           <Field
             label={t('titleLabel')}
             value={draft.title}
             onChange={(e) => update({ title: e.target.value })}
-            placeholder={t('titlePlaceholder')}
+            placeholder={publishPublicly ? t('titlePlaceholderPublic') : t('titlePlaceholder')}
             maxLength={140}
           />
 
@@ -278,7 +328,9 @@ export function PostJobStepper() {
               rows={5}
               value={draft.description}
               onChange={(e) => update({ description: e.target.value })}
-              placeholder={t('descriptionPlaceholder')}
+              placeholder={
+                publishPublicly ? t('descriptionPlaceholderPublic') : t('descriptionPlaceholder')
+              }
               maxLength={5000}
               className="w-full rounded-input border border-input bg-surface px-4 py-3 text-sm text-surface-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
@@ -404,75 +456,64 @@ export function PostJobStepper() {
             {t('reviewHeading')}
           </h2>
 
-          <dl className="divide-y divide-border rounded-card border border-border bg-surface">
-            <ReviewRow label={t('titleLabel')} value={draft.title || t('notSet')} />
-            <ReviewRow label={t('descriptionLabel')} value={draft.description || t('notSet')} />
-            <ReviewRow
-              label={t('categoryLabel')}
-              value={
-                categories.find((c) => c.id === draft.categoryId)
-                  ? locale === 'fr'
-                    ? (categories.find((c) => c.id === draft.categoryId)?.nameFr ?? t('notSet'))
-                    : (categories.find((c) => c.id === draft.categoryId)?.nameEn ?? t('notSet'))
-                  : t('notSet')
-              }
-            />
-            <ReviewRow label={t('urgencyLabel')} value={t(`urgency.${draft.urgency}`)} />
-            <ReviewRow
-              label={t('locationLabel')}
-              value={
-                jobLocation?.landmark ||
-                jobLocation?.label ||
-                // A pin with no landmark and no reverse-geocoded label is still
-                // a location — falling straight through to "Not set" contradicted
-                // the Location step, which had already confirmed "Location set".
-                (jobLocation
-                  ? tLocation('coordinates', {
-                      latitude: jobLocation.latitude.toFixed(4),
-                      longitude: jobLocation.longitude.toFixed(4),
-                    })
-                  : t('notSet'))
-              }
-            />
-            <ReviewRow
-              label={t('budgetLabel')}
-              value={formatBudget(budgetMin, budgetMax, locale, t('budgetOpen'))}
-            />
-            <ReviewRow
-              label={t('photosLabel')}
-              value={t('photoCount', { count: draft.photoAssetIds.length })}
-            />
-          </dl>
+          {post.kind === 'posted' ? (
+            // The draft is already cleared by the time this renders (submit()
+            // clears it right before navigating away) — showing the review
+            // table here would flash every field back to "Not set" for the
+            // moment before the redirect to the job page lands.
+            <FormBanner tone="success" message={t('posted')} />
+          ) : (
+            <>
+              <dl className="divide-y divide-border rounded-card border border-border bg-surface">
+                <ReviewRow label={t('titleLabel')} value={draft.title || t('notSet')} />
+                <ReviewRow label={t('descriptionLabel')} value={draft.description || t('notSet')} />
+                <ReviewRow
+                  label={t('categoryLabel')}
+                  value={
+                    categories.find((c) => c.id === draft.categoryId)
+                      ? locale === 'fr'
+                        ? (categories.find((c) => c.id === draft.categoryId)?.nameFr ?? t('notSet'))
+                        : (categories.find((c) => c.id === draft.categoryId)?.nameEn ?? t('notSet'))
+                      : t('notSet')
+                  }
+                />
+                <ReviewRow label={t('urgencyLabel')} value={t(`urgency.${draft.urgency}`)} />
+                <ReviewRow
+                  label={t('locationLabel')}
+                  value={
+                    jobLocation?.landmark ||
+                    jobLocation?.label ||
+                    // A pin with no landmark and no reverse-geocoded label is still
+                    // a location — falling straight through to "Not set" contradicted
+                    // the Location step, which had already confirmed "Location set".
+                    (jobLocation
+                      ? tLocation('coordinates', {
+                          latitude: jobLocation.latitude.toFixed(4),
+                          longitude: jobLocation.longitude.toFixed(4),
+                        })
+                      : t('notSet'))
+                  }
+                />
+                <ReviewRow
+                  label={t('budgetLabel')}
+                  value={formatBudget(budgetMin, budgetMax, locale, t('budgetOpen'))}
+                />
+                <ReviewRow
+                  label={t('photosLabel')}
+                  value={t('photoCount', { count: draft.photoAssetIds.length })}
+                />
+                {canPostPublicly && (
+                  <ReviewRow
+                    label={t('visibilityReviewLabel')}
+                    value={
+                      publishPublicly ? t('visibilityPublicTitle') : t('visibilityDirectTitle')
+                    }
+                  />
+                )}
+              </dl>
 
-          {canPostPublicly && (
-            <div className="rounded-card border border-border bg-surface p-4">
-              <p className="font-medium text-foreground">{t('visibilityHeading')}</p>
-              <div className="mt-3 flex flex-col gap-2">
-                {([false, true] as const).map((isPublic) => (
-                  <button
-                    key={String(isPublic)}
-                    type="button"
-                    onClick={() => setPublishPublicly(isPublic)}
-                    aria-pressed={publishPublicly === isPublic}
-                    className={cn(
-                      'rounded-input border px-4 py-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      publishPublicly === isPublic
-                        ? 'border-primary bg-primary/5'
-                        : 'border-input bg-surface hover:bg-muted',
-                    )}
-                  >
-                    <span className="block font-medium text-foreground">
-                      {isPublic ? t('visibilityPublicTitle') : t('visibilityDirectTitle')}
-                    </span>
-                    <span className="mt-1 block text-xs text-muted-foreground">
-                      {isPublic ? t('visibilityPublicBody') : t('visibilityDirectBody')}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {publishPublicly && (
-                <p className="mt-3 text-sm text-muted-foreground">
+              {canPostPublicly && publishPublicly && (
+                <p className="text-sm text-muted-foreground">
                   {t('postingFeeLabel')}:{' '}
                   <span className="font-medium text-foreground">
                     {/* 0 reads as "Free", never as "FCFA 0" — a price of zero
@@ -485,32 +526,31 @@ export function PostJobStepper() {
                   </span>
                 </p>
               )}
-            </div>
-          )}
 
-          {post.kind === 'gated' && (
-            <div className="rounded-card border border-warning/30 bg-warning/10 p-4">
-              <div className="flex items-start gap-3">
-                <ShieldCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-warning" />
-                <div className="flex flex-col gap-1">
-                  <p className="font-medium text-foreground">{t('gatedHeading')}</p>
-                  <p className="text-sm text-muted-foreground">{post.message}</p>
+              {post.kind === 'gated' && (
+                <div className="rounded-card border border-warning/30 bg-warning/10 p-4">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-warning" />
+                    <div className="flex flex-col gap-1">
+                      <p className="font-medium text-foreground">{t('gatedHeading')}</p>
+                      <p className="text-sm text-muted-foreground">{post.message}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() => router.push('/app/verification')}
+                  >
+                    {t('gatedCta')}
+                  </Button>
                 </div>
-              </div>
-              <Button
-                variant="outline"
-                className="mt-3"
-                onClick={() => router.push('/app/verification')}
-              >
-                {t('gatedCta')}
-              </Button>
-            </div>
-          )}
+              )}
 
-          {post.kind === 'error' && (
-            <FormBanner tone="error" message={post.message} requestId={post.requestId} />
+              {post.kind === 'error' && (
+                <FormBanner tone="error" message={post.message} requestId={post.requestId} />
+              )}
+            </>
           )}
-          {post.kind === 'posted' && <FormBanner tone="success" message={t('posted')} />}
         </section>
       )}
 

@@ -27,6 +27,12 @@ interface DocumentsValue {
   logoAssetId?: string;
 }
 
+interface IdentityValue {
+  idFrontAssetId?: string;
+  idBackAssetId?: string;
+  selfieAssetId?: string;
+}
+
 const TEAM_ROLES = ['ADMIN', 'HR_MANAGER', 'ACCOUNTANT', 'STAFF'] as const;
 const ACCESS_LEVELS = ['FULL', 'MANAGE_JOBS', 'PAYMENTS', 'VIEW_ONLY'] as const;
 
@@ -46,6 +52,7 @@ export function BusinessOnboarding({ initial }: { initial: OnboardingState }) {
   const company = readStep<CompanyValue>(state.data, 'company', {});
   const documents = readStep<DocumentsValue>(state.data, 'documents', {});
   const team = readStep<TeamMemberEntry[]>(state.data, 'team', []);
+  const identity = readStep<IdentityValue>(state.data, 'identity', {});
 
   async function onComplete() {
     setCompleting(true);
@@ -269,6 +276,44 @@ export function BusinessOnboarding({ initial }: { initial: OnboardingState }) {
             <Plus aria-hidden />
             {t('steps.team.add')}
           </Button>
+        </div>
+      )}
+
+      {activeStep === 'identity' && (
+        <div className="flex flex-col gap-6">
+          <p className="rounded-card bg-muted/50 px-4 py-3 text-xs text-muted-foreground">
+            {t('steps.identity.privacy')}
+          </p>
+
+          <MediaUpload
+            kind="NATIONAL_ID_FRONT"
+            label={t('steps.identity.idFront')}
+            hint={identity.idFrontAssetId ? t('steps.identity.uploaded') : undefined}
+            onUploaded={(result) =>
+              save('identity', { identity: { ...identity, idFrontAssetId: result.id } })
+            }
+          />
+
+          <MediaUpload
+            kind="NATIONAL_ID_BACK"
+            label={t('steps.identity.idBack')}
+            hint={identity.idBackAssetId ? t('steps.identity.uploaded') : undefined}
+            onUploaded={(result) =>
+              save('identity', { identity: { ...identity, idBackAssetId: result.id } })
+            }
+          />
+
+          <MediaUpload
+            kind="SELFIE"
+            capture="user"
+            label={t('steps.identity.selfie')}
+            hint={
+              identity.selfieAssetId ? t('steps.identity.uploaded') : t('steps.identity.selfieHint')
+            }
+            onUploaded={(result) =>
+              save('identity', { identity: { ...identity, selfieAssetId: result.id } })
+            }
+          />
         </div>
       )}
     </OnboardingShell>

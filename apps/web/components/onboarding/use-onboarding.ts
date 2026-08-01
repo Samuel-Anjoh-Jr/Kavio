@@ -71,6 +71,20 @@ export function useOnboarding(role: OnboardingRole, initial: OnboardingState) {
     (step: string, data: Record<string, unknown>) => {
       queued.current = { step, data };
       setStatus('saving');
+      // Cleared here, not just at the start of `flush()`: a failed save on one
+      // step must not leave its red banner showing over the NEXT thing the
+      // user types, on this step or another, while the fresh edit is still
+      // only queued and hasn't had a chance to succeed or fail on its own.
+      setError(null);
+
+      // Optimistic: the field this came from is a controlled input reading
+      // straight out of `state.data`. Without updating it here, every
+      // keystroke would redraw the input from the value BEFORE that keystroke
+      // until the debounced save round-trips — long enough on a slow
+      // connection for React to visibly snap the field back mid-type and eat
+      // whatever was typed next. The server's response still wins once it
+      // arrives; this just keeps typing responsive in the meantime.
+      setState((current) => ({ ...current, data: { ...current.data, ...data } }));
 
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => void flush(), DEBOUNCE_MS);

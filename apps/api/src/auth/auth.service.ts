@@ -121,6 +121,7 @@ export class AuthService {
         const created = await tx.user.create({
           data: {
             phone,
+            name: dto.name,
             email: dto.email ?? null,
             passwordHash,
             passwordUpdatedAt: passwordHash ? new Date() : null,

@@ -104,7 +104,7 @@
       "INVALID_TOKEN": "Your sign-in could not be verified. Sign in again.",
       "UNAUTHENTICATED": "Sign in to continue.",
       "ACCOUNT_SUSPENDED": "This account is not active. Contact support.",
-      "ACCOUNT_NOT_VERIFIED": "Verify your phone number before signing in.",
+      "ACCOUNT_NOT_VERIFIED": "Verify your contact details before signing in.",
       "TWO_FACTOR_REQUIRED": "Enter the code we sent you to finish signing in.",
       "INVALID_CODE": "That code is not correct. Request a new one.",
       "CODE_EXPIRED": "That code has expired. Request a new one.",
@@ -130,7 +130,12 @@
       "COMPLETE_FAILED": "We could not finish your profile just yet. Try again.",
       "ONBOARDING_INCOMPLETE": "A few required steps are still missing.",
       "UNKNOWN_STEP": "That onboarding step does not exist.",
-      "UNKNOWN_ONBOARDING_ROLE": "Unknown onboarding flow."
+      "UNKNOWN_ONBOARDING_ROLE": "Unknown onboarding flow.",
+      "PHONE_CHANGE_VERIFICATION_REQUIRED": "Changing your phone number needs a verification step that is not available yet. Please contact support.",
+      "INVALID_PHONE": "Enter a valid Cameroon phone number.",
+      "NOT_A_MOMO_METHOD": "Only a Mobile Money method has a phone number to change.",
+      "PAYMENT_METHOD_NOT_FOUND": "We could not find that payment method.",
+      "NO_PAYMENT_METHOD": "Add a payment method first."
     },
     "resend": {
       "available": "Resend code",
@@ -161,6 +166,10 @@
           "description": "Find a verified worker near you"
         }
       },
+      "nameLabel": "Your name",
+      "namePlaceholder": "e.g. Amina N.",
+      "nameHint": "A first name and initial is enough. You can change this later in settings.",
+      "nameInvalid": "Enter your name.",
       "phoneLabel": "Phone number",
       "phoneHint": "Enter a valid number.",
       "phoneInvalid": "Enter a valid Cameroon phone number.",
@@ -196,7 +205,7 @@
       "identifierLabelEmail": "Email address",
       "identifierPlaceholderEmail": "you@example.com",
       "codeLabel": "Verification code",
-      "codeHint": "Check your email, or your messages once SMS or WhatsApp is enabled.",
+      "codeHint": "Enter the code once it arrives.",
       "sentHint": "We sent a code to {destination}.",
       "submit": "Verify and continue",
       "submitting": "Checking your code…",
@@ -269,7 +278,7 @@
     "viewBreakdown": "View your Trust Score",
     "tier": {
       "TIER_0": "Basic Profile",
-      "TIER_1": "Phone Verified",
+      "TIER_1": "Contact Verified",
       "TIER_2": "Verified Professional",
       "TIER_3": "Field Verified"
     },
@@ -293,7 +302,7 @@
     "pillarUnscored": "Starts counting once payments go live.",
     "improve": {
       "ACCOUNT_CREATED": "Create your account.",
-      "PHONE_VERIFIED": "Verify your phone number.",
+      "PHONE_VERIFIED": "Verify your contact details.",
       "ID_VERIFIED": "Upload your national ID for approval.",
       "FIELD_VERIFIED": "Book an in-person verification visit.",
       "PORTFOLIO_ADDED": "Add photos of work you have done.",
@@ -307,7 +316,7 @@
       "COMPLETED_JOBS": "Complete {required} jobs. You have {current}.",
       "AVERAGE_RATING": "Keep an average rating of {required}★.",
       "CHECK": {
-        "PHONE": "Verify your phone number.",
+        "PHONE": "Verify your contact details.",
         "ID_SUBMITTED": "Upload your national ID.",
         "ID_APPROVED": "Wait for your ID to be approved.",
         "SELFIE_LIVENESS": "Take a verification selfie.",
@@ -332,6 +341,7 @@
     "notifications": "Notifications",
     "safety": "Safety",
     "moderation": "Reports",
+    "profile": "Profile",
     "settings": "Settings",
     "adminSection": "Admin",
     "adminDisputes": "Disputes",
@@ -347,7 +357,7 @@
     },
     "descriptions": {
       "WORKER": "Offer your services and apply for jobs",
-      "CLIENT": "Post jobs and hire verified workers",
+      "CLIENT": "Find and hire verified workers",
       "BUSINESS": "Manage your company profile and team"
     }
   },
@@ -356,11 +366,10 @@
     "subtitle": "Search verified workers, browse posted jobs and open full profiles, no account needed. Create one when you're ready to hire.",
     "searchLabel": "Search for a service or worker",
     "searchPlaceholder": "Plumber, electrician, tailor…",
-    "postJob": "Post a job",
     "workersHeading": "Workers near you",
     "workersEmpty": "No workers to show yet. Set your location to see who works near you.",
     "jobsHeading": "Recently posted jobs",
-    "jobsEmpty": "No jobs posted yet in your area. Post one now and it'll be waiting for the right professional.",
+    "jobsEmpty": "No job vacancies posted in your area yet. Check back soon.",
     "mapLabel": "Map of workers in this area",
     "mapUnavailable": "The map isn't available right now, but the list beside it shows the same workers.",
     "searchThisArea": "Search this area",
@@ -384,7 +393,7 @@
     "title": "Posted jobs",
     "subtitle": "Browse what people near you need done.",
     "post": "Post a job",
-    "empty": "No open jobs in your area right now. Check back soon, or post one yourself."
+    "empty": "No open jobs in your area right now. Check back soon."
   },
   "RequestQuote": {
     "title": "Request a quote from {name}",
@@ -460,7 +469,10 @@
     "visibilityDirectTitle": "Just the worker I choose",
     "visibilityDirectBody": "Stays private. You invite a worker and take quotes from them alone.",
     "visibilityPublicTitle": "Post to the public job board",
-    "visibilityPublicBody": "Any verified worker can see it and apply."
+    "visibilityPublicBody": "Any verified worker can see it and apply.",
+    "visibilityReviewLabel": "Who can see this",
+    "titlePlaceholderPublic": "e.g. Waitress needed",
+    "descriptionPlaceholderPublic": "Share the role, hours and pay so the right applicants come forward."
   },
   "Home": {
     "title": "Your Kavio home",
@@ -471,7 +483,7 @@
     },
     "subtitle": {
       "WORKER": "Build your profile, win jobs and grow your Trust Score.",
-      "CLIENT": "Post what you need and hire verified workers near you.",
+      "CLIENT": "Find and hire verified workers near you.",
       "BUSINESS": "Manage your company profile, documents and team."
     },
     "onboardingHeading": "Finish setting up your profile",
@@ -483,7 +495,7 @@
     "jobsCard": "Jobs",
     "jobsCardBody": {
       "WORKER": "Find open jobs that match your services.",
-      "CLIENT": "Review the jobs you have posted.",
+      "CLIENT": "Track the work you have requested.",
       "BUSINESS": "Track your company's job posts."
     }
   },
@@ -581,7 +593,7 @@
       "subtitle": "Two quick steps and you are ready to hire.",
       "completed": "You are all set. Time to find someone great.",
       "unlocks": {
-        "post_jobs": "Post jobs and receive quotes",
+        "post_jobs": "Request quotes from verified workers",
         "nearby_workers": "See the closest workers first"
       },
       "steps": {
@@ -655,13 +667,24 @@
             "PAYMENTS": "Payments",
             "VIEW_ONLY": "View only"
           }
+        },
+        "identity": {
+          "label": "Identity",
+          "title": "Verify who you are",
+          "description": "Kavio checks the owner's own identity alongside your company's registration before your business can post job vacancies on the open board.",
+          "privacy": "Your ID and selfie are encrypted, private, and visible only to you and Kavio's verification team. They never appear on your public business profile.",
+          "idFront": "Upload ID (front)",
+          "idBack": "Upload ID (back)",
+          "selfie": "Take a selfie",
+          "selfieHint": "A clear photo of your face, in good light.",
+          "uploaded": "Uploaded"
         }
       }
     }
   },
   "Verification": {
     "check": {
-      "PHONE": "Phone number",
+      "PHONE": "Contact details",
       "ID_SUBMITTED": "ID document uploaded",
       "ID_APPROVED": "National ID approved",
       "SELFIE_LIVENESS": "Selfie check",
@@ -777,7 +800,7 @@
     "empty": "Your trust history will appear here as you verify your details and complete work.",
     "event": {
       "ACCOUNT_CREATED": "Joined Kavio",
-      "PHONE_VERIFIED": "Phone number verified",
+      "PHONE_VERIFIED": "Contact details verified",
       "ID_VERIFIED": "National ID approved",
       "FIELD_VERIFIED": "Verified in person by an agent",
       "PORTFOLIO_ADDED": "Portfolio added",
@@ -990,7 +1013,7 @@
     "minTrustScore": "Minimum Trust Score: {value}",
     "minTier": "{tier} and above",
     "tier": {
-      "TIER_1": "Phone verified",
+      "TIER_1": "Contact verified",
       "TIER_2": "ID verified",
       "TIER_3": "Field verified"
     },
@@ -1083,7 +1106,7 @@
     "yearsExperience": "Years of experience",
     "verificationsHeading": "Verified checks",
     "check": {
-      "PHONE": "Phone number",
+      "PHONE": "Contact details",
       "ID_SUBMITTED": "ID document uploaded",
       "ID_APPROVED": "National ID approved",
       "SELFIE_LIVENESS": "Selfie check",
@@ -1208,11 +1231,10 @@
     },
     "client": {
       "discoverHeading": "Find a worker",
-      "postJob": "Post a job",
       "jobsHeading": "My jobs",
       "postedJobsPendingTitle": "My posted jobs",
-      "postedJobsEmptyTitle": "No jobs posted yet",
-      "postedJobsEmptyBody": "Post a job or request a quote from a worker's profile to get started.",
+      "postedJobsEmptyTitle": "No jobs yet",
+      "postedJobsEmptyBody": "Find a worker and request a quote from their profile to get started.",
       "untitledJob": "Untitled job",
       "quotesPendingTitle": "Booked work",
       "quotesHint": "Jobs currently in progress"
@@ -1437,6 +1459,9 @@
     "amountLabel": "Amount (XAF)",
     "amountHint": "Whole francs only.",
     "amountRequired": "Enter an amount greater than zero.",
+    "sourceNumberLabel": "Paying from this Mobile Money number",
+    "payoutNumberLabel": "Sending to this Mobile Money number",
+    "confirmNumberHint": "Confirm this is right, or correct it before continuing.",
     "continueToPay": "Continue to pay",
     "confirmWithdraw": "Withdraw",
     "addRequested": "Payment started.",
@@ -1535,7 +1560,8 @@
     "methodAdded": "Payment method added.",
     "saveMethod": "Save method",
     "actionFailed": "That action could not be completed. Please try again.",
-    "disputeFrozenHint": "Funds stay frozen until an admin resolves the dispute."
+    "disputeFrozenHint": "Funds stay frozen until an admin resolves the dispute.",
+    "noMethodOnFile": "Add a Mobile Money number to continue — it's saved for next time too."
   },
   "Disputes": {
     "title": "Dispute",
@@ -1791,6 +1817,18 @@
       "body": "Emergency contacts and SOS history are private to your account.",
       "signIn": "Sign in"
     }
+  },
+  "ProfileSettings": {
+    "title": "Your profile",
+    "subtitle": "The name and phone number workers and clients see.",
+    "nameHeading": "Name",
+    "nameBody": "What workers and clients see when you contact them.",
+    "nameLabel": "Your name",
+    "phoneHeading": "Phone number",
+    "phoneBody": "Used to reach you, and as the default Mobile Money number for payments. Changing it here is instant — SMS and WhatsApp verification are not live yet.",
+    "phoneLabel": "Phone number",
+    "save": "Save",
+    "saved": "Saved."
   },
   "Notifications": {
     "title": "Notifications",

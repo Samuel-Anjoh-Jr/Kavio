@@ -57,7 +57,11 @@ describe('AuthService.signUp', () => {
     });
     const service = makeService(makePrisma(create));
 
-    const result = await service.signUp({ roleIntent: 'find_work', phone: '655 555 555' });
+    const result = await service.signUp({
+      roleIntent: 'find_work',
+      name: 'Amina N.',
+      phone: '655 555 555',
+    });
 
     expect(result).toEqual({
       userId: 'user-1',
@@ -71,6 +75,7 @@ describe('AuthService.signUp', () => {
     expect(create).toHaveBeenCalledWith({
       data: {
         phone: '+237655555555',
+        name: 'Amina N.',
         email: null,
         passwordHash: null,
         passwordUpdatedAt: null,
@@ -94,12 +99,17 @@ describe('AuthService.signUp', () => {
     });
     const service = makeService(makePrisma(create));
 
-    const result = await service.signUp({ roleIntent: 'hire', phone: '+237 699 999 999' });
+    const result = await service.signUp({
+      roleIntent: 'hire',
+      name: 'Amina N.',
+      phone: '+237 699 999 999',
+    });
 
     expect(result.role).toBe(Role.CLIENT);
     expect(create).toHaveBeenCalledWith({
       data: {
         phone: '+237699999999',
+        name: 'Amina N.',
         email: null,
         passwordHash: null,
         passwordUpdatedAt: null,
@@ -125,6 +135,7 @@ describe('AuthService.signUp', () => {
 
     await service.signUp({
       roleIntent: 'hire',
+      name: 'Amina N.',
       phone: '655555555',
       password: 'correct horse battery',
     });
@@ -150,7 +161,7 @@ describe('AuthService.signUp', () => {
       .mockResolvedValue({ count: 55 });
     const service = makeService(makePrisma(create, createMany));
 
-    await service.signUp({ roleIntent: 'find_work', phone: '655 555 555' });
+    await service.signUp({ roleIntent: 'find_work', name: 'Amina N.', phone: '655 555 555' });
 
     expect(createMany).toHaveBeenCalledTimes(1);
     const arg = createMany.mock.calls[0]![0];
@@ -175,7 +186,7 @@ describe('AuthService.signUp', () => {
     const service = makeService(makePrisma(create));
 
     const error = await service
-      .signUp({ roleIntent: 'hire', phone: '12345' })
+      .signUp({ roleIntent: 'hire', name: 'Amina N.', phone: '12345' })
       .catch((e: unknown) => e);
 
     expect(error).toBeInstanceOf(AppException);
@@ -193,7 +204,7 @@ describe('AuthService.signUp', () => {
     const service = makeService(makePrisma(create));
 
     const error = await service
-      .signUp({ roleIntent: 'find_work', phone: '655555555' })
+      .signUp({ roleIntent: 'find_work', name: 'Amina N.', phone: '655555555' })
       .catch((e: unknown) => e);
 
     expect(error).toBeInstanceOf(AppException);
@@ -206,6 +217,8 @@ describe('AuthService.signUp', () => {
     const create = jest.fn().mockRejectedValue(boom);
     const service = makeService(makePrisma(create));
 
-    await expect(service.signUp({ roleIntent: 'hire', phone: '655555555' })).rejects.toBe(boom);
+    await expect(
+      service.signUp({ roleIntent: 'hire', name: 'Amina N.', phone: '655555555' }),
+    ).rejects.toBe(boom);
   });
 });

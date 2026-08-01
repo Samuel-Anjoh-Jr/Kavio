@@ -34,3 +34,12 @@ export const addPaymentMethodSchema = z
   );
 
 export type AddPaymentMethodDto = z.infer<typeof addPaymentMethodSchema>;
+
+/**
+ * Updates a Mobile Money method's phone number in place — the number a
+ * payout pop-up lets someone confirm or correct before money actually moves,
+ * without having to delete and re-add the whole method.
+ */
+export const updatePaymentMethodPhoneSchema = z.object({ phone });
+
+export type UpdatePaymentMethodPhoneDto = z.infer<typeof updatePaymentMethodPhoneSchema>;

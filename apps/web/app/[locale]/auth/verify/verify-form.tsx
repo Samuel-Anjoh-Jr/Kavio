@@ -154,7 +154,13 @@ export function VerifyForm({
         placeholder="123456"
         value={code}
         onChange={(event) => setCode(event.target.value)}
-        hint={issue ? t('sentHint', { destination: issue.destination }) : t('codeHint')}
+        hint={
+          issue
+            ? t('sentHint', { destination: issue.destination })
+            : initialIdentifier
+              ? t('sentHint', { destination: initialIdentifier })
+              : t('codeHint')
+        }
       />
 
       <Button type="submit" size="lg" disabled={submitting || code.trim().length === 0}>

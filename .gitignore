@@ -45,3 +45,6 @@ appendonlydir/
 
 # browser-audit screenshots
 .demo-audit/
+
+# local S3-compatible storage fallback (dev-only uploaded media)
+apps/api/.uploads/

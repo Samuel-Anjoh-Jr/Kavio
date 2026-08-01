@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
+import { auth } from './auth';
 import { routing, type Locale } from './i18n/routing';
 
 const handleI18n = createMiddleware(routing);
@@ -20,9 +21,35 @@ function localeOf(pathname: string): Locale | null {
   );
 }
 
-export default function proxy(request: NextRequest) {
+/**
+ * Wrapped in `auth(...)` — not called bare — so this runs on every matched
+ * request (ACC-05), API routes included. A Server Component's `await auth()`
+ * can compute a freshly rotated token for its own render, but Next.js gives it
+ * no way to write that rotation back to the browser's cookie; every OTHER
+ * independent call on the same stale cookie (another RSC render, the
+ * GraphQL/REST proxies, a poll) then re-presents that same already-rotated
+ * token and gets treated as a replay, revoking the whole session family out
+ * from under a legitimate client. Middleware is the one layer Next.js lets
+ * rewrite the response cookie on every request, so wrapping it in `auth()` is
+ * what makes the silent refresh in `auth.ts`'s `jwt()` callback actually
+ * survive past the one render that computed it, instead of being recomputed —
+ * and raced — from scratch by whatever happens to ask next.
+ *
+ * This MUST cover `/api/graphql` and `/api/rest/*`: they are the most
+ * frequent auth()-triggering calls of all (every read and every write), so
+ * excluding them from the matcher would leave the exact two call sites most
+ * likely to hit the access-token boundary still on the old, never-persisted
+ * path. They carry their own JSON responses, so they skip next-intl/maintenance
+ * entirely here — this wrapper only needs to run for the cookie persistence.
+ */
+export default auth((request: NextRequest) => {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
   if (MAINTENANCE_MODE) {
-    const { pathname } = request.nextUrl;
     const locale = localeOf(pathname) ?? routing.defaultLocale;
 
     // The maintenance page itself must stay reachable, or the rewrite loops.
@@ -36,8 +63,8 @@ export default function proxy(request: NextRequest) {
   }
 
   return handleI18n(request);
-}
+});
 
 export const config = {
-  matcher: ['/((?!api|trpc|_next|_vercel|.*\\..*).*)'],
+  matcher: ['/((?!_next|_vercel|.*\\..*).*)'],
 };

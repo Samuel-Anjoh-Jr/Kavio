@@ -108,6 +108,13 @@ export class PlatformSettingsService {
    */
   async platformFeeBps(): Promise<number> {
     const value = await this.read(SETTING_KEYS.platformFeePercent);
+    // `Number(null)` is 0, a value that then reads as a perfectly valid "admin
+    // set the fee to 0%" — so the missing-row case has to be ruled out before
+    // the numeric coercion, not after, or an operator who never touched this
+    // setting gets a silent 0% fee instead of the documented ~10% default.
+    if (value === null || value === undefined) {
+      return getPlatformFeeBps();
+    }
     const percent = typeof value === 'number' ? value : Number(value);
     if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
       return getPlatformFeeBps();
