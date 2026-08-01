@@ -91,7 +91,6 @@ export function PostJobStepper() {
   );
   const eligibility = eligibilityData?.jobPostingEligibility;
   const canPostPublicly = eligibility?.allowed === true;
-  const [publishPublicly, setPublishPublicly] = useState(false);
   const locale = useLocale();
   const router = useRouter();
   const requireAuth = useRequireAuth();
@@ -119,6 +118,7 @@ export function PostJobStepper() {
   const photos: UploadedPhoto[] = draft.photoAssetIds.map(
     (id) => sessionPhotos.find((p) => p.id === id) ?? { id, url: null },
   );
+  const publishPublicly = draft.publishPublicly;
 
   // One writer for the draft: merge and persist to the store, which notifies the
   // useSyncExternalStore subscription so the UI re-renders from one value.
@@ -275,7 +275,7 @@ export function PostJobStepper() {
                   <button
                     key={String(isPublic)}
                     type="button"
-                    onClick={() => setPublishPublicly(isPublic)}
+                    onClick={() => update({ publishPublicly: isPublic })}
                     aria-pressed={publishPublicly === isPublic}
                     className={cn(
                       'rounded-input border px-4 py-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

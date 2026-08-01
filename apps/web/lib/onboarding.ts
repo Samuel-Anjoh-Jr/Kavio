@@ -11,7 +11,7 @@ export type OnboardingRole = 'WORKER' | 'CLIENT' | 'BUSINESS';
 export const ONBOARDING_STEPS: Record<OnboardingRole, string[]> = {
   WORKER: ['services', 'availability', 'portfolio', 'identity', 'location'],
   CLIENT: ['profile', 'location'],
-  BUSINESS: ['company', 'documents', 'team'],
+  BUSINESS: ['company', 'documents', 'team', 'identity'],
 };
 
 /**

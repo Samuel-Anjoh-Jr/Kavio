@@ -324,12 +324,62 @@ export class OnboardingService {
     userId: string,
     data: Record<string, unknown>,
   ): Promise<void> {
+    await this.submitPersonalIdentity(userId, data);
+
+    const portfolio = (data.portfolio ?? []) as ReadonlyArray<{ mediaAssetId?: string }>;
+    const portfolioAssetIds = portfolio
+      .map((item) => item.mediaAssetId)
+      .filter((id): id is string => Boolean(id));
+
+    if (portfolioAssetIds.length > 0) {
+      // Not staff-reviewed: submit() settles PORTFOLIO as VERIFIED immediately,
+      // which is what feeds the TIER_2 gate (TierConfig requires ID_APPROVED +
+      // PORTFOLIO) — without this, a worker's portfolio images never become a
+      // check the tier can see, no matter how many are uploaded.
+      await this.trySubmitVerification(
+        { id: userId } as AuthenticatedUser,
+        VerificationCheckType.PORTFOLIO,
+        portfolioAssetIds,
+      );
+    }
+  }
+
+  /**
+   * Submits the documents step's registration upload, and the owner's own
+   * identity, for review (BIZ-01).
+   *
+   * JobPostingGateService.check() requires a verified BusinessProfile AND the
+   * owner's ID_APPROVED before the public board unlocks — a paperwork-only
+   * business could complete every step here and still never satisfy that gate
+   * without this half.
+   */
+  private async submitBusinessVerification(
+    userId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> {
+    await this.submitPersonalIdentity(userId, data);
+
+    const documents = (data.documents ?? {}) as { registrationAssetId?: string };
+
+    if (documents.registrationAssetId) {
+      await this.trySubmitVerification(
+        { id: userId } as AuthenticatedUser,
+        VerificationCheckType.BUSINESS_REGISTRATION,
+        [documents.registrationAssetId],
+      );
+    }
+  }
+
+  /** The identity step is shared verbatim between the worker and business flows. */
+  private async submitPersonalIdentity(
+    userId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> {
     const identity = (data.identity ?? {}) as {
       idFrontAssetId?: string;
       idBackAssetId?: string;
       selfieAssetId?: string;
     };
-    const portfolio = (data.portfolio ?? []) as ReadonlyArray<{ mediaAssetId?: string }>;
     const subject = { id: userId } as AuthenticatedUser;
 
     if (identity.idFrontAssetId && identity.idBackAssetId) {
@@ -343,34 +393,6 @@ export class OnboardingService {
       await this.trySubmitVerification(subject, VerificationCheckType.SELFIE_LIVENESS, [
         identity.selfieAssetId,
       ]);
-    }
-
-    const portfolioAssetIds = portfolio
-      .map((item) => item.mediaAssetId)
-      .filter((id): id is string => Boolean(id));
-
-    if (portfolioAssetIds.length > 0) {
-      // Not staff-reviewed: submit() settles PORTFOLIO as VERIFIED immediately,
-      // which is what feeds the TIER_2 gate (TierConfig requires ID_APPROVED +
-      // PORTFOLIO) — without this, a worker's portfolio images never become a
-      // check the tier can see, no matter how many are uploaded.
-      await this.trySubmitVerification(subject, VerificationCheckType.PORTFOLIO, portfolioAssetIds);
-    }
-  }
-
-  /** Submits the documents step's registration upload for review (BIZ-01). */
-  private async submitBusinessVerification(
-    userId: string,
-    data: Record<string, unknown>,
-  ): Promise<void> {
-    const documents = (data.documents ?? {}) as { registrationAssetId?: string };
-
-    if (documents.registrationAssetId) {
-      await this.trySubmitVerification(
-        { id: userId } as AuthenticatedUser,
-        VerificationCheckType.BUSINESS_REGISTRATION,
-        [documents.registrationAssetId],
-      );
     }
   }
 

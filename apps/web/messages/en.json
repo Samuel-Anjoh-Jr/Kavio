@@ -668,6 +668,17 @@
             "PAYMENTS": "Payments",
             "VIEW_ONLY": "View only"
           }
+        },
+        "identity": {
+          "label": "Identity",
+          "title": "Verify who you are",
+          "description": "Kavio checks the owner's own identity alongside your company's registration before your business can post job vacancies on the open board.",
+          "privacy": "Your ID and selfie are encrypted, private, and visible only to you and Kavio's verification team. They never appear on your public business profile.",
+          "idFront": "Upload ID (front)",
+          "idBack": "Upload ID (back)",
+          "selfie": "Take a selfie",
+          "selfieHint": "A clear photo of your face, in good light.",
+          "uploaded": "Uploaded"
         }
       }
     }

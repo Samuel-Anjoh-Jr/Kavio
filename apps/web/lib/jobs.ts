@@ -105,6 +105,14 @@ export interface JobDraft {
   photoAssetIds: string[];
   /** Server draft id once the job exists as a DRAFT row; null while local-only. */
   jobId: string | null;
+  /**
+   * Whether a verified business chose the public board over a direct hire.
+   * Persisted alongside everything else in the draft — component state alone
+   * would silently reset it to DIRECT on any reload, including the guest
+   * auth-bounce-and-resume flow (ACC-02), discarding a choice the poster
+   * already made without telling them.
+   */
+  publishPublicly: boolean;
 }
 
 export const EMPTY_JOB_DRAFT: JobDraft = {
@@ -117,6 +125,7 @@ export const EMPTY_JOB_DRAFT: JobDraft = {
   location: null,
   photoAssetIds: [],
   jobId: null,
+  publishPublicly: false,
 };
 
 const DRAFT_KEY = 'kavio.job-draft';

@@ -668,6 +668,17 @@
             "PAYMENTS": "Paiements",
             "VIEW_ONLY": "Lecture seule"
           }
+        },
+        "identity": {
+          "label": "Identité",
+          "title": "Vérifiez qui vous êtes",
+          "description": "Kavio vérifie l'identité du propriétaire en plus de l'enregistrement de votre entreprise avant que celle-ci puisse publier des offres sur le tableau ouvert.",
+          "privacy": "Votre pièce d'identité et votre selfie sont chiffrés, privés, et visibles uniquement par vous et l'équipe de vérification Kavio. Ils n'apparaissent jamais sur votre profil d'entreprise public.",
+          "idFront": "Envoyer la pièce d'identité (recto)",
+          "idBack": "Envoyer la pièce d'identité (verso)",
+          "selfie": "Prendre un selfie",
+          "selfieHint": "Une photo nette de votre visage, bien éclairée.",
+          "uploaded": "Envoyé"
         }
       }
     }

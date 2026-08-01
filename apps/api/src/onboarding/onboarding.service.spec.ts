@@ -137,4 +137,32 @@ describe('OnboardingService.complete', () => {
       [data.documents.registrationAssetId],
     );
   });
+
+  it('also submits the owner’s own ID_APPROVED and SELFIE_LIVENESS for a business', async () => {
+    // JobPostingGateService.check() requires ID_APPROVED (the owner's own,
+    // not the company's) alongside a verified BusinessProfile — without this,
+    // a business could finish every step here and never satisfy that gate.
+    const submit = jest.fn().mockResolvedValue({ recordId: 'rec-2' });
+    const data = {
+      company: { name: 'Douala Facilities Ltd', city: 'Douala' },
+      documents: { registrationAssetId: '44444444-4444-4444-4444-444444444444' },
+      team: [],
+      identity: {
+        idFrontAssetId: '11111111-1111-1111-1111-111111111111',
+        idBackAssetId: '22222222-2222-2222-2222-222222222222',
+        selfieAssetId: '33333333-3333-3333-3333-333333333333',
+      },
+    };
+    const service = makeService({ data, submit });
+
+    await service.complete(USER_ID, OnboardingRole.BUSINESS);
+
+    expect(submit).toHaveBeenCalledWith({ id: USER_ID }, VerificationCheckType.ID_APPROVED, [
+      data.identity.idFrontAssetId,
+      data.identity.idBackAssetId,
+    ]);
+    expect(submit).toHaveBeenCalledWith({ id: USER_ID }, VerificationCheckType.SELFIE_LIVENESS, [
+      data.identity.selfieAssetId,
+    ]);
+  });
 });

@@ -47,6 +47,29 @@ const portfolioItemSchema = z.object({
   groupKey: z.string().trim().max(80).optional(),
 });
 
+const identitySchema = z.object({
+  identity: z.object({
+    idFrontAssetId: z.string().uuid().optional(),
+    idBackAssetId: z.string().uuid().optional(),
+    selfieAssetId: z.string().uuid().optional(),
+  }),
+});
+
+/**
+ * The person's own ID, as opposed to a company's paperwork. A worker's is
+ * what proves who they are; a business owner's is what the public-board gate
+ * (JobPostingGateService — ID_APPROVED plus a verified BusinessProfile) has
+ * always required alongside the registration document, even though nothing
+ * here ever collected it — a business could complete every business
+ * onboarding step and still never be able to satisfy that gate.
+ */
+const identityStep: OnboardingStepDef = {
+  key: 'identity',
+  schema: identitySchema,
+  isComplete: (data) => hasKeys(data, 'identity', ['idFrontAssetId', 'selfieAssetId']),
+  required: false,
+};
+
 const teamMemberSchema = z.object({
   name: z.string().trim().min(2, 'Enter the team member’s name.').max(160),
   email: z.string().trim().toLowerCase().email('Enter a valid email address.').optional(),
@@ -108,18 +131,7 @@ const WORKER_STEPS: OnboardingStepDef[] = [
     isComplete: (data) => nonEmptyArray(data, 'portfolio'),
     required: false,
   },
-  {
-    key: 'identity',
-    schema: z.object({
-      identity: z.object({
-        idFrontAssetId: z.string().uuid().optional(),
-        idBackAssetId: z.string().uuid().optional(),
-        selfieAssetId: z.string().uuid().optional(),
-      }),
-    }),
-    isComplete: (data) => hasKeys(data, 'identity', ['idFrontAssetId', 'selfieAssetId']),
-    required: false,
-  },
+  identityStep,
   {
     key: 'location',
     schema: z.object({ location: locationSchema }),
@@ -187,6 +199,7 @@ const BUSINESS_STEPS: OnboardingStepDef[] = [
     isComplete: (data) => nonEmptyArray(data, 'team'),
     required: false,
   },
+  identityStep,
 ];
 
 export const ONBOARDING_STEPS: Readonly<Record<OnboardingRole, OnboardingStepDef[]>> = {
@@ -222,8 +235,8 @@ export const ONBOARDING_UNLOCKS: Readonly<Record<OnboardingRole, UnlockDef[]>> =
   // three steps that is 0/33/67/100, so 34 here would be an unlock the user can
   // see but never earn.
   [OnboardingRole.BUSINESS]: [
-    { key: 'company_profile', threshold: 33 },
-    { key: 'verified_business_review', threshold: 67 },
+    { key: 'company_profile', threshold: 25 },
+    { key: 'verified_business_review', threshold: 50 },
     { key: 'team_hiring', threshold: 100 },
   ],
 };
