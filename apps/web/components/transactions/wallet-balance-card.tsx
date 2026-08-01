@@ -39,7 +39,7 @@ import { InlineAddMomoMethod } from './inline-add-method';
  * escrow timelines below it already run on real data, so the wallet screen is
  * useful in the meantime.
  */
-export function WalletBalanceCard() {
+export function WalletBalanceCard({ canAddMoney }: { canAddMoney: boolean }) {
   const t = useTranslations('Transactions');
   const locale = useLocale();
   const { data, loading, error, refetch } = useQuery<WalletQueryResult>(WALLET_QUERY, {
@@ -80,16 +80,18 @@ export function WalletBalanceCard() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <MoveMoneyDialog
-            mode="add"
-            trigger={
-              <Button>
-                <ArrowDownToLine aria-hidden />
-                {t('addMoney')}
-              </Button>
-            }
-            onDone={() => void refetch()}
-          />
+          {canAddMoney && (
+            <MoveMoneyDialog
+              mode="add"
+              trigger={
+                <Button>
+                  <ArrowDownToLine aria-hidden />
+                  {t('addMoney')}
+                </Button>
+              }
+              onDone={() => void refetch()}
+            />
+          )}
           <MoveMoneyDialog
             mode="withdraw"
             trigger={
