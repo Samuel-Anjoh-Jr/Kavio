@@ -28,7 +28,13 @@ import {
   isEscrowException,
 } from '@/lib/quotes';
 import { MY_BOOKINGS_QUERY, type Booking, type MyBookingsQueryResult } from '@/lib/graphql/quotes';
+import {
+  DEFAULT_MOMO_METHOD_QUERY,
+  type DefaultMomoMethod,
+  type DefaultMomoMethodQueryResult,
+} from '@/lib/graphql/payments';
 import { restPost } from '@/lib/rest-api';
+import { InlineAddMomoMethod } from './inline-add-method';
 import { MilestoneStepper, type Milestone } from './milestone-stepper';
 
 /**
@@ -174,6 +180,27 @@ function PayNowDialog({ booking, onPaid }: { booking: Booking; onPaid: () => voi
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
 
+  // Proactive, not reactive: check for a Mobile Money method before the charge
+  // is attempted, rather than surfacing NO_PAYMENT_METHOD after the fact with
+  // nowhere in this dialog to fix it.
+  const { data: methodData, loading: methodLoading } = useQuery<DefaultMomoMethodQueryResult>(
+    DEFAULT_MOMO_METHOD_QUERY,
+    { skip: !open, fetchPolicy: 'cache-and-network' },
+  );
+  const defaultMethod = methodData?.paymentMethods.find(
+    (m) => m.isDefault && (m.type === 'MTN_MOMO' || m.type === 'ORANGE_MONEY'),
+  );
+  const [addedMethod, setAddedMethod] = useState<DefaultMomoMethod | null>(null);
+  const effectiveMethod = addedMethod ?? defaultMethod;
+
+  function onOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) {
+      setAddedMethod(null);
+      setError(null);
+    }
+  }
+
   async function pay() {
     setBusy(true);
     setError(null);
@@ -191,7 +218,7 @@ function PayNowDialog({ booking, onPaid }: { booking: Booking; onPaid: () => voi
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button className="w-full">
           <Wallet aria-hidden />
@@ -204,8 +231,12 @@ function PayNowDialog({ booking, onPaid }: { booking: Booking; onPaid: () => voi
         </DialogHeader>
         <div className="flex flex-col gap-4">
           {error && <FormBanner tone="error" message={error.message} requestId={error.requestId} />}
-          <p className="text-sm text-muted-foreground">{t('payNowHint')}</p>
-          <Button onClick={() => void pay()} disabled={busy}>
+          {effectiveMethod ? (
+            <p className="text-sm text-muted-foreground">{t('payNowHint')}</p>
+          ) : (
+            !methodLoading && <InlineAddMomoMethod onAdded={setAddedMethod} />
+          )}
+          <Button onClick={() => void pay()} disabled={busy || !effectiveMethod}>
             {busy ? <Loader2 aria-hidden className="animate-spin" /> : <Wallet aria-hidden />}
             {t('confirmPay')}
           </Button>

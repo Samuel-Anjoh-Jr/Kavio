@@ -23,10 +23,12 @@ import { parseBudget } from '@/lib/jobs';
 import {
   DEFAULT_MOMO_METHOD_QUERY,
   WALLET_QUERY,
+  type DefaultMomoMethod,
   type DefaultMomoMethodQueryResult,
   type WalletQueryResult,
 } from '@/lib/graphql/payments';
 import { restPatch, restPost } from '@/lib/rest-api';
+import { InlineAddMomoMethod } from './inline-add-method';
 
 /**
  * The wallet balance card (PAY-05): available balance, funds in escrow, and the
@@ -122,13 +124,18 @@ function MoveMoneyDialog({
 
   // Which Mobile Money number this move will actually use — shown so it can be
   // confirmed or corrected before money moves, rather than trusted silently.
-  const { data: methodData } = useQuery<DefaultMomoMethodQueryResult>(DEFAULT_MOMO_METHOD_QUERY, {
-    skip: !open,
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: methodData, loading: methodLoading } = useQuery<DefaultMomoMethodQueryResult>(
+    DEFAULT_MOMO_METHOD_QUERY,
+    { skip: !open, fetchPolicy: 'cache-and-network' },
+  );
   const defaultMethod = methodData?.paymentMethods.find(
     (m) => m.isDefault && (m.type === 'MTN_MOMO' || m.type === 'ORANGE_MONEY'),
   );
+  // A method just added inline, in THIS open, before the query has had a
+  // chance to refetch it as the default — takes over from `defaultMethod` so
+  // the user can continue straight through rather than reopening the dialog.
+  const [addedMethod, setAddedMethod] = useState<DefaultMomoMethod | null>(null);
+  const effectiveMethod = addedMethod ?? defaultMethod;
   const [phone, setPhone] = useState('');
   // Tracks which method's number is currently reflected in `phone`, so a
   // fresh load (a different id, or the dialog reopening after `onOpenChange`
@@ -136,9 +143,9 @@ function MoveMoneyDialog({
   // the user is actively typing.
   const [syncedMethodId, setSyncedMethodId] = useState<string | null>(null);
 
-  if (defaultMethod && defaultMethod.id !== syncedMethodId) {
-    setSyncedMethodId(defaultMethod.id);
-    setPhone(defaultMethod.phone ?? '');
+  if (effectiveMethod && effectiveMethod.id !== syncedMethodId) {
+    setSyncedMethodId(effectiveMethod.id);
+    setPhone(effectiveMethod.phone ?? '');
   }
 
   const value = parseBudget(amount);
@@ -151,6 +158,7 @@ function MoveMoneyDialog({
       // kind of silent mistake this step exists to prevent.
       setSyncedMethodId(null);
       setPhone('');
+      setAddedMethod(null);
     }
   }
 
@@ -163,8 +171,8 @@ function MoveMoneyDialog({
     setError(null);
     try {
       const trimmedPhone = phone.trim();
-      if (defaultMethod && trimmedPhone && trimmedPhone !== (defaultMethod.phone ?? '')) {
-        await restPatch(`payment-methods/${defaultMethod.id}`, { phone: trimmedPhone });
+      if (effectiveMethod && trimmedPhone && trimmedPhone !== (effectiveMethod.phone ?? '')) {
+        await restPatch(`payment-methods/${effectiveMethod.id}`, { phone: trimmedPhone });
       }
       await restPost(mode === 'add' ? 'wallet/add-money' : 'wallet/withdraw', { amount: value });
       setOpen(false);
@@ -196,7 +204,7 @@ function MoveMoneyDialog({
             placeholder="10000"
             hint={t('amountHint')}
           />
-          {defaultMethod && (
+          {effectiveMethod ? (
             <Field
               label={mode === 'add' ? t('sourceNumberLabel') : t('payoutNumberLabel')}
               type="tel"
@@ -205,8 +213,10 @@ function MoveMoneyDialog({
               onChange={(e) => setPhone(e.target.value)}
               hint={t('confirmNumberHint')}
             />
+          ) : (
+            !methodLoading && <InlineAddMomoMethod onAdded={setAddedMethod} />
           )}
-          <Button onClick={() => void submit()} disabled={busy || !value}>
+          <Button onClick={() => void submit()} disabled={busy || !value || !effectiveMethod}>
             {busy ? <Loader2 aria-hidden className="animate-spin" /> : null}
             {mode === 'add' ? t('continueToPay') : t('confirmWithdraw')}
           </Button>

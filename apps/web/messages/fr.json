@@ -1560,7 +1560,8 @@
     "methodAdded": "Moyen de paiement ajouté.",
     "saveMethod": "Enregistrer",
     "actionFailed": "Cette action n’a pas pu aboutir. Veuillez réessayer.",
-    "disputeFrozenHint": "Les fonds restent gelés jusqu’à ce qu’un administrateur règle le litige."
+    "disputeFrozenHint": "Les fonds restent gelés jusqu’à ce qu’un administrateur règle le litige.",
+    "noMethodOnFile": "Ajoutez un numéro Mobile Money pour continuer — il sera aussi enregistré pour la prochaine fois."
   },
   "Disputes": {
     "title": "Litige",

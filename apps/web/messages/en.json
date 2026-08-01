@@ -1560,7 +1560,8 @@
     "methodAdded": "Payment method added.",
     "saveMethod": "Save method",
     "actionFailed": "That action could not be completed. Please try again.",
-    "disputeFrozenHint": "Funds stay frozen until an admin resolves the dispute."
+    "disputeFrozenHint": "Funds stay frozen until an admin resolves the dispute.",
+    "noMethodOnFile": "Add a Mobile Money number to continue — it's saved for next time too."
   },
   "Disputes": {
     "title": "Dispute",
