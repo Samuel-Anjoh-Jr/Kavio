@@ -4,9 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { Button } from '@/components/ui/button';
-import { WorkerCard } from '@/components/discovery/worker-card';
 import { JsonLd } from '@/components/seo/json-ld';
-import { searchResultToCard } from '@/lib/discovery';
 import { buildMetadata, canonicalFor } from '@/lib/seo';
 import {
   SEO_LANDING_BUILD_CITY_SLUGS,
@@ -16,6 +14,7 @@ import {
 } from '@/lib/site-config';
 import { breadcrumbNode, graph, serviceNode, webPageNode } from '@/lib/structured-data';
 import { loadCategoryCityContent } from './load-category-city-content';
+import { WorkerPreviewGrid } from './worker-preview-grid';
 
 /**
  * Programmatic trade × city landing pages (competitive-analysis rec §3).
@@ -104,7 +103,6 @@ export default async function ServiceCityLandingPage({ params }: { params: Promi
     latitude: city.latitude,
     longitude: city.longitude,
   });
-  const workers = content.workers.map(searchResultToCard);
 
   const path = `/services/${categorySlug}/${citySlug}`;
   const url = canonicalFor(locale, path);
@@ -164,16 +162,12 @@ export default async function ServiceCityLandingPage({ params }: { params: Promi
         </div>
       </header>
 
-      {workers.length > 0 && (
+      {content.workers.length > 0 && (
         <section aria-labelledby="workers-heading" className="flex flex-col gap-6">
           <h2 id="workers-heading" className="font-heading text-2xl font-semibold text-foreground">
             {t('workersHeading', { trade: tradeName, city: city.name })}
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {workers.map((worker) => (
-              <WorkerCard key={worker.userId} worker={worker} />
-            ))}
-          </div>
+          <WorkerPreviewGrid workers={content.workers} />
         </section>
       )}
 
