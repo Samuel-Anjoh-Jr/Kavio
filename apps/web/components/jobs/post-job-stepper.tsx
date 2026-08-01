@@ -456,90 +456,101 @@ export function PostJobStepper() {
             {t('reviewHeading')}
           </h2>
 
-          <dl className="divide-y divide-border rounded-card border border-border bg-surface">
-            <ReviewRow label={t('titleLabel')} value={draft.title || t('notSet')} />
-            <ReviewRow label={t('descriptionLabel')} value={draft.description || t('notSet')} />
-            <ReviewRow
-              label={t('categoryLabel')}
-              value={
-                categories.find((c) => c.id === draft.categoryId)
-                  ? locale === 'fr'
-                    ? (categories.find((c) => c.id === draft.categoryId)?.nameFr ?? t('notSet'))
-                    : (categories.find((c) => c.id === draft.categoryId)?.nameEn ?? t('notSet'))
-                  : t('notSet')
-              }
-            />
-            <ReviewRow label={t('urgencyLabel')} value={t(`urgency.${draft.urgency}`)} />
-            <ReviewRow
-              label={t('locationLabel')}
-              value={
-                jobLocation?.landmark ||
-                jobLocation?.label ||
-                // A pin with no landmark and no reverse-geocoded label is still
-                // a location — falling straight through to "Not set" contradicted
-                // the Location step, which had already confirmed "Location set".
-                (jobLocation
-                  ? tLocation('coordinates', {
-                      latitude: jobLocation.latitude.toFixed(4),
-                      longitude: jobLocation.longitude.toFixed(4),
-                    })
-                  : t('notSet'))
-              }
-            />
-            <ReviewRow
-              label={t('budgetLabel')}
-              value={formatBudget(budgetMin, budgetMax, locale, t('budgetOpen'))}
-            />
-            <ReviewRow
-              label={t('photosLabel')}
-              value={t('photoCount', { count: draft.photoAssetIds.length })}
-            />
-            {canPostPublicly && (
-              <ReviewRow
-                label={t('visibilityReviewLabel')}
-                value={publishPublicly ? t('visibilityPublicTitle') : t('visibilityDirectTitle')}
-              />
-            )}
-          </dl>
+          {post.kind === 'posted' ? (
+            // The draft is already cleared by the time this renders (submit()
+            // clears it right before navigating away) — showing the review
+            // table here would flash every field back to "Not set" for the
+            // moment before the redirect to the job page lands.
+            <FormBanner tone="success" message={t('posted')} />
+          ) : (
+            <>
+              <dl className="divide-y divide-border rounded-card border border-border bg-surface">
+                <ReviewRow label={t('titleLabel')} value={draft.title || t('notSet')} />
+                <ReviewRow label={t('descriptionLabel')} value={draft.description || t('notSet')} />
+                <ReviewRow
+                  label={t('categoryLabel')}
+                  value={
+                    categories.find((c) => c.id === draft.categoryId)
+                      ? locale === 'fr'
+                        ? (categories.find((c) => c.id === draft.categoryId)?.nameFr ?? t('notSet'))
+                        : (categories.find((c) => c.id === draft.categoryId)?.nameEn ?? t('notSet'))
+                      : t('notSet')
+                  }
+                />
+                <ReviewRow label={t('urgencyLabel')} value={t(`urgency.${draft.urgency}`)} />
+                <ReviewRow
+                  label={t('locationLabel')}
+                  value={
+                    jobLocation?.landmark ||
+                    jobLocation?.label ||
+                    // A pin with no landmark and no reverse-geocoded label is still
+                    // a location — falling straight through to "Not set" contradicted
+                    // the Location step, which had already confirmed "Location set".
+                    (jobLocation
+                      ? tLocation('coordinates', {
+                          latitude: jobLocation.latitude.toFixed(4),
+                          longitude: jobLocation.longitude.toFixed(4),
+                        })
+                      : t('notSet'))
+                  }
+                />
+                <ReviewRow
+                  label={t('budgetLabel')}
+                  value={formatBudget(budgetMin, budgetMax, locale, t('budgetOpen'))}
+                />
+                <ReviewRow
+                  label={t('photosLabel')}
+                  value={t('photoCount', { count: draft.photoAssetIds.length })}
+                />
+                {canPostPublicly && (
+                  <ReviewRow
+                    label={t('visibilityReviewLabel')}
+                    value={
+                      publishPublicly ? t('visibilityPublicTitle') : t('visibilityDirectTitle')
+                    }
+                  />
+                )}
+              </dl>
 
-          {canPostPublicly && publishPublicly && (
-            <p className="text-sm text-muted-foreground">
-              {t('postingFeeLabel')}:{' '}
-              <span className="font-medium text-foreground">
-                {/* 0 reads as "Free", never as "FCFA 0" — a price of zero
-                    stated as a number still reads as a charge. */}
-                {eligibility && eligibility.feeXaf > 0
-                  ? t('postingFeeValue', {
-                      amount: new Intl.NumberFormat(locale).format(eligibility.feeXaf),
-                    })
-                  : t('postingFeeFree')}
-              </span>
-            </p>
-          )}
+              {canPostPublicly && publishPublicly && (
+                <p className="text-sm text-muted-foreground">
+                  {t('postingFeeLabel')}:{' '}
+                  <span className="font-medium text-foreground">
+                    {/* 0 reads as "Free", never as "FCFA 0" — a price of zero
+                        stated as a number still reads as a charge. */}
+                    {eligibility && eligibility.feeXaf > 0
+                      ? t('postingFeeValue', {
+                          amount: new Intl.NumberFormat(locale).format(eligibility.feeXaf),
+                        })
+                      : t('postingFeeFree')}
+                  </span>
+                </p>
+              )}
 
-          {post.kind === 'gated' && (
-            <div className="rounded-card border border-warning/30 bg-warning/10 p-4">
-              <div className="flex items-start gap-3">
-                <ShieldCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-warning" />
-                <div className="flex flex-col gap-1">
-                  <p className="font-medium text-foreground">{t('gatedHeading')}</p>
-                  <p className="text-sm text-muted-foreground">{post.message}</p>
+              {post.kind === 'gated' && (
+                <div className="rounded-card border border-warning/30 bg-warning/10 p-4">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-warning" />
+                    <div className="flex flex-col gap-1">
+                      <p className="font-medium text-foreground">{t('gatedHeading')}</p>
+                      <p className="text-sm text-muted-foreground">{post.message}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() => router.push('/app/verification')}
+                  >
+                    {t('gatedCta')}
+                  </Button>
                 </div>
-              </div>
-              <Button
-                variant="outline"
-                className="mt-3"
-                onClick={() => router.push('/app/verification')}
-              >
-                {t('gatedCta')}
-              </Button>
-            </div>
-          )}
+              )}
 
-          {post.kind === 'error' && (
-            <FormBanner tone="error" message={post.message} requestId={post.requestId} />
+              {post.kind === 'error' && (
+                <FormBanner tone="error" message={post.message} requestId={post.requestId} />
+              )}
+            </>
           )}
-          {post.kind === 'posted' && <FormBanner tone="success" message={t('posted')} />}
         </section>
       )}
 
