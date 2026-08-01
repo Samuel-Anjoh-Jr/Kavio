@@ -6,12 +6,14 @@ import {
   Prisma,
   TransactionStatus,
   TransactionType,
+  TrustEventType,
 } from '@kavio/database';
 import type { AuthenticatedUser } from '../../auth/auth.types';
 import { AppException } from '../../lib/app-exception';
 import { createLogger, getRequestId } from '../../lib/logger';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JobsService } from '../../jobs/jobs.service';
+import { TrustScoreService } from '../../trust/trust-score.service';
 import { LedgerService } from '../ledger.service';
 import {
   ESCROW_REFUNDED,
@@ -102,6 +104,7 @@ export class EscrowService {
     private readonly events: EventEmitter2,
     private readonly ledger: LedgerService,
     private readonly jobs: JobsService,
+    private readonly trust: TrustScoreService,
   ) {}
 
   /**
@@ -470,6 +473,28 @@ export class EscrowService {
         // target rung must not roll it back. Log for reconciliation.
         logger.warn('Job lifecycle did not follow escrow transition', {
           payload: { jobId: hold.jobId, to },
+          result: String(error),
+        });
+      }
+    }
+
+    if (to === EscrowState.RELEASED) {
+      // The point this genuinely became a finished, paid job for the worker
+      // (§21.6) — and the only source of `completedJobs`, which gates Tier 3
+      // (minCompletedJobs). Outside the money transaction for the same reason
+      // the job-lifecycle call above is: TrustScoreService does its own
+      // ledger write and recompute, not something to nest inside this one.
+      try {
+        await this.trust.record({
+          subjectId: hold.workerId,
+          type: TrustEventType.JOB_COMPLETED,
+          actorId: ctx.actorId ?? null,
+          sourceType: 'Booking',
+          sourceId: hold.bookingId,
+        });
+      } catch (error) {
+        logger.warn('Trust event did not follow escrow release', {
+          payload: { bookingId: hold.bookingId, workerId: hold.workerId },
           result: String(error),
         });
       }
