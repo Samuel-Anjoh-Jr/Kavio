@@ -148,7 +148,7 @@ export function JobWorkerActions({ jobId, jobStatus }: { jobId: string; jobStatu
 
   return (
     <div className="flex flex-col gap-3">
-      {myInvitation?.status === 'PENDING' && (
+      {myInvitation?.status === 'PENDING' && !alreadyQuoted && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-primary/30 bg-primary/10 p-4">
           <div>
             <p className="font-medium text-foreground">{t('invitationHeading')}</p>
