@@ -26,14 +26,15 @@ describe('SessionService.refresh', () => {
     const redisStore = new Map<string, string>();
     const redis = {
       client: {
-        get: jest.fn(async (key: string) => redisStore.get(key) ?? null),
-        set: jest.fn(async (key: string, value: string, ...rest: unknown[]) => {
-          if (rest.includes('NX') && redisStore.has(key)) return null;
+        get: jest.fn((key: string) => Promise.resolve(redisStore.get(key) ?? null)),
+        set: jest.fn((key: string, value: string, ...rest: unknown[]) => {
+          if (rest.includes('NX') && redisStore.has(key)) return Promise.resolve(null);
           redisStore.set(key, value);
-          return 'OK';
+          return Promise.resolve('OK');
         }),
-        del: jest.fn(async (key: string) => {
+        del: jest.fn((key: string) => {
           redisStore.delete(key);
+          return Promise.resolve();
         }),
       },
     } as unknown as RedisService;
