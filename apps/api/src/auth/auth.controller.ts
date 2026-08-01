@@ -8,6 +8,7 @@ import { CurrentUser, Public } from './decorators/auth.decorators';
 import {
   addRoleSchema,
   changePasswordSchema,
+  changePhoneSchema,
   forgotPasswordSchema,
   loginSchema,
   logoutSchema,
@@ -17,11 +18,13 @@ import {
   switchRoleSchema,
   toggleTwoFactorSchema,
   twoFactorVerifySchema,
+  updateProfileSchema,
   verifyOtpSchema,
 } from './dto/auth.dto';
 import type {
   AddRoleDto,
   ChangePasswordDto,
+  ChangePhoneDto,
   ForgotPasswordDto,
   LoginDto,
   LogoutDto,
@@ -31,12 +34,14 @@ import type {
   SwitchRoleDto,
   ToggleTwoFactorDto,
   TwoFactorVerifyDto,
+  UpdateProfileDto,
   VerifyOtpDto,
 } from './dto/auth.dto';
 import { signUpSchema } from './dto/sign-up.dto';
 import type { SignUpDto } from './dto/sign-up.dto';
 import type { OtpIssueResult } from './otp.service';
 import { PasswordService } from './password.service';
+import { ProfileService } from './profile.service';
 import { SessionService } from './session.service';
 
 /**
@@ -52,6 +57,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly passwords: PasswordService,
+    private readonly profile: ProfileService,
     private readonly sessions: SessionService,
   ) {}
 
@@ -175,6 +181,28 @@ export class AuthController {
     @Body(new ZodValidationPipe(changePasswordSchema)) dto: ChangePasswordDto,
   ): Promise<{ changed: true }> {
     return this.passwords.changePassword(user.id, dto);
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Profile (name, phone)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  @Post('profile')
+  @HttpCode(HttpStatus.OK)
+  async updateProfile(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(updateProfileSchema)) dto: UpdateProfileDto,
+  ): Promise<{ name: string }> {
+    return this.profile.updateName(user.id, dto);
+  }
+
+  @Post('phone')
+  @HttpCode(HttpStatus.OK)
+  async changePhone(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(changePhoneSchema)) dto: ChangePhoneDto,
+  ): Promise<{ phone: string }> {
+    return this.profile.changePhone(user.id, dto);
   }
 
   // ───────────────────────────────────────────────────────────────────────────

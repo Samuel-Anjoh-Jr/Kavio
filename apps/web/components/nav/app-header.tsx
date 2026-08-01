@@ -3,7 +3,16 @@
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
-import { Bookmark, LifeBuoy, LogOut, Search, Settings, ShieldCheck, UserRound } from 'lucide-react';
+import {
+  Bookmark,
+  LifeBuoy,
+  LogOut,
+  Search,
+  Settings,
+  ShieldCheck,
+  UserCog,
+  UserRound,
+} from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -120,6 +129,12 @@ export function AppHeader() {
                     <Link href="/app/safety">
                       <LifeBuoy aria-hidden className="mr-2" />
                       {t('safety')}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/app/settings/profile">
+                      <UserCog aria-hidden className="mr-2" />
+                      {t('profile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

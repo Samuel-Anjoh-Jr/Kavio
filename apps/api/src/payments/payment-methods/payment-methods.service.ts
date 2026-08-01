@@ -5,7 +5,7 @@ import { AppException } from '../../lib/app-exception';
 import { createLogger } from '../../lib/logger';
 import { normalizeToE164 } from '../../lib/phone.util';
 import { PrismaService } from '../../prisma/prisma.service';
-import type { AddPaymentMethodDto } from './dto/payment-method.dto';
+import type { AddPaymentMethodDto, UpdatePaymentMethodPhoneDto } from './dto/payment-method.dto';
 
 const logger = createLogger('payment-methods');
 
@@ -100,6 +100,52 @@ export class PaymentMethodsService {
       payload: { userId: user.id, methodId: created.id, type: dto.type },
     });
     return created;
+  }
+
+  /**
+   * Corrects a Mobile Money method's phone number in place (PAY-04) — what the
+   * pre-payout confirmation pop-up calls when someone edits the number rather
+   * than just confirming it. Card/bank methods have no phone to update.
+   */
+  async updatePhone(user: AuthenticatedUser, methodId: string, dto: UpdatePaymentMethodPhoneDto) {
+    const method = await this.prisma.client.paymentMethod.findFirst({
+      where: { id: methodId, userId: user.id, isActive: true },
+      select: { id: true, type: true },
+    });
+    if (!method) {
+      throw this.notFound();
+    }
+
+    const isMomo =
+      method.type === PaymentMethodType.MTN_MOMO || method.type === PaymentMethodType.ORANGE_MONEY;
+    if (!isMomo) {
+      throw new AppException(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'NOT_A_MOMO_METHOD',
+        'Only a Mobile Money method has a phone number to change.',
+      );
+    }
+
+    const normalized = normalizeToE164(dto.phone);
+    if (!normalized) {
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        'INVALID_PHONE',
+        'That phone number is not valid.',
+        { phone: ['Enter a valid Cameroon phone number.'] },
+      );
+    }
+
+    const updated = await this.prisma.client.paymentMethod.update({
+      where: { id: methodId },
+      data: { phone: normalized },
+      select: METHOD_SELECT,
+    });
+
+    logger.info('Payment method phone updated', {
+      payload: { userId: user.id, methodId },
+    });
+    return updated;
   }
 
   /** Sets a method as the user's default, unsetting the previous one atomically. */

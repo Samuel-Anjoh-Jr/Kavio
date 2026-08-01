@@ -145,6 +145,38 @@ export interface PaymentMethod {
   isDefault: boolean;
 }
 
+/**
+ * A second, narrower read of the same resolver, used only by the pre-payout
+ * confirmation step (MoveMoneyDialog). Kept separate from {@link PaymentMethod}
+ * above rather than adding `phone`/`type` there: that shared shape already
+ * disagrees with the resolver's real field name (`kind` here should be `type`
+ * — see PaymentMethodView in apps/api/src/payments/models/payments.model.ts),
+ * a pre-existing mismatch outside this feature's scope to fix. This query
+ * spells out the field the resolver actually serves so the confirmation step
+ * works regardless of that other bug.
+ */
+export const DEFAULT_MOMO_METHOD_QUERY = gql`
+  query DefaultMomoMethod {
+    paymentMethods {
+      id
+      type
+      phone
+      isDefault
+    }
+  }
+`;
+
+export interface DefaultMomoMethod {
+  id: string;
+  type: PaymentMethodKind;
+  phone: string | null;
+  isDefault: boolean;
+}
+
+export interface DefaultMomoMethodQueryResult {
+  paymentMethods: DefaultMomoMethod[];
+}
+
 export interface PaymentMethodsQueryResult {
   paymentMethods: PaymentMethod[];
 }

@@ -130,7 +130,12 @@
       "COMPLETE_FAILED": "Nous n'avons pas encore pu finaliser votre profil. Réessayez.",
       "ONBOARDING_INCOMPLETE": "Quelques étapes obligatoires manquent encore.",
       "UNKNOWN_STEP": "Cette étape d'inscription n'existe pas.",
-      "UNKNOWN_ONBOARDING_ROLE": "Parcours d'inscription inconnu."
+      "UNKNOWN_ONBOARDING_ROLE": "Parcours d'inscription inconnu.",
+      "PHONE_CHANGE_VERIFICATION_REQUIRED": "La modification de votre numéro nécessite une étape de vérification qui n'est pas encore disponible. Contactez le support.",
+      "INVALID_PHONE": "Saisissez un numéro de téléphone camerounais valide.",
+      "NOT_A_MOMO_METHOD": "Seul un moyen de paiement Mobile Money a un numéro de téléphone à modifier.",
+      "PAYMENT_METHOD_NOT_FOUND": "Nous n'avons pas trouvé ce moyen de paiement.",
+      "NO_PAYMENT_METHOD": "Ajoutez d'abord un moyen de paiement."
     },
     "resend": {
       "available": "Renvoyer le code",
@@ -161,6 +166,10 @@
           "description": "Trouvez un artisan vérifié près de chez vous"
         }
       },
+      "nameLabel": "Votre nom",
+      "namePlaceholder": "ex. Amina N.",
+      "nameHint": "Un prénom et une initiale suffisent. Vous pourrez le modifier plus tard dans les paramètres.",
+      "nameInvalid": "Saisissez votre nom.",
       "phoneLabel": "Numéro de téléphone",
       "phoneHint": "Saisissez un numéro valide.",
       "phoneInvalid": "Saisissez un numéro camerounais valide.",
@@ -332,6 +341,7 @@
     "notifications": "Notifications",
     "safety": "Sécurité",
     "moderation": "Signalements",
+    "profile": "Profil",
     "settings": "Paramètres",
     "adminSection": "Administration",
     "adminDisputes": "Litiges",
@@ -460,7 +470,10 @@
     "visibilityDirectTitle": "Uniquement le professionnel que je choisis",
     "visibilityDirectBody": "Reste privé. Vous invitez un professionnel et ne recevez que ses devis.",
     "visibilityPublicTitle": "Publier sur le tableau public",
-    "visibilityPublicBody": "Tout professionnel vérifié peut la voir et postuler."
+    "visibilityPublicBody": "Tout professionnel vérifié peut la voir et postuler.",
+    "visibilityReviewLabel": "Qui peut voir cette offre",
+    "titlePlaceholderPublic": "ex. Serveuse recherchée",
+    "descriptionPlaceholderPublic": "Précisez le poste, les horaires et la rémunération pour attirer les bons candidats."
   },
   "Home": {
     "title": "Votre espace Kavio",
@@ -1437,6 +1450,9 @@
     "amountLabel": "Montant (XAF)",
     "amountHint": "Francs entiers uniquement.",
     "amountRequired": "Saisissez un montant supérieur à zéro.",
+    "sourceNumberLabel": "Numéro Mobile Money utilisé pour payer",
+    "payoutNumberLabel": "Numéro Mobile Money de réception",
+    "confirmNumberHint": "Confirmez qu'il est correct, ou corrigez-le avant de continuer.",
     "continueToPay": "Continuer vers le paiement",
     "confirmWithdraw": "Retirer",
     "addRequested": "Paiement lancé.",
@@ -1791,6 +1807,18 @@
       "body": "Les contacts d’urgence et l’historique SOS sont privés.",
       "signIn": "Se connecter"
     }
+  },
+  "ProfileSettings": {
+    "title": "Votre profil",
+    "subtitle": "Le nom et le numéro de téléphone que voient les artisans et les clients.",
+    "nameHeading": "Nom",
+    "nameBody": "Ce que voient les artisans et les clients quand vous les contactez.",
+    "nameLabel": "Votre nom",
+    "phoneHeading": "Numéro de téléphone",
+    "phoneBody": "Utilisé pour vous joindre, et comme numéro Mobile Money par défaut pour les paiements. La modification est immédiate ici — la vérification par SMS et WhatsApp n'est pas encore disponible.",
+    "phoneLabel": "Numéro de téléphone",
+    "save": "Enregistrer",
+    "saved": "Enregistré."
   },
   "Notifications": {
     "title": "Notifications",

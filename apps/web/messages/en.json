@@ -130,7 +130,12 @@
       "COMPLETE_FAILED": "We could not finish your profile just yet. Try again.",
       "ONBOARDING_INCOMPLETE": "A few required steps are still missing.",
       "UNKNOWN_STEP": "That onboarding step does not exist.",
-      "UNKNOWN_ONBOARDING_ROLE": "Unknown onboarding flow."
+      "UNKNOWN_ONBOARDING_ROLE": "Unknown onboarding flow.",
+      "PHONE_CHANGE_VERIFICATION_REQUIRED": "Changing your phone number needs a verification step that is not available yet. Please contact support.",
+      "INVALID_PHONE": "Enter a valid Cameroon phone number.",
+      "NOT_A_MOMO_METHOD": "Only a Mobile Money method has a phone number to change.",
+      "PAYMENT_METHOD_NOT_FOUND": "We could not find that payment method.",
+      "NO_PAYMENT_METHOD": "Add a payment method first."
     },
     "resend": {
       "available": "Resend code",
@@ -161,6 +166,10 @@
           "description": "Find a verified worker near you"
         }
       },
+      "nameLabel": "Your name",
+      "namePlaceholder": "e.g. Amina N.",
+      "nameHint": "A first name and initial is enough. You can change this later in settings.",
+      "nameInvalid": "Enter your name.",
       "phoneLabel": "Phone number",
       "phoneHint": "Enter a valid number.",
       "phoneInvalid": "Enter a valid Cameroon phone number.",
@@ -332,6 +341,7 @@
     "notifications": "Notifications",
     "safety": "Safety",
     "moderation": "Reports",
+    "profile": "Profile",
     "settings": "Settings",
     "adminSection": "Admin",
     "adminDisputes": "Disputes",
@@ -460,7 +470,10 @@
     "visibilityDirectTitle": "Just the worker I choose",
     "visibilityDirectBody": "Stays private. You invite a worker and take quotes from them alone.",
     "visibilityPublicTitle": "Post to the public job board",
-    "visibilityPublicBody": "Any verified worker can see it and apply."
+    "visibilityPublicBody": "Any verified worker can see it and apply.",
+    "visibilityReviewLabel": "Who can see this",
+    "titlePlaceholderPublic": "e.g. Waitress needed",
+    "descriptionPlaceholderPublic": "Share the role, hours and pay so the right applicants come forward."
   },
   "Home": {
     "title": "Your Kavio home",
@@ -1437,6 +1450,9 @@
     "amountLabel": "Amount (XAF)",
     "amountHint": "Whole francs only.",
     "amountRequired": "Enter an amount greater than zero.",
+    "sourceNumberLabel": "Paying from this Mobile Money number",
+    "payoutNumberLabel": "Sending to this Mobile Money number",
+    "confirmNumberHint": "Confirm this is right, or correct it before continuing.",
     "continueToPay": "Continue to pay",
     "confirmWithdraw": "Withdraw",
     "addRequested": "Payment started.",
@@ -1791,6 +1807,18 @@
       "body": "Emergency contacts and SOS history are private to your account.",
       "signIn": "Sign in"
     }
+  },
+  "ProfileSettings": {
+    "title": "Your profile",
+    "subtitle": "The name and phone number workers and clients see.",
+    "nameHeading": "Name",
+    "nameBody": "What workers and clients see when you contact them.",
+    "nameLabel": "Your name",
+    "phoneHeading": "Phone number",
+    "phoneBody": "Used to reach you, and as the default Mobile Money number for payments. Changing it here is instant — SMS and WhatsApp verification are not live yet.",
+    "phoneLabel": "Phone number",
+    "save": "Save",
+    "saved": "Saved."
   },
   "Notifications": {
     "title": "Notifications",
