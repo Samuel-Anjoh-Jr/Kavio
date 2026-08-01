@@ -38,7 +38,7 @@ function makeService(options: { data: Record<string, unknown>; submit: jest.Mock
       onboardingProgress: {
         findUnique: jest.fn().mockResolvedValue({ data: options.data, completedAt: null }),
       },
-      $transaction: jest.fn().mockImplementation(async (cb: (tx: unknown) => unknown) => cb(tx)),
+      $transaction: jest.fn().mockImplementation((cb: (tx: unknown) => unknown) => cb(tx)),
     },
   } as unknown as PrismaService;
 
