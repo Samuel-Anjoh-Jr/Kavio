@@ -8,10 +8,13 @@ import {
   Role,
   TeamMemberAccessLevel,
   TeamMemberRole,
+  VerificationCheckType,
 } from '@kavio/database';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
+import { VerificationService } from '../verification/verification.service';
 import {
   completedStepKeys,
   computeCompletion,
@@ -43,7 +46,10 @@ const REQUIRED_ROLE: Record<OnboardingRole, Role> = {
 
 @Injectable()
 export class OnboardingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly verification: VerificationService,
+  ) {}
 
   /**
    * Reads progress. Deliberately does NOT create a row: a GET must not write,
@@ -186,6 +192,18 @@ export class OnboardingService {
       });
     });
 
+    // Outside the transaction above: VerificationService.submit runs its own
+    // OCR pass, trust-ledger writes and event emission, none of which belong
+    // inside the profile-materialisation transaction. The identity/documents
+    // steps only ever collected these asset ids for this exact purpose — a
+    // worker or business finishing onboarding expects the files they just
+    // uploaded to actually be in the review queue, not sitting unsubmitted.
+    if (role === OnboardingRole.WORKER) {
+      await this.submitWorkerVerifications(userId, data);
+    } else if (role === OnboardingRole.BUSINESS) {
+      await this.submitBusinessVerification(userId, data);
+    }
+
     logger.info('Onboarding completed', { result: { userId, role, completionPercent } });
 
     return this.toView(role, data, completedAt, nextStepKey(role, data));
@@ -290,6 +308,93 @@ export class OnboardingService {
           })),
         });
       }
+    }
+  }
+
+  /**
+   * Submits the identity step's uploaded documents for review (TRU-06).
+   *
+   * ID_APPROVED needs both sides of the national ID; the identity step itself
+   * only requires the front plus a selfie to count as "complete" (its back is
+   * genuinely optional there), so a missing back simply means this specific
+   * check waits — the worker can still finish the rest of onboarding and add
+   * it later from the standalone verification screen.
+   */
+  private async submitWorkerVerifications(
+    userId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> {
+    const identity = (data.identity ?? {}) as {
+      idFrontAssetId?: string;
+      idBackAssetId?: string;
+      selfieAssetId?: string;
+    };
+    const portfolio = (data.portfolio ?? []) as ReadonlyArray<{ mediaAssetId?: string }>;
+    const subject = { id: userId } as AuthenticatedUser;
+
+    if (identity.idFrontAssetId && identity.idBackAssetId) {
+      await this.trySubmitVerification(subject, VerificationCheckType.ID_APPROVED, [
+        identity.idFrontAssetId,
+        identity.idBackAssetId,
+      ]);
+    }
+
+    if (identity.selfieAssetId) {
+      await this.trySubmitVerification(subject, VerificationCheckType.SELFIE_LIVENESS, [
+        identity.selfieAssetId,
+      ]);
+    }
+
+    const portfolioAssetIds = portfolio
+      .map((item) => item.mediaAssetId)
+      .filter((id): id is string => Boolean(id));
+
+    if (portfolioAssetIds.length > 0) {
+      // Not staff-reviewed: submit() settles PORTFOLIO as VERIFIED immediately,
+      // which is what feeds the TIER_2 gate (TierConfig requires ID_APPROVED +
+      // PORTFOLIO) — without this, a worker's portfolio images never become a
+      // check the tier can see, no matter how many are uploaded.
+      await this.trySubmitVerification(subject, VerificationCheckType.PORTFOLIO, portfolioAssetIds);
+    }
+  }
+
+  /** Submits the documents step's registration upload for review (BIZ-01). */
+  private async submitBusinessVerification(
+    userId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> {
+    const documents = (data.documents ?? {}) as { registrationAssetId?: string };
+
+    if (documents.registrationAssetId) {
+      await this.trySubmitVerification(
+        { id: userId } as AuthenticatedUser,
+        VerificationCheckType.BUSINESS_REGISTRATION,
+        [documents.registrationAssetId],
+      );
+    }
+  }
+
+  /**
+   * Re-finishing onboarding (editing another step, pressing Finish again)
+   * must not fail the whole completion just because these exact documents
+   * were already submitted or decided — that is a normal repeat, not an error
+   * the user caused.
+   */
+  private async trySubmitVerification(
+    subject: AuthenticatedUser,
+    checkType: VerificationCheckType,
+    documentIds: readonly string[],
+  ): Promise<void> {
+    try {
+      await this.verification.submit(subject, checkType, documentIds);
+    } catch (error) {
+      logger.warn('Onboarding verification submission skipped', {
+        payload: {
+          userId: subject.id,
+          checkType,
+          reason: error instanceof AppException ? error.code : 'UNKNOWN_ERROR',
+        },
+      });
     }
   }
 

@@ -28,6 +28,12 @@ export interface TemplateVariablesMap {
   'account.welcome': { name: string };
   'auth.otp_code': { code: string; expiresInMinutes: number };
   'auth.password_reset': { resetUrl: string; expiresInMinutes: number };
+  /**
+   * A field agent was invited (ADM-06). Sent to an email with no Kavio account
+   * yet, so it bypasses the per-user dispatcher — see
+   * agent-invitation-notification.listener.ts.
+   */
+  'admin.agent_invited': { name: string; acceptUrl: string; expiresInDays: number };
   'auth.new_device_login': { deviceName: string; occurredAt: string; secureAccountUrl: string };
   'auth.password_changed': { occurredAt: string };
   'auth.two_factor_changed': { enabled: boolean };
@@ -305,6 +311,46 @@ const authOtpCode: TemplateDefinition<'auth.otp_code'> = {
       }),
       fr: (v) => ({
         text: `${v.code} est votre code Kavio. Il expire dans ${v.expiresInMinutes} min. Ne le partagez jamais.`,
+      }),
+    },
+  },
+};
+
+const adminAgentInvited: TemplateDefinition<'admin.agent_invited'> = {
+  key: 'admin.agent_invited',
+  category: NotificationCategory.SECURITY,
+  securityCritical: true,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'You have been invited to join Kavio as a field agent',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Set your password to finish joining Kavio.',
+          heading: 'Join Kavio as a field agent',
+          bodyHtml: paragraphs(
+            `${escapeHtml(v.name)}, an admin has invited you to verify professionals in person for Kavio.`,
+            `Use the button below to set a password and finish onboarding. This invitation expires in ${v.expiresInDays} days.`,
+            'If you were not expecting this, you can safely ignore this email.',
+          ),
+          cta: { label: 'Accept invitation', url: v.acceptUrl },
+        }),
+        text: `${v.name}, an admin has invited you to join Kavio as a field agent. Accept your invitation: ${v.acceptUrl}\n\nThis invitation expires in ${v.expiresInDays} days. If you were not expecting this, ignore this email.`,
+      }),
+      fr: (v) => ({
+        subject: 'Vous avez été invité(e) à rejoindre Kavio comme agent de terrain',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Définissez votre mot de passe pour rejoindre Kavio.',
+          heading: 'Rejoignez Kavio comme agent de terrain',
+          bodyHtml: paragraphs(
+            `${escapeHtml(v.name)}, un administrateur vous a invité(e) à vérifier des professionnels sur le terrain pour Kavio.`,
+            `Utilisez le bouton ci-dessous pour définir un mot de passe et terminer votre inscription. Cette invitation expire dans ${v.expiresInDays} jours.`,
+            "Si vous ne vous attendiez pas à ce message, vous pouvez l'ignorer.",
+          ),
+          cta: { label: "Accepter l'invitation", url: v.acceptUrl },
+        }),
+        text: `${v.name}, un administrateur vous a invité(e) à rejoindre Kavio comme agent de terrain. Acceptez votre invitation : ${v.acceptUrl}\n\nCette invitation expire dans ${v.expiresInDays} jours.`,
       }),
     },
   },
@@ -1968,6 +2014,7 @@ const TEMPLATES: TemplateMap = {
   'account.welcome': accountWelcome,
   'auth.otp_code': authOtpCode,
   'auth.password_reset': authPasswordReset,
+  'admin.agent_invited': adminAgentInvited,
   'auth.new_device_login': authNewDeviceLogin,
   'auth.password_changed': authPasswordChanged,
   'auth.two_factor_changed': authTwoFactorChanged,

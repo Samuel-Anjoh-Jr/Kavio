@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageModule } from '../storage/storage.module';
+import { VerificationModule } from '../verification/verification.module';
 import { OnboardingController } from './onboarding.controller';
 import { OnboardingResolver } from './onboarding.resolver';
 import { OnboardingService } from './onboarding.service';
@@ -10,7 +11,7 @@ import { OnboardingService } from './onboarding.service';
  * OnboardingController; the read is the `onboarding` GraphQL query.
  */
 @Module({
-  imports: [PrismaModule, StorageModule],
+  imports: [PrismaModule, StorageModule, VerificationModule],
   controllers: [OnboardingController],
   providers: [OnboardingService, OnboardingResolver],
   exports: [OnboardingService],
