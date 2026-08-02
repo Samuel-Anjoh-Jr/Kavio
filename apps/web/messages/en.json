@@ -995,6 +995,11 @@
     "distance": {
       "metres": "{value} m",
       "kilometres": "{value} km"
+    },
+    "viewToggleLabel": "Choose list or map view",
+    "view": {
+      "list": "List",
+      "map": "Map"
     }
   },
   "Filters": {

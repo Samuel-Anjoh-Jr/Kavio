@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
+import { useApolloClient } from '@apollo/client/react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Loader2, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/auth/field';
 import { useGeolocation, type GeolocationErrorCode } from '@/components/discovery/use-geolocation';
 import { readStoredLocation } from '@/lib/geo';
+import { REVERSE_GEOCODE_QUERY, type ReverseGeocodeQueryResult } from '@/lib/graphql/discovery';
 import type { LocationValue } from '@/lib/onboarding';
 
 /**
@@ -14,9 +16,7 @@ import type { LocationValue } from '@/lib/onboarding';
  *
  * Two paths: a one-tap device fix, and typed city/area. Typing ALWAYS wins — the
  * moment the user edits a field the source flips to HUMAN_INPUT, because a human
- * statement outranks an auto-detected fix (CLAUDE.md SPATIAL). The map-pin mode
- * and reverse-geocoding arrive with the Location Setter in PROMPT 42; this
- * captures the same value shape so that swap needs no data migration.
+ * statement outranks an auto-detected fix (CLAUDE.md SPATIAL).
  *
  * The device fix goes through the shared `useGeolocation` hook rather than a
  * second hand-rolled call: that hook deliberately asks for a coarse,
@@ -24,6 +24,12 @@ import type { LocationValue } from '@/lib/onboarding';
  * lock can genuinely take longer than any reasonable timeout indoors or on a
  * mid-range phone — asking for one here was timing out constantly for exactly
  * that reason.
+ *
+ * A raw coordinate is reverse-geocoded into city/area (same
+ * `reverseGeocodeLocation` query the guest Location Setter uses) before it is
+ * ever handed to `onChange`: the `location` step's server schema REQUIRES a
+ * city, so a device fix that left it blank did not just look incomplete, it
+ * failed to save with a validation error that read like a connection problem.
  */
 function toErrorKey(code: GeolocationErrorCode): 'unsupported' | 'denied' | 'failed' {
   if (code === 'unsupported') return 'unsupported';
@@ -39,14 +45,43 @@ export function LocationFields({
   onChange: (next: LocationValue) => void;
 }) {
   const t = useTranslations('Onboarding.location');
+  const locale = useLocale();
+  const apollo = useApolloClient();
   const { status, error, locate } = useGeolocation();
-  const locating = status === 'locating';
+  const [resolvingPlace, setResolvingPlace] = useState(false);
+  const locating = status === 'locating' || resolvingPlace;
 
   // Written after commit, read once on mount below — see the effect for why.
-  const latest = useRef({ value, onChange });
+  const latest = useRef({ value, onChange, locale });
   useEffect(() => {
-    latest.current = { value, onChange };
+    latest.current = { value, onChange, locale };
   });
+
+  /** Fills city/area from a coordinate. Best-effort: a failed lookup still
+   * saves the coordinate, and the fields stay there for the user to type. */
+  async function withPlace(
+    base: LocationValue,
+    latitude: number,
+    longitude: number,
+  ): Promise<LocationValue> {
+    const next: LocationValue = { ...base, latitude, longitude, source: 'DEVICE_GPS' };
+
+    try {
+      const { data } = await apollo.query<ReverseGeocodeQueryResult>({
+        query: REVERSE_GEOCODE_QUERY,
+        variables: { latitude, longitude, locale: latest.current.locale },
+        fetchPolicy: 'cache-first',
+      });
+
+      const place = data?.reverseGeocodeLocation;
+      if (place?.city) next.city = place.city;
+      if (place?.locality) next.area = place.locality;
+    } catch {
+      // The coordinate is still worth saving without a name.
+    }
+
+    return next;
+  }
 
   // A guest who already tapped "use my current location" while browsing has a
   // fix sitting in localStorage (see lib/geo.ts). Making them press the same
@@ -61,26 +96,22 @@ export function LocationFields({
     const stored = readStoredLocation();
     if (!stored) return;
 
-    apply({
-      ...current,
-      latitude: stored.latitude,
-      longitude: stored.longitude,
-      source: 'DEVICE_GPS',
-    });
+    void withPlace(current, stored.latitude, stored.longitude).then(apply);
     // Runs once: this seeds an untouched step from the guest's prior fix, it is
     // not meant to re-fire as `value`/`onChange` identities change on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function requestCurrentLocation() {
     const fix = await locate();
     if (!fix) return;
 
-    onChange({
-      ...value,
-      latitude: fix.latitude,
-      longitude: fix.longitude,
-      source: 'DEVICE_GPS',
-    });
+    setResolvingPlace(true);
+    try {
+      onChange(await withPlace(value, fix.latitude, fix.longitude));
+    } finally {
+      setResolvingPlace(false);
+    }
   }
 
   return (
