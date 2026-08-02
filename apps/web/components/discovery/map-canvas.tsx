@@ -134,8 +134,11 @@ export function MapCanvas({
           map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
         }
 
+        let styleLoaded = false;
+
         map.on('load', () => {
           if (cancelled) return;
+          styleLoaded = true;
           latest.current.onReady?.(map);
         });
 
@@ -170,7 +173,19 @@ export function MapCanvas({
 
         // A failed style load leaves a blank canvas that looks like a bug. Say
         // so instead, and let the caller fall back to the non-map path.
-        map.on('error', () => setFailed(true));
+        //
+        // Once the style has loaded, an 'error' event almost always comes from
+        // something a caller added afterwards — a worker-density tile request,
+        // a GeoJSON source — not the map itself. Hiding an already-rendered map
+        // over a single failed layer would be a worse experience than just
+        // dropping that layer, so only the pre-load case is treated as fatal.
+        map.on('error', (event) => {
+          if (styleLoaded) {
+            console.error('[MapCanvas] map error after style load', event.error);
+            return;
+          }
+          setFailed(true);
+        });
 
         mapRef.current = map;
       } catch {
