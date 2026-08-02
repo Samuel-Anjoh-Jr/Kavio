@@ -374,6 +374,7 @@
     "mapLabel": "Carte des professionnels de cette zone",
     "mapUnavailable": "La carte n'est pas disponible pour le moment, mais la liste à côté montre les mêmes professionnels.",
     "searchThisArea": "Chercher dans cette zone",
+    "locateMe": "Centrer sur ma position",
     "viewToggleLabel": "Choisir la vue liste ou carte",
     "view": {
       "list": "Liste",

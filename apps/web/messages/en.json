@@ -374,6 +374,7 @@
     "mapLabel": "Map of workers in this area",
     "mapUnavailable": "The map isn't available right now, but the list beside it shows the same workers.",
     "searchThisArea": "Search this area",
+    "locateMe": "Centre on my location",
     "viewToggleLabel": "Choose list or map view",
     "view": {
       "list": "List",

@@ -1,15 +1,19 @@
 'use client';
 
 import Image from 'next/image';
+import { useSyncExternalStore } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
 import {
   Bookmark,
   LifeBuoy,
   LogOut,
+  Moon,
   Search,
   Settings,
   ShieldCheck,
+  Sun,
   UserCog,
   UserRound,
 } from 'lucide-react';
@@ -36,10 +40,20 @@ import { cn } from '@/lib/utils';
  * Switcher — the guest first-interface is a real browsing experience, not a
  * stripped-down teaser (ACC-01).
  */
+const noopSubscribe = () => () => {};
+
 export function AppHeader() {
   const t = useTranslations('Nav');
+  const tTheme = useTranslations('ThemeToggle');
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const { resolvedTheme, setTheme } = useTheme();
+  const themeMounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  const isDark = themeMounted && resolvedTheme === 'dark';
 
   const isAuthenticated = status === 'authenticated';
   // The admin surfaces are reachable by URL for anyone the API authorises, but
@@ -52,7 +66,7 @@ export function AppHeader() {
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Link
           href="/app"
-          className="flex items-center gap-2 rounded-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex shrink-0 items-center gap-2 rounded-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Image
             src="/brand/kavio-mark.png"
@@ -63,7 +77,7 @@ export function AppHeader() {
             priority
             className="h-7 w-auto"
           />
-          <span className="font-heading text-lg font-semibold tracking-tight text-foreground">
+          <span className="hidden font-heading text-lg font-semibold tracking-tight text-foreground sm:inline">
             Kavio
           </span>
         </Link>
@@ -86,24 +100,26 @@ export function AppHeader() {
           <Link
             href="/app/explore"
             aria-label={t('search')}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-button text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-button text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden"
           >
             <Search aria-hidden />
           </Link>
 
-          <div className="hidden sm:block">
+          <div className="hidden shrink-0 sm:block">
             <LocaleSwitcher />
           </div>
-          <ThemeToggle />
+          <ThemeToggle className={cn('shrink-0', isAuthenticated && 'hidden sm:inline-flex')} />
 
           {isAuthenticated ? (
             <>
-              <NotificationBell />
-              <RoleSwitcher />
+              <div className="shrink-0">
+                <NotificationBell />
+              </div>
+              <RoleSwitcher className="shrink-0" />
               <DropdownMenu>
                 <DropdownMenuTrigger
                   aria-label={t('account')}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-input bg-surface text-surface-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-input bg-surface text-surface-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <UserRound aria-hidden />
                 </DropdownMenuTrigger>
@@ -112,6 +128,21 @@ export function AppHeader() {
                     {session?.user?.name || session?.user?.email || t('account')}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {/* The standalone toggle button is hidden below `sm` to make
+                      room for the role switcher's label — this is the same
+                      control, just reachable from the account menu on a
+                      narrow phone instead of the header row. */}
+                  <DropdownMenuItem
+                    className="sm:hidden"
+                    onSelect={() => setTheme(isDark ? 'light' : 'dark')}
+                  >
+                    {isDark ? (
+                      <Sun aria-hidden className="mr-2" />
+                    ) : (
+                      <Moon aria-hidden className="mr-2" />
+                    )}
+                    {tTheme(isDark ? 'switchToLight' : 'switchToDark')}
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/app/home">{t('home')}</Link>
                   </DropdownMenuItem>
@@ -172,7 +203,7 @@ export function AppHeader() {
               </DropdownMenu>
             </>
           ) : (
-            <Button asChild size="sm">
+            <Button asChild size="sm" className="shrink-0">
               <Link href="/auth/login">{t('signIn')}</Link>
             </Button>
           )}

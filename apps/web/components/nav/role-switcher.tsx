@@ -104,12 +104,12 @@ export function RoleSwitcher({ className }: { className?: string }) {
         )}
       >
         {busy ? (
-          <Loader2 aria-hidden className="animate-spin" />
+          <Loader2 aria-hidden className="h-4 w-4 shrink-0 animate-spin" />
         ) : (
-          <span aria-hidden className="h-2 w-2 rounded-full bg-accent" />
+          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-accent" />
         )}
         <span>{t(`names.${activeRole}`)}</span>
-        <ChevronDown aria-hidden />
+        <ChevronDown aria-hidden className="h-4 w-4 shrink-0" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">

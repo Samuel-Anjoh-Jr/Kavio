@@ -4,12 +4,15 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { GeoJSONSource, Map as MapboxMap } from 'mapbox-gl';
-import { Search } from 'lucide-react';
+import { Crosshair, Loader2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/components/ui/use-toast';
 import type { WorkerCardData } from '@/lib/discovery';
 import { normalizeEnvUrl } from '@/lib/env-url';
+import { prefersReducedMotion } from '@/lib/motion';
 import { hasMapToken, type MapViewport } from './map-canvas';
+import { useGeolocation } from './use-geolocation';
 
 const MapCanvas = dynamic(() => import('./map-canvas'), {
   ssr: false,
@@ -89,8 +92,32 @@ export function WorkerMap({
   className,
 }: WorkerMapProps) {
   const t = useTranslations('Explore');
+  const tLocation = useTranslations('Location');
+  const { toast } = useToast();
   const mapRef = useRef<MapboxMap | null>(null);
   const [movedViewport, setMovedViewport] = useState<MapViewport | null>(null);
+  const geolocation = useGeolocation();
+
+  const handleLocateMe = useCallback(async () => {
+    const fix = await geolocation.locate();
+    if (!fix) return;
+
+    const map = mapRef.current;
+    if (!map) return;
+
+    map.easeTo({
+      center: [fix.longitude, fix.latitude],
+      zoom: Math.max(map.getZoom(), 14),
+      duration: prefersReducedMotion() ? 0 : 600,
+    });
+  }, [geolocation]);
+
+  // Surfaced once, right after the failed attempt — not as a persistent banner
+  // over the map, which would cover the very content the user is trying to see.
+  useEffect(() => {
+    if (!geolocation.error) return;
+    toast({ variant: 'danger', title: tLocation(`geolocationError.${geolocation.error}`) });
+  }, [geolocation.error, toast, tLocation]);
 
   // Held in a ref so the map's own click handlers, registered once with the
   // style, always call the current callback. Written after commit rather than
@@ -276,6 +303,22 @@ export function WorkerMap({
             </Button>
           </div>
         )}
+
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          className="absolute left-3 top-3 shadow-lg"
+          aria-label={t('locateMe')}
+          disabled={geolocation.status === 'locating'}
+          onClick={() => void handleLocateMe()}
+        >
+          {geolocation.status === 'locating' ? (
+            <Loader2 aria-hidden className="animate-spin" />
+          ) : (
+            <Crosshair aria-hidden />
+          )}
+        </Button>
       </div>
     </div>
   );
