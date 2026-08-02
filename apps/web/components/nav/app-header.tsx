@@ -52,7 +52,7 @@ export function AppHeader() {
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Link
           href="/app"
-          className="flex items-center gap-2 rounded-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex shrink-0 items-center gap-2 rounded-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Image
             src="/brand/kavio-mark.png"
@@ -63,7 +63,7 @@ export function AppHeader() {
             priority
             className="h-7 w-auto"
           />
-          <span className="font-heading text-lg font-semibold tracking-tight text-foreground">
+          <span className="hidden font-heading text-lg font-semibold tracking-tight text-foreground sm:inline">
             Kavio
           </span>
         </Link>
@@ -86,24 +86,26 @@ export function AppHeader() {
           <Link
             href="/app/explore"
             aria-label={t('search')}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-button text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-button text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden"
           >
             <Search aria-hidden />
           </Link>
 
-          <div className="hidden sm:block">
+          <div className="hidden shrink-0 sm:block">
             <LocaleSwitcher />
           </div>
-          <ThemeToggle />
+          <ThemeToggle className="shrink-0" />
 
           {isAuthenticated ? (
             <>
-              <NotificationBell />
-              <RoleSwitcher />
+              <div className="shrink-0">
+                <NotificationBell />
+              </div>
+              <RoleSwitcher className="shrink-0" />
               <DropdownMenu>
                 <DropdownMenuTrigger
                   aria-label={t('account')}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-input bg-surface text-surface-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-input bg-surface text-surface-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <UserRound aria-hidden />
                 </DropdownMenuTrigger>
@@ -172,7 +174,7 @@ export function AppHeader() {
               </DropdownMenu>
             </>
           ) : (
-            <Button asChild size="sm">
+            <Button asChild size="sm" className="shrink-0">
               <Link href="/auth/login">{t('signIn')}</Link>
             </Button>
           )}
