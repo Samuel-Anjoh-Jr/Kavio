@@ -8,6 +8,7 @@ import { Building2, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from '@/i18n/navigation';
+import type { SessionTokens } from '@/lib/auth-api';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
 import {
   JOB_POSTING_ELIGIBILITY_QUERY,
@@ -51,10 +52,16 @@ export function BusinessUpgradeHint() {
   async function start() {
     setStarting(true);
     try {
-      await restPost('auth/roles', { role: 'BUSINESS' });
-      // Pulls a fresh token pair through the jwt callback, same as switching
-      // roles — the onboarding page's server-side role check reads this.
-      await update();
+      const tokens = await restPost<SessionTokens>('auth/roles', { role: 'BUSINESS' });
+      // Hands the pair this call already minted straight to the jwt callback
+      // (see auth.ts) — the onboarding page's server-side role check reads
+      // this, and discarding the pair to refresh the old one instead is what
+      // let a role switch race its own DB write (see RoleSwitcher).
+      await update({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresIn: tokens.expiresIn,
+      });
       router.push('/app/onboarding/business');
     } catch (error) {
       toast({ variant: 'danger', title: translateError(error) });
