@@ -1,3 +1,4 @@
+import type { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnboardingRole, VerificationCheckType } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import type { PrismaService } from '../prisma/prisma.service';
@@ -25,8 +26,8 @@ function makeTx() {
     availability: { deleteMany: jest.fn(), createMany: jest.fn() },
     portfolioItem: { deleteMany: jest.fn(), createMany: jest.fn() },
     mediaAsset: { findMany: jest.fn().mockResolvedValue([]) },
-    businessProfile: { upsert: jest.fn().mockResolvedValue({ id: 'bp-1' }) },
-    businessTeamMember: { deleteMany: jest.fn(), createMany: jest.fn() },
+    businessProfile: { upsert: jest.fn().mockResolvedValue({ id: 'bp-1', name: 'Test Co' }) },
+    businessTeamMember: { deleteMany: jest.fn(), create: jest.fn(), createMany: jest.fn() },
     onboardingProgress: { upsert: jest.fn() },
   };
 }
@@ -50,7 +51,8 @@ function makeService(options: {
   } as unknown as PrismaService;
 
   const verification = { submit: options.submit } as unknown as VerificationService;
-  return new OnboardingService(prisma, verification);
+  const events = { emit: jest.fn() } as unknown as EventEmitter2;
+  return new OnboardingService(prisma, verification, events);
 }
 
 describe('OnboardingService.complete', () => {

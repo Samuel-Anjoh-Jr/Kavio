@@ -25,8 +25,8 @@ export class BusinessTeamMemberView {
   @Field()
   name!: string;
 
-  @Field(() => TeamMemberRole)
-  role!: TeamMemberRole;
+  @Field(() => [TeamMemberRole])
+  roles!: TeamMemberRole[];
 
   @Field(() => Date)
   joinedAt!: Date;

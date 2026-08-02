@@ -212,28 +212,46 @@ export function BusinessOnboarding({ initial }: { initial: OnboardingState }) {
               />
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="flex flex-col gap-2 text-sm font-medium text-foreground">
-                  {t('steps.team.roleLabel')}
-                  <select
-                    value={member.role ?? 'STAFF'}
-                    onChange={(event) =>
-                      save('team', {
-                        team: team.map((entry, i) =>
-                          i === index
-                            ? { ...entry, role: event.target.value as TeamMemberEntry['role'] }
-                            : entry,
-                        ),
-                      })
-                    }
-                    className="rounded-input border border-input bg-surface px-4 py-2.5 text-sm font-normal text-surface-foreground"
-                  >
-                    {TEAM_ROLES.map((role) => (
-                      <option key={role} value={role}>
-                        {t(`steps.team.roles.${role}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="text-sm font-medium text-foreground">
+                    {t('steps.team.roleLabel')}
+                  </legend>
+                  <div className="flex flex-col gap-1.5">
+                    {TEAM_ROLES.map((role) => {
+                      const selected = member.roles ?? ['STAFF'];
+                      const checked = selected.includes(role);
+                      return (
+                        <label
+                          key={role}
+                          className="flex items-center gap-2.5 text-sm text-foreground"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(event) => {
+                              const next = event.target.checked
+                                ? [...selected, role]
+                                : selected.filter((entry) => entry !== role);
+                              save('team', {
+                                team: team.map((entry, i) =>
+                                  i === index
+                                    ? {
+                                        ...entry,
+                                        // At least one role always stays selected.
+                                        roles: next.length > 0 ? next : selected,
+                                      }
+                                    : entry,
+                                ),
+                              });
+                            }}
+                            className="size-4 rounded border-input accent-[var(--color-primary)]"
+                          />
+                          {t(`steps.team.roles.${role}`)}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </fieldset>
 
                 <label className="flex flex-col gap-2 text-sm font-medium text-foreground">
                   {t('steps.team.accessLabel')}
@@ -269,7 +287,7 @@ export function BusinessOnboarding({ initial }: { initial: OnboardingState }) {
             variant="outline"
             onClick={() =>
               save('team', {
-                team: [...team, { name: '', role: 'STAFF', accessLevel: 'VIEW_ONLY' }],
+                team: [...team, { name: '', roles: ['STAFF'], accessLevel: 'VIEW_ONLY' }],
               })
             }
           >

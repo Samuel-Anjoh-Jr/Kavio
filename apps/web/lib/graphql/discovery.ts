@@ -612,7 +612,7 @@ export const BUSINESS_PROFILE_QUERY = gql`
       team {
         id
         name
-        role
+        roles
         joinedAt
       }
       credentials {
@@ -648,7 +648,7 @@ export interface BusinessProfile {
     openJobCount: number;
     jobsAvailable: boolean;
   };
-  team: { id: string; name: string; role: string; joinedAt: string }[];
+  team: { id: string; name: string; roles: string[]; joinedAt: string }[];
   credentials: { labelKey: string; verified: boolean; verifiedAt: string | null }[];
 }
 

@@ -20,27 +20,33 @@ export const BUSINESS_VERIFIED = 'business.verified';
 export class TeamInvitationSentEvent {
   readonly memberId: string;
   readonly businessProfileId: string;
+  readonly businessName: string;
   readonly invitedById: string;
   readonly name: string;
   readonly email: string | null;
   readonly token: string;
+  readonly expiresAt: Date;
   readonly requestId?: string;
 
   constructor(init: {
     memberId: string;
     businessProfileId: string;
+    businessName: string;
     invitedById: string;
     name: string;
     email: string | null;
     token: string;
+    expiresAt: Date;
     requestId?: string;
   }) {
     this.memberId = init.memberId;
     this.businessProfileId = init.businessProfileId;
+    this.businessName = init.businessName;
     this.invitedById = init.invitedById;
     this.name = init.name;
     this.email = init.email;
     this.token = init.token;
+    this.expiresAt = init.expiresAt;
     this.requestId = init.requestId;
   }
 }

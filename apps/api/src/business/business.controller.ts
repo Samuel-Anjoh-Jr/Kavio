@@ -12,13 +12,15 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { z } from 'zod';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { CurrentUser, RequirePermissions } from '../auth/decorators/auth.decorators';
+import { CurrentUser, Public, RequirePermissions } from '../auth/decorators/auth.decorators';
 import { ZodValidationPipe } from '../lib/zod-validation.pipe';
 import { BusinessVerificationService } from './business-verification.service';
 import {
+  completeTeamInvitationSchema,
   invitationTokenSchema,
   inviteTeamMemberSchema,
   updateTeamMemberSchema,
+  type CompleteTeamInvitationDto,
   type InvitationTokenDto,
   type InviteTeamMemberDto,
   type UpdateTeamMemberDto,
@@ -135,6 +137,25 @@ export class BusinessController {
     @Body(new ZodValidationPipe(invitationTokenSchema)) dto: InvitationTokenDto,
   ) {
     return this.team.acceptInvitation(user, dto.token);
+  }
+
+  /**
+   * Redeems an invitation and sets a password for an invitee with no Kavio
+   * account yet — the common case, since a team invitation usually goes to
+   * someone's inbox rather than an existing session.
+   *
+   * `@Public()` for the same reason as the agent equivalent: the invitee has
+   * no account, so there is nothing to authenticate. Throttled tightly because
+   * an unauthenticated endpoint that checks a secret is a guessing target.
+   */
+  @Public()
+  @Post('team/invitations/complete')
+  @HttpCode(HttpStatus.CREATED)
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  async completeInvitation(
+    @Body(new ZodValidationPipe(completeTeamInvitationSchema)) dto: CompleteTeamInvitationDto,
+  ) {
+    return this.team.completeInvitation(dto);
   }
 
   @Post('team/invitations/decline')

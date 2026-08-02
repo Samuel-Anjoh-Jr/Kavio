@@ -220,7 +220,9 @@ export function BusinessProfileScreen({ profile }: { profile: BusinessProfile })
                   </span>
                   <div className="min-w-0">
                     <p className="truncate font-medium text-foreground">{member.name}</p>
-                    <p className="text-xs text-muted-foreground">{t(`role.${member.role}`)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {member.roles.map((role) => t(`role.${role}`)).join(', ')}
+                    </p>
                   </div>
                 </li>
               ))}

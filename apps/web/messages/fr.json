@@ -2152,7 +2152,24 @@
       "ACTIVE": "Actif",
       "REMOVED": "Retiré",
       "DECLINED": "Refusé"
-    }
+    },
+    "teamInviteTitle": "Rejoindre l'équipe",
+    "teamInviteSubtitle": "Définissez un mot de passe pour terminer votre inscription et ouvrir le tableau de bord de l'entreprise.",
+    "teamInviteExplainer": "Vous avez été invité(e) à gérer les missions, les paiements ou l'équipe d'une entreprise sur Kavio. Ce que vous pouvez voir et faire dépend du niveau d'accès qui vous a été accordé.",
+    "teamInviteNameLabel": "Votre nom",
+    "teamInviteNamePlaceholder": "Tel que vous souhaitez qu'il apparaisse à l'équipe",
+    "inviteLinkMissing": "Ce lien est incomplet",
+    "inviteLinkMissingBody": "Ouvrez le lien d'invitation reçu par e-mail exactement tel qu'il a été envoyé, ou demandez-en un nouveau au propriétaire de l'entreprise.",
+    "passwordLabel": "Choisissez un mot de passe",
+    "confirmPasswordLabel": "Confirmez le mot de passe",
+    "passwordHint": "Au moins {min} caractères.",
+    "passwordsDiffer": "Les mots de passe ne correspondent pas.",
+    "createTeamAccount": "Rejoindre l'équipe",
+    "creatingAccount": "Création…",
+    "teamInviteAcceptedTitle": "Vous faites partie de l'équipe",
+    "teamInviteAcceptedBody": "Connectez-vous avec votre e-mail et le mot de passe que vous venez de définir pour ouvrir le tableau de bord.",
+    "goToLogin": "Se connecter",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?"
   },
   "Admin": {
     "consoleTitle": "Console d'administration",

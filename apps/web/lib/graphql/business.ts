@@ -75,7 +75,7 @@ export interface TeamMember {
   email: string | null;
   phone: string | null;
   title: string | null;
-  role: TeamMemberRole;
+  roles: TeamMemberRole[];
   accessLevel: TeamAccessLevel;
   status: TeamMemberStatus;
   invitationSentAt: string | null;
@@ -183,7 +183,7 @@ export const BUSINESS_TEAM_QUERY = gql`
       email
       phone
       title
-      role
+      roles
       accessLevel
       status
       invitationSentAt

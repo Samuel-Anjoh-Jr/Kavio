@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   LocationSource,
   MediaAssetKind,
@@ -8,11 +9,15 @@ import {
   Role,
   TeamMemberAccessLevel,
   TeamMemberRole,
+  TeamMemberStatus,
   VerificationCheckType,
 } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AppException } from '../lib/app-exception';
-import { createLogger } from '../lib/logger';
+import { createLogger, getRequestId } from '../lib/logger';
+import { generateOpaqueToken, hashSecret } from '../lib/secret-hash.util';
+import { invitationExpiresAt } from '../business/business-access.model';
+import { TEAM_INVITATION_SENT, TeamInvitationSentEvent } from '../business/business.events';
 import { PrismaService } from '../prisma/prisma.service';
 import { VerificationService } from '../verification/verification.service';
 import {
@@ -55,6 +60,7 @@ export class OnboardingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly verification: VerificationService,
+    private readonly events: EventEmitter2,
   ) {}
 
   /**
@@ -205,13 +211,15 @@ export class OnboardingService {
     const completedAt = record?.completedAt ?? new Date();
     const completionPercent = computeCompletion(role, data);
 
+    let teamInvitations: TeamInvitationSentEvent[] = [];
+
     await this.prisma.client.$transaction(async (tx) => {
       if (role === OnboardingRole.WORKER) {
         await this.materialiseWorker(tx, userId, data);
       } else if (role === OnboardingRole.CLIENT) {
         await this.materialiseClient(tx, userId, data);
       } else {
-        await this.materialiseBusiness(tx, userId, data);
+        teamInvitations = await this.materialiseBusiness(tx, userId, data);
       }
 
       await tx.onboardingProgress.upsert({
@@ -238,6 +246,14 @@ export class OnboardingService {
       await this.submitWorkerVerifications(userId, data);
     } else if (role === OnboardingRole.BUSINESS) {
       await this.submitBusinessVerification(userId, data);
+    }
+
+    // Also outside the transaction, same reasoning: an invitation email is an
+    // external side effect, and TeamNotificationListener sends it directly
+    // rather than through the row this transaction just committed — emitting
+    // before commit would risk mailing a link for a member row that rolled back.
+    for (const invitation of teamInvitations) {
+      this.events.emit(TEAM_INVITATION_SENT, invitation);
     }
 
     logger.info('Onboarding completed', { result: { userId, role, completionPercent } });
@@ -476,11 +492,17 @@ export class OnboardingService {
     });
   }
 
+  /**
+   * Materialises the company profile and, for each team entry with a way to
+   * reach them, a REAL invitation — token hashed, expiry set, ready to email —
+   * rather than a bare row nothing could ever redeem. Returns the events for
+   * the caller to emit once the transaction has actually committed.
+   */
   private async materialiseBusiness(
     tx: Prisma.TransactionClient,
     userId: string,
     data: Record<string, unknown>,
-  ): Promise<void> {
+  ): Promise<TeamInvitationSentEvent[]> {
     const company = (data.company ?? {}) as Record<string, string | undefined>;
     const location = { city: company.city, source: 'HUMAN_INPUT' };
 
@@ -499,30 +521,73 @@ export class OnboardingService {
       where: { ownerId: userId },
       create: { ownerId: userId, ...fields },
       update: fields,
-      select: { id: true },
+      select: { id: true, name: true },
     });
 
     const team = (data.team ?? []) as {
       name: string;
       email?: string;
       phone?: string;
-      role?: TeamMemberRole;
+      roles?: TeamMemberRole[];
       accessLevel?: TeamMemberAccessLevel;
     }[];
 
-    await tx.businessTeamMember.deleteMany({ where: { businessProfileId: profile.id } });
-    if (team.length > 0) {
-      await tx.businessTeamMember.createMany({
-        data: team.map((member) => ({
+    // Only outstanding invites from an earlier pass through this step are
+    // cleared — an ACTIVE colleague (or one already REMOVED/DECLINED with its
+    // own history) must not vanish because the owner revisited onboarding.
+    await tx.businessTeamMember.deleteMany({
+      where: { businessProfileId: profile.id, status: TeamMemberStatus.INVITED },
+    });
+
+    const requestId = getRequestId();
+    const invitations: TeamInvitationSentEvent[] = [];
+
+    for (const member of team) {
+      // Mirrors inviteTeamMemberSchema's own rule: a seat with no way to reach
+      // the invitee can never become a member, so it is skipped rather than
+      // created unreachable.
+      if (!member.name?.trim() || !(member.email?.trim() || member.phone?.trim())) {
+        continue;
+      }
+
+      const token = generateOpaqueToken();
+      const now = new Date();
+      const expiresAt = invitationExpiresAt(now);
+      const roles = member.roles && member.roles.length > 0 ? member.roles : [TeamMemberRole.STAFF];
+
+      const created = await tx.businessTeamMember.create({
+        data: {
           businessProfileId: profile.id,
           name: member.name,
           email: member.email ?? null,
           phone: member.phone ?? null,
-          role: member.role ?? TeamMemberRole.STAFF,
+          roles: { create: roles.map((role) => ({ role })) },
           accessLevel: member.accessLevel ?? TeamMemberAccessLevel.VIEW_ONLY,
-        })),
+          status: TeamMemberStatus.INVITED,
+          invitedById: userId,
+          invitationTokenHash: hashSecret(token),
+          invitationSentAt: now,
+          invitationExpiresAt: expiresAt,
+        },
+        select: { id: true },
       });
+
+      invitations.push(
+        new TeamInvitationSentEvent({
+          memberId: created.id,
+          businessProfileId: profile.id,
+          businessName: profile.name,
+          invitedById: userId,
+          name: member.name,
+          email: member.email ?? null,
+          token,
+          expiresAt,
+          requestId,
+        }),
+      );
     }
+
+    return invitations;
   }
 
   private locationFields(location: Record<string, unknown>) {

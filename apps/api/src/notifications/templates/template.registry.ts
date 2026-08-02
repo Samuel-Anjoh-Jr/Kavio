@@ -34,6 +34,17 @@ export interface TemplateVariablesMap {
    * agent-invitation-notification.listener.ts.
    */
   'admin.agent_invited': { name: string; acceptUrl: string; expiresInDays: number };
+  /**
+   * A business owner invited a team member (BIZ-03). Sent to an email with no
+   * Kavio account yet, so it bypasses the per-user dispatcher — see
+   * team-notification.listener.ts.
+   */
+  'business.team_invited': {
+    name: string;
+    businessName: string;
+    acceptUrl: string;
+    expiresInDays: number;
+  };
   'auth.new_device_login': { deviceName: string; occurredAt: string; secureAccountUrl: string };
   'auth.password_changed': { occurredAt: string };
   'auth.two_factor_changed': { enabled: boolean };
@@ -351,6 +362,46 @@ const adminAgentInvited: TemplateDefinition<'admin.agent_invited'> = {
           cta: { label: "Accepter l'invitation", url: v.acceptUrl },
         }),
         text: `${v.name}, un administrateur vous a invité(e) à rejoindre Kavio comme agent de terrain. Acceptez votre invitation : ${v.acceptUrl}\n\nCette invitation expire dans ${v.expiresInDays} jours.`,
+      }),
+    },
+  },
+};
+
+const businessTeamInvited: TemplateDefinition<'business.team_invited'> = {
+  key: 'business.team_invited',
+  category: NotificationCategory.SECURITY,
+  securityCritical: true,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: `You have been invited to join ${v.businessName} on Kavio`,
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Set your password to finish joining the team.',
+          heading: `Join ${v.businessName} on Kavio`,
+          bodyHtml: paragraphs(
+            `${escapeHtml(v.name)}, ${escapeHtml(v.businessName)} has invited you to join their team on Kavio.`,
+            `Use the button below to set a password and access the business dashboard. This invitation expires in ${v.expiresInDays} days.`,
+            'If you were not expecting this, you can safely ignore this email.',
+          ),
+          cta: { label: 'Accept invitation', url: v.acceptUrl },
+        }),
+        text: `${v.name}, ${v.businessName} has invited you to join their team on Kavio. Accept your invitation: ${v.acceptUrl}\n\nThis invitation expires in ${v.expiresInDays} days. If you were not expecting this, ignore this email.`,
+      }),
+      fr: (v) => ({
+        subject: `Vous avez été invité(e) à rejoindre ${v.businessName} sur Kavio`,
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Définissez votre mot de passe pour rejoindre l’équipe.',
+          heading: `Rejoignez ${v.businessName} sur Kavio`,
+          bodyHtml: paragraphs(
+            `${escapeHtml(v.name)}, ${escapeHtml(v.businessName)} vous a invité(e) à rejoindre son équipe sur Kavio.`,
+            `Utilisez le bouton ci-dessous pour définir un mot de passe et accéder au tableau de bord de l'entreprise. Cette invitation expire dans ${v.expiresInDays} jours.`,
+            "Si vous ne vous attendiez pas à ce message, vous pouvez l'ignorer.",
+          ),
+          cta: { label: "Accepter l'invitation", url: v.acceptUrl },
+        }),
+        text: `${v.name}, ${v.businessName} vous a invité(e) à rejoindre son équipe sur Kavio. Acceptez votre invitation : ${v.acceptUrl}\n\nCette invitation expire dans ${v.expiresInDays} jours.`,
       }),
     },
   },
@@ -2015,6 +2066,7 @@ const TEMPLATES: TemplateMap = {
   'auth.otp_code': authOtpCode,
   'auth.password_reset': authPasswordReset,
   'admin.agent_invited': adminAgentInvited,
+  'business.team_invited': businessTeamInvited,
   'auth.new_device_login': authNewDeviceLogin,
   'auth.password_changed': authPasswordChanged,
   'auth.two_factor_changed': authTwoFactorChanged,

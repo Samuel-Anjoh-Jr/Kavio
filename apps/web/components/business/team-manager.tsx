@@ -18,6 +18,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { formatDate } from '@/lib/datetime';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
 import {
@@ -134,6 +140,56 @@ export function TeamManager({ businessProfileId }: { businessProfileId?: string 
   );
 }
 
+/** A seat can hold more than one HR label (BIZ-03) — a checkbox dropdown, not a single-value select. */
+function RolesMultiSelect({
+  id,
+  roles,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  roles: TeamMemberRole[];
+  disabled?: boolean;
+  onChange: (roles: TeamMemberRole[]) => void;
+}) {
+  const t = useTranslations('BusinessConsole');
+
+  function toggle(role: TeamMemberRole) {
+    const next = roles.includes(role) ? roles.filter((entry) => entry !== role) : [...roles, role];
+    // At least one role always stays selected — there is no "no label" seat.
+    if (next.length > 0) onChange(next);
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          id={id}
+          variant="outline"
+          size="sm"
+          disabled={disabled}
+          className="h-9 max-w-56 justify-start truncate font-normal"
+        >
+          {roles.map((role) => t(`teamRole.${role}`)).join(', ')}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        {TEAM_ROLES.map((role) => (
+          <DropdownMenuCheckboxItem
+            key={role}
+            checked={roles.includes(role)}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={() => toggle(role)}
+          >
+            {t(`teamRole.${role}`)}
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function MemberRow({
   member,
   businessProfileId,
@@ -154,7 +210,7 @@ function MemberRow({
 
   const editable = canManage && businessProfileId !== null && member.status !== 'REMOVED';
 
-  async function patch(input: { role?: TeamMemberRole; accessLevel?: TeamAccessLevel }) {
+  async function patch(input: { roles?: TeamMemberRole[]; accessLevel?: TeamAccessLevel }) {
     if (!businessProfileId) return;
     setSaving(true);
     setError(null);
@@ -201,7 +257,7 @@ function MemberRow({
           </div>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            {member.title ?? t(`teamRole.${member.role}`)}
+            {member.title ?? member.roles.map((role) => t(`teamRole.${role}`)).join(', ')}
             {member.email ? ` · ${member.email}` : member.phone ? ` · ${member.phone}` : ''}
           </p>
 
@@ -229,19 +285,12 @@ function MemberRow({
             <label className="sr-only" htmlFor={`role-${member.id}`}>
               {t('roleLabel')}
             </label>
-            <select
+            <RolesMultiSelect
               id={`role-${member.id}`}
-              value={member.role}
+              roles={member.roles}
               disabled={saving}
-              onChange={(event) => void patch({ role: event.target.value as TeamMemberRole })}
-              className="h-9 rounded-input border border-input bg-surface px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-            >
-              {TEAM_ROLES.map((role) => (
-                <option key={role} value={role}>
-                  {t(`teamRole.${role}`)}
-                </option>
-              ))}
-            </select>
+              onChange={(roles) => void patch({ roles })}
+            />
 
             <label className="sr-only" htmlFor={`access-${member.id}`}>
               {t('accessLabel')}
@@ -299,7 +348,7 @@ function InviteMemberDialog({
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [title, setTitle] = useState('');
-  const [role, setRole] = useState<TeamMemberRole>('STAFF');
+  const [roles, setRoles] = useState<TeamMemberRole[]>(['STAFF']);
   const [accessLevel, setAccessLevel] = useState<TeamAccessLevel>('VIEW_ONLY');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -322,7 +371,7 @@ function InviteMemberDialog({
         ...(email.trim() ? { email: email.trim() } : {}),
         ...(phone.trim() ? { phone: phone.trim() } : {}),
         ...(title.trim() ? { title: title.trim() } : {}),
-        role,
+        roles,
         accessLevel,
       });
       setOpen(false);
@@ -330,7 +379,7 @@ function InviteMemberDialog({
       setEmail('');
       setPhone('');
       setTitle('');
-      setRole('STAFF');
+      setRoles(['STAFF']);
       setAccessLevel('VIEW_ONLY');
       onInvited();
     } catch (err) {
@@ -408,19 +457,12 @@ function InviteMemberDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="invite-role">{t('roleLabel')}</Label>
-              <select
+              <RolesMultiSelect
                 id="invite-role"
-                value={role}
+                roles={roles}
                 disabled={submitting}
-                onChange={(event) => setRole(event.target.value as TeamMemberRole)}
-                className="h-11 rounded-input border border-input bg-surface px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              >
-                {TEAM_ROLES.map((value) => (
-                  <option key={value} value={value}>
-                    {t(`teamRole.${value}`)}
-                  </option>
-                ))}
-              </select>
+                onChange={setRoles}
+              />
               <p className="text-xs text-muted-foreground">{t('roleHint')}</p>
             </div>
 

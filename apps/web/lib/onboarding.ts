@@ -71,7 +71,8 @@ export interface TeamMemberEntry {
   name: string;
   email?: string;
   phone?: string;
-  role?: 'ADMIN' | 'HR_MANAGER' | 'ACCOUNTANT' | 'STAFF';
+  /** A seat can hold more than one HR label — an office manager who is also the accountant. */
+  roles?: ('ADMIN' | 'HR_MANAGER' | 'ACCOUNTANT' | 'STAFF')[];
   accessLevel?: 'FULL' | 'MANAGE_JOBS' | 'PAYMENTS' | 'VIEW_ONLY';
 }
 
