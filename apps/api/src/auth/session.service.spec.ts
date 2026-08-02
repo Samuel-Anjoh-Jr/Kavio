@@ -5,6 +5,8 @@ import type { RedisService } from '../redis/redis.service';
 import { SessionService } from './session.service';
 import type { TokenService } from './token.service';
 
+ process.env.AUTH_SECRET_PEPPER = 'tes1-pepper'
+
 /**
  * The single-flight refresh-rotation race (ACC-05): a background session poll
  * and a page render can both wake on the identical, already-rotated cookie a
