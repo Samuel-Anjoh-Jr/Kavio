@@ -40,8 +40,10 @@ export class TeamMemberView {
   @Field(() => String, { nullable: true, description: 'Their job title inside the company.' })
   title!: string | null;
 
-  @Field(() => TeamMemberRole, { description: 'The HR label. Not a permission.' })
-  role!: TeamMemberRole;
+  @Field(() => [TeamMemberRole], {
+    description: 'The HR label(s) on this seat — not a permission. One seat can hold several.',
+  })
+  roles!: TeamMemberRole[];
 
   @Field(() => TeamMemberAccessLevel, {
     description: 'What the server actually enforces for this member.',

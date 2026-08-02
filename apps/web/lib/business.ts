@@ -7,10 +7,11 @@ import { restDelete, restPatch, restPost } from '@/lib/rest-api';
  * Business & team vocabulary + WRITES (BIZ-01, BIZ-03). Reads are GraphQL
  * (lib/graphql/business.ts).
  *
- * `role` and `accessLevel` are separate concepts and stay separate here. `role`
- * is the HR label on somebody's seat; `accessLevel` is what the server actually
- * enforces. Deriving one from the other would look tidy and would mean renaming
- * a job title silently changed what that person can spend.
+ * `roles` and `accessLevel` are separate concepts and stay separate here.
+ * `roles` are HR labels on somebody's seat — a seat can hold more than one;
+ * `accessLevel` is what the server actually enforces. Deriving one from the
+ * other would look tidy and would mean renaming a job title silently changed
+ * what that person can spend.
  */
 
 /** The HR label. Not a permission. Mirrors the API's TeamMemberRole. */
@@ -52,12 +53,13 @@ export interface InviteTeamMemberInput {
   email?: string;
   phone?: string;
   title?: string;
-  role: TeamMemberRole;
+  /** At least one. A seat can hold several (BIZ-03). */
+  roles: TeamMemberRole[];
   accessLevel: TeamAccessLevel;
 }
 
 export interface UpdateTeamMemberInput {
-  role?: TeamMemberRole;
+  roles?: TeamMemberRole[];
   accessLevel?: TeamAccessLevel;
   title?: string | null;
 }
@@ -90,4 +92,13 @@ export function acceptTeamInvitation(token: string): Promise<{ businessProfileId
 
 export function declineTeamInvitation(token: string): Promise<{ ok: boolean }> {
   return restPost<{ ok: boolean }>('businesses/team/invitations/decline', { token });
+}
+
+/** Redeems an emailed invitation by setting a password (BIZ-03). No account needed yet. */
+export function completeTeamInvitation(input: {
+  token: string;
+  password: string;
+  name?: string;
+}): Promise<{ userId: string }> {
+  return restPost<{ userId: string }>('businesses/team/invitations/complete', input);
 }

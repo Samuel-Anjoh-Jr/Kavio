@@ -1198,10 +1198,9 @@ model BusinessTeamMember {
   /// The member's job title inside the company. Free text: this is org chrome,
   /// not a permission — `accessLevel` is what the server enforces.
   title       String?
-  role        TeamMemberRole        @default(STAFF)
   /// What this member may DO (BIZ-03). Enforced server-side on every business
   /// write via business-access.model.ts — never trusted from the client, and
-  /// never inferred from `role`, which is an HR label.
+  /// never inferred from `roles`, which are HR labels.
   accessLevel TeamMemberAccessLevel @default(VIEW_ONLY)
   status      TeamMemberStatus      @default(INVITED)
 
@@ -1221,9 +1220,12 @@ model BusinessTeamMember {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
-  user            User?           @relation("TeamMemberUser", fields: [userId], references: [id], onDelete: SetNull)
-  invitedBy       User?           @relation("TeamMemberInviter", fields: [invitedById], references: [id], onDelete: SetNull)
+  businessProfile BusinessProfile       @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  user            User?                 @relation("TeamMemberUser", fields: [userId], references: [id], onDelete: SetNull)
+  invitedBy       User?                 @relation("TeamMemberInviter", fields: [invitedById], references: [id], onDelete: SetNull)
+  /// One seat, several HR labels — an office manager who is also the
+  /// accountant is one row here, not two competing team memberships.
+  roles           BusinessTeamMemberRole[]
 
   @@index([businessProfileId, status])
   /// The access resolver's hot path: "what may this identity do for this
@@ -1233,6 +1235,23 @@ model BusinessTeamMember {
   /// in the migration (WHERE "userId" IS NOT NULL AND status <> 'REMOVED'): a
   /// person can be re-invited after removal but never hold two seats at once.
   @@index([businessProfileId, userId])
+}
+
+/// One HR-label grant on one team seat (BIZ-03). Mirrors UserRole's shape for
+/// the same reason: a seat can be BOTH the office manager and the accountant,
+/// and a single scalar column cannot say that without inventing a combined
+/// enum value for every pair anyone ever wants.
+model BusinessTeamMemberRole {
+  id           String         @id @default(uuid()) @db.Uuid
+  teamMemberId String         @db.Uuid
+  role         TeamMemberRole
+
+  createdAt DateTime @default(now())
+
+  teamMember BusinessTeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([teamMemberId, role])
+  @@index([teamMemberId])
 }
 
 /// A service a worker offers, with transparent starting price (PRO-05).

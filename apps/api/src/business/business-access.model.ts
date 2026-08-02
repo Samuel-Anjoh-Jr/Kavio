@@ -26,11 +26,11 @@ import { TeamMemberAccessLevel, TeamMemberStatus } from '@kavio/database';
  */
 
 export type BusinessCapability =
-  /** Read the dashboard, analytics, the team list and the company wallet totals. */
+  /** Read the dashboard, analytics, the team list and the company's spend totals. */
   | 'business:view'
   /** Post and manage jobs on behalf of the company (BIZ-02). */
   | 'business:jobs'
-  /** See the company wallet's ledger detail and payment records (BIZ-03). */
+  /** See the company's payment records and escrow-derived spend detail (BIZ-03). */
   | 'business:payments'
   /** Invite, re-scope and remove team members (BIZ-03). */
   | 'business:team'

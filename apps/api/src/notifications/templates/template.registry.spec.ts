@@ -123,6 +123,13 @@ function sampleVariables(key: string): Record<string, unknown> {
         acceptUrl: 'https://kavio.cm/auth/agent-invite?token=abc',
         expiresInDays: 14,
       };
+    case 'business.team_invited':
+      return {
+        name: 'Paul Ngassa',
+        businessName: 'Ngassa Électricité',
+        acceptUrl: 'https://kavio.cm/auth/team-invite?token=abc',
+        expiresInDays: 14,
+      };
     case 'auth.new_device_login':
       return {
         deviceName: 'Chrome on Android',

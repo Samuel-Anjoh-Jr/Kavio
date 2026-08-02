@@ -48,7 +48,12 @@ const BUSINESS_PROFILE_SELECT = {
     where: { status: TeamMemberStatus.ACTIVE },
     orderBy: { createdAt: 'asc' },
     take: 50,
-    select: { id: true, name: true, role: true, createdAt: true },
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      roles: { select: { role: true }, orderBy: { createdAt: 'asc' } },
+    },
   },
   _count: { select: { team: { where: { status: TeamMemberStatus.ACTIVE } } } },
 } satisfies Prisma.BusinessProfileSelect;
@@ -170,7 +175,7 @@ export class BusinessProfileService {
       team: profile.team.map((member) => ({
         id: member.id,
         name: member.name,
-        role: member.role,
+        roles: member.roles.map((entry) => entry.role),
         joinedAt: member.createdAt,
         // Deliberately NOT exposed: a team member's email and phone. They were
         // captured to send an invitation, not to be published (BIZ-03).

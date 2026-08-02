@@ -2153,7 +2153,24 @@
       "ACTIVE": "Active",
       "REMOVED": "Removed",
       "DECLINED": "Declined"
-    }
+    },
+    "teamInviteTitle": "Join the team",
+    "teamInviteSubtitle": "Set a password to finish joining and open the business dashboard.",
+    "teamInviteExplainer": "You've been invited to manage jobs, payments or the team for a company on Kavio. What you can see and do depends on the access level they gave you.",
+    "teamInviteNameLabel": "Your name",
+    "teamInviteNamePlaceholder": "As you'd like it shown to the team",
+    "inviteLinkMissing": "This link is incomplete",
+    "inviteLinkMissingBody": "Open the invitation link from your email exactly as it was sent, or ask the business owner for a new one.",
+    "passwordLabel": "Choose a password",
+    "confirmPasswordLabel": "Confirm password",
+    "passwordHint": "At least {min} characters.",
+    "passwordsDiffer": "Those passwords don't match.",
+    "createTeamAccount": "Join the team",
+    "creatingAccount": "Creating…",
+    "teamInviteAcceptedTitle": "You're on the team",
+    "teamInviteAcceptedBody": "Sign in with your email and the password you just set to open the dashboard.",
+    "goToLogin": "Go to sign in",
+    "alreadyHaveAccount": "Already have an account?"
   },
   "Admin": {
     "consoleTitle": "Admin console",
