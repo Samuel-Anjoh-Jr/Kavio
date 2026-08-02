@@ -232,7 +232,7 @@ NOT-04	Every notification shall resolve to a deep link, derived centrally from t
 ID	Requirement
 BIZ-01	Job posts marked as coming from a registered business shall support optional enhanced Business Verification (RCCM/registration) granting a “Verified Business” badge and eligibility for Tier-3-gated corporate engagements. (SRS FR-22)
 BIZ-02	A Business Dashboard shall summarise active posts, applications, in-progress/completed jobs, spending, and recent payments; businesses shall post team/bulk jobs (team size, duration, location).
-BIZ-03	Businesses shall manage Team Members with roles (admin, HR manager, accountant, staff), access levels (full / manage jobs / payments / view-only), status, and staff invitations, plus a company wallet and business analytics (jobs posted, hire rate, spend, average rating).
+BIZ-03	Businesses shall manage Team Members with roles (admin, HR manager, accountant, staff), access levels (full / manage jobs / payments / view-only), status, and staff invitations, plus a live spend/payments view (escrow-derived, no stored company balance) and business analytics (jobs posted, hire rate, spend, average rating).
 3.13 Agent Operations (AGT) (Invited by admin via email)
 ID	Requirement
 AGT-01	Field Agents shall have a lightweight, mobile-friendly intake tool to register and immediately badge a Founding Professional recruited in person. (SRS FR-44, supports FR-31)
