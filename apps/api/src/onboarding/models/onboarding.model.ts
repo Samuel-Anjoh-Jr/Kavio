@@ -45,6 +45,13 @@ export class Onboarding {
   @Field(() => GraphQLJSON)
   data!: Record<string, unknown>;
 
+  @Field(() => String, {
+    nullable: true,
+    description:
+      "A starting point for the CLIENT profile step's name field, taken from the account's sign-up name. Only present while that step has no saved answer yet.",
+  })
+  suggestedDisplayName!: string | null;
+
   @Field(() => [OnboardingUnlock])
   unlocks!: OnboardingUnlock[];
 }

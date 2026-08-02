@@ -16,8 +16,11 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
  * newer one being queued — it supersedes it.
  *
  * The server owns `completionPercent` and `currentStep`; every save returns the
- * recomputed state and that is what the UI renders, so the meter can never drift
- * from what has actually been stored.
+ * recomputed state and that is what the UI renders. `data` itself is merged
+ * rather than replaced wholesale: `state.data` only ever moves forward (each
+ * keystroke advances it optimistically, synchronously), so a slow response for
+ * an OLDER snapshot must never overwrite a field the user has since typed past
+ * — that would show as the input snapping back to a stale value mid-type.
  */
 const DEBOUNCE_MS = 700;
 
@@ -29,42 +32,61 @@ export function useOnboarding(role: OnboardingRole, initial: OnboardingState) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const queued = useRef<{ step: string; data: Record<string, unknown> } | null>(null);
   const inFlight = useRef(false);
+  /** Resolves once the drain loop below finishes — shared so a caller that
+   * arrives while a flush is already running (e.g. "Finish setup" clicked a
+   * moment after the debounce fired) can await the SAME drain instead of
+   * racing it. */
+  const flushDone = useRef<Promise<void>>(Promise.resolve());
+  /** Set when the drain loop stops on a failed save, so callers can tell a
+   * "nothing queued" state apart from a "queued item was dropped after
+   * failing" state — `queued.current` is cleared before the request that can
+   * fail, so it cannot be used for that by itself. */
+  const failed = useRef(false);
 
   /**
    * Drains the queue in a loop rather than by re-entering itself: anything the
    * user types while a save is in flight is picked up by the next iteration, so
    * the most recent edit always reaches the server without recursion.
    */
-  const flush = useCallback(async () => {
-    if (inFlight.current) return;
+  const flush = useCallback((): Promise<void> => {
+    if (inFlight.current) return flushDone.current;
     inFlight.current = true;
 
-    try {
-      while (queued.current) {
-        const pending = queued.current;
-        queued.current = null;
+    flushDone.current = (async () => {
+      try {
+        while (queued.current) {
+          const pending = queued.current;
+          queued.current = null;
 
-        setStatus('saving');
-        setError(null);
+          setStatus('saving');
+          setError(null);
 
-        try {
-          const next = await restPatch<OnboardingState>(
-            `onboarding/${role.toLowerCase()}/step`,
-            pending,
-          );
-          setState(next);
-          setStatus('saved');
-        } catch (err) {
-          setError(err instanceof Error ? err : new Error('SAVE_FAILED'));
-          setStatus('error');
-          // Stop draining on failure — retrying the rest immediately would just
-          // fail the same way and bury the error the user needs to see.
-          break;
+          try {
+            const next = await restPatch<OnboardingState>(
+              `onboarding/${role.toLowerCase()}/step`,
+              pending,
+            );
+            // Server-owned fields (completionPercent, currentStep, ...) come
+            // from `next`; `data` merges with local state winning, since local
+            // state can only have moved forward since `pending` was captured.
+            setState((current) => ({ ...next, data: { ...next.data, ...current.data } }));
+            setStatus('saved');
+            failed.current = false;
+          } catch (err) {
+            setError(err instanceof Error ? err : new Error('SAVE_FAILED'));
+            setStatus('error');
+            failed.current = true;
+            // Stop draining on failure — retrying the rest immediately would just
+            // fail the same way and bury the error the user needs to see.
+            break;
+          }
         }
+      } finally {
+        inFlight.current = false;
       }
-    } finally {
-      inFlight.current = false;
-    }
+    })();
+
+    return flushDone.current;
   }, [role]);
 
   const save = useCallback(
@@ -103,6 +125,22 @@ export function useOnboarding(role: OnboardingRole, initial: OnboardingState) {
   );
 
   const complete = useCallback(async (): Promise<OnboardingState | null> => {
+    // A pending debounce, or a save already in flight, must land before we
+    // ask the server to complete — otherwise the very field the user just
+    // finished typing before pressing "Finish setup" is submitted as whatever
+    // was last persisted, not what is on screen.
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+    await flush();
+
+    if (failed.current) {
+      // The error banner from that failed save is already showing; completing
+      // against data older than the failed edit would silently drop it.
+      return null;
+    }
+
     setError(null);
     try {
       const next = await restPost<OnboardingState>(`onboarding/${role.toLowerCase()}/complete`);
@@ -114,7 +152,7 @@ export function useOnboarding(role: OnboardingRole, initial: OnboardingState) {
       setStatus('error');
       return null;
     }
-  }, [role]);
+  }, [role, flush]);
 
   // A pending debounce must not die with the component — otherwise navigating
   // away one keystroke after typing silently discards it.

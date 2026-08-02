@@ -55,6 +55,10 @@ export function TrustBreakdownView({
         </div>
       </header>
 
+      {isOwnScore && !breakdown.suspended && (
+        <p className="mt-6 text-sm text-muted-foreground">{t('breakdownScopeNote')}</p>
+      )}
+
       {breakdown.suspended && (
         <p
           role="alert"

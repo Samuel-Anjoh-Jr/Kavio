@@ -37,6 +37,7 @@ export const ONBOARDING_QUERY = gql`
       completedAt
       completedSteps
       data
+      suggestedDisplayName
       unlocks {
         key
         threshold
@@ -275,6 +276,7 @@ export interface OnboardingQueryResult {
     completedAt: string | null;
     completedSteps: string[];
     data: Record<string, unknown>;
+    suggestedDisplayName: string | null;
     unlocks: OnboardingUnlock[];
   };
 }

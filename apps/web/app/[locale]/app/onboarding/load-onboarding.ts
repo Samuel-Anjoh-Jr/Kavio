@@ -42,6 +42,7 @@ export async function loadOnboarding(role: OnboardingRole): Promise<OnboardingSt
       completedAt: null,
       completedSteps: [],
       data: {},
+      suggestedDisplayName: null,
       unlocks: [],
     };
   }

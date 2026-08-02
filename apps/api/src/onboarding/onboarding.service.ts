@@ -35,6 +35,12 @@ export interface OnboardingView {
   completedSteps: string[];
   data: Record<string, unknown>;
   unlocks: { key: string; threshold: number; unlocked: boolean }[];
+  /**
+   * A starting point for the CLIENT profile step's display name, taken from
+   * the name given at sign-up. Only set while that step has no answer yet —
+   * never once the user has actually saved one, even an empty one.
+   */
+  suggestedDisplayName: string | null;
 }
 
 /** The role a user must actually hold to run a given onboarding flow. */
@@ -63,8 +69,38 @@ export class OnboardingService {
     });
 
     const data = (record?.data as Record<string, unknown> | undefined) ?? {};
+    const suggestedDisplayName = await this.suggestDisplayName(userId, role, data);
 
-    return this.toView(role, data, record?.completedAt ?? null, record?.currentStep);
+    return this.toView(role, data, record?.completedAt ?? null, record?.currentStep, {
+      suggestedDisplayName,
+    });
+  }
+
+  /**
+   * The account already has a name from sign-up (SignUpForm.name); the CLIENT
+   * profile step asking for one again — with no memory of the first answer —
+   * is what confuses someone who just typed it. This is offered as a
+   * suggestion only, never written here: `get()` must not write (see above),
+   * so it takes effect only once the client actually saves it back through
+   * `saveStep`, same as if the user had typed it themselves.
+   */
+  private async suggestDisplayName(
+    userId: string,
+    role: OnboardingRole,
+    data: Record<string, unknown>,
+  ): Promise<string | null> {
+    if (role !== OnboardingRole.CLIENT) return null;
+
+    const profile = (data.profile ?? {}) as { displayName?: string };
+    if (typeof profile.displayName === 'string' && profile.displayName.trim().length > 0) {
+      return null;
+    }
+
+    const user = await this.prisma.client.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    return user?.name ?? null;
   }
 
   /**
@@ -509,6 +545,7 @@ export class OnboardingService {
     data: Record<string, unknown>,
     completedAt: Date | null,
     currentStep?: string,
+    options?: { suggestedDisplayName?: string | null },
   ): OnboardingView {
     const completionPercent = computeCompletion(role, data);
 
@@ -521,6 +558,7 @@ export class OnboardingService {
       completedAt,
       completedSteps: completedStepKeys(role, data),
       data,
+      suggestedDisplayName: options?.suggestedDisplayName ?? null,
       unlocks: ONBOARDING_UNLOCKS[role].map((unlock) => ({
         ...unlock,
         unlocked: completionPercent >= unlock.threshold,

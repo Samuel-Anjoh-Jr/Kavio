@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Loader2, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/auth/field';
+import { useGeolocation, type GeolocationErrorCode } from '@/components/discovery/use-geolocation';
+import { readStoredLocation } from '@/lib/geo';
 import type { LocationValue } from '@/lib/onboarding';
 
 /**
@@ -15,7 +17,20 @@ import type { LocationValue } from '@/lib/onboarding';
  * statement outranks an auto-detected fix (CLAUDE.md SPATIAL). The map-pin mode
  * and reverse-geocoding arrive with the Location Setter in PROMPT 42; this
  * captures the same value shape so that swap needs no data migration.
+ *
+ * The device fix goes through the shared `useGeolocation` hook rather than a
+ * second hand-rolled call: that hook deliberately asks for a coarse,
+ * network-based fix (`enableHighAccuracy: false`) because a high-accuracy GPS
+ * lock can genuinely take longer than any reasonable timeout indoors or on a
+ * mid-range phone — asking for one here was timing out constantly for exactly
+ * that reason.
  */
+function toErrorKey(code: GeolocationErrorCode): 'unsupported' | 'denied' | 'failed' {
+  if (code === 'unsupported') return 'unsupported';
+  if (code === 'permissionDenied') return 'denied';
+  return 'failed';
+}
+
 export function LocationFields({
   value,
   onChange,
@@ -24,42 +39,59 @@ export function LocationFields({
   onChange: (next: LocationValue) => void;
 }) {
   const t = useTranslations('Onboarding.location');
-  const [locating, setLocating] = useState(false);
-  const [geoError, setGeoError] = useState<string | null>(null);
+  const { status, error, locate } = useGeolocation();
+  const locating = status === 'locating';
 
-  function useCurrentLocation() {
-    if (!('geolocation' in navigator)) {
-      setGeoError(t('unsupported'));
-      return;
-    }
+  // Written after commit, read once on mount below — see the effect for why.
+  const latest = useRef({ value, onChange });
+  useEffect(() => {
+    latest.current = { value, onChange };
+  });
 
-    setLocating(true);
-    setGeoError(null);
+  // A guest who already tapped "use my current location" while browsing has a
+  // fix sitting in localStorage (see lib/geo.ts). Making them press the same
+  // button again the moment they sign up — and hope the GPS radio cooperates a
+  // second time — would repeat work they already did. This only ever fills a
+  // step that is genuinely untouched (no coordinate saved yet) and is still
+  // fully editable afterwards, same as a fresh device fix.
+  useEffect(() => {
+    const { value: current, onChange: apply } = latest.current;
+    if (current.latitude !== undefined || current.longitude !== undefined) return;
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        onChange({
-          ...value,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          source: 'DEVICE_GPS',
-        });
-        setLocating(false);
-      },
-      (error) => {
-        // Permission denial is the common case and is not an error state worth
-        // alarming anyone about — the typed fields still work.
-        setGeoError(error.code === error.PERMISSION_DENIED ? t('denied') : t('failed'));
-        setLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
-    );
+    const stored = readStoredLocation();
+    if (!stored) return;
+
+    apply({
+      ...current,
+      latitude: stored.latitude,
+      longitude: stored.longitude,
+      source: 'DEVICE_GPS',
+    });
+    // Runs once: this seeds an untouched step from the guest's prior fix, it is
+    // not meant to re-fire as `value`/`onChange` identities change on every render.
+  }, []);
+
+  async function requestCurrentLocation() {
+    const fix = await locate();
+    if (!fix) return;
+
+    onChange({
+      ...value,
+      latitude: fix.latitude,
+      longitude: fix.longitude,
+      source: 'DEVICE_GPS',
+    });
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <Button type="button" variant="outline" onClick={useCurrentLocation} disabled={locating}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => void requestCurrentLocation()}
+          disabled={locating}
+        >
           {locating ? <Loader2 aria-hidden className="animate-spin" /> : <MapPin aria-hidden />}
           {locating ? t('locating') : t('useCurrent')}
         </Button>
@@ -73,9 +105,9 @@ export function LocationFields({
           </p>
         )}
 
-        {geoError && (
+        {error && (
           <p role="alert" className="text-xs text-warning">
-            {geoError}
+            {t(toErrorKey(error))}
           </p>
         )}
       </div>
