@@ -1,15 +1,19 @@
 'use client';
 
 import Image from 'next/image';
+import { useSyncExternalStore } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
 import {
   Bookmark,
   LifeBuoy,
   LogOut,
+  Moon,
   Search,
   Settings,
   ShieldCheck,
+  Sun,
   UserCog,
   UserRound,
 } from 'lucide-react';
@@ -36,10 +40,20 @@ import { cn } from '@/lib/utils';
  * Switcher — the guest first-interface is a real browsing experience, not a
  * stripped-down teaser (ACC-01).
  */
+const noopSubscribe = () => () => {};
+
 export function AppHeader() {
   const t = useTranslations('Nav');
+  const tTheme = useTranslations('ThemeToggle');
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const { resolvedTheme, setTheme } = useTheme();
+  const themeMounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  const isDark = themeMounted && resolvedTheme === 'dark';
 
   const isAuthenticated = status === 'authenticated';
   // The admin surfaces are reachable by URL for anyone the API authorises, but
@@ -94,7 +108,7 @@ export function AppHeader() {
           <div className="hidden shrink-0 sm:block">
             <LocaleSwitcher />
           </div>
-          <ThemeToggle className="shrink-0" />
+          <ThemeToggle className={cn('shrink-0', isAuthenticated && 'hidden sm:inline-flex')} />
 
           {isAuthenticated ? (
             <>
@@ -114,6 +128,21 @@ export function AppHeader() {
                     {session?.user?.name || session?.user?.email || t('account')}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {/* The standalone toggle button is hidden below `sm` to make
+                      room for the role switcher's label — this is the same
+                      control, just reachable from the account menu on a
+                      narrow phone instead of the header row. */}
+                  <DropdownMenuItem
+                    className="sm:hidden"
+                    onSelect={() => setTheme(isDark ? 'light' : 'dark')}
+                  >
+                    {isDark ? (
+                      <Sun aria-hidden className="mr-2" />
+                    ) : (
+                      <Moon aria-hidden className="mr-2" />
+                    )}
+                    {tTheme(isDark ? 'switchToLight' : 'switchToDark')}
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/app/home">{t('home')}</Link>
                   </DropdownMenuItem>
