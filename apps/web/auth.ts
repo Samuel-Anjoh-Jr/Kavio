@@ -45,6 +45,32 @@ interface KavioToken {
 }
 
 /**
+ * What `useSession().update()` is called with after an action that already
+ * minted its own fresh token pair server-side (role switch, role grant) — the
+ * same shape the REST endpoint itself returned, so the client does no more
+ * than pass it through. The absolute expiry is computed here rather than on
+ * the client so that arithmetic never runs inside a component body.
+ *
+ * Validated defensively per the `jwt` callback's own doc comment ("you should
+ * validate this data before using it") — the `session` argument is `any`.
+ */
+interface TokenPatch {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+function isTokenPatch(value: unknown): value is TokenPatch {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.accessToken === 'string' &&
+    typeof candidate.refreshToken === 'string' &&
+    typeof candidate.expiresIn === 'number'
+  );
+}
+
+/**
  * Surfaced to the sign-in form so it can distinguish "wrong password" from
  * "now enter your second factor" — both are non-success, only one is an error.
  */
@@ -177,7 +203,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * an access token near expiry is exchanged for a fresh pair before any
      * caller ever sees an expired one.
      */
-    async jwt({ token: rawToken, user, trigger }) {
+    async jwt({ token: rawToken, user, trigger, session }) {
       const token = rawToken as KavioToken & typeof rawToken;
 
       if (user) {
@@ -192,6 +218,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           accessTokenExpiresAt: user.accessTokenExpiresAt,
           error: undefined,
         };
+      }
+
+      // A role switch or grant (POST /auth/roles/switch or /auth/roles) mints
+      // its own fresh, already-correct token pair server-side, and the caller
+      // passes it straight into `update()`. Adopting it here directly — rather
+      // than discarding it and refreshing the OLD token/family below — matters
+      // because that OLD refresh token is single-use and rotation results are
+      // cached per-token for a short window (SessionService.refresh): a refresh
+      // of the old token that happens to land on a cached pre-switch result
+      // would silently keep the previous role active despite the DB already
+      // having changed, which is exactly the "toast said it switched, nothing
+      // actually changed" failure this replaces.
+      if (trigger === 'update' && isTokenPatch(session)) {
+        try {
+          const identity = await apiSessionUser(session.accessToken);
+          return {
+            ...token,
+            userId: identity.id,
+            activeRole: identity.activeRole,
+            roles: identity.roles,
+            tier: identity.tier,
+            ...toTokenState({ ...session, tokenType: 'Bearer' }),
+            error: undefined,
+          };
+        } catch {
+          return { ...token, accessToken: undefined, error: 'SessionExpired' as const };
+        }
       }
 
       const expiresAt = token.accessTokenExpiresAt ?? 0;

@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import type { SessionTokens } from '@/lib/auth-api';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
 import { restPost } from '@/lib/rest-api';
 import { useToast } from '@/components/ui/use-toast';
@@ -22,10 +23,14 @@ import { cn } from '@/lib/utils';
  * The Role Switcher (ACC-07) — first-class, one tap, in primary navigation.
  *
  * It NEVER re-authenticates. `POST /auth/roles/switch` flips which UserRole is
- * active server-side, then `update()` drives the Auth.js jwt callback to refresh
- * the session, and the newly minted access token carries the new `activeRole`
- * claim. Tier and Trust Score live on the IDENTITY, so nothing about the user's
- * verification state changes — which is the entire promise of the feature.
+ * active server-side and mints an already-correct token pair reflecting it,
+ * which is handed straight to `update()` so the Auth.js jwt callback adopts it
+ * directly (see auth.ts) rather than re-deriving the role through a second,
+ * separate refresh of the OLD token — that round trip raced this same DB write
+ * and could land on a cached pre-switch result, leaving the active role
+ * unchanged despite the toast saying otherwise. Tier and Trust Score live on
+ * the IDENTITY, so nothing about the user's verification state changes — which
+ * is the entire promise of the feature.
  *
  * Roles a user does not hold are not offered here: adding one is a separate,
  * deliberate action (`POST /auth/roles`), not a side effect of switching.
@@ -64,11 +69,15 @@ export function RoleSwitcher({ className }: { className?: string }) {
     setSwitching(role);
 
     try {
-      await restPost('auth/roles/switch', { role });
+      const tokens = await restPost<SessionTokens>('auth/roles/switch', { role });
 
-      // Pulls a fresh token pair through the jwt callback. The refreshed access
-      // token is minted from the database, which now says this role is active.
-      await update();
+      // Hands the pair this call already minted straight to the jwt callback,
+      // rather than discarding it and refreshing the old one separately.
+      await update({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresIn: tokens.expiresIn,
+      });
 
       // Re-render server components so the role-based home and any RBAC-gated
       // affordances reflect the new role immediately, not on next navigation.

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Check, CloudOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FormBanner } from '@/components/auth/form-banner';
+import { ApiError } from '@/lib/api-error';
 import { CompletionMeter } from './completion-meter';
 import { Confetti } from './confetti';
 import type { SaveStatus } from './use-onboarding';
@@ -96,7 +97,20 @@ export function OnboardingShell({
             })}
           </nav>
 
-          {error && <div className="mb-6"><FormBanner tone="error" message={t('saveFailed')} /></div>}
+          {error && (
+            <div className="mb-6">
+              <FormBanner
+                tone="error"
+                // A validation error (a required field left blank) is not a
+                // connectivity problem and will never fix itself by "retrying"
+                // — telling the user to check their connection there is just
+                // wrong, so its own field-level message is shown instead.
+                message={
+                  error instanceof ApiError && error.fields ? error.message : t('saveFailed')
+                }
+              />
+            </div>
+          )}
           {done && (
             <div className="mb-6">
               <FormBanner tone="success" message={tRole('completed')} />
@@ -148,15 +162,31 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
   if (status === 'idle') return null;
 
   const map = {
-    saving: { icon: <Loader2 aria-hidden className="size-3.5 animate-spin" />, text: t('saving'), tone: 'text-muted-foreground' },
-    saved: { icon: <Check aria-hidden className="size-3.5" />, text: t('saved'), tone: 'text-success' },
-    error: { icon: <CloudOff aria-hidden className="size-3.5" />, text: t('saveFailedShort'), tone: 'text-danger' },
+    saving: {
+      icon: <Loader2 aria-hidden className="size-3.5 animate-spin" />,
+      text: t('saving'),
+      tone: 'text-muted-foreground',
+    },
+    saved: {
+      icon: <Check aria-hidden className="size-3.5" />,
+      text: t('saved'),
+      tone: 'text-success',
+    },
+    error: {
+      icon: <CloudOff aria-hidden className="size-3.5" />,
+      text: t('saveFailedShort'),
+      tone: 'text-danger',
+    },
   } as const;
 
   const entry = map[status];
 
   return (
-    <p role="status" aria-live="polite" className={cn('flex items-center gap-2 text-xs', entry.tone)}>
+    <p
+      role="status"
+      aria-live="polite"
+      className={cn('flex items-center gap-2 text-xs', entry.tone)}
+    >
       {entry.icon}
       {entry.text}
     </p>

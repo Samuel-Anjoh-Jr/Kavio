@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Field } from '@/components/auth/field';
 import { LocationFields } from '@/components/onboarding/location-fields';
@@ -24,6 +24,22 @@ export function ClientOnboarding({ initial }: { initial: OnboardingState }) {
 
   const profile = readStep<{ displayName?: string }>(state.data, 'profile', {});
   const location = readStep<LocationValue>(state.data, 'location', EMPTY_LOCATION);
+
+  // The account already has a name from sign-up. Asking again with no memory
+  // of it reads as a broken flow, so an untouched profile step opens with it
+  // pre-filled — through the normal `save`, so it is a real answer (backing
+  // "Finish setup") rather than a value the screen merely displays. Still
+  // fully editable: any further edit here is a plain autosave like any other.
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (seeded.current) return;
+    seeded.current = true;
+    if (!initial.suggestedDisplayName) return;
+    save('profile', { profile: { displayName: initial.suggestedDisplayName } });
+    // Runs once against the name the page loaded with — not meant to re-fire
+    // as `save`/`initial` identities change on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onComplete() {
     setCompleting(true);

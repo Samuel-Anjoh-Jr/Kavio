@@ -1837,8 +1837,21 @@ async function main() {
       const geo = randomItem(neighbourhoods);
       const coords = coordsNear(geo);
       const isFr = worker.locale === 'fr';
-      const primaryCategory = randomItem(topCategories);
       const yearsExperience = randomInt(1, 22);
+
+      // The headline names ONE category, and it must be one this worker
+      // actually lists a Service under — a headline drawn independently of
+      // the services below produced demo workers whose displayed trade
+      // ("Professional Gardening") had nothing to do with what search could
+      // actually match them on, which reads as broken search relevance even
+      // when the underlying match is correct.
+      const primaryCategory = randomItem(topCategories);
+      const numServices = randomInt(1, 3);
+      const otherCategories = sample(
+        allCategories.filter((cat) => cat.id !== primaryCategory.id),
+        numServices - 1,
+      );
+      const chosenCategories = [primaryCategory, ...otherCategories];
 
       let coverAssetId = null;
       if (pct(0.55)) {
@@ -1870,9 +1883,8 @@ async function main() {
       });
       workerProfiles.set(worker.id, wp);
 
-      // Services — the worker's own categories, 1-3 of them.
-      const numServices = randomInt(1, 3);
-      const chosenCategories = sample(allCategories, numServices);
+      // Services — the worker's own categories, chosen above so the first one
+      // always matches the headline.
       for (const cat of chosenCategories) {
         await prisma.service.create({
           data: {

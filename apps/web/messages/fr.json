@@ -258,6 +258,7 @@
     "scoreLabel": "Score de Confiance",
     "outOf": "{score} sur 100",
     "breakdownHeading": "Comment votre Score de Confiance est calculé",
+    "breakdownScopeNote": "Ce score appartient à votre compte, pas à un rôle en particulier : c'est le même score que vous naviguiez comme client ou que vous proposiez vos services comme prestataire. Les sections Professionnel et Marché ci-dessous comptent votre activité en tant que prestataire sur Kavio, et commencent à se remplir dès que vous proposez des services ici.",
     "suspended": "Ce compte est suspendu en attendant la vérification des documents.",
     "suspendedShort": "Suspendu",
     "breakdownHeadingOther": "Comment ce Score de Confiance est calculé",
@@ -994,6 +995,11 @@
     "distance": {
       "metres": "{value} m",
       "kilometres": "{value} km"
+    },
+    "viewToggleLabel": "Choisir la vue liste ou carte",
+    "view": {
+      "list": "Liste",
+      "map": "Carte"
     }
   },
   "Filters": {

@@ -258,6 +258,7 @@
     "scoreLabel": "Trust Score",
     "outOf": "{score} out of 100",
     "breakdownHeading": "How your Trust Score is built",
+    "breakdownScopeNote": "This score belongs to your account, not to a single role — it is the same score whether you are browsing as a client or offering work as a worker. The Professional and Marketplace sections below count your work as a worker on Kavio, and start filling in once you offer services here.",
     "suspended": "This account is suspended pending a document review.",
     "suspendedShort": "Suspended",
     "breakdownHeadingOther": "How this Trust Score is built",
@@ -994,6 +995,11 @@
     "distance": {
       "metres": "{value} m",
       "kilometres": "{value} km"
+    },
+    "viewToggleLabel": "Choose list or map view",
+    "view": {
+      "list": "List",
+      "map": "Map"
     }
   },
   "Filters": {

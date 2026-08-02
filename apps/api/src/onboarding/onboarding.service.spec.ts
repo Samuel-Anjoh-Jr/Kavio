@@ -31,12 +31,19 @@ function makeTx() {
   };
 }
 
-function makeService(options: { data: Record<string, unknown>; submit: jest.Mock }) {
+function makeService(options: {
+  data: Record<string, unknown>;
+  submit: jest.Mock;
+  userName?: string | null;
+}) {
   const tx = makeTx();
   const prisma = {
     client: {
       onboardingProgress: {
         findUnique: jest.fn().mockResolvedValue({ data: options.data, completedAt: null }),
+      },
+      user: {
+        findUnique: jest.fn().mockResolvedValue({ name: options.userName ?? null }),
       },
       $transaction: jest.fn().mockImplementation((cb: (tx: unknown) => unknown) => cb(tx)),
     },
@@ -164,5 +171,38 @@ describe('OnboardingService.complete', () => {
     expect(submit).toHaveBeenCalledWith({ id: USER_ID }, VerificationCheckType.SELFIE_LIVENESS, [
       data.identity.selfieAssetId,
     ]);
+  });
+});
+
+describe('OnboardingService.get', () => {
+  it('suggests the sign-up name for a CLIENT whose profile step is unanswered', async () => {
+    const submit = jest.fn();
+    const service = makeService({ data: {}, submit, userName: 'Amina N.' });
+
+    const view = await service.get(USER_ID, OnboardingRole.CLIENT);
+
+    expect(view.suggestedDisplayName).toBe('Amina N.');
+  });
+
+  it('does not suggest a name once the profile step already has one', async () => {
+    const submit = jest.fn();
+    const service = makeService({
+      data: { profile: { displayName: 'A. Ngassa' } },
+      submit,
+      userName: 'Amina N.',
+    });
+
+    const view = await service.get(USER_ID, OnboardingRole.CLIENT);
+
+    expect(view.suggestedDisplayName).toBeNull();
+  });
+
+  it('never suggests a name for roles without a profile step', async () => {
+    const submit = jest.fn();
+    const service = makeService({ data: {}, submit, userName: 'Amina N.' });
+
+    const view = await service.get(USER_ID, OnboardingRole.WORKER);
+
+    expect(view.suggestedDisplayName).toBeNull();
   });
 });

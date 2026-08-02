@@ -42,6 +42,9 @@ export interface OnboardingState {
   completedAt: string | null;
   completedSteps: string[];
   data: Record<string, unknown>;
+  /** A starting point for the CLIENT profile step's name, from sign-up. Only
+   * set while that step has no saved answer yet — see OnboardingService. */
+  suggestedDisplayName: string | null;
   unlocks: OnboardingUnlock[];
 }
 

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useViewerSeed } from '@/lib/viewer-seed';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { Bookmark, BookmarkCheck } from 'lucide-react';
+import { Bookmark, BookmarkCheck, List, Map as MapIcon } from 'lucide-react';
 import { useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -20,11 +20,13 @@ import {
   toSearchVariables,
   type SearchFilters,
 } from '@/lib/search-filters';
+import { cn } from '@/lib/utils';
 import { FilterDrawer } from './filter-drawer';
 import { LocationSetter } from './location-setter';
 import { SearchBar } from './search-bar';
 import { useBrowsingLocation } from './location-provider';
 import { useDebouncedValue } from './use-debounced-value';
+import { WorkerMap } from './worker-map';
 import { WorkerResults } from './worker-results';
 
 /**
@@ -53,6 +55,9 @@ export function SearchScreen({ initialFilters }: { initialFilters: SearchFilters
   const [queryText, setQueryText] = useState(initialFilters.query ?? '');
   /** The querystring the user last saved, so the control disarms for that exact search. */
   const [savedSearch, setSavedSearch] = useState<string | null>(null);
+  /** Same list/map split the guest first-interface offers (DIS-10) — signing in
+   * should not take a capability away. */
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   const debouncedQuery = useDebouncedValue(queryText, 300);
 
@@ -148,6 +153,34 @@ export function SearchScreen({ initialFilters }: { initialFilters: SearchFilters
         </p>
 
         <div className="flex items-center gap-2">
+          <div
+            role="group"
+            aria-label={t('viewToggleLabel')}
+            className="inline-flex rounded-button border border-input p-0.5"
+          >
+            {(['list', 'map'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                aria-pressed={view === mode}
+                onClick={() => setView(mode)}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  view === mode
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted',
+                )}
+              >
+                {mode === 'list' ? (
+                  <List aria-hidden className="size-4" />
+                ) : (
+                  <MapIcon aria-hidden className="size-4" />
+                )}
+                {t(`view.${mode}`)}
+              </button>
+            ))}
+          </div>
+
           {activeFilterCount(filters) > 0 && (
             <Button variant="ghost" size="sm" onClick={() => onApplyFilters(clearFilters(filters))}>
               {t('clearFilters')}
@@ -174,24 +207,69 @@ export function SearchScreen({ initialFilters }: { initialFilters: SearchFilters
         </div>
       </div>
 
-      <div className="mt-6">
-        <WorkerResults
-          workers={workers}
-          loading={loading && !result}
-          error={Boolean(error)}
-          noProviders={result?.noProviders}
-          hasMore={result?.hasMore ?? false}
-          loadingMore={loading && Boolean(result)}
-          onRetry={() => void refetch()}
-          onLoadMore={() =>
-            setFilters((current) => ({ ...current, limit: current.limit + PAGE_SIZE }))
-          }
-          onClearFilters={() => onApplyFilters(clearFilters(filters))}
-          onWidenRadius={(radiusM) =>
-            setFilters((current) => ({ ...current, radiusM, limit: PAGE_SIZE }))
-          }
-        />
-      </div>
+      {view === 'list' ? (
+        <div className="mt-6">
+          <WorkerResults
+            workers={workers}
+            loading={loading && !result}
+            error={Boolean(error)}
+            noProviders={result?.noProviders}
+            hasMore={result?.hasMore ?? false}
+            loadingMore={loading && Boolean(result)}
+            onRetry={() => void refetch()}
+            onLoadMore={() =>
+              setFilters((current) => ({ ...current, limit: current.limit + PAGE_SIZE }))
+            }
+            onClearFilters={() => onApplyFilters(clearFilters(filters))}
+            onWidenRadius={(radiusM) =>
+              setFilters((current) => ({ ...current, radiusM, limit: PAGE_SIZE }))
+            }
+          />
+        </div>
+      ) : (
+        <div className="mt-6 lg:grid lg:grid-cols-[1fr_420px] lg:gap-6">
+          <WorkerMap
+            workers={workers}
+            center={
+              isValidCoordinate(filters.latitude, filters.longitude)
+                ? { latitude: filters.latitude as number, longitude: filters.longitude as number }
+                : null
+            }
+            className="h-105 w-full lg:h-160"
+            onSelectWorker={(userId) => router.push(`/app/workers/${userId}`)}
+            onSearchArea={(viewport) => {
+              // The map reports where the user looked; PostGIS still decides
+              // who is there. The radius is derived from the viewport's own
+              // span so "this area" means the area on screen.
+              const [west, south, east, north] = viewport.bounds;
+              const spanDegrees = Math.max(east - west, north - south);
+              setFilters((current) => ({
+                ...current,
+                latitude: viewport.latitude,
+                longitude: viewport.longitude,
+                // ~111 km per degree of latitude; halved to get a radius from
+                // a diameter. Presentation-side sizing of a request, not a
+                // spatial measurement — the server clamps it anyway.
+                radiusM: Math.round((spanDegrees * 111_000) / 2),
+                limit: PAGE_SIZE,
+              }));
+            }}
+          />
+
+          <div className="mt-6 lg:mt-0 lg:max-h-160 lg:overflow-y-auto">
+            <WorkerResults
+              workers={workers}
+              loading={loading && !result}
+              error={Boolean(error)}
+              noProviders={result?.noProviders}
+              onRetry={() => void refetch()}
+              onWidenRadius={(radiusM) =>
+                setFilters((current) => ({ ...current, radiusM, limit: PAGE_SIZE }))
+              }
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
