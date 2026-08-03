@@ -2073,6 +2073,7 @@
     "dashboardSubtitle": "Vos annonces, vos recrutements et vos dépenses : directement issus des missions.",
     "loadError": "Impossible de charger le tableau de bord pour le moment. Réessayez dans un instant.",
     "noBusiness": "Vous n'avez pas encore de profil d'entreprise. Terminez l'inscription entreprise pour ouvrir la console.",
+    "noBusinessCta": "Terminer l'inscription entreprise",
     "verifiedBusiness": "Entreprise vérifiée",
     "manageTeam": "Gérer l'équipe",
     "backToDashboard": "← Retour au tableau de bord",

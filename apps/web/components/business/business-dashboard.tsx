@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { formatDate } from '@/lib/datetime';
 import { formatXaf } from '@/lib/discovery';
+import { graphqlErrorCode } from '@/lib/graphql/errors';
 import {
   BUSINESS_ANALYTICS_QUERY,
   BUSINESS_DASHBOARD_QUERY,
@@ -89,6 +90,21 @@ export function BusinessDashboard({ businessProfileId }: { businessProfileId?: s
   const dashboard = data?.businessDashboard;
 
   if (!dashboard) {
+    // NO_BUSINESS is not a transient failure: this identity hasn't finished
+    // business onboarding yet, so there is no company profile to load. Every
+    // other error (network blip, unexpected server error) gets the generic
+    // message instead of sending someone to re-onboard for no reason.
+    if (graphqlErrorCode(error) === 'NO_BUSINESS') {
+      return (
+        <div className="flex flex-col items-start gap-3 rounded-card border border-border bg-surface p-6 text-sm text-muted-foreground">
+          <p>{t('noBusiness')}</p>
+          <Button size="sm" asChild>
+            <Link href="/app/onboarding/business">{t('noBusinessCta')}</Link>
+          </Button>
+        </div>
+      );
+    }
+
     return (
       <p className="rounded-card border border-border bg-surface p-6 text-sm text-muted-foreground">
         {error ? t('loadError') : t('noBusiness')}

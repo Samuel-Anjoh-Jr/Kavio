@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Loader2, MailPlus, Trash2, UserPlus, Users } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDate } from '@/lib/datetime';
 import { useAuthErrorMessage } from '@/lib/auth-errors';
+import { graphqlErrorCode } from '@/lib/graphql/errors';
 import {
   ACCESS_LEVEL_TONE,
   TEAM_ACCESS_LEVELS,
@@ -92,6 +94,20 @@ export function TeamManager({ businessProfileId }: { businessProfileId?: string 
   }
 
   if (error && members.length === 0) {
+    // NO_BUSINESS mirrors business-dashboard.tsx: this identity hasn't
+    // finished business onboarding, so there is no team to load yet — not a
+    // transient failure worth retrying.
+    if (graphqlErrorCode(error) === 'NO_BUSINESS') {
+      return (
+        <div className="flex flex-col items-start gap-3 rounded-card border border-border bg-surface p-6 text-sm text-muted-foreground">
+          <p>{t('noBusiness')}</p>
+          <Button size="sm" asChild>
+            <Link href="/app/onboarding/business">{t('noBusinessCta')}</Link>
+          </Button>
+        </div>
+      );
+    }
+
     return (
       <p className="rounded-card border border-border bg-surface p-6 text-sm text-muted-foreground">
         {t('teamLoadError')}

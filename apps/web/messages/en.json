@@ -2073,6 +2073,7 @@
     "dashboardSubtitle": "Your posts, your hires and what you have spent: live from the jobs themselves.",
     "loadError": "We couldn't load the dashboard just now. Please try again shortly.",
     "noBusiness": "You don't have a company profile yet. Finish business onboarding to open the console.",
+    "noBusinessCta": "Finish business onboarding",
     "verifiedBusiness": "Verified business",
     "manageTeam": "Manage team",
     "backToDashboard": "← Back to dashboard",
