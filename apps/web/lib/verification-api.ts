@@ -68,3 +68,11 @@ export function submitVerification(
 ): Promise<SubmissionResult> {
   return restPost<SubmissionResult>('verifications', { checkType, documentIds });
 }
+
+/**
+ * Asking to be queued for a Field Agent visit, not completing the check
+ * yourself — FIELD_VERIFICATION stays staff-settled either way (TRU-05, AGT-01).
+ */
+export function requestFieldVisit(note?: string): Promise<SubmissionResult> {
+  return restPost<SubmissionResult>('verifications/field-visit', note ? { note } : {});
+}

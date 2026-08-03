@@ -12,6 +12,7 @@ import { CheckRow } from './check-row';
 import {
   journeyProgress,
   WORKER_JOURNEY,
+  type VerificationCheckType,
   type JourneyStep,
   type Tier,
   type VerificationRecord,
@@ -30,11 +31,17 @@ export function VerificationJourney({
   tier,
   journey = WORKER_JOURNEY,
   onStart,
+  busyCheckType,
+  actionError,
 }: {
   records: VerificationRecord[];
   tier: Tier;
   journey?: readonly JourneyStep[];
   onStart?: (step: JourneyStep) => void;
+  /** The one step whose own request is in flight (field-visit request only). */
+  busyCheckType?: VerificationCheckType | null;
+  /** Inline feedback for `busyCheckType`'s step, already localized. */
+  actionError?: string | null;
 }) {
   const t = useTranslations('VerificationScreen');
   const barRef = useRef<HTMLDivElement>(null);
@@ -142,7 +149,14 @@ export function VerificationJourney({
 
         <ul className="mt-2">
           {journey.map((step) => (
-            <CheckRow key={step.checkType} step={step} records={records} onStart={onStart} />
+            <CheckRow
+              key={step.checkType}
+              step={step}
+              records={records}
+              onStart={onStart}
+              busy={busyCheckType === step.checkType}
+              error={busyCheckType === step.checkType ? actionError : null}
+            />
           ))}
         </ul>
       </section>

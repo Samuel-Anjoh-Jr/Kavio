@@ -1,6 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
+import { ApiError } from '@/lib/api-error';
+import { requestFieldVisit } from '@/lib/verification-api';
 import { VerificationJourney } from './verification-journey';
 import type {
   JourneyStep,
@@ -28,8 +32,9 @@ const STEP_DESTINATION: Partial<Record<VerificationCheckType, string>> = {
   ADDRESS: '/app/onboarding/worker',
   PORTFOLIO: '/app/onboarding/worker',
   BUSINESS_REGISTRATION: '/app/onboarding/business',
-  // FIELD_VERIFICATION is staff-only (AGT-01): an agent creates it in person,
-  // so there is nothing for the worker to open.
+  // FIELD_VERIFICATION has no page of its own: the worker can only ASK for a
+  // visit (handleStart below calls the API directly), never open a flow that
+  // completes it — an agent still settles the check in person (AGT-01).
 };
 
 export function VerificationScreen({
@@ -40,11 +45,41 @@ export function VerificationScreen({
   tier: Tier;
 }) {
   const router = useRouter();
+  const t = useTranslations('VerificationScreen');
+  const [busyCheckType, setBusyCheckType] = useState<VerificationCheckType | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  function handleStart(step: JourneyStep) {
+  async function handleStart(step: JourneyStep) {
+    if (step.checkType === 'FIELD_VERIFICATION') {
+      setBusyCheckType('FIELD_VERIFICATION');
+      setActionError(null);
+      try {
+        await requestFieldVisit();
+        // Re-fetches loadVerification() server-side so the row flips to PENDING.
+        router.refresh();
+      } catch (error) {
+        const code = error instanceof ApiError ? error.code : 'UNKNOWN_ERROR';
+        const key = t.has(`fieldVisitError.${code}`)
+          ? `fieldVisitError.${code}`
+          : 'fieldVisitError.UNKNOWN_ERROR';
+        setActionError(t(key));
+      } finally {
+        setBusyCheckType(null);
+      }
+      return;
+    }
+
     const destination = STEP_DESTINATION[step.checkType];
     if (destination) router.push(destination);
   }
 
-  return <VerificationJourney records={records} tier={tier} onStart={handleStart} />;
+  return (
+    <VerificationJourney
+      records={records}
+      tier={tier}
+      onStart={(step) => void handleStart(step)}
+      busyCheckType={busyCheckType}
+      actionError={actionError}
+    />
+  );
 }

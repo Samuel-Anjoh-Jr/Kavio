@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { auth } from '@/auth';
 import { redirect } from '@/i18n/navigation';
 import { TrustBreakdownView } from '@/components/trust/trust-breakdown';
+import { isOnboardingRole } from '@/lib/onboarding';
 import { loadTrustBreakdown } from './load-trust-breakdown';
 
 export async function generateMetadata({
@@ -50,5 +51,13 @@ export default async function TrustPage({ params }: { params: Promise<{ locale: 
     );
   }
 
-  return <TrustBreakdownView breakdown={result.breakdown} isOwnScore />;
+  const activeRole = session?.user?.activeRole ?? '';
+
+  return (
+    <TrustBreakdownView
+      breakdown={result.breakdown}
+      isOwnScore
+      activeRole={isOnboardingRole(activeRole) ? activeRole : null}
+    />
+  );
 }

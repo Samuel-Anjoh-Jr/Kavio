@@ -43,11 +43,17 @@ export function CheckRow({
   step,
   records,
   onStart,
+  busy,
+  error,
 }: {
   step: JourneyStep;
   records: readonly VerificationRecord[];
-  /** Opens the upload flow for this check. Absent for staff-only steps. */
+  /** Opens the upload flow for this check, or requests a field visit. */
   onStart?: (step: JourneyStep) => void;
+  /** True while this step's own request is in flight (field-visit request only). */
+  busy?: boolean;
+  /** Inline feedback for this step's own request, already localized. */
+  error?: string | null;
 }) {
   const t = useTranslations('Verification');
   const tScreen = useTranslations('VerificationScreen');
@@ -86,7 +92,7 @@ export function CheckRow({
               {t('status.PENDING')}
             </span>
           )}
-          {!step.selfServe && state === 'NOT_STARTED' && (
+          {!step.selfServe && !step.requestable && state === 'NOT_STARTED' && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
               {tScreen('byInvitation')}
             </span>
@@ -125,7 +131,7 @@ export function CheckRow({
           <p className="mt-1 text-sm text-muted-foreground">{t('pending')}</p>
         )}
 
-        {state === 'NOT_STARTED' && step.selfServe && (
+        {state === 'NOT_STARTED' && (step.selfServe || step.requestable) && (
           <p className="mt-1 text-sm text-muted-foreground">{tScreen(`hint.${step.checkType}`)}</p>
         )}
 
@@ -138,6 +144,24 @@ export function CheckRow({
           >
             {canRetry ? t('retry') : tScreen('start')}
           </Button>
+        )}
+
+        {onStart && step.requestable && state === 'NOT_STARTED' && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            disabled={busy}
+            onClick={() => onStart(step)}
+          >
+            {busy ? tScreen('requestingVisit') : tScreen('requestVisit')}
+          </Button>
+        )}
+
+        {error && (
+          <p role="alert" className="mt-2 text-sm text-danger">
+            {error}
+          </p>
         )}
       </div>
     </li>

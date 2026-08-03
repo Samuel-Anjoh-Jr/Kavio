@@ -21,6 +21,7 @@ describe('GATED_ACTIONS', () => {
         'save_favorite',
         'submit_review',
         'report_content',
+        'give_endorsement',
       ].sort(),
     );
   });

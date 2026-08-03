@@ -736,7 +736,25 @@
     "capturedByAgent": "Recorded in person by a Kavio agent",
     "taperExplainer": "Endorsements help most when you're starting out. As you complete jobs, your own track record counts for more and endorsements count for less.",
     "influence": "Contributing {points} of {cap} points",
-    "taperedOut": "Your completed jobs now speak for you: endorsements no longer add points."
+    "taperedOut": "Your completed jobs now speak for you: endorsements no longer add points.",
+    "give": "Endorse",
+    "dialogTitle": "Endorse {name}",
+    "dialogSubtitle": "Say what it was like working with them. This appears on their public profile.",
+    "relationshipLabel": "How do you know them?",
+    "ratingLabel": "Rating",
+    "ratingStar": "{count, plural, =1 {1 star} other {# stars}}",
+    "quoteLabel": "Your endorsement",
+    "quotePlaceholder": "Describe the work they did for you…",
+    "quoteHint": "At least {min} characters.",
+    "submit": "Submit endorsement",
+    "submitting": "Submitting…",
+    "submitted": "Thanks — your endorsement for {name} was submitted.",
+    "error": {
+      "CANNOT_ENDORSE_SELF": "You cannot endorse yourself.",
+      "ALREADY_ENDORSED": "You have already endorsed this person.",
+      "NAMED_ENDORSEMENT_IS_STAFF_ONLY": "Only a Kavio agent can record an endorsement on someone else's behalf.",
+      "UNKNOWN_ERROR": "We couldn't send that just now. Please try again in a moment."
+    }
   },
   "Badge": {
     "FOUNDING_PROFESSIONAL": {
@@ -837,8 +855,15 @@
     "start": "Start",
     "attempt": "Attempt {attempt}",
     "byInvitation": "We'll come to you",
+    "requestVisit": "Request a visit",
+    "requestingVisit": "Requesting…",
     "seeScore": "See your Trust Score",
     "loadError": "We could not load your verification just now. Please refresh in a moment.",
+    "fieldVisitError": {
+      "VERIFICATION_ALREADY_PENDING": "You've already requested a visit. We'll let you know as soon as it's scheduled.",
+      "VERIFICATION_ALREADY_VERIFIED": "You're already field verified — there's nothing more to request.",
+      "UNKNOWN_ERROR": "We couldn't send that request just now. Please try again in a moment."
+    },
     "hint": {
       "PHONE": "Confirm the number we can reach you on.",
       "ID_SUBMITTED": "Upload the front and back of your national ID.",
@@ -2073,6 +2098,7 @@
     "dashboardSubtitle": "Your posts, your hires and what you have spent: live from the jobs themselves.",
     "loadError": "We couldn't load the dashboard just now. Please try again shortly.",
     "noBusiness": "You don't have a company profile yet. Finish business onboarding to open the console.",
+    "noBusinessCta": "Finish business onboarding",
     "verifiedBusiness": "Verified business",
     "manageTeam": "Manage team",
     "backToDashboard": "← Back to dashboard",

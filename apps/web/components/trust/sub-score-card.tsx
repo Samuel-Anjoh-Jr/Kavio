@@ -4,8 +4,11 @@ import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ArrowRight, Check } from 'lucide-react';
 import { animate } from 'animejs';
+import { Link } from '@/i18n/navigation';
 import { motionDuration } from '@/lib/motion';
+import type { OnboardingRole } from '@/lib/onboarding';
 import { pillarHeadroom, pillarImprovements, subScoreRatio, type TrustSubScore } from '@/lib/trust';
+import { trustImprovementHref } from '@/lib/trust-actions';
 import { cn } from '@/lib/utils';
 
 /**
@@ -16,7 +19,17 @@ import { cn } from '@/lib/utils';
  * as "not counting yet" rather than as a zero — the user has not failed at
  * something that does not exist yet.
  */
-export function SubScoreCard({ sub, index }: { sub: TrustSubScore; index: number }) {
+export function SubScoreCard({
+  sub,
+  index,
+  activeRole = null,
+  subjectId,
+}: {
+  sub: TrustSubScore;
+  index: number;
+  activeRole?: OnboardingRole | null;
+  subjectId: string;
+}) {
   const t = useTranslations('Trust');
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -116,15 +129,26 @@ export function SubScoreCard({ sub, index }: { sub: TrustSubScore; index: number
             {t('nextActionsHeading', { points: headroom })}
           </h4>
           <ul className="mt-2 space-y-1.5">
-            {improvements.map((improvement) => (
-              <li
-                key={improvement.type}
-                className="flex items-start gap-2 text-sm text-muted-foreground"
-              >
-                <ArrowRight aria-hidden className="mt-0.5 size-3.5 shrink-0 text-primary" />
-                {t(`improve.${improvement.type}`)}
-              </li>
-            ))}
+            {improvements.map((improvement) => {
+              const href = trustImprovementHref(improvement.type, activeRole, subjectId);
+              return (
+                <li key={improvement.type} className="flex items-start gap-2 text-sm">
+                  <ArrowRight aria-hidden className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                  {href ? (
+                    <Link
+                      href={href}
+                      className="rounded-input text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      {t(`improve.${improvement.type}`)}
+                    </Link>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      {t(`improve.${improvement.type}`)}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </>
       )}
