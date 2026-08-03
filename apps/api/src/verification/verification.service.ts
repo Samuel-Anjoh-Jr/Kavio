@@ -197,6 +197,70 @@ export class VerificationService {
   }
 
   /**
+   * A worker asking for the in-person visit itself (TRU-05, AGT-01).
+   *
+   * FIELD_VERIFICATION is `staffOnly` in CHECK_DEFINITIONS because an agent, not
+   * a document upload, is what actually settles it — `submit()` refuses it for
+   * exactly that reason. This is the one legitimate way a worker reaches it:
+   * asking to be queued for a visit is not the same as completing the check
+   * themselves, so it deliberately does not go through `submit()`'s staffOnly
+   * guard, its document handling, or OCR — it only ever produces a PENDING
+   * record for an agent to claim from the Field queue (ADM-03).
+   */
+  async requestFieldVisit(subject: AuthenticatedUser, note?: string): Promise<SubmissionResult> {
+    const checkType = VerificationCheckType.FIELD_VERIFICATION;
+
+    await this.assertNoLivePendingAttempt(subject.id, checkType);
+
+    const attempt = await this.nextAttemptNumber(subject.id, checkType);
+
+    const record = await this.prisma.client.verificationRecord.create({
+      data: {
+        subjectId: subject.id,
+        checkType,
+        attempt,
+        status: VerificationStatus.PENDING,
+        stage: VerificationStage.SUBMITTED,
+        metadata: note ? { requestNote: note } : undefined,
+        stageEvents: {
+          create: {
+            fromStage: null,
+            toStage: VerificationStage.SUBMITTED,
+            requestId: getRequestId(),
+          },
+        },
+      },
+      select: { id: true, status: true, stage: true },
+    });
+
+    this.events.emit(
+      VERIFICATION_SUBMITTED,
+      new VerificationSubmittedEvent({
+        recordId: record.id,
+        subjectId: subject.id,
+        checkType,
+        attempt,
+        stage: VerificationStage.SUBMITTED,
+        requestId: getRequestId(),
+      }),
+    );
+
+    logger.info('Field verification visit requested', {
+      result: { subjectId: subject.id, checkType, attempt, recordId: record.id },
+    });
+
+    return {
+      recordId: record.id,
+      checkType,
+      status: record.status,
+      stage: record.stage,
+      attempt,
+      rejectionKey: null,
+      retryable: true,
+    };
+  }
+
+  /**
    * Settles a check the system already knows the answer to — a verified phone
    * (ACC-04), or a field visit an agent has just completed (AGT-01).
    *

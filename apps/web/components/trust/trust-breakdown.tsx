@@ -2,6 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
+import type { OnboardingRole } from '@/lib/onboarding';
+import { trustImprovementHref } from '@/lib/trust-actions';
 import { NextTierCard } from './next-tier-card';
 import { SubScoreCard } from './sub-score-card';
 import { TierBadge } from './tier-badge';
@@ -19,10 +22,14 @@ import { orderedSubScores, type TrustBreakdown } from '@/lib/trust';
 export function TrustBreakdownView({
   breakdown,
   isOwnScore,
+  activeRole = null,
 }: {
   breakdown: TrustBreakdown;
   /** Drives the second person: "your score" vs "this professional's score". */
   isOwnScore: boolean;
+  /** Decides which onboarding flow a next action's link points at. Only ever
+   *  relevant for `isOwnScore` — a third party has no next actions to take. */
+  activeRole?: OnboardingRole | null;
 }) {
   const t = useTranslations('Trust');
   const subScores = orderedSubScores(breakdown.subScores);
@@ -30,6 +37,9 @@ export function TrustBreakdownView({
   // `improvements` is null when the API withheld it — a third party has no
   // business seeing how far along someone else's verification is.
   const topImprovement = breakdown.improvements?.[0] ?? null;
+  const topImprovementHref = topImprovement
+    ? trustImprovementHref(topImprovement.type, activeRole, breakdown.subjectId)
+    : null;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
@@ -82,10 +92,20 @@ export function TrustBreakdownView({
           >
             {t('topActionHeading')}
           </h2>
-          <p className="mt-2 flex items-start gap-2 text-base font-medium text-foreground">
-            <ArrowRight aria-hidden className="mt-1 size-4 shrink-0 text-accent" />
-            {t(`improve.${topImprovement.type}`)}
-          </p>
+          {topImprovementHref ? (
+            <Link
+              href={topImprovementHref}
+              className="mt-2 flex items-start gap-2 rounded-input text-base font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              <ArrowRight aria-hidden className="mt-1 size-4 shrink-0 text-accent" />
+              {t(`improve.${topImprovement.type}`)}
+            </Link>
+          ) : (
+            <p className="mt-2 flex items-start gap-2 text-base font-medium text-foreground">
+              <ArrowRight aria-hidden className="mt-1 size-4 shrink-0 text-accent" />
+              {t(`improve.${topImprovement.type}`)}
+            </p>
+          )}
           <p className="mt-1 text-sm text-muted-foreground">
             {t('topActionWorth', { points: topImprovement.max - topImprovement.points })}
           </p>
@@ -105,7 +125,13 @@ export function TrustBreakdownView({
 
       <div className="mt-4 grid gap-4">
         {subScores.map((sub, index) => (
-          <SubScoreCard key={sub.pillar} sub={sub} index={index} />
+          <SubScoreCard
+            key={sub.pillar}
+            sub={sub}
+            index={index}
+            activeRole={activeRole}
+            subjectId={breakdown.subjectId}
+          />
         ))}
       </div>
     </div>

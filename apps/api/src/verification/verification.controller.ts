@@ -8,11 +8,13 @@ import {
   advanceVerificationSchema,
   approveVerificationSchema,
   rejectVerificationSchema,
+  requestFieldVisitSchema,
   requestInfoSchema,
   submitVerificationSchema,
   type AdvanceVerificationDto,
   type ApproveVerificationDto,
   type RejectVerificationDto,
+  type RequestFieldVisitDto,
   type RequestInfoDto,
   type SubmitVerificationDto,
 } from './dto/verification.dto';
@@ -60,6 +62,26 @@ export class VerificationController {
     @Body(new ZodValidationPipe(submitVerificationSchema)) dto: SubmitVerificationDto,
   ): Promise<SubmissionResult> {
     return this.verification.submit(user, dto.checkType, dto.documentIds);
+  }
+
+  /**
+   * A worker asking to be queued for a Field Agent visit (TRU-05, AGT-01).
+   *
+   * Deliberately its own route rather than a `submit()` checkType, since
+   * FIELD_VERIFICATION is `staffOnly` there for good reason (only an agent
+   * settles it) — this is the one legitimate self-service action for it:
+   * asking, not completing the check itself. Tightly throttled: a visit costs
+   * an agent a trip, not a moment of attention.
+   */
+  @Post('field-visit')
+  @HttpCode(HttpStatus.CREATED)
+  @RequirePermissions('verification:submit')
+  @Throttle({ default: { ttl: 86_400_000, limit: 3 } })
+  async requestFieldVisit(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(requestFieldVisitSchema)) dto: RequestFieldVisitDto,
+  ): Promise<SubmissionResult> {
+    return this.verification.requestFieldVisit(user, dto.note);
   }
 
   // ───────────────────────────────────────────────────────────────────────────

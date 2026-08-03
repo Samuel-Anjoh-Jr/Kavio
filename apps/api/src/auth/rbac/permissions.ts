@@ -92,6 +92,9 @@ const WORKER: Permission[] = [
   'dispute:open',
   'message:send',
   'review:create',
+  // A colleague is a valid EndorsementRelationship — without this a worker
+  // could never actually give the endorsement the schema already allows for.
+  'endorsement:give',
 ];
 
 /**

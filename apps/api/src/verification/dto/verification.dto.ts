@@ -23,6 +23,14 @@ export const submitVerificationSchema = z.object({
 
 export type SubmitVerificationDto = z.infer<typeof submitVerificationSchema>;
 
+export const requestFieldVisitSchema = z.object({
+  // Optional detail for the agent planning the visit (a landmark, a preferred
+  // time). Never a substitute for the visit itself, so it stays short.
+  note: z.string().trim().max(300).optional(),
+});
+
+export type RequestFieldVisitDto = z.infer<typeof requestFieldVisitSchema>;
+
 export const rejectVerificationSchema = z.object({
   reason: z.enum(VerificationRejectionReason, {
     message: 'Choose a reason so the person knows what to fix.',

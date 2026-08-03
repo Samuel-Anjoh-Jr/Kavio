@@ -736,7 +736,25 @@
     "capturedByAgent": "Recueillie en personne par un agent Kavio",
     "taperExplainer": "Les recommandations comptent surtout à vos débuts. À mesure que vous réalisez des travaux, votre propre parcours compte davantage et les recommandations comptent moins.",
     "influence": "Apporte {points} points sur {cap}",
-    "taperedOut": "Vos travaux terminés parlent désormais pour vous : les recommandations n'ajoutent plus de points."
+    "taperedOut": "Vos travaux terminés parlent désormais pour vous : les recommandations n'ajoutent plus de points.",
+    "give": "Recommander",
+    "dialogTitle": "Recommander {name}",
+    "dialogSubtitle": "Décrivez ce que c'était de travailler avec cette personne. Ceci apparaît sur son profil public.",
+    "relationshipLabel": "Comment la connaissez-vous ?",
+    "ratingLabel": "Note",
+    "ratingStar": "{count, plural, =1 {1 étoile} other {# étoiles}}",
+    "quoteLabel": "Votre recommandation",
+    "quotePlaceholder": "Décrivez le travail qu'elle a fait pour vous…",
+    "quoteHint": "Au moins {min} caractères.",
+    "submit": "Envoyer la recommandation",
+    "submitting": "Envoi…",
+    "submitted": "Merci — votre recommandation pour {name} a été envoyée.",
+    "error": {
+      "CANNOT_ENDORSE_SELF": "Vous ne pouvez pas vous recommander vous-même.",
+      "ALREADY_ENDORSED": "Vous avez déjà recommandé cette personne.",
+      "NAMED_ENDORSEMENT_IS_STAFF_ONLY": "Seul un agent Kavio peut enregistrer une recommandation au nom de quelqu'un d'autre.",
+      "UNKNOWN_ERROR": "Nous n'avons pas pu envoyer cela pour le moment. Veuillez réessayer dans un instant."
+    }
   },
   "Badge": {
     "FOUNDING_PROFESSIONAL": {
@@ -837,8 +855,15 @@
     "start": "Commencer",
     "attempt": "Tentative {attempt}",
     "byInvitation": "Nous venons à vous",
+    "requestVisit": "Demander une visite",
+    "requestingVisit": "Envoi…",
     "seeScore": "Voir votre Score de Confiance",
     "loadError": "Nous n'avons pas pu charger votre vérification pour le moment. Veuillez rafraîchir dans un instant.",
+    "fieldVisitError": {
+      "VERIFICATION_ALREADY_PENDING": "Vous avez déjà demandé une visite. Nous vous préviendrons dès qu'elle sera programmée.",
+      "VERIFICATION_ALREADY_VERIFIED": "Vous êtes déjà vérifié sur le terrain — il n'y a rien de plus à demander.",
+      "UNKNOWN_ERROR": "Nous n'avons pas pu envoyer cette demande pour le moment. Veuillez réessayer dans un instant."
+    },
     "hint": {
       "PHONE": "Confirmez le numéro auquel nous pouvons vous joindre.",
       "ID_SUBMITTED": "Téléversez le recto et le verso de votre carte nationale d'identité.",

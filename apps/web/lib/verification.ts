@@ -112,6 +112,13 @@ export interface JourneyStep {
   readonly selfServe: boolean;
   /** True when the check settles on submission, with no reviewer involved. */
   readonly instant: boolean;
+  /**
+   * True for a staff-only check the subject can still ASK for (a field visit),
+   * as distinct from `selfServe` (completing the check themselves). Requesting
+   * only queues it for an agent to complete, so it stays out of the percentage
+   * the same way `selfServe: false` already does.
+   */
+  readonly requestable?: boolean;
 }
 
 /**
@@ -129,7 +136,7 @@ export const WORKER_JOURNEY: readonly JourneyStep[] = [
   { checkType: 'SELFIE_LIVENESS', selfServe: true, instant: false },
   { checkType: 'ADDRESS', selfServe: true, instant: false },
   { checkType: 'PORTFOLIO', selfServe: true, instant: true },
-  { checkType: 'FIELD_VERIFICATION', selfServe: false, instant: false },
+  { checkType: 'FIELD_VERIFICATION', selfServe: false, instant: false, requestable: true },
 ];
 
 export const BUSINESS_JOURNEY: readonly JourneyStep[] = [

@@ -8,6 +8,10 @@
 
 export type OnboardingRole = 'WORKER' | 'CLIENT' | 'BUSINESS';
 
+export function isOnboardingRole(role: string): role is OnboardingRole {
+  return role === 'WORKER' || role === 'CLIENT' || role === 'BUSINESS';
+}
+
 export const ONBOARDING_STEPS: Record<OnboardingRole, string[]> = {
   WORKER: ['services', 'availability', 'portfolio', 'identity', 'location'],
   CLIENT: ['profile', 'location'],

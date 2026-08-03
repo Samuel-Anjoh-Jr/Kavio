@@ -9,6 +9,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { useIntentReplay, useRequireAuth } from '@/components/auth/require-auth';
 import { ReportDialog } from '@/components/moderation/report-dialog';
 import { RequestQuoteDialog } from '@/components/jobs/request-quote-dialog';
+import { EndorseDialog } from './endorse-dialog';
 import { ApiError } from '@/lib/api-error';
 import { recordRecentWorker } from '@/lib/discovery';
 import { startConversation } from '@/lib/messaging';
@@ -153,6 +154,8 @@ export function ProfileActions({
         <Share2 aria-hidden />
         {t('share')}
       </Button>
+
+      <EndorseDialog subjectId={workerUserId} subjectName={workerName} />
 
       {/* Reporting is gated like any other write (the dialog calls requireAuth
           itself). An anonymous report channel would be abused to bury
