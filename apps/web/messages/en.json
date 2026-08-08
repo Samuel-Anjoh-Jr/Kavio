@@ -2200,6 +2200,7 @@
   },
   "Admin": {
     "consoleTitle": "Admin console",
+    "backToConsole": "Back to console",
     "navLabel": "Admin sections",
     "nav": {
       "dashboard": "Dashboard",

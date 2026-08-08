@@ -195,6 +195,8 @@ export class AdminOpsService {
           audience: updated.audience,
           titleEn: updated.titleEn,
           titleFr: updated.titleFr,
+          bodyEn: updated.bodyEn,
+          bodyFr: updated.bodyFr,
           requestId: getRequestId(),
         }),
       );

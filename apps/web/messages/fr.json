@@ -2200,6 +2200,7 @@
   },
   "Admin": {
     "consoleTitle": "Console d'administration",
+    "backToConsole": "Retour à la console",
     "navLabel": "Sections d'administration",
     "nav": {
       "dashboard": "Tableau de bord",

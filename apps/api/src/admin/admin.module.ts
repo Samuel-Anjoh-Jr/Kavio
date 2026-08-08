@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AdminAnalyticsResolver } from './admin-analytics.resolver';
 import { AgentInvitationNotificationListener } from './agent-invitation-notification.listener';
+import { AnnouncementNotificationListener } from './announcement-notification.listener';
 import { AdminAnalyticsService } from './admin-analytics.service';
 import { AdminOpsResolver } from './admin-ops.resolver';
 import { AdminOpsService } from './admin-ops.service';
@@ -48,6 +49,7 @@ import { AdminController } from './admin.controller';
     AdminAnalyticsService,
     AdminAnalyticsResolver,
     AgentInvitationNotificationListener,
+    AnnouncementNotificationListener,
     AdminRiskService,
     AdminRiskResolver,
     AdminUsersService,

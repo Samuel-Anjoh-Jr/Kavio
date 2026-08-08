@@ -35,6 +35,13 @@ export interface TemplateVariablesMap {
    */
   'admin.agent_invited': { name: string; acceptUrl: string; expiresInDays: number };
   /**
+   * A platform announcement went live (ADM-07). Content is admin-authored
+   * freeform copy, already supplied in both languages by the composer —
+   * unlike most templates, there is no fixed EN/FR string to pick between,
+   * only which of the two authored variants matches the recipient's locale.
+   */
+  'admin.announcement_published': { titleEn: string; titleFr: string; bodyEn: string; bodyFr: string };
+  /**
    * A business owner invited a team member (BIZ-03). Sent to an email with no
    * Kavio account yet, so it bypasses the per-user dispatcher — see
    * team-notification.listener.ts.
@@ -363,6 +370,20 @@ const adminAgentInvited: TemplateDefinition<'admin.agent_invited'> = {
         }),
         text: `${v.name}, un administrateur vous a invité(e) à rejoindre Kavio comme agent de terrain. Acceptez votre invitation : ${v.acceptUrl}\n\nCette invitation expire dans ${v.expiresInDays} jours.`,
       }),
+    },
+  },
+};
+
+const adminAnnouncementPublished: TemplateDefinition<'admin.announcement_published'> = {
+  key: 'admin.announcement_published',
+  // MARKETING, not SECURITY: an announcement is platform news, not an account
+  // notice, so it respects the recipient's own channel preferences same as any
+  // other non-critical template.
+  category: NotificationCategory.MARKETING,
+  render: {
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: v.titleEn, body: v.bodyEn }),
+      fr: (v) => ({ title: v.titleFr, body: v.bodyFr }),
     },
   },
 };
@@ -2066,6 +2087,7 @@ const TEMPLATES: TemplateMap = {
   'auth.otp_code': authOtpCode,
   'auth.password_reset': authPasswordReset,
   'admin.agent_invited': adminAgentInvited,
+  'admin.announcement_published': adminAnnouncementPublished,
   'business.team_invited': businessTeamInvited,
   'auth.new_device_login': authNewDeviceLogin,
   'auth.password_changed': authPasswordChanged,

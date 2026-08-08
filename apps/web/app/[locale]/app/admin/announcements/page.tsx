@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
+import { ArrowLeft } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
+import { Button } from '@/components/ui/button';
 import { AnnouncementsManager } from '@/components/admin/announcements-manager';
 
 export async function generateMetadata({
@@ -21,7 +24,14 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div>
-      <h2 className="font-heading text-xl font-semibold text-foreground">
+      <Button asChild variant="ghost" size="sm" className="w-fit gap-1.5">
+        <Link href="/app/admin">
+          <ArrowLeft aria-hidden className="size-4" />
+          {t('backToConsole')}
+        </Link>
+      </Button>
+
+      <h2 className="mt-4 font-heading text-xl font-semibold text-foreground">
         {t('announcementsTitle')}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">{t('announcementsSubtitle')}</p>
