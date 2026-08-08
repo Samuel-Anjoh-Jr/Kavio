@@ -56,6 +56,8 @@ export class AnnouncementPublishedEvent {
   readonly audience: string;
   readonly titleEn: string;
   readonly titleFr: string;
+  readonly bodyEn: string;
+  readonly bodyFr: string;
   readonly requestId?: string;
 
   constructor(init: {
@@ -63,12 +65,16 @@ export class AnnouncementPublishedEvent {
     audience: string;
     titleEn: string;
     titleFr: string;
+    bodyEn: string;
+    bodyFr: string;
     requestId?: string;
   }) {
     this.announcementId = init.announcementId;
     this.audience = init.audience;
     this.titleEn = init.titleEn;
     this.titleFr = init.titleFr;
+    this.bodyEn = init.bodyEn;
+    this.bodyFr = init.bodyFr;
     this.requestId = init.requestId;
   }
 }

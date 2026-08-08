@@ -50,6 +50,7 @@ export function extractRelevantRole(metadata: Record<string, unknown> | undefine
 const TEMPLATE_SURFACE: Record<string, string> = {
   'system.test_notification': '/app/home',
   'account.welcome': '/app/home',
+  'admin.announcement_published': '/app/home',
   'auth.otp_code': '/app/home',
   'auth.password_reset': '/app/home',
   'auth.new_device_login': '/app/settings/security',
