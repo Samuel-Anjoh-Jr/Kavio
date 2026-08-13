@@ -46,6 +46,8 @@ export interface WorkerCardData {
   longitude: number | null;
   /** A few portfolio images for the preview strip — the top hiring driver. */
   portfolioPreview: string[];
+  /** True for a paid placement — always a genuine match, never a page takeover. */
+  sponsored: boolean;
 }
 
 /**
@@ -77,6 +79,7 @@ export function searchResultToCard(worker: SearchWorkerResult): WorkerCardData {
     latitude: worker.latitude,
     longitude: worker.longitude,
     portfolioPreview: [],
+    sponsored: worker.sponsored,
   };
 }
 
@@ -108,6 +111,8 @@ export function nearbyResultToCard(worker: NearbyWorkerResult): WorkerCardData {
     latitude: worker.latitude,
     longitude: worker.longitude,
     portfolioPreview: [],
+    // Proximity reads carry no sponsorship signal — only a search hit does.
+    sponsored: false,
   };
 }
 
@@ -138,6 +143,8 @@ export function savedWorkerToCard(worker: SavedWorker): WorkerCardData {
     latitude: null,
     longitude: null,
     portfolioPreview: [],
+    // A bookmark carries no sponsorship signal — that belongs to a search hit.
+    sponsored: false,
   };
 }
 

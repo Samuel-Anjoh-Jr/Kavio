@@ -11,6 +11,7 @@ import {
   Settings,
   ShieldAlert,
   ShieldCheck,
+  Sparkles,
   UserCog,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -23,6 +24,7 @@ const ITEMS: { href: string; key: string; icon: LucideIcon }[] = [
   { href: '/app/admin/risk', key: 'risk', icon: ShieldAlert },
   { href: '/app/admin/users', key: 'users', icon: UserCog },
   { href: '/app/admin/reports', key: 'moderation', icon: ShieldCheck },
+  { href: '/app/admin/featured', key: 'featured', icon: Sparkles },
   { href: '/app/admin/categories', key: 'categories', icon: FolderTree },
   { href: '/app/admin/marketing', key: 'marketing', icon: Megaphone },
   { href: '/app/admin/announcements', key: 'announcements', icon: Bell },

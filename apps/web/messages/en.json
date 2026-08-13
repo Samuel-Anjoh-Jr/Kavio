@@ -1092,7 +1092,8 @@
     "distance": {
       "metres": "{value} m",
       "kilometres": "{value} km"
-    }
+    },
+    "sponsored": "Sponsored"
   },
   "SavedWorkers": {
     "title": "Saved workers",
@@ -1259,7 +1260,8 @@
       "earningsHint": "Available balance in your wallet",
       "availabilityTitle": "Availability",
       "availabilityBody": "Clients see your working hours on your profile. Keep them current so you only get requests you can take.",
-      "manageAvailability": "Manage availability"
+      "manageAvailability": "Manage availability",
+      "featuredHeading": "Sponsored placement"
     },
     "client": {
       "discoverHeading": "Find a worker",
@@ -2196,7 +2198,8 @@
     "teamInviteAcceptedTitle": "You're on the team",
     "teamInviteAcceptedBody": "Sign in with your email and the password you just set to open the dashboard.",
     "goToLogin": "Go to sign in",
-    "alreadyHaveAccount": "Already have an account?"
+    "alreadyHaveAccount": "Already have an account?",
+    "featuredHeading": "Sponsored placement"
   },
   "Admin": {
     "consoleTitle": "Admin console",
@@ -2212,7 +2215,8 @@
       "announcements": "Announcements",
       "audit": "Audit log",
       "settings": "Settings",
-      "marketing": "Marketing"
+      "marketing": "Marketing",
+      "featured": "Featured"
     },
     "loadError": "We couldn't load this just now. Please try again shortly.",
     "noData": "There's nothing to show yet.",
@@ -2903,5 +2907,64 @@
     "heading": "Are you a business?",
     "body": "Get verified with your ID and your business registration (RCCM) to post job vacancies on the open board, instead of contacting workers one at a time.",
     "cta": "Get verified as a business"
+  },
+  "FeaturedStatusCard": {
+    "heading": {
+      "NONE": "Get featured in search",
+      "PENDING": "Your request is under review",
+      "APPROVED": "You are featured",
+      "PAUSED": "Featured placement paused",
+      "REJECTED": "Request declined",
+      "REVOKED": "Featured placement ended"
+    },
+    "body": {
+      "NONE": "Ask to be featured and we will rank your profile higher in search for a small increase in our commission. An admin reviews every request first — your ranking stays exactly as it is now while you wait.",
+      "PENDING": "An admin is reviewing your request. Your profile keeps ranking normally in the meantime — nothing changes until we get back to you.",
+      "APPROVED": "Your profile ranks higher in search and carries a discreet \"Sponsored\" tag, always on a genuine match for what someone searched.",
+      "PAUSED": "You turned this off. Your profile ranks normally again, and the extra commission no longer applies.",
+      "REJECTED": "We could not approve this request right now.",
+      "REVOKED": "Kavio ended this placement. Contact support if you have questions."
+    },
+    "commission": "While active, Kavio takes {percent}% extra commission on top of the standard fee.",
+    "requestedOn": "Requested on {date}.",
+    "requestCta": "Ask to be featured",
+    "requestAgainCta": "Ask again",
+    "pauseCta": "Pause",
+    "resumeCta": "Resume",
+    "requestedToast": "Request sent. We will let you know once it has been reviewed.",
+    "pausedToast": "Featured placement paused.",
+    "resumedToast": "Featured placement resumed."
+  },
+  "FeaturedReviewQueue": {
+    "title": "Featured placements",
+    "subtitle": "Review requests to be featured in search. Approve with a commission rate, or decline with a reason the requester will see.",
+    "loadError": "We could not load the featured-placement queue.",
+    "empty": "No pending requests right now.",
+    "unnamed": "Unnamed",
+    "stats": "Trust Score {trustScore} · {completedJobs, plural, =0 {no completed jobs} one {# completed job} other {# completed jobs}}",
+    "requestedOn": "Requested on {date}",
+    "role": {
+      "WORKER": "Worker",
+      "BUSINESS": "Business"
+    },
+    "approve": "Approve",
+    "reject": "Decline",
+    "approveTitle": "Approve {name}",
+    "approveSubtitle": "Set the extra commission this placement charges on top of the standard fee.",
+    "commissionLabel": "Extra commission",
+    "commissionHint": "A percentage of the job value, e.g. 5 for 5%.",
+    "commissionInvalid": "Enter a commission between 0 and 100%.",
+    "internalNoteLabel": "Internal note (optional)",
+    "internalNotePlaceholder": "Never shown to the requester.",
+    "confirmApprove": "Approve",
+    "approvedToast": "{name} is now featured.",
+    "rejectTitle": "Decline {name}",
+    "rejectSubtitle": "This reason is shown to the requester, so explain what is needed.",
+    "reasonLabel": "Reason (shown to the requester)",
+    "reasonPlaceholder": "Say what is needed for a future request to be approved.",
+    "reasonHint": "At least {min} characters.",
+    "reasonInvalid": "Enter at least {min} characters.",
+    "confirmReject": "Decline",
+    "rejectedToast": "Request from {name} declined."
   }
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { TierBadge } from '@/components/trust/tier-badge';
 import { BusinessUpgradeHint } from '@/components/business/business-upgrade-hint';
 import { WorkerVerificationBanner } from '@/components/verification/worker-verification-banner';
+import { FeaturedStatusCard } from '@/components/featured/featured-status-card';
 import { TrustScoreRing } from '@/components/trust/trust-score-ring';
 import { DiscoverRail } from '@/components/home/discover-rail';
 import { HomeSection, PendingPanel } from '@/components/home/home-primitives';
@@ -215,6 +216,13 @@ async function WorkerHome({ userId }: { userId: string }) {
             </div>
           </div>
         </div>
+      </HomeSection>
+
+      {/* Sponsored ranking placement: kept alongside the other growth levers,
+          and — unlike WorkerVerificationBanner — never hides once a listing
+          exists, since its job is to keep showing status. */}
+      <HomeSection title={t('worker.featuredHeading')}>
+        <FeaturedStatusCard />
       </HomeSection>
     </>
   );

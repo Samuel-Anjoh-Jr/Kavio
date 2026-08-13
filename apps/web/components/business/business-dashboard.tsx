@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { FeaturedStatusCard } from '@/components/featured/featured-status-card';
 import { formatDate } from '@/lib/datetime';
 import { formatXaf } from '@/lib/discovery';
 import { graphqlErrorCode } from '@/lib/graphql/errors';
@@ -210,6 +211,15 @@ export function BusinessDashboard({ businessProfileId }: { businessProfileId?: s
           </div>
         </section>
       )}
+
+      <section>
+        <h3 className="font-heading text-lg font-semibold text-foreground">
+          {t('featuredHeading')}
+        </h3>
+        <div className="mt-4">
+          <FeaturedStatusCard />
+        </div>
+      </section>
 
       {canSeePayments && (
         <section>
