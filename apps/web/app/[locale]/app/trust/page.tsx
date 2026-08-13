@@ -3,8 +3,17 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { auth } from '@/auth';
 import { redirect } from '@/i18n/navigation';
 import { TrustBreakdownView } from '@/components/trust/trust-breakdown';
-import { isOnboardingRole } from '@/lib/onboarding';
+import type { OnboardingRole } from '@/lib/onboarding';
 import { loadTrustBreakdown } from './load-trust-breakdown';
+
+// `isOnboardingRole` itself lives in lib/onboarding.ts, which is a 'use client'
+// module — importing its runtime export (not just its type) into this server
+// component throws ("...is on the client") rather than type-checking away, so
+// this mirrors the local guard app/[locale]/app/home/page.tsx already uses for
+// the same reason.
+function isOnboardingRole(role: string): role is OnboardingRole {
+  return role === 'WORKER' || role === 'CLIENT' || role === 'BUSINESS';
+}
 
 export async function generateMetadata({
   params,

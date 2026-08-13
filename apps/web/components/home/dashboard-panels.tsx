@@ -112,11 +112,16 @@ export function WorkerPipelinePanel() {
           hint={t('worker.quotesHint')}
         />
       </Link>
-      <StatCard
-        label={t('worker.activeJobsPendingTitle')}
-        value={String(activeCount)}
-        hint={t('worker.activeJobsHint')}
-      />
+      <Link
+        href="/app/wallet"
+        className="rounded-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <StatCard
+          label={t('worker.activeJobsPendingTitle')}
+          value={String(activeCount)}
+          hint={t('worker.activeJobsHint')}
+        />
+      </Link>
     </div>
   );
 }

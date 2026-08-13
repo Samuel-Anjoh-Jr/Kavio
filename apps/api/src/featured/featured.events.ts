@@ -76,12 +76,21 @@ export class FeaturedRejectedEvent implements FeaturedEventBase {
 export class FeaturedRevokedEvent implements FeaturedEventBase {
   readonly userId: string;
   readonly reviewerId: string;
+  /** The reviewer's own note, if any — passed through verbatim to the notice. */
+  readonly note: string | null;
   readonly occurredAt: Date;
   readonly requestId?: string;
 
-  constructor(init: { userId: string; reviewerId: string; occurredAt?: Date; requestId?: string }) {
+  constructor(init: {
+    userId: string;
+    reviewerId: string;
+    note?: string | null;
+    occurredAt?: Date;
+    requestId?: string;
+  }) {
     this.userId = init.userId;
     this.reviewerId = init.reviewerId;
+    this.note = init.note ?? null;
     this.occurredAt = init.occurredAt ?? new Date();
     this.requestId = init.requestId;
   }

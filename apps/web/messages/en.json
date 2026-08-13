@@ -310,7 +310,11 @@
       "JOB_COMPLETED": "Complete jobs through Kavio.",
       "REPEAT_CUSTOMER": "Win repeat business from clients you have served.",
       "EXCELLENT_REVIEW": "Earn excellent reviews from your clients.",
-      "ENDORSEMENT_RECEIVED": "Ask a past customer or community leader to endorse you."
+      "ENDORSEMENT_RECEIVED": "Ask a past customer or community leader to endorse you.",
+      "JOB_CANCELLED": "A job was cancelled.",
+      "DISPUTE_UPHELD": "A dispute was upheld against you.",
+      "FAKE_DOCUMENTS_CONFIRMED": "Account suspended after a document review.",
+      "ENDORSEMENT_REVOKED": "An endorsement was withdrawn."
     },
     "requirement": {
       "SCORE": "Reach a Trust Score of {required}.",

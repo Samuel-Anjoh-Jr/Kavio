@@ -92,6 +92,12 @@ export interface TemplateVariablesMap {
    * cannot read is not due process.
    */
   'featured.rejected': { reason: string };
+  /**
+   * An admin revoked an already-approved featured placement (business plan:
+   * "Featured/Verified Business tier") — a policy action, not a self-service
+   * pause, so it gets its own notice rather than reusing `featured.rejected`.
+   */
+  'featured.revoked': { reason: string };
   /** A worker applied to the poster's job (JOB-03). */
   'job.application_received': { jobTitle: string };
   /** A poster invited the worker to quote a job (JOB-03). */
@@ -1123,6 +1129,53 @@ const featuredRejected: TemplateDefinition<'featured.rejected'> = {
     [NotificationChannel.WEB_PUSH]: {
       en: (v) => ({ title: 'Your Featured request', body: v.reason }),
       fr: (v) => ({ title: 'Votre demande de mise en avant', body: v.reason }),
+    },
+  },
+};
+
+const featuredRevoked: TemplateDefinition<'featured.revoked'> = {
+  key: 'featured.revoked',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your Featured listing was turned off',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'An admin turned off your sponsored placement.',
+          heading: 'Your Featured listing was turned off',
+          bodyHtml: paragraphs(
+            'An admin revoked your featured placement, and the extra ranking boost and commission no longer apply.',
+            ...(v.reason ? [escapeHtml(v.reason)] : []),
+            'You can send a new request at any time from your account.',
+          ),
+        }),
+        text: `Your Featured listing on Kavio was turned off by an admin.${v.reason ? ` ${v.reason}` : ''} You can send a new request at any time.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre mise en avant a été désactivée',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un administrateur a désactivé votre mise en avant.',
+          heading: 'Votre mise en avant a été désactivée',
+          bodyHtml: paragraphs(
+            'Un administrateur a révoqué votre mise en avant : le meilleur classement et la commission supplémentaire ne s’appliquent plus.',
+            ...(v.reason ? [escapeHtml(v.reason)] : []),
+            'Vous pouvez envoyer une nouvelle demande à tout moment depuis votre compte.',
+          ),
+        }),
+        text: `Votre mise en avant sur Kavio a été désactivée par un administrateur.${v.reason ? ` ${v.reason}` : ''} Vous pouvez envoyer une nouvelle demande à tout moment.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'Your Featured listing was turned off',
+        body: v.reason || 'You can send a new request at any time.',
+      }),
+      fr: (v) => ({
+        title: 'Votre mise en avant a été désactivée',
+        body: v.reason || 'Vous pouvez envoyer une nouvelle demande à tout moment.',
+      }),
     },
   },
 };
@@ -2214,6 +2267,7 @@ const TEMPLATES: TemplateMap = {
   'verification.info_requested': verificationInfoRequested,
   'featured.approved': featuredApproved,
   'featured.rejected': featuredRejected,
+  'featured.revoked': featuredRevoked,
   'job.application_received': jobApplicationReceived,
   'job.invitation_received': jobInvitationReceived,
   'job.application_status_changed': jobApplicationStatusChanged,

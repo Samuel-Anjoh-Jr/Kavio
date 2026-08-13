@@ -310,7 +310,11 @@
       "JOB_COMPLETED": "Réalisez des missions via Kavio.",
       "REPEAT_CUSTOMER": "Fidélisez les clients que vous avez déjà servis.",
       "EXCELLENT_REVIEW": "Obtenez d’excellents avis de vos clients.",
-      "ENDORSEMENT_RECEIVED": "Demandez à un ancien client ou à un leader communautaire de vous recommander."
+      "ENDORSEMENT_RECEIVED": "Demandez à un ancien client ou à un leader communautaire de vous recommander.",
+      "JOB_CANCELLED": "Une mission a été annulée.",
+      "DISPUTE_UPHELD": "Un litige a été tranché en votre défaveur.",
+      "FAKE_DOCUMENTS_CONFIRMED": "Compte suspendu après un contrôle de documents.",
+      "ENDORSEMENT_REVOKED": "Une recommandation a été retirée."
     },
     "requirement": {
       "SCORE": "Atteignez un Score de Confiance de {required}.",

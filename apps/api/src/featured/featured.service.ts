@@ -388,7 +388,12 @@ export class FeaturedService {
 
     this.events.emit(
       FEATURED_REVOKED,
-      new FeaturedRevokedEvent({ userId, reviewerId: reviewer.id, requestId: getRequestId() }),
+      new FeaturedRevokedEvent({
+        userId,
+        reviewerId: reviewer.id,
+        note: note ?? null,
+        requestId: getRequestId(),
+      }),
     );
 
     logger.info('Featured listing revoked', { result: { userId, reviewerId: reviewer.id } });

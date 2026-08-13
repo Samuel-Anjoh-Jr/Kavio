@@ -8,8 +8,10 @@ import {
 import {
   FEATURED_APPROVED,
   FEATURED_REJECTED,
+  FEATURED_REVOKED,
   FeaturedApprovedEvent,
   FeaturedRejectedEvent,
+  FeaturedRevokedEvent,
 } from './featured.events';
 
 const logger = createLogger('featured:notifications');
@@ -58,5 +60,24 @@ export class FeaturedNotificationListener {
         requestId: event.requestId,
       }),
     );
+  }
+
+  @OnEvent(FEATURED_REVOKED)
+  onRevoked(event: FeaturedRevokedEvent): void {
+    this.events.emit(
+      NOTIFICATION_REQUESTED,
+      new NotificationRequestedEvent({
+        userId: event.userId,
+        templateKey: 'featured.revoked',
+        // Empty, not a hardcoded English default: the template renders both
+        // EN and FR from the same variables, so a fallback string here would
+        // show up untranslated in the French copy. The template itself skips
+        // the reason line entirely when it is blank.
+        variables: { reason: event.note ?? '' },
+        requestId: event.requestId,
+      }),
+    );
+
+    logger.info('Featured revocation notified', { result: { userId: event.userId } });
   }
 }
