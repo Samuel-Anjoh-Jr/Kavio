@@ -183,6 +183,12 @@ model User {
   announcementsWritten Announcement[]    @relation("AnnouncementAuthor")
   settingsUpdated      SystemSetting[]   @relation("SystemSettingEditor")
 
+  // Sponsored ranking (business plan: "Featured/Verified Business tier"). An
+  // identity holds at most one placement, and may separately have reviewed
+  // others' — the same subject/reviewer split as VerificationRecord above.
+  featuredListing        FeaturedListing?  @relation("FeaturedListingSubject")
+  featuredListingReviews FeaturedListing[] @relation("FeaturedListingReviewer")
+
   @@index([status, createdAt])
 }
 
@@ -615,6 +621,55 @@ model TrustScore {
   /// scans of this index are what Phase 3 discovery sorts on.
   @@index([total])
   @@index([suspended])
+}
+
+enum FeaturedListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAUSED
+  REVOKED
+}
+
+/// Sponsored ranking placement (business plan: "Featured/Verified Business
+/// tier"). Held on the IDENTITY like tier and Trust Score — CLAUDE.md is
+/// explicit that a role switch must never re-verify, and the same is true of a
+/// commercial grant like this one. A worker/business REQUESTS placement; an
+/// admin reviews and sets the extra commission before it ever affects ranking
+/// or fees — the request is "make me featured", never "at what price".
+model FeaturedListing {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+
+  status FeaturedListingStatus @default(PENDING)
+
+  /// Extra platform-fee basis points charged on top of the standard escrow fee
+  /// while APPROVED. Admin-set only, null until a reviewer decides.
+  extraCommissionBps Int?
+
+  requestedAt     DateTime  @default(now())
+  reviewedAt      DateTime?
+  reviewedById    String?   @db.Uuid
+  rejectionReason String?
+  /// Internal admin note. Never shown to the subject.
+  reviewNote      String?
+
+  pausedAt  DateTime?
+  revokedAt DateTime?
+
+  /// Fairness rotation cursor for sponsored search slots: the ACTIVE listing
+  /// with the oldest (or null) lastShownAt is offered the next slot first, so
+  /// one sponsor cannot occupy every impression.
+  lastShownAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subject    User  @relation("FeaturedListingSubject", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("FeaturedListingReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([status, lastShownAt])
 }
 
 /// The progressive checks behind the tiers (TRU-06, §21.4).

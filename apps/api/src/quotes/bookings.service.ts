@@ -6,6 +6,7 @@ import { AppException } from '../lib/app-exception';
 import { createLogger, getRequestId } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
 import { JobsService } from '../jobs/jobs.service';
+import { FeaturedService } from '../featured/featured.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { computeFeeSplit } from './booking-fee.model';
 import {
@@ -68,6 +69,7 @@ export class BookingsService {
     private readonly events: EventEmitter2,
     private readonly jobs: JobsService,
     private readonly settings: PlatformSettingsService,
+    private readonly featured: FeaturedService,
   ) {}
 
   /**
@@ -113,7 +115,12 @@ export class BookingsService {
     }
 
     const feeBps = await this.settings.platformFeeBps();
-    const split = computeFeeSplit(quote.price, feeBps);
+    // A Featured/sponsored worker/business pays the standard fee PLUS the
+    // admin-set extra commission on every booking, automatically — there is no
+    // per-transaction step (business plan: "Featured/Verified Business tier").
+    const extraBps = await this.featured.activeExtraCommissionBpsFor(quote.workerId);
+    const effectiveFeeBps = Math.min(10_000, feeBps + extraBps);
+    const split = computeFeeSplit(quote.price, effectiveFeeBps);
     const clientId = user.id;
     const requestId = getRequestId();
 

@@ -172,6 +172,10 @@ function sampleVariables(key: string): Record<string, unknown> {
         checkLabelKey: 'Verification.check.ADDRESS',
         infoRequest: 'Please send a utility bill from the last three months.',
       };
+    case 'featured.approved':
+      return { extraCommissionPercent: 5 };
+    case 'featured.rejected':
+      return { reason: 'Trust Score is still building toward what Featured placement needs.' };
     case 'job.application_received':
       return { jobTitle: 'Fix a leaking kitchen tap' };
     case 'job.invitation_received':

@@ -3,6 +3,7 @@ import { MediaVisibility, QuoteStatus } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { FeaturedService } from '../featured/featured.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import type { WorkerPreviewView } from '../jobs/models/job.model';
 import type { BookingView, QuoteInboxView, QuoteView } from './models/quote.model';
@@ -14,6 +15,11 @@ import type { BookingView, QuoteInboxView, QuoteView } from './models/quote.mode
  * A quote carries the worker's trust context so the client's quote view (QTE-02)
  * can show Trust Score and rating beside the price without a second round trip.
  * Those previews are batched, the same N+1 discipline as the jobs read service.
+ *
+ * `platformFeeBps` on the view is what the client sees BEFORE they pay (CLAUDE.md
+ * "the ~10% fee shown before pay"), so it has to fold in a Featured/sponsored
+ * worker's extra commission the same way BookingsService does at accept time —
+ * otherwise the preview and the actual charge could disagree.
  */
 @Injectable()
 export class QuotesReadService {
@@ -21,6 +27,7 @@ export class QuotesReadService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly settings: PlatformSettingsService,
+    private readonly featured: FeaturedService,
   ) {}
 
   /** One quote. Visible to the worker who sent it or the client it was sent to. */
@@ -39,7 +46,7 @@ export class QuotesReadService {
       return null;
     }
     const previews = await this.workerPreviews([quote.workerId]);
-    const feeBps = await this.settings.platformFeeBps();
+    const feeBps = await this.effectiveFeeBps([quote.workerId]);
     return this.mapQuote(quote, previews, feeBps);
   }
 
@@ -51,7 +58,7 @@ export class QuotesReadService {
       include: this.quoteInclude(),
     });
     const previews = await this.workerPreviews([user.id]);
-    const feeBps = await this.settings.platformFeeBps();
+    const feeBps = await this.effectiveFeeBps([user.id]);
     const views = await Promise.all(quotes.map((q) => this.mapQuote(q, previews, feeBps)));
     return {
       sent: views.filter((v) => v.status !== QuoteStatus.DRAFT),
@@ -78,7 +85,7 @@ export class QuotesReadService {
       include: this.quoteInclude(),
     });
     const previews = await this.workerPreviews(quotes.map((q) => q.workerId));
-    const feeBps = await this.settings.platformFeeBps();
+    const feeBps = await this.effectiveFeeBps(quotes.map((q) => q.workerId));
     return Promise.all(quotes.map((q) => this.mapQuote(q, previews, feeBps)));
   }
 
@@ -100,7 +107,7 @@ export class QuotesReadService {
       include: this.quoteInclude(),
     });
     const previews = await this.workerPreviews(quotes.map((q) => q.workerId));
-    const feeBps = await this.settings.platformFeeBps();
+    const feeBps = await this.effectiveFeeBps(quotes.map((q) => q.workerId));
     return Promise.all(quotes.map((q) => this.mapQuote(q, previews, feeBps)));
   }
 
@@ -164,7 +171,7 @@ export class QuotesReadService {
       }>;
     },
     previews: Map<string, WorkerPreviewView>,
-    feeBps: number,
+    feeBpsByWorker: Map<string, number>,
   ): Promise<QuoteView> {
     const attachments = await Promise.all(
       quote.attachments.map(async (a) => ({
@@ -184,7 +191,7 @@ export class QuotesReadService {
       includes: quote.includes,
       message: quote.message,
       status: quote.status,
-      platformFeeBps: feeBps,
+      platformFeeBps: feeBpsByWorker.get(quote.workerId) ?? 0,
       attachments,
       worker: previews.get(quote.workerId) ?? null,
       parentQuoteId: quote.parentQuoteId,
@@ -195,6 +202,22 @@ export class QuotesReadService {
       expiresAt: quote.expiresAt,
       createdAt: quote.createdAt,
     };
+  }
+
+  /**
+   * The fee a client would actually be charged per worker, batched — the
+   * platform rate plus that worker's Featured extra commission, if APPROVED
+   * (0 otherwise). Mirrors BookingsService.acceptQuote() exactly, so the
+   * preview shown here never disagrees with what accepting the quote charges.
+   */
+  private async effectiveFeeBps(workerIds: string[]): Promise<Map<string, number>> {
+    const [feeBps, extraByWorker] = await Promise.all([
+      this.settings.platformFeeBps(),
+      this.featured.activeExtraCommissionBpsForMany(workerIds),
+    ]);
+
+    const ids = [...new Set(workerIds)];
+    return new Map(ids.map((id) => [id, Math.min(10_000, feeBps + (extraByWorker.get(id) ?? 0))]));
   }
 
   /** Batched worker cards — three queries regardless of count (N+1 guard). */

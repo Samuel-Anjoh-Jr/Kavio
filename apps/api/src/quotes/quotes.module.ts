@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JobsModule } from '../jobs/jobs.module';
+import { FeaturedModule } from '../featured/featured.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageModule } from '../storage/storage.module';
 import { BookingsService } from './bookings.service';
@@ -19,9 +20,15 @@ import { QuotesService } from './quotes.service';
  * than a second copy of the rules living here.
  *
  * StorageModule resolves quote-attachment URLs on read.
+ *
+ * FeaturedModule is imported for its exported FeaturedService: a Featured/
+ * sponsored worker/business pays an admin-set extra commission on every
+ * booking, folded into the fee BookingsService snapshots at accept time and
+ * into the fee QuotesReadService previews before that (business plan:
+ * "Featured/Verified Business tier").
  */
 @Module({
-  imports: [PrismaModule, JobsModule, StorageModule],
+  imports: [PrismaModule, JobsModule, StorageModule, FeaturedModule],
   controllers: [QuotesController],
   providers: [
     QuotesService,

@@ -82,3 +82,108 @@ export const MIN_QUERY_LENGTH = 2;
 
 /** Longest query we will accept. Beyond this it is not a search, it is a payload. */
 export const MAX_QUERY_LENGTH = 100;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sponsored slots (business plan: "Featured/Verified Business" tier)
+//
+// A worker/business pays extra commission to be featured; what that BUYS is a
+// modest ranking boost with a small "Sponsored" tag — never a takeover of the
+// page. Everything below is deliberately conservative: sponsorship can only
+// promote a worker who was ALREADY a genuine match somewhere on this page, it
+// is capped to a fraction of the results, and it rotates fairly among sponsors
+// rather than always surfacing the same one.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SponsoredCandidate {
+  userId: string;
+  lastShownAt: Date | null;
+}
+
+/**
+ * The Nth (0-based) sponsored slot's array index: 2, 7, 12, 17, … — 1-indexed
+ * positions 3, 8, 13, 18. Computed fresh per insertion, against the array's
+ * length AT THAT POINT, which is what makes sequential splicing at these fixed
+ * indices behave as "shift everything after this point down by one".
+ */
+function sponsoredSlotIndex(n: number): number {
+  return 2 + 5 * n;
+}
+
+/**
+ * Interleaves a capped, fairly-rotated set of sponsored workers into an
+ * already-ranked results page.
+ *
+ * Never reorders the organic (non-sponsored) results relative to each other —
+ * sponsorship only decides WHERE a handful of already-present matches are
+ * highlighted, never who else shows up or in what order they show up in.
+ */
+export function applySponsoredSlots<T extends { userId: string }>(
+  workers: readonly T[],
+  sponsored: ReadonlyMap<string, SponsoredCandidate>,
+): { workers: (T & { sponsored: boolean })[]; shownUserIds: string[] } {
+  if (sponsored.size === 0 || workers.length < 3) {
+    return { workers: workers.map((w) => ({ ...w, sponsored: false })), shownUserIds: [] };
+  }
+
+  const eligible: T[] = [];
+  const rest: T[] = [];
+  for (const worker of workers) {
+    if (sponsored.has(worker.userId)) {
+      eligible.push(worker);
+    } else {
+      rest.push(worker);
+    }
+  }
+
+  if (eligible.length === 0) {
+    return { workers: workers.map((w) => ({ ...w, sponsored: false })), shownUserIds: [] };
+  }
+
+  // The fairness cap: never more than a fifth of the page, and always at
+  // least one slot when there is anyone eligible at all.
+  const cap = Math.max(1, Math.floor(workers.length / 5));
+
+  const kept =
+    eligible.length <= cap
+      ? // Room for everyone: keep their existing relative (already-ranked)
+        // order rather than reshuffling by rotation cursor — a well-matched
+        // sponsor should not be bumped by a stale one when both fit.
+        eligible
+      : // Over the cap: the rotation cursor decides who gets a slot this time.
+        // Null (never shown) sorts first, so a brand-new sponsor always gets a
+        // turn before a repeat.
+        [...eligible]
+          .sort((a, b) => {
+            const aShown = sponsored.get(a.userId)?.lastShownAt ?? null;
+            const bShown = sponsored.get(b.userId)?.lastShownAt ?? null;
+            if (aShown === null && bShown === null) return 0;
+            if (aShown === null) return -1;
+            if (bShown === null) return 1;
+            return aShown.getTime() - bShown.getTime();
+          })
+          .slice(0, cap);
+
+  const asSponsored = (worker: T): T & { sponsored: boolean } => ({ ...worker, sponsored: true });
+
+  const merged: (T & { sponsored: boolean })[] = rest.map((w) => ({ ...w, sponsored: false }));
+  const shownUserIds: string[] = [];
+
+  if (rest.length < 2) {
+    // Too little organic content to interleave into: place at most one
+    // sponsored worker, near the top but never AT the top.
+    const worker = kept[0];
+    if (worker) {
+      merged.splice(Math.min(2, rest.length), 0, asSponsored(worker));
+      shownUserIds.push(worker.userId);
+    }
+    return { workers: merged, shownUserIds };
+  }
+
+  kept.forEach((worker, i) => {
+    const targetIndex = Math.min(sponsoredSlotIndex(i), merged.length);
+    merged.splice(targetIndex, 0, asSponsored(worker));
+    shownUserIds.push(worker.userId);
+  });
+
+  return { workers: merged, shownUserIds };
+}
