@@ -2,17 +2,20 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
-import { Flag, MessageSquare, Pencil, Receipt, Share2 } from 'lucide-react';
+import { Bookmark, Flag, MessageSquare, Pencil, Receipt, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useIntentReplay, useRequireAuth } from '@/components/auth/require-auth';
+import { useFavorites } from '@/components/discovery/favorites-provider';
 import { ReportDialog } from '@/components/moderation/report-dialog';
 import { RequestQuoteDialog } from '@/components/jobs/request-quote-dialog';
 import { EndorseDialog } from './endorse-dialog';
 import { ApiError } from '@/lib/api-error';
+import { cn } from '@/lib/utils';
 import { recordRecentWorker } from '@/lib/discovery';
 import { startConversation } from '@/lib/messaging';
+import type { VerificationTier } from '@/lib/trust';
 
 /**
  * Profile actions (PRO-04): Message, Request a Quote / Book, Share, Report.
@@ -41,19 +44,32 @@ export function ProfileActions({
   workerName,
   avatar,
   headline,
+  city,
+  tier,
+  trustScore,
+  completedJobs,
+  averageRating,
   isOwner,
 }: {
   workerUserId: string;
   workerName: string;
   avatar: string | null;
   headline: string | null;
+  city: string | null;
+  tier: VerificationTier;
+  trustScore: number;
+  completedJobs: number;
+  averageRating: number | null;
   isOwner: boolean;
 }) {
   const t = useTranslations('Profile');
+  const tCard = useTranslations('WorkerCard');
   const requireAuth = useRequireAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { isSaved, toggle } = useFavorites();
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+  const saved = isSaved(workerUserId);
   // navigator.share exists only on some browsers, and only over HTTPS. Read as
   // an external store so the server render (no share sheet) and the client's
   // first paint agree, without a state write in an effect.
@@ -148,6 +164,35 @@ export function ProfileActions({
       >
         <MessageSquare aria-hidden />
         {t('message')}
+      </Button>
+
+      <Button
+        variant="outline"
+        aria-pressed={saved}
+        aria-label={
+          saved ? tCard('unsave', { name: workerName }) : tCard('save', { name: workerName })
+        }
+        onClick={() =>
+          requireAuth(
+            'save_favorite',
+            () =>
+              void toggle({
+                userId: workerUserId,
+                name: workerName,
+                avatar,
+                headline,
+                city,
+                tier,
+                trustScore,
+                completedJobs,
+                averageRating,
+              }),
+            { payload: { userId: workerUserId } },
+          )
+        }
+      >
+        <Bookmark aria-hidden className={cn('size-4', saved && 'fill-primary text-primary')} />
+        {saved ? t('saved') : t('save')}
       </Button>
 
       <Button variant="ghost" onClick={() => void share()}>

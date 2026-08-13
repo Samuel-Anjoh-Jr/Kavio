@@ -180,6 +180,11 @@ export function WorkerProfileScreen({
             workerName={name}
             avatar={profile.avatar}
             headline={profile.headline}
+            city={profile.city}
+            tier={profile.tier}
+            trustScore={profile.trustScore}
+            completedJobs={profile.stats.completedJobs}
+            averageRating={profile.stats.averageRating}
             isOwner={isOwner}
           />
         </div>
