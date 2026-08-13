@@ -1092,7 +1092,8 @@
     "distance": {
       "metres": "{value} m",
       "kilometres": "{value} km"
-    }
+    },
+    "sponsored": "Sponsorisé"
   },
   "SavedWorkers": {
     "title": "Favoris",
@@ -1259,7 +1260,8 @@
       "earningsHint": "Solde disponible dans votre portefeuille",
       "availabilityTitle": "Disponibilités",
       "availabilityBody": "Les clients voient vos horaires sur votre profil. Gardez-les à jour pour ne recevoir que des demandes que vous pouvez accepter.",
-      "manageAvailability": "Gérer les disponibilités"
+      "manageAvailability": "Gérer les disponibilités",
+      "featuredHeading": "Mise en avant sponsorisée"
     },
     "client": {
       "discoverHeading": "Trouver un professionnel",
@@ -2196,7 +2198,8 @@
     "teamInviteAcceptedTitle": "Vous faites partie de l'équipe",
     "teamInviteAcceptedBody": "Connectez-vous avec votre e-mail et le mot de passe que vous venez de définir pour ouvrir le tableau de bord.",
     "goToLogin": "Se connecter",
-    "alreadyHaveAccount": "Vous avez déjà un compte ?"
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "featuredHeading": "Mise en avant sponsorisée"
   },
   "Admin": {
     "consoleTitle": "Console d'administration",
@@ -2212,7 +2215,8 @@
       "announcements": "Annonces",
       "audit": "Journal d'audit",
       "settings": "Paramètres",
-      "marketing": "Marketing"
+      "marketing": "Marketing",
+      "featured": "Mis en avant"
     },
     "loadError": "Impossible de charger ces données pour le moment. Réessayez dans un instant.",
     "noData": "Rien à afficher pour l'instant.",
@@ -2903,5 +2907,64 @@
     "heading": "Vous êtes une entreprise ?",
     "body": "Faites-vous vérifier avec votre pièce d’identité et votre registre de commerce (RCCM) pour publier des offres sur le tableau public, au lieu de contacter les professionnels un par un.",
     "cta": "Se faire vérifier comme entreprise"
+  },
+  "FeaturedStatusCard": {
+    "heading": {
+      "NONE": "Faites mettre votre profil en avant",
+      "PENDING": "Votre demande est en cours d’examen",
+      "APPROVED": "Votre profil est mis en avant",
+      "PAUSED": "Mise en avant suspendue",
+      "REJECTED": "Demande refusée",
+      "REVOKED": "Mise en avant terminée"
+    },
+    "body": {
+      "NONE": "Demandez à être mis en avant : votre profil sera classé plus haut dans les recherches, en échange d’une légère augmentation de notre commission. Un administrateur examine chaque demande — votre classement reste inchangé pendant l’attente.",
+      "PENDING": "Un administrateur examine votre demande. Votre profil continue d’être classé normalement en attendant notre réponse.",
+      "APPROVED": "Votre profil est classé plus haut dans les recherches et porte une mention discrète « Sponsorisé », toujours sur une recherche pertinente.",
+      "PAUSED": "Vous avez désactivé cette option. Votre profil est de nouveau classé normalement et la commission supplémentaire ne s’applique plus.",
+      "REJECTED": "Nous n’avons pas pu approuver cette demande pour le moment.",
+      "REVOKED": "Kavio a mis fin à cette mise en avant. Contactez le support si vous avez des questions."
+    },
+    "commission": "Tant que c’est actif, Kavio prélève {percent} % de commission supplémentaire en plus des frais habituels.",
+    "requestedOn": "Demandé le {date}.",
+    "requestCta": "Demander à être mis en avant",
+    "requestAgainCta": "Demander à nouveau",
+    "pauseCta": "Suspendre",
+    "resumeCta": "Reprendre",
+    "requestedToast": "Demande envoyée. Nous vous informerons une fois qu’elle aura été examinée.",
+    "pausedToast": "Mise en avant suspendue.",
+    "resumedToast": "Mise en avant reprise."
+  },
+  "FeaturedReviewQueue": {
+    "title": "Mises en avant",
+    "subtitle": "Examinez les demandes de mise en avant dans les recherches. Approuvez avec un taux de commission, ou refusez avec une raison visible par le demandeur.",
+    "loadError": "Impossible de charger la file des demandes de mise en avant.",
+    "empty": "Aucune demande en attente pour le moment.",
+    "unnamed": "Sans nom",
+    "stats": "Score de confiance {trustScore} · {completedJobs, plural, =0 {aucune mission terminée} one {# mission terminée} other {# missions terminées}}",
+    "requestedOn": "Demandé le {date}",
+    "role": {
+      "WORKER": "Professionnel",
+      "BUSINESS": "Entreprise"
+    },
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "approveTitle": "Approuver {name}",
+    "approveSubtitle": "Définissez la commission supplémentaire prélevée par cette mise en avant, en plus des frais habituels.",
+    "commissionLabel": "Commission supplémentaire",
+    "commissionHint": "Un pourcentage de la valeur de la mission, par exemple 5 pour 5 %.",
+    "commissionInvalid": "Indiquez une commission comprise entre 0 et 100 %.",
+    "internalNoteLabel": "Note interne (facultatif)",
+    "internalNotePlaceholder": "Jamais visible par le demandeur.",
+    "confirmApprove": "Approuver",
+    "approvedToast": "{name} est maintenant mis en avant.",
+    "rejectTitle": "Refuser {name}",
+    "rejectSubtitle": "Cette raison est visible par le demandeur : expliquez ce qui est attendu.",
+    "reasonLabel": "Raison (visible par le demandeur)",
+    "reasonPlaceholder": "Indiquez ce qui est nécessaire pour qu’une future demande soit approuvée.",
+    "reasonHint": "Au moins {min} caractères.",
+    "reasonInvalid": "Indiquez au moins {min} caractères.",
+    "confirmReject": "Refuser",
+    "rejectedToast": "Demande de {name} refusée."
   }
 }

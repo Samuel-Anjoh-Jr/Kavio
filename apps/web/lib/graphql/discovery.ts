@@ -122,6 +122,7 @@ export const SEARCH_WORKERS_QUERY = gql`
         matchedServiceName
         matchedServiceCount
         priceFrom
+        sponsored
       }
       totalCount
       radiusM
@@ -156,6 +157,8 @@ export interface SearchWorkerResult {
   matchedServiceName: string | null;
   matchedServiceCount: number;
   priceFrom: number | null;
+  /** True for a paid placement — always a genuine match, never a page takeover. */
+  sponsored: boolean;
 }
 
 export interface NoProviderSignal {

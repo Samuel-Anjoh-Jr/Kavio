@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Bookmark, BriefcaseBusiness, MapPin, Star } from 'lucide-react';
+import { Bookmark, BriefcaseBusiness, MapPin, Sparkles, Star } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { RemoteImage } from '@/components/ui/remote-image';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -131,6 +131,14 @@ export function WorkerCard({ worker, compact = false, className }: WorkerCardPro
             {isNew && (
               <span className="rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
                 {t('new')}
+              </span>
+            )}
+            {/* A discreet, honest disclosure of a paid placement — muted like
+                the other badges here, never shouted like an ad banner. */}
+            {worker.sponsored && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                <Sparkles aria-hidden className="size-3" />
+                {t('sponsored')}
               </span>
             )}
           </div>
