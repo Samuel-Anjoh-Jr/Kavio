@@ -301,6 +301,15 @@ async function BusinessHome() {
           </Link>
         </div>
       </HomeSection>
+
+      {/* Sponsored ranking placement: the same card and same identity-level
+          status as the worker home (components/featured/featured-status-card.tsx).
+          Kept here too — not only in the business console (BIZ-02) — so a
+          'featured.approved/rejected/revoked' notification always lands
+          somewhere that shows the status, whichever role was active. */}
+      <HomeSection title={t('business.featuredHeading')}>
+        <FeaturedStatusCard />
+      </HomeSection>
     </>
   );
 }

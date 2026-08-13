@@ -248,7 +248,7 @@ export class BusinessAnalyticsService {
         createdAt: true,
         settledAt: true,
         bookingId: true,
-        booking: { select: { job: { select: { title: true } } } },
+        booking: { select: { job: { select: { id: true, title: true } } } },
       },
     });
 
@@ -258,6 +258,7 @@ export class BusinessAnalyticsService {
       amount: row.amount,
       description: row.description,
       jobTitle: row.booking?.job.title ?? null,
+      jobId: row.booking?.job.id ?? null,
       bookingId: row.bookingId,
       createdAt: row.createdAt,
       settledAt: row.settledAt,

@@ -1294,7 +1294,8 @@
       "teamPanelTitle": "Your team",
       "teamPanelBody": "Invite colleagues and set what each of them can see and do.",
       "jobsPanelTitle": "Posts, hires and spend",
-      "jobsPanelBody": "Applications waiting on you, work in progress, and what you have spent."
+      "jobsPanelBody": "Applications waiting on you, work in progress, and what you have spent.",
+      "featuredHeading": "Sponsored placement"
     }
   },
   "JobDetail": {

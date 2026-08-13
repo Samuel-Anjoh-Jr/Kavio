@@ -1294,7 +1294,8 @@
       "teamPanelTitle": "Votre équipe",
       "teamPanelBody": "Invitez des collègues et définissez ce que chacun peut voir et faire.",
       "jobsPanelTitle": "Annonces, recrutements et dépenses",
-      "jobsPanelBody": "Candidatures en attente, travaux en cours et dépenses engagées."
+      "jobsPanelBody": "Candidatures en attente, travaux en cours et dépenses engagées.",
+      "featuredHeading": "Mise en avant sponsorisée"
     }
   },
   "JobDetail": {

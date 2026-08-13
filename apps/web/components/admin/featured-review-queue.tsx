@@ -360,7 +360,7 @@ function RejectDialog({
               onChange={(event) => setReason(event.target.value)}
               className="w-full rounded-input border border-input bg-surface px-4 py-3 text-sm text-surface-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
-            <p className="text-xs text-muted-foreground">{t('reasonHint')}</p>
+            <p className="text-xs text-muted-foreground">{t('reasonHint', { min: REASON_MIN })}</p>
           </div>
 
           <div className="flex flex-col gap-1.5">
