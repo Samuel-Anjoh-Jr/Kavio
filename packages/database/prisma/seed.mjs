@@ -1538,7 +1538,7 @@ async function main() {
           email: memberUser?.email ?? `pending.team${t + 1}.biz${i + 1}@example.com`,
           phone: memberUser?.phone ?? uniqueCameroonPhone(),
           title: randomItem(['Site Supervisor', 'Chef d\u2019équipe', 'Comptable', 'Technicien']),
-          role: randomItem(['ADMIN', 'HR_MANAGER', 'ACCOUNTANT', 'STAFF']),
+          roles: { create: [{ role: randomItem(['ADMIN', 'HR_MANAGER', 'ACCOUNTANT', 'STAFF']) }] },
           accessLevel:
             status === 'ACTIVE'
               ? randomItem(['MANAGE_JOBS', 'PAYMENTS', 'VIEW_ONLY'])
