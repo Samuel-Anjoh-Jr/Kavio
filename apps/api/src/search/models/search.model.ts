@@ -100,6 +100,12 @@ export class SearchWorkerView {
 
   @Field(() => Float, { description: 'Trigram similarity of the query to the matched service.' })
   relevance!: number;
+
+  @Field({
+    description:
+      'True when this is a paid placement — always a genuine match for the search terms, never inserted for an irrelevant query, and capped so sponsored results never crowd out organic ones.',
+  })
+  sponsored!: boolean;
 }
 
 @ObjectType({

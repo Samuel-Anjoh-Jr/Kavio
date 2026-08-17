@@ -26,6 +26,7 @@ import { TrustModule } from './trust/trust.module';
 import { StorageModule } from './storage/storage.module';
 import { DocumentsModule } from './documents/documents.module';
 import { VerificationModule } from './verification/verification.module';
+import { FeaturedModule } from './featured/featured.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { GeoModule } from './geo/geo.module';
 import { CatalogModule } from './catalog/catalog.module';
@@ -75,6 +76,11 @@ import { AdminModule } from './admin/admin.module';
     // Progressive verification and the agent/admin review pipeline. Registered
     // after TrustModule, whose ledger it reports outcomes into.
     VerificationModule,
+    // Sponsored ranking (business plan: "Featured/Verified Business tier").
+    // Registered here, near Trust/Verification, because it attaches to the
+    // identity the same way tier and Trust Score do. QuotesModule and
+    // SearchModule import it directly for its exported FeaturedService.
+    FeaturedModule,
     OnboardingModule,
     // The spatial stack (SRS §12): PostGIS proximity, reverse geocoding, and
     // MVT tiles. Registered after OnboardingModule, whose profiles carry the

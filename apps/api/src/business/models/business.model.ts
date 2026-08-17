@@ -174,6 +174,12 @@ export class CompanyPaymentView {
   @Field(() => String, { nullable: true })
   jobTitle!: string | null;
 
+  @Field(() => ID, {
+    nullable: true,
+    description: 'The job this payment belongs to, for linking the row to its detail screen.',
+  })
+  jobId!: string | null;
+
   @Field(() => ID, { nullable: true })
   bookingId!: string | null;
 

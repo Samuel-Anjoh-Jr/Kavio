@@ -62,6 +62,12 @@ const TEMPLATE_SURFACE: Record<string, string> = {
   'verification.approved': '/app/verification',
   'verification.rejected': '/app/verification',
   'verification.info_requested': '/app/verification',
+  // The sponsored-placement status card lives on the role home (both the
+  // worker and business homes render it), not a dedicated screen
+  // (components/featured/featured-status-card.tsx).
+  'featured.approved': '/app/home',
+  'featured.rejected': '/app/home',
+  'featured.revoked': '/app/home',
   'job.application_received': '/app/jobs',
   'job.invitation_received': '/app/jobs',
   'job.application_status_changed': '/app/jobs',

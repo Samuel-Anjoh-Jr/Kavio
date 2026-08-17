@@ -37,6 +37,11 @@ export function trustImprovementHref(
     // that only exists once you have started offering services as a worker.
     case 'ENDORSEMENT_RECEIVED':
       return role === 'WORKER' ? `/app/workers/${subjectId}` : '/app/onboarding/worker';
+    // "Complete jobs through Kavio" has a real next step: go find one. Only a
+    // Worker can act on it; a Client/Business earns this pillar by hiring, for
+    // which there is no single browse destination worth sending them to.
+    case 'JOB_COMPLETED':
+      return role === 'WORKER' ? '/app/jobs' : null;
     default:
       return null;
   }

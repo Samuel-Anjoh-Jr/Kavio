@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { FeaturedStatusCard } from '@/components/featured/featured-status-card';
 import { formatDate } from '@/lib/datetime';
 import { formatXaf } from '@/lib/discovery';
 import { graphqlErrorCode } from '@/lib/graphql/errors';
@@ -211,6 +212,15 @@ export function BusinessDashboard({ businessProfileId }: { businessProfileId?: s
         </section>
       )}
 
+      <section>
+        <h3 className="font-heading text-lg font-semibold text-foreground">
+          {t('featuredHeading')}
+        </h3>
+        <div className="mt-4">
+          <FeaturedStatusCard />
+        </div>
+      </section>
+
       {canSeePayments && (
         <section>
           <h3 className="font-heading text-lg font-semibold text-foreground">
@@ -224,25 +234,48 @@ export function BusinessDashboard({ businessProfileId }: { businessProfileId?: s
             </div>
           ) : (
             <ul className="mt-4 flex flex-col gap-2">
-              {payments.map((payment) => (
-                <li
-                  key={payment.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-border bg-surface px-5 py-4"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-foreground">
-                      {payment.jobTitle ?? payment.description ?? t('paymentFallback')}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {t(`transactionType.${payment.type}`)} ·{' '}
-                      {formatDate(payment.settledAt ?? payment.createdAt, locale)}
-                    </p>
-                  </div>
-                  <span className="font-numeric text-sm font-semibold text-foreground">
-                    {formatXaf(payment.amount, locale)}
-                  </span>
-                </li>
-              ))}
+              {payments.map((payment) => {
+                const content = (
+                  <>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-foreground">
+                        {payment.jobTitle ?? payment.description ?? t('paymentFallback')}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {t(`transactionType.${payment.type}`)} ·{' '}
+                        {formatDate(payment.settledAt ?? payment.createdAt, locale)}
+                      </p>
+                    </div>
+                    <span className="font-numeric text-sm font-semibold text-foreground">
+                      {formatXaf(payment.amount, locale)}
+                    </span>
+                  </>
+                );
+
+                // Every payment is against one booking's escrow on one job — the
+                // same record the job screen's own escrow timeline reads from
+                // (components/transactions/escrow-timeline.tsx). A row with a
+                // known job is a link there, matching the "click a real record,
+                // land on its detail" rule everywhere else in the app; a payment
+                // whose job could not be resolved still renders, just inert.
+                return payment.jobId ? (
+                  <li key={payment.id}>
+                    <Link
+                      href={`/app/jobs/${payment.jobId}`}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-border bg-surface px-5 py-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {content}
+                    </Link>
+                  </li>
+                ) : (
+                  <li
+                    key={payment.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-border bg-surface px-5 py-4"
+                  >
+                    {content}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>

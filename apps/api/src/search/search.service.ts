@@ -4,6 +4,7 @@ import { clampLimit, clampOffset, clampRadius, isValidCoordinates } from '../geo
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { PrismaService } from '../prisma/prisma.service';
+import { FeaturedService } from '../featured/featured.service';
 import {
   deriveNoProviderSignal,
   NoProviderReason,
@@ -11,7 +12,13 @@ import {
   type ProviderProbe,
 } from './no-provider.util';
 import { VERIFIED_MIN_TIER } from './search.config';
-import { MAX_QUERY_LENGTH, MIN_QUERY_LENGTH, normaliseSort, weightsFor } from './search-ranking';
+import {
+  applySponsoredSlots,
+  MAX_QUERY_LENGTH,
+  MIN_QUERY_LENGTH,
+  normaliseSort,
+  weightsFor,
+} from './search-ranking';
 
 const logger = createLogger('search');
 
@@ -83,6 +90,13 @@ export interface SearchWorker {
   matchedServiceCount: number;
   relevance: number;
   rankScore: number;
+  /**
+   * True for a paid placement (business plan: "Featured/Verified Business
+   * tier") — always a genuine match for the query, never inserted for an
+   * irrelevant search, and capped so sponsored results never crowd out
+   * organic ones (see applySponsoredSlots). Only ever set on page one.
+   */
+  sponsored: boolean;
 }
 
 export interface WorkerSearchResult {
@@ -146,7 +160,10 @@ interface ProviderProbeRow {
  */
 @Injectable()
 export class SearchService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly featured: FeaturedService,
+  ) {}
 
   async searchWorkers(query: WorkerSearchQuery): Promise<WorkerSearchResult> {
     const text = this.normaliseQuery(query.query);
@@ -227,8 +244,30 @@ export class SearchService {
             nearestProviderM: null,
           };
 
+    // Sponsored placement is a first-page-only highlight (DIS-08 boundary): it
+    // decides which already-matched workers get a "Sponsored" tag and a small
+    // nudge up the page, never which workers appear at all, and applying it
+    // past page one would let a sponsor's rotation cursor advance every time
+    // someone merely paged deeper into an unrelated search.
+    let workers = rows.map(toSearchWorker);
+    if (offset === 0 && workers.length > 0) {
+      const activeListings = await this.featured.activeListingsFor(workers.map((w) => w.userId));
+      const sponsoredListings = new Map(
+        [...activeListings].map(([userId, listing]) => [userId, { userId, ...listing }]),
+      );
+      const placed = applySponsoredSlots(workers, sponsoredListings);
+      workers = placed.workers;
+      if (placed.shownUserIds.length > 0) {
+        // Fire-and-forget: advancing the rotation cursor must never slow down
+        // or fail a search response. markShown() never throws — it swallows
+        // and logs internally — but the search response does not wait on it
+        // regardless.
+        void this.featured.markShown(placed.shownUserIds);
+      }
+    }
+
     return {
-      workers: rows.map(toSearchWorker),
+      workers,
       totalCount,
       radiusM,
       limit,
@@ -486,5 +525,6 @@ function toSearchWorker(row: SearchWorkerRow): SearchWorker {
     matchedServiceCount: Number(row.matched_service_count),
     relevance: Number(row.relevance),
     rankScore: Number(row.rank_score),
+    sponsored: false,
   };
 }

@@ -14,6 +14,7 @@ import {
   DisputeStatus,
   EndorsementRelationship,
   EscrowState,
+  FeaturedListingStatus,
   GeoRegionLevel,
   JobApplicationStatus,
   JobInvitationStatus,
@@ -321,6 +322,12 @@ export function registerGraphQLEnums(): void {
   registerEnumType(AnnouncementStatus, {
     name: 'AnnouncementStatus',
     description: 'Draft, published or archived (ADM-07).',
+  });
+
+  registerEnumType(FeaturedListingStatus, {
+    name: 'FeaturedListingStatus',
+    description:
+      'A sponsored ranking placement’s lifecycle (business plan: "Featured/Verified Business tier"). Held on the identity, like tier and Trust Score.',
   });
 
   // Not a Prisma enum: the reason a search came back empty is derived at read

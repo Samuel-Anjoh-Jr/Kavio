@@ -62,6 +62,7 @@ export interface CompanyPayment {
   amount: number;
   description: string | null;
   jobTitle: string | null;
+  jobId: string | null;
   bookingId: string | null;
   createdAt: string;
   settledAt: string | null;
@@ -163,6 +164,7 @@ export const COMPANY_PAYMENTS_QUERY = gql`
       amount
       description
       jobTitle
+      jobId
       bookingId
       createdAt
       settledAt

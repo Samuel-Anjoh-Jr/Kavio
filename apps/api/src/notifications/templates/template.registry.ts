@@ -40,7 +40,12 @@ export interface TemplateVariablesMap {
    * unlike most templates, there is no fixed EN/FR string to pick between,
    * only which of the two authored variants matches the recipient's locale.
    */
-  'admin.announcement_published': { titleEn: string; titleFr: string; bodyEn: string; bodyFr: string };
+  'admin.announcement_published': {
+    titleEn: string;
+    titleFr: string;
+    bodyEn: string;
+    bodyFr: string;
+  };
   /**
    * A business owner invited a team member (BIZ-03). Sent to an email with no
    * Kavio account yet, so it bypasses the per-user dispatcher — see
@@ -75,6 +80,24 @@ export interface TemplateVariablesMap {
     retryable: boolean;
   };
   'verification.info_requested': { checkLabelKey: string; infoRequest: string };
+  /**
+   * A featured/sponsored-placement request was approved (business plan:
+   * "Featured/Verified Business tier"). `extraCommissionPercent` is the
+   * admin-set rate, already converted from basis points for display.
+   */
+  'featured.approved': { extraCommissionPercent: number };
+  /**
+   * A featured/sponsored-placement request was declined. `reason` is the
+   * reviewer's own words, passed through verbatim — a decision a person
+   * cannot read is not due process.
+   */
+  'featured.rejected': { reason: string };
+  /**
+   * An admin revoked an already-approved featured placement (business plan:
+   * "Featured/Verified Business tier") — a policy action, not a self-service
+   * pause, so it gets its own notice rather than reusing `featured.rejected`.
+   */
+  'featured.revoked': { reason: string };
   /** A worker applied to the poster's job (JOB-03). */
   'job.application_received': { jobTitle: string };
   /** A poster invited the worker to quote a job (JOB-03). */
@@ -1009,6 +1032,150 @@ const verificationInfoRequested: TemplateDefinition<'verification.info_requested
     [NotificationChannel.WEB_PUSH]: {
       en: (v) => ({ title: 'We need one more thing', body: v.infoRequest }),
       fr: (v) => ({ title: 'Il nous manque un élément', body: v.infoRequest }),
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sponsored ranking (business plan: "Featured/Verified Business tier")
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Whole-percent formatter for a commission rate, EN/FR. */
+function percent(value: number, locale: Locale): string {
+  return `${value.toLocaleString(locale === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: 2 })}%`;
+}
+
+const featuredApproved: TemplateDefinition<'featured.approved'> = {
+  key: 'featured.approved',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'You are now a Featured listing on Kavio',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Your account now ranks higher in search.',
+          heading: 'You are now Featured',
+          bodyHtml: paragraphs(
+            'An admin approved your request to be featured. Your profile now carries the Sponsored tag and gets a ranking boost in search.',
+            `An extra ${escapeHtml(percent(v.extraCommissionPercent, 'en'))} platform commission applies on top of the standard fee for every booking accepted while this is active.`,
+            'You can pause this at any time from your account.',
+          ),
+        }),
+        text: `You are now a Featured listing on Kavio. An extra ${percent(v.extraCommissionPercent, 'en')} platform commission applies on top of the standard fee while this is active. You can pause it at any time.`,
+      }),
+      fr: (v) => ({
+        subject: 'Vous êtes désormais une annonce Sponsorisée sur Kavio',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Votre compte est désormais mieux classé dans la recherche.',
+          heading: 'Vous êtes désormais Sponsorisé(e)',
+          bodyHtml: paragraphs(
+            'Un administrateur a approuvé votre demande de mise en avant. Votre profil porte désormais l’étiquette Sponsorisé et bénéficie d’un meilleur classement dans la recherche.',
+            `Une commission supplémentaire de ${escapeHtml(percent(v.extraCommissionPercent, 'fr'))} s’applique en plus des frais standard sur chaque mission acceptée tant que cette option est active.`,
+            'Vous pouvez suspendre cette option à tout moment depuis votre compte.',
+          ),
+        }),
+        text: `Vous êtes désormais une annonce Sponsorisée sur Kavio. Une commission supplémentaire de ${percent(v.extraCommissionPercent, 'fr')} s'applique en plus des frais standard tant que cette option est active. Vous pouvez la suspendre à tout moment.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'You are now Featured',
+        body: `Ranking boost active. Extra commission: ${percent(v.extraCommissionPercent, 'en')}.`,
+      }),
+      fr: (v) => ({
+        title: 'Vous êtes désormais Sponsorisé(e)',
+        body: `Meilleur classement actif. Commission supplémentaire : ${percent(v.extraCommissionPercent, 'fr')}.`,
+      }),
+    },
+  },
+};
+
+const featuredRejected: TemplateDefinition<'featured.rejected'> = {
+  key: 'featured.rejected',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'About your Featured listing request',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'Your request was not approved this time.',
+          heading: 'Your Featured request',
+          bodyHtml: paragraphs(
+            'An admin reviewed your request to be featured and it was not approved this time.',
+            escapeHtml(v.reason),
+            'You can send a new request at any time from your account.',
+          ),
+        }),
+        text: `Your Featured listing request on Kavio was not approved this time: ${v.reason}. You can send a new request at any time.`,
+      }),
+      fr: (v) => ({
+        subject: 'À propos de votre demande de mise en avant',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Votre demande n’a pas été approuvée cette fois.',
+          heading: 'Votre demande de mise en avant',
+          bodyHtml: paragraphs(
+            'Un administrateur a examiné votre demande de mise en avant et elle n’a pas été approuvée cette fois.',
+            escapeHtml(v.reason),
+            'Vous pouvez envoyer une nouvelle demande à tout moment depuis votre compte.',
+          ),
+        }),
+        text: `Votre demande de mise en avant sur Kavio n'a pas été approuvée cette fois : ${v.reason}. Vous pouvez envoyer une nouvelle demande à tout moment.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({ title: 'Your Featured request', body: v.reason }),
+      fr: (v) => ({ title: 'Votre demande de mise en avant', body: v.reason }),
+    },
+  },
+};
+
+const featuredRevoked: TemplateDefinition<'featured.revoked'> = {
+  key: 'featured.revoked',
+  category: NotificationCategory.TRUST,
+  render: {
+    [NotificationChannel.EMAIL]: {
+      en: (v) => ({
+        subject: 'Your Featured listing was turned off',
+        html: renderEmailLayout({
+          locale: 'en',
+          preheader: 'An admin turned off your sponsored placement.',
+          heading: 'Your Featured listing was turned off',
+          bodyHtml: paragraphs(
+            'An admin revoked your featured placement, and the extra ranking boost and commission no longer apply.',
+            ...(v.reason ? [escapeHtml(v.reason)] : []),
+            'You can send a new request at any time from your account.',
+          ),
+        }),
+        text: `Your Featured listing on Kavio was turned off by an admin.${v.reason ? ` ${v.reason}` : ''} You can send a new request at any time.`,
+      }),
+      fr: (v) => ({
+        subject: 'Votre mise en avant a été désactivée',
+        html: renderEmailLayout({
+          locale: 'fr',
+          preheader: 'Un administrateur a désactivé votre mise en avant.',
+          heading: 'Votre mise en avant a été désactivée',
+          bodyHtml: paragraphs(
+            'Un administrateur a révoqué votre mise en avant : le meilleur classement et la commission supplémentaire ne s’appliquent plus.',
+            ...(v.reason ? [escapeHtml(v.reason)] : []),
+            'Vous pouvez envoyer une nouvelle demande à tout moment depuis votre compte.',
+          ),
+        }),
+        text: `Votre mise en avant sur Kavio a été désactivée par un administrateur.${v.reason ? ` ${v.reason}` : ''} Vous pouvez envoyer une nouvelle demande à tout moment.`,
+      }),
+    },
+    [NotificationChannel.WEB_PUSH]: {
+      en: (v) => ({
+        title: 'Your Featured listing was turned off',
+        body: v.reason || 'You can send a new request at any time.',
+      }),
+      fr: (v) => ({
+        title: 'Votre mise en avant a été désactivée',
+        body: v.reason || 'Vous pouvez envoyer une nouvelle demande à tout moment.',
+      }),
     },
   },
 };
@@ -2098,6 +2265,9 @@ const TEMPLATES: TemplateMap = {
   'verification.approved': verificationApproved,
   'verification.rejected': verificationRejected,
   'verification.info_requested': verificationInfoRequested,
+  'featured.approved': featuredApproved,
+  'featured.rejected': featuredRejected,
+  'featured.revoked': featuredRevoked,
   'job.application_received': jobApplicationReceived,
   'job.invitation_received': jobInvitationReceived,
   'job.application_status_changed': jobApplicationStatusChanged,

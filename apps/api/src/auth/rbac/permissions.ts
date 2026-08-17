@@ -51,6 +51,9 @@ export const PERMISSIONS = [
   'verification:field_verify',
   'agent:onboard_worker',
 
+  // Sponsored ranking ("Featured/Verified Business" tier)
+  'featured:request',
+
   // Admin
   'admin:access',
   'admin:user_manage',
@@ -95,6 +98,7 @@ const WORKER: Permission[] = [
   // A colleague is a valid EndorsementRelationship — without this a worker
   // could never actually give the endorsement the schema already allows for.
   'endorsement:give',
+  'featured:request',
 ];
 
 /**
@@ -110,7 +114,12 @@ const WORKER: Permission[] = [
  * would be wrong twice over — the answer depends on live verification state
  * rather than on the role, and it would take direct hiring away from clients.
  */
-const BUSINESS: Permission[] = [...CLIENT, 'business:manage', 'business:team_manage'];
+const BUSINESS: Permission[] = [
+  ...CLIENT,
+  'business:manage',
+  'business:team_manage',
+  'featured:request',
+];
 
 /** Field agents onboard and physically verify workers; they do not trade. */
 const AGENT: Permission[] = [

@@ -73,23 +73,46 @@ export function WorkerProfileScreen({
         )}
 
         <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
-          <div className="-mt-12 flex flex-wrap items-end gap-4 sm:-mt-16">
-            {profile.avatar ? (
-              <RemoteImage
-                src={profile.avatar}
-                alt=""
-                className="size-24 shrink-0 rounded-full border-4 border-background object-cover sm:size-32"
-              />
-            ) : (
-              <span
-                aria-hidden
-                className="flex size-24 shrink-0 items-center justify-center rounded-full border-4 border-background bg-muted font-heading text-3xl font-semibold text-muted-foreground sm:size-32"
-              >
-                {initials(profile.name)}
-              </span>
-            )}
+          {/*
+           * A CSS grid rather than a flex row: on a narrow phone the name block
+           * routinely wraps to 3+ lines (long name + headline + a wrapping badge
+           * row), and `items-end` on a flex row would then pin the much-shorter
+           * avatar and trust ring to the BOTTOM of that tall row — visually
+           * detaching them from the name they belong next to. The grid gives the
+           * avatar and ring their own top row and lets the name block drop to a
+           * full-width row underneath, so nothing floats away from its label
+           * regardless of how much the name wraps. From `sm:` up there is room
+           * for the original single-row layout (avatar · name · ring).
+           */}
+          <div className="-mt-12 grid grid-cols-[auto_1fr] items-end gap-x-4 gap-y-3 sm:-mt-16 sm:grid-cols-[auto_1fr_auto]">
+            <div className="col-start-1 row-start-1">
+              {profile.avatar ? (
+                <RemoteImage
+                  src={profile.avatar}
+                  alt=""
+                  className="size-24 shrink-0 rounded-full border-4 border-background object-cover sm:size-32"
+                />
+              ) : (
+                <span
+                  aria-hidden
+                  className="flex size-24 shrink-0 items-center justify-center rounded-full border-4 border-background bg-muted font-heading text-3xl font-semibold text-muted-foreground sm:size-32"
+                >
+                  {initials(profile.name)}
+                </span>
+              )}
+            </div>
 
-            <div className="min-w-0 flex-1 pb-1">
+            <div className="col-start-2 row-start-1 min-w-0 justify-self-end sm:col-start-3 sm:justify-self-auto">
+              <Link
+                href={`/app/trust?subject=${profile.userId}`}
+                className="inline-block shrink-0 rounded-card p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={t('viewTrustBreakdown')}
+              >
+                <TrustScoreRing score={profile.trustScore} tier={profile.tier} size="md" />
+              </Link>
+            </div>
+
+            <div className="col-span-2 row-start-2 min-w-0 pb-1 sm:col-span-1 sm:col-start-2 sm:row-start-1">
               <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 {name}
               </h1>
@@ -109,14 +132,6 @@ export function WorkerProfileScreen({
                 </span>
               </div>
             </div>
-
-            <Link
-              href={`/app/trust?subject=${profile.userId}`}
-              className="shrink-0 rounded-card p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label={t('viewTrustBreakdown')}
-            >
-              <TrustScoreRing score={profile.trustScore} tier={profile.tier} size="md" />
-            </Link>
           </div>
         </div>
       </div>
@@ -165,6 +180,11 @@ export function WorkerProfileScreen({
             workerName={name}
             avatar={profile.avatar}
             headline={profile.headline}
+            city={profile.city}
+            tier={profile.tier}
+            trustScore={profile.trustScore}
+            completedJobs={profile.stats.completedJobs}
+            averageRating={profile.stats.averageRating}
             isOwner={isOwner}
           />
         </div>
