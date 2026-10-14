@@ -2687,29 +2687,61 @@
       "faq": "FAQ"
     },
     "hero": {
-      "badge": "Now live across Cameroon",
-      "heading": "Find a worker you can actually trust.",
-      "subheading": "Verified identity, real portfolios, fixed quotes and escrow-protected payments: the trust layer is the product.",
-      "primaryCta": "Explore workers",
-      "secondaryCta": "Create an account",
-      "noAccountNote": "No account needed to browse. You only sign in when you’re ready to act.",
-      "workerPortraitAlt": "A verified Kavio worker",
-      "clientPortraitAlt": "A Kavio client",
-      "workerTwoPortraitAlt": "Another verified Kavio worker",
-      "trustScoreLabel": "Trust Score {score} out of 100",
-      "trustScoreCaption": "Verified · Tier 3",
-      "verifiedBadge": "ID verified"
+      "heading": "Know who’s coming before you open the door.",
+      "subheading": "Every worker on Kavio carries a Trust Score built from a checked ID, photos of real past jobs and their record on the platform. You agree a fixed quote, pay into escrow, and the money moves only when you say the job is done.",
+      "primaryCta": "Find a worker",
+      "secondaryCta": "Offer your skills",
+      "noAccountNote": "Free to browse. You only sign in when you hire.",
+      "eyebrow": "Skilled workers in Douala, Yaoundé and across Cameroon",
+      "record": {
+        "label": "Example of a worker’s Trust Record",
+        "example": "Example record",
+        "tier": "Tier 3",
+        "name": "Ernest Mbarga",
+        "trade": "Electrician · Bonamoussadi, Douala",
+        "scoreLabel": "Trust Score {score} out of 100",
+        "scoreCaption": "Trust Score",
+        "pillars": {
+          "identity": "Identity",
+          "work": "Work evidence",
+          "record": "Platform record",
+          "payments": "Payments"
+        },
+        "stamps": {
+          "id": "ID checked",
+          "address": "Address confirmed",
+          "jobs": "{count} jobs paid out"
+        },
+        "escrowLabel": "Current job, held in escrow"
+      }
     },
     "areas": {
       "heading": "Where we work",
-      "body": "Kavio is open nationwide. Verified coverage is deepest in these cities today, and it grows every week as more workers complete verification."
+      "body": "Kavio is open nationwide. Verified coverage is deepest in Douala and Yaoundé today and grows each week as more workers finish verification.",
+      "regions": {
+        "centre": "Centre",
+        "littoral": "Littoral",
+        "west": "West",
+        "northwest": "Northwest",
+        "southwest": "Southwest",
+        "south": "South",
+        "east": "East",
+        "adamawa": "Adamawa",
+        "north": "North",
+        "farNorth": "Far North"
+      }
     },
     "proof": {
-      "heading": "Kavio by the numbers",
-      "verified": "Verified workers",
-      "success": "Job success rate",
-      "rating": "Average rating",
-      "paid": "Paid through escrow"
+      "heading": "We asked people what they need before letting a worker in.",
+      "body": "Twenty-seven people in Cameroon each picked the three things that would make them hire through an app. Kavio is built around the top four.",
+      "items": {
+        "portfolio": "Photos of real past jobs",
+        "identity": "A verified ID and Trust Score",
+        "quote": "A fixed price before work starts",
+        "escrow": "Payment held until the job is done"
+      },
+      "valueLabel": "{percent} of respondents chose: {label}",
+      "source": "Source: Kavio user survey “Shaping the Future of Local Services in Cameroon”, 27 respondents, three choices each."
     },
     "trustEngine": {
       "heading": "Trust is earned in stages, and you can see every one.",
@@ -2717,7 +2749,7 @@
       "link": "See how the Trust Score works",
       "stages": {
         "15": {
-          "label": "New & identified",
+          "label": "New and identified",
           "description": "Phone verified and profile created. The starting line, honestly labelled."
         },
         "35": {
@@ -2725,7 +2757,7 @@
           "description": "Government ID and a live selfie checked. You know who’s coming."
         },
         "60": {
-          "label": "Address & portfolio",
+          "label": "Address and portfolio",
           "description": "Location confirmed and real completed work on file."
         },
         "82": {
@@ -2736,11 +2768,13 @@
           "label": "Agent-verified pro",
           "description": "In-person checks by a Kavio agent. The highest assurance we offer."
         }
-      }
+      },
+      "dialCaption": "Trust Score",
+      "dialStage": "Now: {stage}"
     },
     "portfolio": {
       "heading": "Real work, not stock photos.",
-      "body": "Every portfolio is evidence of a real job: drag to see the before and after.",
+      "body": "Each card is a finished job from a worker’s portfolio. Drag the handle to compare before and after.",
       "before": "Before",
       "after": "After",
       "beforeAlt": "Before: {trade} work",
@@ -2750,41 +2784,64 @@
     },
     "pricing": {
       "heading": "Your money is protected until the work is done.",
-      "body": "Payment is held in escrow and released only when you confirm the job is complete. The fee is shown in full before you pay.",
-      "steps": {
-        "hold": {
-          "title": "You pay into escrow",
-          "body": "When you accept a quote, your payment is held by Kavio, not sent to the worker."
+      "body": "Payment sits in escrow from the moment you accept a quote. It moves through five states, and only your confirmation sends it to the worker.",
+      "states": {
+        "paid": {
+          "title": "Paid",
+          "body": "You pay the agreed quote by MTN Mobile Money, Orange Money or card. Kavio holds it."
         },
-        "work": {
-          "title": "The work happens",
-          "body": "The worker does the job. The funds stay held the whole time."
+        "accepted": {
+          "title": "Accepted",
+          "body": "The worker sees the money is there and commits to the quote. The price cannot change at the door."
         },
-        "release": {
-          "title": "You release payment",
-          "body": "Happy with the work? Release the funds. Not happy? Open a dispute. The money stays held."
+        "inProgress": {
+          "title": "In progress",
+          "body": "The work happens. The funds stay held the whole time."
+        },
+        "completed": {
+          "title": "Completed",
+          "body": "You check the work. Not right? Open a dispute and the money stays held until it is resolved."
+        },
+        "released": {
+          "title": "Released",
+          "body": "You confirm, the worker is paid, and your review goes on their record."
         }
       },
-      "feeHeading": "A ~10% service fee, shown before you pay.",
-      "feeBody": "One transparent fee on completed work: never added after the fact, never a surprise at the door."
+      "receipt": {
+        "heading": "What you see before you pay",
+        "example": "Example booking",
+        "quote": "Agreed quote",
+        "youPay": "You pay",
+        "youPayNote": "Nothing added at checkout",
+        "fee": "Kavio service fee (~10%)",
+        "feeNote": "Taken from the worker’s payout",
+        "workerGets": "Worker receives",
+        "status": "Status",
+        "held": "Held in escrow",
+        "released": "Released to the worker",
+        "methods": "Payments run through Campay in XAF."
+      }
     },
     "testimonials": {
-      "heading": "Trusted by clients and workers alike.",
-      "body": "Real stories from households, businesses and the workers who serve them.",
-      "voiceNote": "Voice note",
-      "ratingLabel": "Rated {rating} out of 5"
+      "heading": "What people say once the job is done.",
+      "body": "Households, businesses and the workers they hired, in their own words.",
+      "ratingLabel": "Rated {rating} out of 5",
+      "pause": "Pause the reviews",
+      "play": "Play the reviews"
     },
     "faq": {
-      "heading": "Questions, answered.",
-      "body": "Everything you might want to know before you start.",
+      "heading": "Before you hire",
+      "body": "The questions people ask us most, about verification, payment and what happens if a job goes wrong.",
       "emptyTitle": "No questions yet",
       "emptyDescription": "Check back soon, we’re adding answers to the most common questions."
     },
     "cta": {
-      "heading": "Find a worker you can trust today.",
-      "body": "Browse verified workers across Cameroon. No account needed to start looking.",
-      "button": "Explore workers",
-      "note": "Free to browse · You only sign in to act"
+      "heading": "Your next job, done by someone with a record.",
+      "body": "Browse verified workers across Cameroon, compare their Trust Scores and past work, and only sign in when you are ready to hire.",
+      "button": "Find a worker",
+      "note": "Free to browse. No card needed.",
+      "workerPrompt": "Are you a skilled worker?",
+      "workerLink": "Build your Trust Record"
     },
     "footer": {
       "tagline": "Where good work starts.",

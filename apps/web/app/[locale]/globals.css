@@ -35,9 +35,10 @@
   /* Semantic surface tokens (light) */
   --background: var(--color-neutral-50);
   --foreground: var(--color-neutral-900);
-  --surface: #ffffff;
+  /* Indigo-tinted near-white: TMDS never uses pure #fff for a surface. */
+  --surface: #fdfdff;
   --surface-foreground: var(--color-neutral-900);
-  --surface-elevated: #ffffff;
+  --surface-elevated: #fdfdff;
   --muted: var(--color-neutral-100);
   --muted-foreground: var(--color-neutral-600);
   --border: var(--color-neutral-200);
@@ -46,10 +47,12 @@
 
   --primary: var(--color-indigo);
   --primary-foreground: #ffffff;
+  /* Neutral 900 on the two light brand fills: white on #14B86A is 2.6:1 and
+     on #00C2A8 2.3:1, both under WCAG AA; Neutral 900 clears 6:1 on each. */
   --success: var(--color-success);
-  --success-foreground: #ffffff;
+  --success-foreground: var(--color-neutral-900);
   --accent: var(--color-accent);
-  --accent-foreground: #ffffff;
+  --accent-foreground: var(--color-neutral-900);
   --warning: var(--color-warning);
   --warning-foreground: var(--color-neutral-900);
   --danger: var(--color-danger);
@@ -175,6 +178,99 @@ h6 {
 }
 
 /*
+ * Marketing first-paint motion (DESIGN.md "Motion").
+ *
+ * The hero animates with CSS keyframes rather than Anime.js on purpose: these
+ * start at first paint, so on a slow phone the entrance never waits for the JS
+ * bundle to download and hydrate, and the server-rendered final state is what
+ * a no-JS visitor or a crawler sees. Everything triggered by scroll or input
+ * stays in lib/motion.ts. Transform and opacity only, plus the gauge sweep
+ * (the one named stroke exception). Per-element delays come in through
+ * `--kv-delay`, so the stagger lives next to the markup that owns it.
+ */
+@property --kv-count {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+@keyframes kv-rise {
+  from {
+    transform: translateY(105%);
+  }
+}
+
+@keyframes kv-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes kv-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes kv-sweep {
+  from {
+    stroke-dashoffset: var(--kv-sweep-from);
+  }
+}
+
+@keyframes kv-count {
+  from {
+    --kv-count: 0;
+  }
+}
+
+@keyframes kv-stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.18) rotate(var(--kv-stamp-rot, -4deg));
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+.kv-word {
+  display: inline-block;
+  animation: kv-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) var(--kv-delay, 0ms) both;
+}
+
+.kv-enter {
+  animation: kv-fade-up 600ms cubic-bezier(0.22, 1, 0.36, 1) var(--kv-delay, 0ms) both;
+}
+
+.kv-fill {
+  transform-origin: left;
+  animation: kv-fill 900ms cubic-bezier(0.16, 1, 0.3, 1) var(--kv-delay, 0ms) both;
+}
+
+.kv-sweep {
+  stroke-dashoffset: var(--kv-sweep-to);
+  animation: kv-sweep 1100ms cubic-bezier(0.16, 1, 0.3, 1) var(--kv-delay, 0ms) both;
+}
+
+/* The score counts up with the ring. The digits live in ::after, so the
+   element carries an sr-only label and stays aria-hidden. */
+.kv-count {
+  counter-reset: kv-count var(--kv-count);
+  animation: kv-count 1100ms cubic-bezier(0.16, 1, 0.3, 1) var(--kv-delay, 0ms) both;
+}
+
+.kv-count::after {
+  content: counter(kv-count);
+}
+
+.kv-stamp {
+  transform: rotate(var(--kv-stamp-rot, -4deg));
+  animation: kv-stamp 420ms cubic-bezier(0.22, 1, 0.36, 1) var(--kv-delay, 0ms) both;
+}
+
+/*
  * prefers-reduced-motion, honoured globally (NFR-A11Y-01).
  *
  * The JS motion presets already collapse to 0ms via lib/motion.ts; this is the
@@ -196,5 +292,16 @@ h6 {
 
   html {
     scroll-behavior: auto !important;
+  }
+
+  /* The backstop above shortens durations but not delays; without this the
+     hero would sit hidden for its stagger before snapping in. */
+  .kv-word,
+  .kv-enter,
+  .kv-fill,
+  .kv-sweep,
+  .kv-count,
+  .kv-stamp {
+    animation-delay: 0s !important;
   }
 }
