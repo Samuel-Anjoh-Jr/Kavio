@@ -118,7 +118,7 @@ function LocationCard({
       rel="noopener noreferrer"
       className="flex items-center gap-2 rounded-card border border-border bg-surface p-3 text-foreground transition-colors hover:bg-muted"
     >
-      <MapPin aria-hidden className="size-4 text-accent" />
+      <MapPin aria-hidden className="size-4 text-accent-ink" />
       <span className="text-sm">{t('cards.sharedLocation')}</span>
     </a>
   );
@@ -128,7 +128,7 @@ function DeliveryTick({ status }: { status: Message['status'] }) {
   const t = useTranslations('Messaging');
 
   if (status === 'READ') {
-    return <CheckCheck aria-label={t('status.read')} className="size-3.5 text-accent" />;
+    return <CheckCheck aria-label={t('status.read')} className="size-3.5 text-accent-ink" />;
   }
   if (status === 'DELIVERED') {
     return <CheckCheck aria-label={t('status.delivered')} className="size-3.5" />;

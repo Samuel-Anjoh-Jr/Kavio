@@ -191,7 +191,7 @@ function NoResults({
     // a button that cannot work is worse than no button.
     return (
       <EmptyState
-        icon={<Compass aria-hidden className="size-8 text-accent" />}
+        icon={<Compass aria-hidden className="size-8 text-muted-foreground" />}
         title={t('serviceMissingTitle')}
         body={t('serviceMissingBody')}
       />

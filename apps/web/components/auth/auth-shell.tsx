@@ -70,7 +70,9 @@ export async function AuthShell({
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.18),transparent_55%)]"
         />
         <div className="relative">
-          <p className="text-sm font-semibold uppercase tracking-wide text-accent">{t('slogan')}</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-primary-foreground/80">
+            {t('slogan')}
+          </p>
           <p className="mt-3 font-heading text-3xl font-semibold leading-tight text-primary-foreground">
             {t('headline')}
           </p>

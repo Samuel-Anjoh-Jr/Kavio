@@ -53,6 +53,10 @@
   --success-foreground: var(--color-neutral-900);
   --accent: var(--color-accent);
   --accent-foreground: var(--color-neutral-900);
+  /* Text and icon use of Accent. #00C2A8 is a fill colour: as text it is 2.2:1
+     on Neutral 50. This darker teal clears 4.8:1 on Neutral 50, Neutral 100
+     and the 10-15% accent tints used by badges. */
+  --accent-ink: #00756a;
   --warning: var(--color-warning);
   --warning-foreground: var(--color-neutral-900);
   --danger: var(--color-danger);
@@ -98,6 +102,8 @@
   --ring: var(--color-indigo);
 
   --warning-foreground: var(--color-neutral-900);
+  /* Lighter teal for dark surfaces: 5:1 or more on Neutral 700, 800 and 900. */
+  --accent-ink: #3ddac4;
 
   --shadow-color: 0 0% 0%;
   --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.24);
@@ -123,6 +129,7 @@
   --color-success-foreground: var(--success-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-ink: var(--accent-ink);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-danger: var(--danger);

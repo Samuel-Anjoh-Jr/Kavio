@@ -87,7 +87,7 @@ export function FeaturedStatusCard() {
       aria-labelledby="featured-status-heading"
     >
       <div className="flex items-start gap-3">
-        <span className="rounded-full bg-accent/10 p-2 text-accent">
+        <span className="rounded-full bg-accent/10 p-2 text-accent-ink">
           <Sparkles aria-hidden className="size-5" />
         </span>
         <div className="min-w-0 flex-1">

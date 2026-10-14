@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 
 const ARC_TONE: Record<TrustTone, string> = {
   neutral: 'stroke-neutral-400 dark:stroke-neutral-500',
-  accent: 'stroke-accent',
+  accent: 'stroke-accent-ink',
   success: 'stroke-success',
   primary: 'stroke-primary',
   danger: 'stroke-danger',
@@ -28,7 +28,7 @@ const ARC_TONE: Record<TrustTone, string> = {
 
 const VALUE_TONE: Record<TrustTone, string> = {
   neutral: 'text-muted-foreground',
-  accent: 'text-accent',
+  accent: 'text-accent-ink',
   success: 'text-success',
   primary: 'text-primary',
   danger: 'text-danger',
