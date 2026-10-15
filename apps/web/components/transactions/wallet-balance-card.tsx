@@ -72,7 +72,7 @@ export function WalletBalanceCard({ canAddMoney }: { canAddMoney: boolean }) {
             {loading && !wallet ? (
               <Skeleton className="h-9 w-32" />
             ) : (
-              <span className="font-numeric text-3xl font-semibold text-accent">
+              <span className="font-numeric text-3xl font-semibold text-foreground">
                 {pending ? t('pendingAmount') : formatXaf(wallet?.inEscrow ?? 0, locale)}
               </span>
             )}

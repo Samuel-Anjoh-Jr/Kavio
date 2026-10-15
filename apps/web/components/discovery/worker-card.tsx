@@ -129,7 +129,7 @@ export function WorkerCard({ worker, compact = false, className }: WorkerCardPro
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <TierBadge tier={worker.tier} size="sm" />
             {isNew && (
-              <span className="rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+              <span className="rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent-ink">
                 {t('new')}
               </span>
             )}

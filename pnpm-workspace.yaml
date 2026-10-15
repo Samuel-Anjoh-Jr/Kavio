@@ -2,7 +2,7 @@ packages:
   - 'apps/*'
   - 'packages/*'
 overrides:
-  sharp: 0.35.0
+  sharp: 0.35.5
   ws: 8.21.1
   # next@16.2.11 pins postcss@8.4.31 directly (CVE fixed in 8.4.32+); force the
   # patched line repo-wide until Next ships a release that bumps it itself.
@@ -14,7 +14,29 @@ overrides:
   # brace-expansion's legacy 1.x export shape), so bumping minimatch itself
   # to a current major is required to get everything onto brace-expansion 5.x.
   minimatch: ^10.2.6
-  brace-expansion: ^5.0.8
+  brace-expansion: ^5.0.11
+  # Patched releases within the same major for transitive advisories that
+  # pnpm audit --audit-level high reports (fast-uri via ajv, js-yaml via
+  # eslint/istanbul, nanoid via postcss, multer via @nestjs/platform-express,
+  # undici via @vercel/blob, engine.io via socket.io, proxy-addr via express,
+  # handlebars, source-map-js, browserslist).
+  fast-uri@3: ^3.1.7
+  js-yaml@3: ^3.15.2
+  js-yaml@4: ^4.3.2
+  nanoid@3: ^3.3.18
+  multer: ^2.3.0
+  undici@6: ^6.28.1
+  engine.io: ^6.6.10
+  proxy-addr: ^2.0.8
+  handlebars: ^4.7.10
+  source-map-js: ^1.2.2
+  browserslist: ^4.28.7
+  # @prisma/config pins deepmerge-ts 7 (prototype pollution fixed in 8);
+  # the merge API it uses is unchanged in 8.
+  deepmerge-ts: ^8.0.0
+  # @nestjs/graphql 13 resolves @graphql-tools/utils 11 (fixed in 12.0.1);
+  # @nestjs/graphql 14 ships exactly 12.0.1, so use that until Nest is bumped.
+  '@graphql-tools/utils': 12.0.1
 allowBuilds:
   # Its postinstall only builds the parser Apollo Studio usage reporting needs,
   # and we do not enable that — GraphQL serves fine without the build step.

@@ -1,6 +1,6 @@
 import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { ApiError } from './lib/api-error';
+import { ApiError, isRefreshRejection } from './lib/api-error';
 import {
   apiLogin,
   apiRefresh,
@@ -260,22 +260,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return { ...token, error: 'SessionExpired' as const };
       }
 
+      let refreshed: SessionTokens;
       try {
-        const refreshed = await apiRefresh(token.refreshToken);
-        const identity = await apiSessionUser(refreshed.accessToken);
-
-        return {
-          ...token,
-          userId: identity.id,
-          // Re-read on refresh, so a role switch or a tier upgrade reaches the
-          // session without waiting for the user to sign in again.
-          activeRole: identity.activeRole,
-          roles: identity.roles,
-          tier: identity.tier,
-          ...toTokenState(refreshed),
-          error: undefined,
-        };
+        refreshed = await apiRefresh(token.refreshToken);
       } catch (error) {
+        // Only the API saying NO ends a session. A refresh that could not reach
+        // the API at all (network down, DNS, timeout) or reached it while it was
+        // failing (5xx) says nothing about the refresh token, so the session is
+        // kept exactly as it was and the refresh is simply retried on the next
+        // request. Treating "could not ask" as "was refused" is what logged
+        // people out every time their phone dropped signal (SYS-02).
+        if (!isRefreshRejection(error)) {
+          console.warn(
+            JSON.stringify({
+              level: 'warn',
+              scope: 'auth',
+              msg: 'Token refresh unavailable; session kept, will retry',
+              code: error instanceof ApiError ? error.code : 'NETWORK_ERROR',
+              status: error instanceof ApiError ? error.status : null,
+              timestamp: new Date().toISOString(),
+            }),
+          );
+          return token;
+        }
+
         // console rather than lib/logger: that module is 'use client', and
         // pulling it in here would drag this server-only file across the client
         // boundary. Only the error CODE is logged — never a token.
@@ -292,6 +300,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // The refresh token is dead (revoked, rotated-and-replayed, or expired).
         // This is the ONE place a genuine "session expired" originates.
         return { ...token, accessToken: undefined, error: 'SessionExpired' as const };
+      }
+
+      // The refresh token has now been ROTATED: the old one is spent. So from
+      // here on the new pair is kept whatever happens, and a failed identity
+      // re-read only means the role/tier claims stay as they were until the
+      // next refresh. Falling back to the old token here would replay a spent
+      // refresh token next time and revoke the whole session family.
+      const nextTokens = { ...toTokenState(refreshed), error: undefined };
+      try {
+        const identity = await apiSessionUser(refreshed.accessToken);
+
+        return {
+          ...token,
+          userId: identity.id,
+          // Re-read on refresh, so a role switch or a tier upgrade reaches the
+          // session without waiting for the user to sign in again.
+          activeRole: identity.activeRole,
+          roles: identity.roles,
+          tier: identity.tier,
+          ...nextTokens,
+        };
+      } catch {
+        return { ...token, ...nextTokens };
       }
     },
 

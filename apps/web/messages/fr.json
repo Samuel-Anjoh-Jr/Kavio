@@ -135,7 +135,8 @@
       "INVALID_PHONE": "Saisissez un numéro de téléphone camerounais valide.",
       "NOT_A_MOMO_METHOD": "Seul un moyen de paiement Mobile Money a un numéro de téléphone à modifier.",
       "PAYMENT_METHOD_NOT_FOUND": "Nous n'avons pas trouvé ce moyen de paiement.",
-      "NO_PAYMENT_METHOD": "Ajoutez d'abord un moyen de paiement."
+      "NO_PAYMENT_METHOD": "Ajoutez d'abord un moyen de paiement.",
+      "OFFLINE": "Cette action nécessite une connexion. Reconnectez-vous et réessayez."
     },
     "resend": {
       "available": "Renvoyer le code",
@@ -2641,9 +2642,11 @@
       "description": "Kavio est en maintenance planifiée. Revenez dans quelques minutes. Vos données sont en sécurité."
     },
     "offline": {
-      "banner": "Hors ligne, contenu enregistré affiché",
-      "bannerWithPending": "Hors ligne, contenu enregistré · {count, plural, one {# modification en attente} other {# modifications en attente}} de synchronisation",
-      "syncing": "De retour en ligne, synchronisation de {count, plural, one {# modification} other {# modifications}}…"
+      "banner": "Vous êtes hors ligne. Reconnectez-vous pour voir les mises à jour en temps réel et actualiser {area, select, jobs {vos missions} messages {vos messages} other {vos données}}.",
+      "bannerWithPending": "Vous êtes hors ligne. {count, plural, one {# modification est enregistrée} other {# modifications sont enregistrées}} sur cet appareil et {count, plural, one {sera synchronisée} other {seront synchronisées}} une fois reconnecté.",
+      "syncing": "De retour en ligne, synchronisation de {count, plural, one {# modification} other {# modifications}}…",
+      "backOnline": "De retour en ligne, mise à jour",
+      "writeBlocked": "Cette action nécessite une connexion. Reconnectez-vous et réessayez."
     },
     "error": {
       "title": "Une erreur est survenue",
@@ -2687,29 +2690,61 @@
       "faq": "FAQ"
     },
     "hero": {
-      "badge": "Disponible dans tout le Cameroun",
-      "heading": "Trouvez un artisan à qui vous pouvez vraiment faire confiance.",
-      "subheading": "Identité vérifiée, portfolios réels, devis fixes et paiements sous séquestre : la couche de confiance est le produit.",
-      "primaryCta": "Explorer les artisans",
-      "secondaryCta": "Créer un compte",
-      "noAccountNote": "Aucun compte requis pour parcourir. Connectez-vous uniquement pour agir.",
-      "workerPortraitAlt": "Un artisan Kavio vérifié",
-      "clientPortraitAlt": "Un client Kavio",
-      "workerTwoPortraitAlt": "Un autre artisan Kavio vérifié",
-      "trustScoreLabel": "Score de Confiance {score} sur 100",
-      "trustScoreCaption": "Vérifié · Niveau 3",
-      "verifiedBadge": "Identité vérifiée"
+      "heading": "Sachez qui vient avant de lui ouvrir la porte.",
+      "subheading": "Chaque artisan sur Kavio a un Score de Confiance fondé sur une pièce d’identité contrôlée, des photos de vrais chantiers et son historique sur la plateforme. Vous validez un devis fixe, vous payez sous séquestre, et l’argent ne bouge que lorsque vous confirmez la fin des travaux.",
+      "primaryCta": "Trouver un artisan",
+      "secondaryCta": "Proposer mes services",
+      "noAccountNote": "Navigation libre. Vous vous connectez seulement au moment d’engager quelqu’un.",
+      "eyebrow": "Des artisans qualifiés à Douala, Yaoundé et partout au Cameroun",
+      "record": {
+        "label": "Exemple de fiche de confiance d’un artisan",
+        "example": "Fiche d’exemple",
+        "tier": "Niveau 3",
+        "name": "Ernest Mbarga",
+        "trade": "Électricien · Bonamoussadi, Douala",
+        "scoreLabel": "Score de Confiance {score} sur 100",
+        "scoreCaption": "Score de Confiance",
+        "pillars": {
+          "identity": "Identité",
+          "work": "Preuves de travail",
+          "record": "Historique",
+          "payments": "Paiements"
+        },
+        "stamps": {
+          "id": "Identité contrôlée",
+          "address": "Adresse confirmée",
+          "jobs": "{count} missions payées"
+        },
+        "escrowLabel": "Mission en cours, sous séquestre"
+      }
     },
     "areas": {
       "heading": "Où nous intervenons",
-      "body": "Kavio est disponible dans tout le pays. La couverture vérifiée est aujourd’hui la plus dense dans ces villes, et elle s’étend chaque semaine à mesure que davantage d’artisans complètent leur vérification."
+      "body": "Kavio est ouvert dans tout le pays. La couverture vérifiée est aujourd’hui la plus dense à Douala et Yaoundé, et elle s’étend chaque semaine à mesure que des artisans terminent leur vérification.",
+      "regions": {
+        "centre": "Centre",
+        "littoral": "Littoral",
+        "west": "Ouest",
+        "northwest": "Nord-Ouest",
+        "southwest": "Sud-Ouest",
+        "south": "Sud",
+        "east": "Est",
+        "adamawa": "Adamaoua",
+        "north": "Nord",
+        "farNorth": "Extrême-Nord"
+      }
     },
     "proof": {
-      "heading": "Kavio en chiffres",
-      "verified": "Artisans vérifiés",
-      "success": "Taux de réussite",
-      "rating": "Note moyenne",
-      "paid": "Payé sous séquestre"
+      "heading": "Nous avons demandé ce qu’il faut pour laisser entrer un artisan chez soi.",
+      "body": "Vingt-sept personnes au Cameroun ont chacune choisi les trois éléments qui les feraient engager quelqu’un via une application. Kavio est construit autour des quatre premiers.",
+      "items": {
+        "portfolio": "Des photos de vrais chantiers passés",
+        "identity": "Une identité vérifiée et un Score de Confiance",
+        "quote": "Un prix fixe avant le début des travaux",
+        "escrow": "Un paiement bloqué jusqu’à la fin des travaux"
+      },
+      "valueLabel": "{percent} des répondants ont choisi : {label}",
+      "source": "Source : enquête Kavio « Shaping the Future of Local Services in Cameroon », 27 répondants, trois choix chacun."
     },
     "trustEngine": {
       "heading": "La confiance se gagne par étapes, et vous les voyez toutes.",
@@ -2717,7 +2752,7 @@
       "link": "Voir comment fonctionne le Score de Confiance",
       "stages": {
         "15": {
-          "label": "Nouveau & identifié",
+          "label": "Nouveau et identifié",
           "description": "Téléphone vérifié et profil créé. Le point de départ, affiché honnêtement."
         },
         "35": {
@@ -2725,7 +2760,7 @@
           "description": "Pièce d’identité et selfie en direct contrôlés. Vous savez qui vient."
         },
         "60": {
-          "label": "Adresse & portfolio",
+          "label": "Adresse et portfolio",
           "description": "Localisation confirmée et travaux réels au dossier."
         },
         "82": {
@@ -2736,11 +2771,13 @@
           "label": "Pro vérifié par un agent",
           "description": "Contrôles en personne par un agent Kavio. La plus haute garantie."
         }
-      }
+      },
+      "dialCaption": "Score de Confiance",
+      "dialStage": "Étape : {stage}"
     },
     "portfolio": {
       "heading": "Du vrai travail, pas des photos de stock.",
-      "body": "Chaque portfolio est la preuve d’une vraie mission : glissez pour voir l’avant/après.",
+      "body": "Chaque carte est un chantier terminé, tiré du portfolio d’un artisan. Faites glisser la poignée pour comparer l’avant et l’après.",
       "before": "Avant",
       "after": "Après",
       "beforeAlt": "Avant : travaux de {trade}",
@@ -2750,41 +2787,64 @@
     },
     "pricing": {
       "heading": "Votre argent est protégé jusqu’à la fin des travaux.",
-      "body": "Le paiement est conservé sous séquestre et libéré seulement quand vous confirmez la fin de la mission. Les frais sont affichés en entier avant le paiement.",
-      "steps": {
-        "hold": {
-          "title": "Vous payez sous séquestre",
-          "body": "Quand vous acceptez un devis, votre paiement est conservé par Kavio, pas versé à l’artisan."
+      "body": "Le paiement est placé sous séquestre dès que vous acceptez un devis. Il passe par cinq états, et seule votre confirmation l’envoie à l’artisan.",
+      "states": {
+        "paid": {
+          "title": "Payé",
+          "body": "Vous réglez le devis convenu par MTN Mobile Money, Orange Money ou carte. Kavio conserve les fonds."
         },
-        "work": {
-          "title": "Les travaux se déroulent",
-          "body": "L’artisan réalise la mission. Les fonds restent conservés pendant tout ce temps."
+        "accepted": {
+          "title": "Accepté",
+          "body": "L’artisan voit que l’argent est là et s’engage sur le devis. Le prix ne peut pas changer sur le pas de la porte."
         },
-        "release": {
-          "title": "Vous libérez le paiement",
-          "body": "Satisfait ? Libérez les fonds. Insatisfait ? Ouvrez un litige. L’argent reste conservé."
+        "inProgress": {
+          "title": "En cours",
+          "body": "Les travaux ont lieu. Les fonds restent bloqués pendant tout ce temps."
+        },
+        "completed": {
+          "title": "Terminé",
+          "body": "Vous vérifiez le travail. Un problème ? Ouvrez un litige et l’argent reste bloqué jusqu’à sa résolution."
+        },
+        "released": {
+          "title": "Libéré",
+          "body": "Vous confirmez, l’artisan est payé et votre avis rejoint son historique."
         }
       },
-      "feeHeading": "Des frais de service d’environ 10 %, affichés avant le paiement.",
-      "feeBody": "Un seul frais transparent sur les travaux terminés : jamais ajouté après coup, jamais une surprise sur le pas de la porte."
+      "receipt": {
+        "heading": "Ce que vous voyez avant de payer",
+        "example": "Exemple de réservation",
+        "quote": "Devis convenu",
+        "youPay": "Vous payez",
+        "youPayNote": "Rien d’ajouté au paiement",
+        "fee": "Frais de service Kavio (~10 %)",
+        "feeNote": "Prélevés sur le versement de l’artisan",
+        "workerGets": "L’artisan reçoit",
+        "status": "Statut",
+        "held": "Sous séquestre",
+        "released": "Versé à l’artisan",
+        "methods": "Les paiements passent par Campay, en XAF."
+      }
     },
     "testimonials": {
-      "heading": "La confiance des clients comme des artisans.",
-      "body": "De vraies histoires de ménages, d’entreprises et des artisans qui les servent.",
-      "voiceNote": "Note vocale",
-      "ratingLabel": "Noté {rating} sur 5"
+      "heading": "Ce qu’on en dit, une fois le travail terminé.",
+      "body": "Des ménages, des entreprises et les artisans qu’ils ont engagés, avec leurs propres mots.",
+      "ratingLabel": "Noté {rating} sur 5",
+      "pause": "Mettre les avis en pause",
+      "play": "Relancer les avis"
     },
     "faq": {
-      "heading": "Vos questions, nos réponses.",
-      "body": "Tout ce que vous voulez savoir avant de commencer.",
+      "heading": "Avant d’engager quelqu’un",
+      "body": "Les questions qu’on nous pose le plus, sur la vérification, le paiement et ce qui se passe si un chantier tourne mal.",
       "emptyTitle": "Pas encore de questions",
       "emptyDescription": "Revenez bientôt, nous ajoutons des réponses aux questions les plus fréquentes."
     },
     "cta": {
-      "heading": "Trouvez dès aujourd’hui un artisan de confiance.",
-      "body": "Parcourez des artisans vérifiés partout au Cameroun. Aucun compte requis pour commencer.",
-      "button": "Explorer les artisans",
-      "note": "Navigation gratuite · Connexion uniquement pour agir"
+      "heading": "Votre prochain chantier, confié à quelqu’un qui a fait ses preuves.",
+      "body": "Parcourez des artisans vérifiés partout au Cameroun, comparez leurs Scores de Confiance et leurs réalisations, et connectez-vous seulement au moment d’engager.",
+      "button": "Trouver un artisan",
+      "note": "Navigation libre. Aucune carte demandée.",
+      "workerPrompt": "Vous êtes artisan ?",
+      "workerLink": "Construire ma fiche de confiance"
     },
     "footer": {
       "tagline": "Là où le bon travail commence.",

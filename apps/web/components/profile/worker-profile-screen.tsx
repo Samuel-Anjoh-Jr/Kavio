@@ -163,7 +163,7 @@ export function WorkerProfileScreen({
             <Stat
               label={t('stat.responseTime')}
               value={responseTime}
-              icon={<Clock aria-hidden className="size-4 text-accent" />}
+              icon={<Clock aria-hidden className="size-4 text-primary" />}
             />
           )}
 

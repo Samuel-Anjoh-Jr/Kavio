@@ -76,11 +76,25 @@
       </div>
     </div>
     <script>
-      if ((navigator.language || '').toLowerCase().startsWith('fr')) {
-        document.documentElement.lang = 'fr';
-        document.querySelector('[data-lang="en"]').style.display = 'none';
-        document.querySelector('[data-lang="fr"]').style.display = 'block';
-      }
+      // The app's language comes from the URL (/fr/app/...), which the worker
+      // keeps when it serves this page; the phone's language is only a
+      // fallback. Someone using Kavio in French on an English phone used to
+      // get this page in English.
+      (function () {
+        var fromPath = (location.pathname.split('/')[1] || '').toLowerCase();
+        var lang =
+          fromPath === 'fr' || fromPath === 'en'
+            ? fromPath
+            : (navigator.language || '').toLowerCase().indexOf('fr') === 0
+              ? 'fr'
+              : 'en';
+        if (lang === 'fr') {
+          document.documentElement.lang = 'fr';
+          document.title = 'Kavio, hors ligne';
+          document.querySelector('[data-lang="en"]').style.display = 'none';
+          document.querySelector('[data-lang="fr"]').style.display = 'block';
+        }
+      })();
     </script>
   </body>
 </html>

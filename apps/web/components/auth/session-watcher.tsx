@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname, useRouter } from '@/i18n/navigation';
+import { releaseOfflineData } from '@/lib/offline/user-data';
 
 /**
  * Reacts to a refresh failure (ACC-05, ACC-09).
@@ -31,9 +32,14 @@ export function SessionWatcher() {
 
     // Clears the now-dead cookie before redirecting, so the next `auth()` call
     // does not try (and fail) to refresh it all over again.
-    void signOut({ redirect: false }).then(() => {
-      router.push(`/auth/login?next=${encodeURIComponent(pathname)}&reason=session_expired`);
-    });
+    // The expired person's offline copies (pages, cached reads, queued writes)
+    // go with the session: the next person to pick up this phone must not be
+    // able to browse them offline.
+    void releaseOfflineData()
+      .then(() => signOut({ redirect: false }))
+      .then(() => {
+        router.push(`/auth/login?next=${encodeURIComponent(pathname)}&reason=session_expired`);
+      });
   }, [session?.error, pathname, router]);
 
   return null;

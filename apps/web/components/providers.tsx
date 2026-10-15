@@ -25,7 +25,15 @@ const SESSION_REFETCH_INTERVAL_SECONDS = 4 * 60;
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <SessionProvider refetchInterval={SESSION_REFETCH_INTERVAL_SECONDS} refetchOnWindowFocus>
+      {/* refetchWhenOffline={false}: next-auth turns a failed session poll into
+          `null`, i.e. "signed out", and then stops polling for good. Offline,
+          the service worker answers /api/auth/session from its last good copy
+          (public/sw.js), and not polling at all avoids even asking. */}
+      <SessionProvider
+        refetchInterval={SESSION_REFETCH_INTERVAL_SECONDS}
+        refetchOnWindowFocus
+        refetchWhenOffline={false}
+      >
         <SessionWatcher />
         <ApolloProvider>{children}</ApolloProvider>
       </SessionProvider>

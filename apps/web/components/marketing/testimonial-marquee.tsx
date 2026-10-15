@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { Pause, Play } from 'lucide-react';
 import { StarRating } from '@/components/ui/star-rating';
 import { useReducedMotion } from '@/lib/motion';
 import { localised, type TestimonialEntry } from '@/lib/graphql/marketing';
@@ -20,6 +21,10 @@ import { localised, type TestimonialEntry } from '@/lib/graphql/marketing';
  * because the requirement includes DRAG: a CSS keyframe cannot be scrubbed by a
  * pointer and then resumed from where the user left it.
  *
+ * A visible pause/play button sits under the row (WCAG 2.2.2: anything that
+ * moves on its own for more than five seconds needs a way to stop it that is
+ * not hover, which touch screens do not have).
+ *
  * Under prefers-reduced-motion it does not animate at all. It becomes an
  * ordinary horizontally scrollable row — still complete, still readable, still
  * operable by keyboard and touch, just not moving on its own.
@@ -32,6 +37,8 @@ export function TestimonialMarquee({ testimonials }: { testimonials: Testimonial
   const trackRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(0);
   const pausedRef = useRef(false);
+  const userPausedRef = useRef(false);
+  const [userPaused, setUserPaused] = useState(false);
   const dragRef = useRef<{ startX: number; startOffset: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -53,7 +60,7 @@ export function TestimonialMarquee({ testimonials }: { testimonials: Testimonial
       const delta = (now - last) / 1000;
       last = now;
 
-      if (!pausedRef.current && !dragRef.current) {
+      if (!pausedRef.current && !userPausedRef.current && !dragRef.current) {
         offsetRef.current -= SPEED * delta;
       }
 
@@ -95,6 +102,11 @@ export function TestimonialMarquee({ testimonials }: { testimonials: Testimonial
     }
   };
 
+  const toggleUserPaused = () => {
+    userPausedRef.current = !userPausedRef.current;
+    setUserPaused(userPausedRef.current);
+  };
+
   if (testimonials.length === 0) return null;
 
   const cards = (hidden: boolean) =>
@@ -109,41 +121,60 @@ export function TestimonialMarquee({ testimonials }: { testimonials: Testimonial
     ));
 
   return (
-    <div
-      // The edge fade, per the requirement. A mask rather than gradient overlays
-      // so it works over any section background without a colour to match.
-      // `overflow-hidden` is load-bearing, not cosmetic: the track below is
-      // `w-max` (its natural width, every card side by side) so the transform
-      // loop has room to run — without a clipping ancestor, that multi-thousand
-      // -pixel track becomes the page's intrinsic width and forces mobile
-      // browsers to zoom the entire layout out to fit it.
-      className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      // Keyboard users get the same courtesy as mouse users: focusing a card
-      // inside the row stops it sliding out from under them.
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={() => setPaused(false)}
-    >
+    <div className="flex flex-col gap-4">
       <div
-        className={
-          reducedMotion
-            ? 'flex gap-4 overflow-x-auto pb-2'
-            : dragging
-              ? 'flex w-max cursor-grabbing gap-4 select-none'
-              : 'flex w-max cursor-grab gap-4'
-        }
-        ref={trackRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        // The edge fade, per the requirement. A mask rather than gradient overlays
+        // so it works over any section background without a colour to match.
+        // `overflow-hidden` is load-bearing, not cosmetic: the track below is
+        // `w-max` (its natural width, every card side by side) so the transform
+        // loop has room to run — without a clipping ancestor, that multi-thousand
+        // -pixel track becomes the page's intrinsic width and forces mobile
+        // browsers to zoom the entire layout out to fit it.
+        className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        // Keyboard users get the same courtesy as mouse users: focusing a card
+        // inside the row stops it sliding out from under them.
+        onFocusCapture={() => setPaused(true)}
+        onBlurCapture={() => setPaused(false)}
       >
-        {cards(false)}
-        {/* The seamless second lap. Hidden from assistive tech and from the tab
+        <div
+          className={
+            reducedMotion
+              ? 'flex gap-4 overflow-x-auto pb-2'
+              : dragging
+                ? 'flex w-max cursor-grabbing gap-4 select-none'
+                : 'flex w-max cursor-grab gap-4'
+          }
+          ref={trackRef}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+        >
+          {cards(false)}
+          {/* The seamless second lap. Hidden from assistive tech and from the tab
             order — the same quotes twice would be a bug, not a feature. */}
-        {!reducedMotion && cards(true)}
+          {!reducedMotion && cards(true)}
+        </div>
       </div>
+
+      {!reducedMotion && (
+        <div className="mx-auto flex w-full max-w-6xl justify-end px-4 sm:px-6">
+          <button
+            type="button"
+            onClick={toggleUserPaused}
+            className="inline-flex items-center gap-2 rounded-button px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {userPaused ? (
+              <Play aria-hidden="true" className="size-4" />
+            ) : (
+              <Pause aria-hidden="true" className="size-4" />
+            )}
+            {userPaused ? t('play') : t('pause')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
