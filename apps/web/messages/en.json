@@ -135,7 +135,8 @@
       "INVALID_PHONE": "Enter a valid Cameroon phone number.",
       "NOT_A_MOMO_METHOD": "Only a Mobile Money method has a phone number to change.",
       "PAYMENT_METHOD_NOT_FOUND": "We could not find that payment method.",
-      "NO_PAYMENT_METHOD": "Add a payment method first."
+      "NO_PAYMENT_METHOD": "Add a payment method first.",
+      "OFFLINE": "This needs a connection. Go online and try again."
     },
     "resend": {
       "available": "Resend code",
@@ -2641,9 +2642,11 @@
       "description": "Kavio is down for scheduled maintenance. Please check back in a few minutes. Your data is safe."
     },
     "offline": {
-      "banner": "You’re offline, showing saved content",
-      "bannerWithPending": "You’re offline, showing saved content · {count, plural, one {# change waiting} other {# changes waiting}} to sync",
-      "syncing": "Back online, syncing {count, plural, one {# change} other {# changes}}…"
+      "banner": "You’re offline. Go online to see real-time updates and refresh your {area, select, jobs {jobs} messages {messages} other {data}}.",
+      "bannerWithPending": "You’re offline. {count, plural, one {# change is} other {# changes are}} saved on this device and will sync when you go online.",
+      "syncing": "Back online, syncing {count, plural, one {# change} other {# changes}}…",
+      "backOnline": "Back online, updating",
+      "writeBlocked": "This needs a connection. Go online and try again."
     },
     "error": {
       "title": "Something went wrong",

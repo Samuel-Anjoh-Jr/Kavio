@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { HttpLink } from '@apollo/client';
+import { useApolloClient } from '@apollo/client/react';
 import {
   ApolloClient,
   ApolloNextAppProvider,
@@ -9,6 +10,7 @@ import {
 } from '@apollo/client-integration-nextjs';
 import { createCache } from './cache';
 import { restoreCache, startPersisting } from '@/lib/offline/apollo-persist';
+import { isNetworkFailure, reportNetworkFailure } from '@/lib/offline/connectivity';
 
 /**
  * Apollo for CLIENT COMPONENTS. Points at the same-origin /api/graphql proxy,
@@ -22,6 +24,20 @@ import { restoreCache, startPersisting } from '@/lib/offline/apollo-persist';
  * per document, which is also what makes persisting it meaningful.
  */
 let browserCache: InMemoryCache | null = null;
+
+/**
+ * `fetch` for the GraphQL link that tells the connectivity layer when a read
+ * could not leave the device, so a captive portal or dead tower that the
+ * browser still calls "online" is caught by the probe (connectivity.ts).
+ */
+const reportingFetch: typeof fetch = async (input, init) => {
+  try {
+    return await fetch(input, init);
+  } catch (error) {
+    if (isNetworkFailure(error)) reportNetworkFailure();
+    throw error;
+  }
+};
 
 function makeClient() {
   const cache = createCache();
@@ -37,6 +53,7 @@ function makeClient() {
     cache,
     link: new HttpLink({
       uri: '/api/graphql',
+      fetch: reportingFetch,
       // Sends the Auth.js session cookie, which is what the proxy reads.
       credentials: 'same-origin',
     }),
@@ -89,9 +106,29 @@ function OfflineCacheGate({ children }: { children: ReactNode }) {
   return blocked ? null : <>{children}</>;
 }
 
+/**
+ * When the connection is confirmed back (connectivity.ts), re-runs the queries
+ * on screen so data restored from the offline snapshot is replaced by live data
+ * without the user having to pull to refresh.
+ */
+function RefetchOnReconnect() {
+  const client = useApolloClient();
+
+  useEffect(() => {
+    const onReconnected = () => {
+      void client.refetchQueries({ include: 'active' }).catch(() => undefined);
+    };
+    window.addEventListener('kavio:reconnected', onReconnected);
+    return () => window.removeEventListener('kavio:reconnected', onReconnected);
+  }, [client]);
+
+  return null;
+}
+
 export function ApolloProvider({ children }: { children: ReactNode }) {
   return (
     <ApolloNextAppProvider makeClient={makeClient}>
+      <RefetchOnReconnect />
       <OfflineCacheGate>{children}</OfflineCacheGate>
     </ApolloNextAppProvider>
   );

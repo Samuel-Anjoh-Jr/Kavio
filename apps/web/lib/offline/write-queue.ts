@@ -194,6 +194,16 @@ export async function enqueueWrite(input: EnqueueInput): Promise<QueuedWrite> {
   return persisted;
 }
 
+/**
+ * Drops every queued write. Sign-out / owner change only (lib/offline/user-data.ts):
+ * a write queued by one person must never be replayed under another's session.
+ */
+export async function clearWriteQueue(): Promise<void> {
+  const queue = await readQueue();
+  await Promise.all(queue.map((entry) => idbDelete(STORE_WRITE_QUEUE, entry.id)));
+  publish([]);
+}
+
 export interface FlushResult {
   sent: number;
   failed: number;

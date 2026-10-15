@@ -3,6 +3,7 @@
 import type { InMemoryCache } from '@apollo/client-integration-nextjs';
 import { createLogger } from '@/lib/logger';
 import { idbGet, idbSet, STORE_APOLLO } from './idb';
+import { mergeSnapshots, type NormalizedSnapshot } from './snapshot-merge';
 
 const logger = createLogger('apollo-persist');
 
@@ -49,14 +50,21 @@ const SNAPSHOT_VERSION = 1;
 /** How long a snapshot may be trusted. Beyond this, stale data is worse than none. */
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-export async function restoreCache(cache: InMemoryCache): Promise<boolean> {
+/** The stored snapshot if it is still usable; a stale or old-shape one is deleted. */
+async function readSnapshot(): Promise<Snapshot | null> {
   const snapshot = await idbGet<Snapshot>(STORE_APOLLO, SNAPSHOT_KEY);
-  if (!snapshot) return false;
+  if (!snapshot) return null;
 
   if (snapshot.version !== SNAPSHOT_VERSION || Date.now() - snapshot.savedAt > MAX_AGE_MS) {
     await idbSet(STORE_APOLLO, SNAPSHOT_KEY, null);
-    return false;
+    return null;
   }
+  return snapshot;
+}
+
+export async function restoreCache(cache: InMemoryCache): Promise<boolean> {
+  const snapshot = await readSnapshot();
+  if (!snapshot) return false;
 
   try {
     cache.restore(snapshot.data as Parameters<InMemoryCache['restore']>[0]);
@@ -76,31 +84,58 @@ export async function restoreCache(cache: InMemoryCache): Promise<boolean> {
  *
  * Returns a teardown that restores the original methods.
  */
+/**
+ * The pending debounced write, at module scope so `clearPersistedCache` can
+ * cancel it. Otherwise a sign-out within the debounce window would wipe the
+ * snapshot and then have the timer write the signed-out person's data straight
+ * back.
+ */
+let pendingWrite: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * The snapshot as it stood when this page load began, laid UNDER every write
+ * so reads from earlier page loads survive (see snapshot-merge.ts). `null`
+ * until loaded, and reset to empty on sign-out.
+ */
+let baseSnapshot: Promise<NormalizedSnapshot | null> | null = null;
+
+async function writeSnapshot(cache: InMemoryCache): Promise<void> {
+  let live: NormalizedSnapshot;
+  try {
+    live = cache.extract() as NormalizedSnapshot;
+  } catch {
+    return;
+  }
+
+  const base = baseSnapshot ? await baseSnapshot : null;
+  // Over budget with history: drop the history first, keep what is live.
+  let serialized = JSON.stringify(mergeSnapshots(base, live));
+  if (serialized.length > MAX_SNAPSHOT_BYTES && base) serialized = JSON.stringify(live);
+
+  if (serialized.length > MAX_SNAPSHOT_BYTES) {
+    logger.warn('Cache snapshot over budget; not persisted', {
+      payload: { bytes: serialized.length, budget: MAX_SNAPSHOT_BYTES },
+    });
+    return;
+  }
+
+  await idbSet(STORE_APOLLO, SNAPSHOT_KEY, {
+    version: SNAPSHOT_VERSION,
+    savedAt: Date.now(),
+    data: JSON.parse(serialized) as unknown,
+  } satisfies Snapshot);
+}
+
 export function startPersisting(cache: InMemoryCache): () => void {
-  let timer: ReturnType<typeof setTimeout> | null = null;
+  baseSnapshot ??= readSnapshot().then((snapshot) =>
+    snapshot ? (snapshot.data as NormalizedSnapshot) : null,
+  );
 
   const persist = () => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      let serialized: string;
-      try {
-        serialized = JSON.stringify(cache.extract());
-      } catch {
-        return;
-      }
-
-      if (serialized.length > MAX_SNAPSHOT_BYTES) {
-        logger.warn('Cache snapshot over budget; not persisted', {
-          payload: { bytes: serialized.length, budget: MAX_SNAPSHOT_BYTES },
-        });
-        return;
-      }
-
-      void idbSet(STORE_APOLLO, SNAPSHOT_KEY, {
-        version: SNAPSHOT_VERSION,
-        savedAt: Date.now(),
-        data: JSON.parse(serialized) as unknown,
-      } satisfies Snapshot);
+    if (pendingWrite) clearTimeout(pendingWrite);
+    pendingWrite = setTimeout(() => {
+      pendingWrite = null;
+      void writeSnapshot(cache);
     }, WRITE_DEBOUNCE_MS);
   };
 
@@ -127,7 +162,8 @@ export function startPersisting(cache: InMemoryCache): () => void {
   }) as InMemoryCache['modify'];
 
   return () => {
-    if (timer) clearTimeout(timer);
+    if (pendingWrite) clearTimeout(pendingWrite);
+    pendingWrite = null;
     cache.write = originalWrite;
     cache.evict = originalEvict;
     cache.modify = originalModify;
@@ -136,5 +172,8 @@ export function startPersisting(cache: InMemoryCache): () => void {
 
 /** Clears the snapshot. Called on sign-out — one device, one person's data. */
 export async function clearPersistedCache(): Promise<void> {
+  if (pendingWrite) clearTimeout(pendingWrite);
+  pendingWrite = null;
+  baseSnapshot = Promise.resolve(null);
   await idbSet(STORE_APOLLO, SNAPSHOT_KEY, null);
 }

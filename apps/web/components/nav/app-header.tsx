@@ -32,6 +32,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { RoleSwitcher } from './role-switcher';
 import { cn } from '@/lib/utils';
+import { releaseOfflineData } from '@/lib/offline/user-data';
 
 /**
  * Primary navigation for the app shell.
@@ -195,7 +196,13 @@ export function AppHeader() {
                     </>
                   ) : null}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={() => void signOut({ callbackUrl: '/' })}>
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      // Offline copies of this person's pages and data are wiped
+                      // before the cookie, so nothing personal outlives sign-out.
+                      void releaseOfflineData().then(() => signOut({ callbackUrl: '/' }))
+                    }
+                  >
                     <LogOut aria-hidden className="mr-2" />
                     {t('signOut')}
                   </DropdownMenuItem>

@@ -135,7 +135,8 @@
       "INVALID_PHONE": "Saisissez un numéro de téléphone camerounais valide.",
       "NOT_A_MOMO_METHOD": "Seul un moyen de paiement Mobile Money a un numéro de téléphone à modifier.",
       "PAYMENT_METHOD_NOT_FOUND": "Nous n'avons pas trouvé ce moyen de paiement.",
-      "NO_PAYMENT_METHOD": "Ajoutez d'abord un moyen de paiement."
+      "NO_PAYMENT_METHOD": "Ajoutez d'abord un moyen de paiement.",
+      "OFFLINE": "Cette action nécessite une connexion. Reconnectez-vous et réessayez."
     },
     "resend": {
       "available": "Renvoyer le code",
@@ -2641,9 +2642,11 @@
       "description": "Kavio est en maintenance planifiée. Revenez dans quelques minutes. Vos données sont en sécurité."
     },
     "offline": {
-      "banner": "Hors ligne, contenu enregistré affiché",
-      "bannerWithPending": "Hors ligne, contenu enregistré · {count, plural, one {# modification en attente} other {# modifications en attente}} de synchronisation",
-      "syncing": "De retour en ligne, synchronisation de {count, plural, one {# modification} other {# modifications}}…"
+      "banner": "Vous êtes hors ligne. Reconnectez-vous pour voir les mises à jour en temps réel et actualiser {area, select, jobs {vos missions} messages {vos messages} other {vos données}}.",
+      "bannerWithPending": "Vous êtes hors ligne. {count, plural, one {# modification est enregistrée} other {# modifications sont enregistrées}} sur cet appareil et {count, plural, one {sera synchronisée} other {seront synchronisées}} une fois reconnecté.",
+      "syncing": "De retour en ligne, synchronisation de {count, plural, one {# modification} other {# modifications}}…",
+      "backOnline": "De retour en ligne, mise à jour",
+      "writeBlocked": "Cette action nécessite une connexion. Reconnectez-vous et réessayez."
     },
     "error": {
       "title": "Une erreur est survenue",
