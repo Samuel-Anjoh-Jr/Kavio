@@ -38,7 +38,7 @@
 
 // Bump on any change to caching behaviour: activation deletes every `kavio-*`
 // cache that is not current, so a new version never reads an old layout.
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC_CACHE = `kavio-static-${VERSION}`;
 const PAGES_CACHE = `kavio-pages-${VERSION}`;
 const SESSION_CACHE = `kavio-session-${VERSION}`;
