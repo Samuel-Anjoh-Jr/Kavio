@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { MotionProvider } from '@/components/motion/motion-provider';
 import { PageTransition } from '@/components/motion/page-transition';
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { OfflineIndicator } from '@/components/pwa/offline-indicator';
+import { OfflineSync } from '@/components/pwa/offline-sync';
 import { SkipLink } from '@/components/a11y/skip-link';
 import { AppHeader } from '@/components/nav/app-header';
 import { AppBottomNav } from '@/components/nav/app-bottom-nav';
@@ -97,6 +98,12 @@ export default async function AppLayout({
 
       <SkipLink />
       <ServiceWorkerRegister locale={locale} />
+      {/* Offline ownership + warming (SYS-02). Suspense because it reads the
+          search params, which would otherwise opt every static screen out of
+          static rendering. */}
+      <Suspense fallback={null}>
+        <OfflineSync />
+      </Suspense>
       {/* The chosen browsing location is shared by every discovery surface
           (DIS-09), so it lives at the shell rather than per screen — two screens
           holding their own copy is how a feed and a search end up disagreeing
@@ -109,9 +116,8 @@ export default async function AppLayout({
         <FavoritesProvider>
           <div className="flex min-h-dvh flex-col">
             <AppHeader />
-            {/* Sits between header and content so it displaces the page rather
-                than covering it — an indicator that overlaps what it is warning
-                you about is a poor warning (SYS-02). */}
+            {/* A slim bar pinned under the header: never a modal, never over the
+                bottom nav, and it takes no pointer events (SYS-02). */}
             <OfflineIndicator />
             <main id="main" className="flex-1">
               {/* Animates the whole surface when the active role changes (ACC-07). */}

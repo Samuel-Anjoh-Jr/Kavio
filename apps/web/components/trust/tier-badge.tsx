@@ -32,7 +32,7 @@ const ICONS: Record<Exclude<TierIcon, 'none'>, LucideIcon> = {
 
 const TONE_CLASS: Record<TrustTone, string> = {
   neutral: 'border-border bg-muted text-muted-foreground',
-  accent: 'border-accent/25 bg-accent/10 text-accent',
+  accent: 'border-accent/25 bg-accent/10 text-accent-ink',
   success: 'border-success/25 bg-success/10 text-success',
   primary: 'border-primary/25 bg-primary/10 text-primary',
   danger: 'border-danger/25 bg-danger/10 text-danger',

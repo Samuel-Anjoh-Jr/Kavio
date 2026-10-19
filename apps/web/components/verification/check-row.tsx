@@ -33,7 +33,7 @@ const STATE_ICON: Record<StepState, LucideIcon> = {
 
 const STATE_STYLE: Record<StepState, string> = {
   VERIFIED: 'bg-success/15 text-success',
-  PENDING: 'bg-accent/15 text-accent',
+  PENDING: 'bg-accent/15 text-accent-ink',
   REJECTED: 'bg-warning/15 text-warning',
   INFO_REQUESTED: 'bg-warning/15 text-warning',
   NOT_STARTED: 'bg-muted text-muted-foreground',
@@ -88,7 +88,7 @@ export function CheckRow({
             </span>
           )}
           {state === 'PENDING' && (
-            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent-ink">
               {t('status.PENDING')}
             </span>
           )}

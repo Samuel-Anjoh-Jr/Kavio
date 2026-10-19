@@ -163,4 +163,51 @@ export function countUp(el: HTMLElement, options: CountUpOptions): JSAnimation {
   });
 }
 
+/**
+ * Section reveal (marketing): direct children rise 16px and fade in, 60ms
+ * apart (UX-11: reveals 400-600ms, stagger 30-60ms).
+ */
+export function revealUp(targets: MotionTarget, overrides: AnimationParams = {}): JSAnimation {
+  return animate(targets, {
+    opacity: [0, 1],
+    translateY: [16, 0],
+    duration: motionDuration(500),
+    delay: stagger(60),
+    ease: 'outQuad',
+    ...overrides,
+  });
+}
+
+/**
+ * Score dial: moves a Trust Score ring and its number from one value to
+ * another, so the dial reads as the same score climbing rather than a new
+ * gauge each time. Same stroke exception as sweepArc above.
+ */
+export function scoreTo(
+  { circle, number }: { circle: SVGCircleElement; number: HTMLElement },
+  {
+    from,
+    to,
+    circumference,
+    onValue,
+  }: { from: number; to: number; circumference: number; onValue?: (value: number) => void },
+  overrides: AnimationParams = {},
+): JSAnimation {
+  const proxy = { value: from };
+  const render = () => {
+    circle.style.strokeDashoffset = `${circumference * (1 - proxy.value / 100)}`;
+    number.textContent = `${Math.round(proxy.value)}`;
+    onValue?.(proxy.value);
+  };
+  render();
+
+  return animate(proxy, {
+    value: to,
+    duration: motionDuration(700),
+    ease: 'outExpo',
+    onUpdate: render,
+    ...overrides,
+  });
+}
+
 export { stagger };

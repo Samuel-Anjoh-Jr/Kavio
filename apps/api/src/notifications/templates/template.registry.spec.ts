@@ -176,6 +176,16 @@ function sampleVariables(key: string): Record<string, unknown> {
       return { extraCommissionPercent: 5 };
     case 'featured.rejected':
       return { reason: 'Trust Score is still building toward what Featured placement needs.' };
+    case 'featured.revoked':
+      return { reason: 'Recent reviews dropped below the Featured threshold.' };
+    case 'admin.announcement_published':
+      return {
+        titleEn: 'New payout schedule',
+        titleFr: 'Nouveau calendrier de versement',
+        bodyEn: 'Released escrow now reaches your Mobile Money account within 24 hours.',
+        bodyFr:
+          'Les fonds libérés arrivent désormais sur votre compte Mobile Money sous 24 heures.',
+      };
     case 'job.application_received':
       return { jobTitle: 'Fix a leaking kitchen tap' };
     case 'job.invitation_received':

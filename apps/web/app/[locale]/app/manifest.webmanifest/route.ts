@@ -6,8 +6,11 @@ import { routing, type Locale } from '@/i18n/routing';
  * Hand-written Route Handler (not the `manifest.ts` file convention) so the
  * manifest can vary per locale via the `[locale]` segment's params — the
  * file-convention export doesn't reliably receive dynamic-segment params.
- * Scope + start_url are pinned to `/{locale}/app/`, keeping the marketing
- * landing page outside the installable app (CLAUDE.md ACCESS MODEL).
+ * Scope + start_url are pinned to `/{locale}/app`, keeping the marketing
+ * landing page outside the installable app (CLAUDE.md ACCESS MODEL). The scope
+ * has no trailing slash so it contains the start_url itself: with
+ * `/{locale}/app/`, `/{locale}/app?source=pwa` fell outside both the manifest
+ * scope and the service worker's, and the installed app could not open offline.
  */
 
 const COPY: Record<Locale, { name: string; description: string }> = {
@@ -36,7 +39,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ loc
     lang: locale,
     dir: 'ltr',
     start_url: `${basePath}?source=pwa`,
-    scope: `${basePath}/`,
+    scope: basePath,
     display: 'standalone',
     orientation: 'portrait-primary',
     background_color: '#f8f9fc',

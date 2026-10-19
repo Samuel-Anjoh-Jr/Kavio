@@ -26,8 +26,8 @@ export function SiteFooter() {
   ] as const;
 
   return (
-    <footer className="border-t border-border bg-muted/40">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-12 sm:px-6">
+    <footer className="border-t border-border bg-muted/40 px-4 sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 py-12">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex max-w-xs flex-col gap-3">
             <span className="flex items-center gap-2">

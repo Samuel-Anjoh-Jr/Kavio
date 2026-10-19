@@ -88,7 +88,7 @@ export function TrustBreakdownView({
         >
           <h2
             id="top-action-heading"
-            className="text-xs font-semibold tracking-wide text-accent uppercase"
+            className="text-xs font-semibold tracking-wide text-foreground uppercase"
           >
             {t('topActionHeading')}
           </h2>
@@ -97,12 +97,12 @@ export function TrustBreakdownView({
               href={topImprovementHref}
               className="mt-2 flex items-start gap-2 rounded-input text-base font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
-              <ArrowRight aria-hidden className="mt-1 size-4 shrink-0 text-accent" />
+              <ArrowRight aria-hidden className="mt-1 size-4 shrink-0 text-accent-ink" />
               {t(`improve.${topImprovement.type}`)}
             </Link>
           ) : (
             <p className="mt-2 flex items-start gap-2 text-base font-medium text-foreground">
-              <ArrowRight aria-hidden className="mt-1 size-4 shrink-0 text-accent" />
+              <ArrowRight aria-hidden className="mt-1 size-4 shrink-0 text-accent-ink" />
               {t(`improve.${topImprovement.type}`)}
             </p>
           )}

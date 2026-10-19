@@ -78,7 +78,7 @@ export function QueueCard({
           {waiting === 0 ? t('waitingToday') : t('waitingDays', { days: waiting })}
         </span>
         {item.assignedToId && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent">
+          <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent-ink">
             <UserCheck aria-hidden className="size-3" />
             {t('claimed')}
           </span>

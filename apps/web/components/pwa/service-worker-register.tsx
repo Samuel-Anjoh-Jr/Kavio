@@ -10,7 +10,9 @@ import type { NotificationRelevantRole } from '@/lib/graphql/notifications';
 
 /**
  * Registers the app-shell service worker with its scope explicitly narrowed
- * to `/{locale}/app/`. Only ever rendered from `app/[locale]/app/layout.tsx`
+ * to `/{locale}/app` (no trailing slash, so the manifest's
+ * `/{locale}/app?source=pwa` start_url is covered and the installed app can
+ * launch offline; see public/sw.js). Only ever rendered from `app/[locale]/app/layout.tsx`
  * — the marketing route group never mounts this, so the marketing landing
  * page is never registered, never controlled, and never shows an install
  * prompt (CLAUDE.md ACCESS MODEL: marketing stays "fast, crawlable,
@@ -28,6 +30,19 @@ import type { NotificationRelevantRole } from '@/lib/graphql/notifications';
  * sound player, the bell's live refresh) can react without this component
  * needing to know about either.
  */
+/**
+ * Earlier builds registered with a trailing-slash scope (`/{locale}/app/`).
+ * That registration would keep controlling every page under it (the longest
+ * matching scope wins) while missing the app root, so it is removed once the
+ * correct one exists. It keeps the current page until the next load; nothing
+ * breaks in between.
+ */
+async function retireLegacyRegistrations(scope: string) {
+  const legacy = new URL(`${scope}/`, window.location.origin).href;
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(registrations.filter((r) => r.scope === legacy).map((r) => r.unregister()));
+}
+
 export function ServiceWorkerRegister({ locale }: { locale: string }) {
   const router = useRouter();
   const { data: session, update } = useSession();
@@ -37,8 +52,10 @@ export function ServiceWorkerRegister({ locale }: { locale: string }) {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
+    const scope = `/${locale}/app`;
     navigator.serviceWorker
-      .register('/sw.js', { scope: `/${locale}/app/` })
+      .register('/sw.js', { scope })
+      .then(() => retireLegacyRegistrations(scope))
       .catch((error: unknown) => {
         console.error('[pwa] service worker registration failed', error);
       });

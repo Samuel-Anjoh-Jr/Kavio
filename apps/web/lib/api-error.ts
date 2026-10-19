@@ -33,6 +33,19 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Whether a failed refresh was the API REFUSING the refresh token (pure).
+ *
+ * 4xx is a verdict about the token: expired, revoked, replayed, malformed. 408
+ * and 429 are the exceptions, being about the request rather than the token.
+ * Everything else (a thrown fetch, a 5xx, a non-JSON proxy page) means the API
+ * could not give a verdict, and must not end the session.
+ */
+export function isRefreshRejection(error: unknown): boolean {
+  if (!(error instanceof ApiError)) return false;
+  return error.status >= 400 && error.status < 500 && error.status !== 408 && error.status !== 429;
+}
+
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again.';
 
 export async function parseApiError(response: Response): Promise<ApiError> {

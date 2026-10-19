@@ -1,7 +1,9 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { animate } from 'animejs';
+import { useInViewOnce } from '@/components/motion/use-in-view-once';
 
 /**
  * A portfolio before/after card for the horizontal rail (SRS §20.6).
@@ -18,25 +20,69 @@ import { useTranslations } from 'next-intl';
  * deployment, and next/image would require allow-listing every one of those
  * hosts. The explicit width/height is what keeps the rail out of the CLS budget
  * (NFR-PERF-01).
+ *
+ * With `hint`, the handle nudges left and right once when the card first
+ * scrolls into view, so a visitor can see it is meant to be dragged before
+ * they have to guess. It stops the moment they touch it, and never runs under
+ * reduced motion.
  */
 export function BeforeAfterCard({
   beforeUrl,
   afterUrl,
   caption,
   trade,
+  hint = false,
 }: {
   beforeUrl: string;
   afterUrl: string;
   caption: string;
   trade: string;
+  hint?: boolean;
 }) {
   const t = useTranslations('Marketing.portfolio');
   const [position, setPosition] = useState(50);
   const id = useId();
+  const frameRef = useRef<HTMLDivElement>(null);
+  const touched = useRef(false);
+
+  useInViewOnce(frameRef, {
+    threshold: 0.6,
+    enter: () => {
+      if (!hint) return;
+      const handle = { value: 50 };
+      const nudge = animate(handle, {
+        value: [
+          { to: 30, duration: 450 },
+          { to: 66, duration: 600 },
+          { to: 50, duration: 450 },
+        ],
+        delay: 300,
+        ease: 'inOutSine',
+        onUpdate: () => {
+          if (touched.current) {
+            nudge.pause();
+            return;
+          }
+          setPosition(Math.round(handle.value));
+        },
+      });
+    },
+  });
+
+  const onUserInput = (value: number) => {
+    touched.current = true;
+    setPosition(value);
+  };
 
   return (
     <figure className="flex w-72 shrink-0 flex-col gap-3 sm:w-80">
-      <div className="relative aspect-4/3 overflow-hidden rounded-image bg-muted">
+      <div
+        ref={frameRef}
+        onPointerDown={() => {
+          touched.current = true;
+        }}
+        className="relative aspect-4/3 overflow-hidden rounded-image bg-muted"
+      >
         {/* Local SVG placeholders (and, in production, storage URLs that vary per
             deployment). next/image would need every storage host allow-listed;
             the explicit dimensions already reserve the box for the CLS budget. */}
@@ -85,7 +131,7 @@ export function BeforeAfterCard({
           min={0}
           max={100}
           value={position}
-          onChange={(event) => setPosition(Number(event.target.value))}
+          onChange={(event) => onUserInput(Number(event.target.value))}
           aria-valuetext={t('sliderValue', { percent: position })}
           className="absolute inset-x-0 bottom-0 h-full w-full cursor-ew-resize appearance-none bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset [&::-webkit-slider-thumb]:size-8 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-surface [&::-webkit-slider-thumb]:bg-primary"
         />

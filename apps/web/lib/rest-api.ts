@@ -1,6 +1,7 @@
 'use client';
 
-import { fetchJson } from './api-error';
+import { ApiError, fetchJson } from './api-error';
+import { isKnownOffline, isNetworkFailure, reportNetworkFailure } from './offline/connectivity';
 import { enqueueWrite, isQueueable, type QueuedWriteMethod } from './offline/write-queue';
 
 /**
@@ -13,8 +14,59 @@ function restUrl(path: string): string {
   return `/api/rest/${path.replace(/^\//, '')}`;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Offline guard (SYS-02, SYS-06).
+//
+// A write attempted with no connection must say so, inline, instead of failing
+// as an unexplained "something went wrong" or, worse, appearing to do nothing.
+// Every form in the app already renders an ApiError's message in its own error
+// banner, so the guard speaks that same contract: an ApiError with code
+// OFFLINE. Nothing is sent and nothing is queued, which is what keeps money and
+// trust-state writes (escrow, payouts, verification) from ever being attempted
+// or deferred while offline. Content writes that are SAFE to defer go through
+// `restWrite` below instead.
+//
+// The message is localized: this module has no translator of its own, so the
+// app shell hands it the EN/FR string (components/pwa/offline-indicator.tsx).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const OFFLINE_ERROR_CODE = 'OFFLINE';
+
+let offlineWriteMessage = OFFLINE_ERROR_CODE;
+
+/** Set by the app shell with the active locale's copy. */
+export function setOfflineWriteMessage(message: string): void {
+  offlineWriteMessage = message;
+}
+
+function offlineError(): ApiError {
+  return new ApiError(0, {
+    // No request left the device, so there is no requestId to quote; an empty
+    // one keeps forms from printing a meaningless support reference.
+    error: { code: OFFLINE_ERROR_CODE, message: offlineWriteMessage, requestId: '' },
+  });
+}
+
+export function isOfflineError(error: unknown): boolean {
+  return error instanceof ApiError && error.code === OFFLINE_ERROR_CODE;
+}
+
+async function onlineFetchJson<T>(url: string, init: RequestInit): Promise<T> {
+  if (isKnownOffline()) throw offlineError();
+
+  try {
+    return await fetchJson<T>(url, init);
+  } catch (error) {
+    if (isNetworkFailure(error)) {
+      reportNetworkFailure();
+      throw offlineError();
+    }
+    throw error;
+  }
+}
+
 export function restPost<T>(path: string, body?: unknown): Promise<T> {
-  return fetchJson<T>(restUrl(path), {
+  return onlineFetchJson<T>(restUrl(path), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body ?? {}),
@@ -22,7 +74,7 @@ export function restPost<T>(path: string, body?: unknown): Promise<T> {
 }
 
 export function restPatch<T>(path: string, body: unknown): Promise<T> {
-  return fetchJson<T>(restUrl(path), {
+  return onlineFetchJson<T>(restUrl(path), {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -30,7 +82,7 @@ export function restPatch<T>(path: string, body: unknown): Promise<T> {
 }
 
 export function restDelete<T>(path: string, body?: unknown): Promise<T> {
-  return fetchJson<T>(restUrl(path), {
+  return onlineFetchJson<T>(restUrl(path), {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body ?? {}),
@@ -65,6 +117,12 @@ export async function restWrite<T>(
 ): Promise<OfflineWriteResult<T>> {
   const { method = 'POST', body = {}, dedupeKey = null } = options;
 
+  if (isKnownOffline()) {
+    if (!isQueueable(path)) throw offlineError();
+    const entry = await enqueueWrite({ path, method, body, dedupeKey });
+    return { status: 'queued', queuedAt: entry.updatedAt };
+  }
+
   try {
     const data = await fetchJson<T>(restUrl(path), {
       method,
@@ -77,7 +135,8 @@ export async function restWrite<T>(
     // connectivity problem, and replaying it later would not change it.
     const reachedServer = typeof (error as { status?: number }).status === 'number';
 
-    if (reachedServer || !isQueueable(path)) throw error;
+    if (reachedServer) throw error;
+    if (!isQueueable(path)) throw isNetworkFailure(error) ? offlineError() : error;
 
     const entry = await enqueueWrite({ path, method, body, dedupeKey });
     return { status: 'queued', queuedAt: entry.updatedAt };
@@ -104,6 +163,19 @@ export function restUpload(
   onProgress?: (percent: number) => void,
 ): Promise<UploadResult> {
   return new Promise((resolve, reject) => {
+    // Same contract as the upload's own failures below: an Error whose `name`
+    // is the code and whose message is user-facing copy.
+    const offline = () => {
+      const error = new Error(offlineWriteMessage);
+      error.name = OFFLINE_ERROR_CODE;
+      return error;
+    };
+
+    if (isKnownOffline()) {
+      reject(offline());
+      return;
+    }
+
     const form = new FormData();
     form.append('file', file);
     for (const [key, value] of Object.entries(fields)) {
@@ -139,7 +211,11 @@ export function restUpload(
       reject(error);
     });
 
-    xhr.addEventListener('error', () => reject(new Error('UPLOAD_FAILED')));
+    xhr.addEventListener('error', () => {
+      // A transport-level failure: the bytes never reached the server.
+      reportNetworkFailure();
+      reject(navigator.onLine ? new Error('UPLOAD_FAILED') : offline());
+    });
     xhr.send(form);
   });
 }

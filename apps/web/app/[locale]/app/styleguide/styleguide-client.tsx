@@ -70,6 +70,8 @@ const COLOR_TOKENS = [
   { name: 'primary', className: 'bg-primary text-primary-foreground' },
   { name: 'success', className: 'bg-success text-success-foreground' },
   { name: 'accent', className: 'bg-accent text-accent-foreground' },
+  // Accent as text or an icon: the fill colour is too light to read on a surface.
+  { name: 'accent-ink', className: 'border border-border bg-surface text-accent-ink' },
   { name: 'warning', className: 'bg-warning text-warning-foreground' },
   { name: 'danger', className: 'bg-danger text-danger-foreground' },
 ] as const;
@@ -130,7 +132,7 @@ export function StyleguideClient() {
 
       <section className="flex flex-col gap-4">
         <h2 className="font-heading text-xl font-semibold text-foreground">{t('colorsHeading')}</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
           {COLOR_TOKENS.map((c) => (
             <div
               key={c.name}
