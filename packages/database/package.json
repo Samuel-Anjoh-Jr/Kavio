@@ -25,7 +25,8 @@
     "migrate:reset": "prisma migrate reset",
     "migrate:diff": "prisma migrate diff --from-migrations prisma/migrations --to-url \"$DIRECT_URL\" --shadow-database-url \"$SHADOW_DATABASE_URL\" --exit-code",
     "seed": "node ./prisma/seed.mjs",
-    "osm:ingest": "node ./scripts/ingest-osm.mjs"
+    "osm:ingest": "node ./scripts/ingest-osm.mjs",
+    "admin:promote": "node ./scripts/promote-admin.mjs"
   },
   "dependencies": {
     "@faker-js/faker": "^10.5.0",

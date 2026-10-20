@@ -37,6 +37,14 @@ overrides:
   # @nestjs/graphql 13 resolves @graphql-tools/utils 11 (fixed in 12.0.1);
   # @nestjs/graphql 14 ships exactly 12.0.1, so use that until Nest is bumped.
   '@graphql-tools/utils': 12.0.1
+# Accepted risk (owner-approved): braces <=3.0.3 stack-exhaustion DoS
+# (GHSA-vfj7-8cjw-p6xm). No release >3.0.3 exists on npm yet, so it cannot be
+# overridden. Only reachable via build/dev-time glob tooling (fast-glob ->
+# micromatch from @nestjs/graphql and eslint-config-next), never on user input
+# at runtime. Remove this entry once braces ships a fixed version.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-vfj7-8cjw-p6xm
 allowBuilds:
   # Its postinstall only builds the parser Apollo Studio usage reporting needs,
   # and we do not enable that — GraphQL serves fine without the build step.

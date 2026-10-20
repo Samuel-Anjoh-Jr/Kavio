@@ -33,6 +33,7 @@
     "db:migrate:diff": "pnpm --filter @kavio/database migrate:diff",
     "db:seed": "pnpm --filter @kavio/database seed",
     "db:osm:ingest": "pnpm --filter @kavio/database osm:ingest",
+    "db:admin:promote": "pnpm --filter @kavio/database admin:promote",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d && pnpm db:migrate:deploy && pnpm db:generate",
