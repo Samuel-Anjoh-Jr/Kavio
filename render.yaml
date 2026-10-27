@@ -17,7 +17,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
-        value: 22.13.0
+        value: 22.23.4
       # Render injects PORT automatically; apps/api/src/main.ts already reads
       # process.env.PORT, so nothing to set here.
       #
