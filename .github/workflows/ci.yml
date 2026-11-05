@@ -50,8 +50,10 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Test
-        run: pnpm test
+      # Runs the same suites as `pnpm test`, plus enforces the coverage floors
+      # configured in apps/api (jest) and apps/web (vitest).
+      - name: Test with coverage thresholds
+        run: pnpm test:cov
 
       - name: Prisma validate
         run: pnpm db:validate

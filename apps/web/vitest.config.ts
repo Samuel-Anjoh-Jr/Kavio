@@ -14,6 +14,14 @@ export default defineConfig({
   test: {
     include: ['lib/**/*.test.ts'],
     environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'lcov'],
+      include: ['lib/**/*.ts'],
+      exclude: ['lib/**/*.test.ts'],
+      // Floors set just under the measured baseline so coverage can only ratchet up.
+      thresholds: { statements: 22, lines: 22, functions: 15, branches: 30 },
+    },
   },
   resolve: {
     alias: {

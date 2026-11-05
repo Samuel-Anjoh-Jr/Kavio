@@ -110,6 +110,10 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
+    "test:cov": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
     "clean": {
       "cache": false
     }
