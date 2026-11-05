@@ -9,6 +9,9 @@ on:
   # without needing a push — e.g. after fixing a secret the last run failed on.
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-production-${{ github.ref }}
   cancel-in-progress: true
@@ -78,6 +81,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          check-latest: true
           cache: pnpm
 
       - name: Install dependencies
@@ -133,6 +137,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          check-latest: true
           cache: pnpm
 
       - name: Install dependencies
