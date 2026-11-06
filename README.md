@@ -51,6 +51,7 @@ Web: http://localhost:3000 · API: http://localhost:4000 (GraphQL at /graphql) �
 | `pnpm db:migrate` / `db:migrate:deploy` / `db:generate` / `db:seed` / `db:studio` | Prisma via packages/database |
 | `pnpm dev:setup` | one-shot local bootstrap |
 | `pnpm lint` / `lint:i18n` / `type-check` / `test` / `full-check` | quality gates (full-check = all) |
+| `pnpm test:cov` | tests plus enforced coverage floors (api: Jest/V8, web: Vitest/V8). Raise the thresholds as coverage grows, never lower them |
 | `pnpm keys` / `32-bytes` | generate JWT + VAPID secrets / a random 32-byte key |
 | `pnpm backup:db` | pg_dump the local database into ./backups |
 | `pnpm docker:up` / `docker:reset` / `docker:logs` | docker compose helpers |
@@ -58,7 +59,7 @@ Web: http://localhost:3000 · API: http://localhost:4000 (GraphQL at /graphql) �
 
 ## CI/CD
 
-- **ci.yml**: on every push/PR to main, the PR gate — install, typecheck, lint, test, `prisma validate`.
+- **ci.yml**: on every push/PR to main, the PR gate — install, typecheck, lint, tests with coverage thresholds, `prisma validate`.
 - **deploy-production.yml**: on push to main (or manual dispatch), validate then migrate (only when prisma files changed) with a schema-drift gate; API auto-deploys via Railway, web via Vercel.
 - **manual-seed.yml**: manual dispatch, requires typing CONFIRM.
 
