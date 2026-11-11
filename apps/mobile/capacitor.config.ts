@@ -13,7 +13,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
  * KAVIO_APP_URL must be the production origin (e.g. https://kavio.cm) when
  * building a release; `/app` lets the locale middleware pick EN or FR.
  */
-const origin = (process.env.KAVIO_APP_URL ?? 'https://kavio.cm').replace(/\/$/, '');
+const origin = (process.env.KAVIO_APP_URL || 'https://kavio.cm').trim().replace(/\/+$/, '');
 const isDev = origin.startsWith('http://');
 
 const config: CapacitorConfig = {

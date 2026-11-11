@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+/**
+ * App version comes from apps/mobile/package.json, which
+ * scripts/bump-version.mjs keeps equal to the root package.json version.
+ * versionCode = MAJOR*10000 + MINOR*100 + PATCH (e.g. 1.2.3 -> 10203), so it
+ * always grows when the version grows (required by Android and Google Play).
+ */
+def appVersionName = new groovy.json.JsonSlurper().parse(file("../../package.json")).version
+def appVersionParts = appVersionName.tokenize('.').collect { it.isInteger() ? it.toInteger() : 0 }
+def appVersionCode = appVersionParts[0] * 10000 + appVersionParts[1] * 100 + appVersionParts[2]
+
 android {
     namespace = "com.kavio.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +17,8 @@ android {
         applicationId "com.kavio.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersionCode
+        versionName appVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +26,24 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        // Release key comes from env vars (set by .github/workflows/mobile-release.yml
+        // from GitHub secrets) or gradle properties. Never commit the keystore.
+        def releaseStoreFile = System.getenv('ANDROID_KEYSTORE_FILE') ?: findProperty('ANDROID_KEYSTORE_FILE')
+        if (releaseStoreFile && file(releaseStoreFile).exists()) {
+            release {
+                storeFile file(releaseStoreFile)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD') ?: findProperty('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS') ?: findProperty('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD') ?: findProperty('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            // Uses the real release key when one is provided, otherwise falls
+            // back to the debug key (installable, but not for Google Play).
+            signingConfig signingConfigs.findByName('release') ?: signingConfigs.debug
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

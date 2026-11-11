@@ -69,6 +69,50 @@ iOS cannot loop a ring past 30 s or draw a call-style screen for a
 marketplace app (CallKit is for real calls only); the time-sensitive push
 with the 29.5 s brand ringtone plus the WhatsApp/SMS/voice ladder covers it.
 
+## Releases (CI): `.github/workflows/mobile-release.yml`
+
+Same flow as ASK-O Eats. The version is the root `package.json` version,
+copied into the apps by `scripts/bump-version.mjs`; Android `versionCode` and
+the iOS build number are `MAJOR*10000 + MINOR*100 + PATCH`.
+
+A release is built when:
+
+1. a PR that ran `pnpm version:patch|minor|major` is merged to `main`
+   (the workflow tags `vX.Y.Z` and builds it);
+2. you push a tag on `main`: `git tag v0.2.0 && git push origin v0.2.0`;
+3. you press **Actions → Mobile Release → Run workflow** and pick patch,
+   minor, major (bumps, commits, tags, builds) or rebuild.
+
+It produces a signed `Kavio-vX.Y.Z.apk` (one APK fits every phone; download it
+from the run's *Artifacts*), plus a Google Play internal-testing upload and a
+TestFlight upload when their secrets exist. Web-only changes need no release:
+the app loads the live site.
+
+Repository **variables / secrets** (Settings → Secrets and variables → Actions):
+
+| Name | What it is |
+|---|---|
+| `KAVIO_APP_URL` (variable) | Production origin the app loads, e.g. `https://kavio.cm` |
+| `GOOGLE_SERVICES_JSON` | Firebase Android config (`google-services.json`, raw or base64). Without it the APK never receives push |
+| `GOOGLE_SERVICE_INFO_PLIST` | Firebase iOS config (`GoogleService-Info.plist`, raw or base64) |
+| `ANDROID_KEYSTORE_BASE64` | Release keystore, `base64 -w0 kavio-release.jks` |
+| `ANDROID_KEYSTORE_PASSWORD` | Keystore password |
+| `ANDROID_KEY_ALIAS` | Key alias inside the keystore |
+| `ANDROID_KEY_PASSWORD` | Key password (defaults to the keystore password) |
+| `PLAY_STORE_SERVICE_ACCOUNT` | Google Play service account JSON; enables the AAB upload to internal testing (`GOOGLE_SERVICE_ACCOUNT_JSON` also accepted). The app must exist in Play Console and have had one manual upload first |
+| `APP_STORE_CONNECT_API_KEY_ID` | App Store Connect API key ID; enables the iOS job |
+| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID (Users and Access → Integrations) |
+| `APP_STORE_CONNECT_API_KEY` | Full contents of the `AuthKey_XXXX.p8` file (role Admin or App Manager) |
+| `APPLE_TEAM_ID` | 10-character Apple Developer Team ID |
+
+Without the keystore secrets the APK is debug-signed (installable for testing,
+not for Play). The **Run workflow** bump pushes to `main` as
+`github-actions[bot]`: set Settings → Actions → Workflow permissions to "Read
+and write" and let that bot through any branch protection.
+
+Keep the same keystore forever: Play and installed phones reject an update
+signed with a different key.
+
 ## Native code
 
 - Android: `android/app/src/main/java/com/kavio/app/alerts/` (ported from

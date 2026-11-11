@@ -78,3 +78,14 @@ DEFINITION OF DONE (every PR): typechecks; lints; tests for new logic; reads via
 
 CONVENTIONS: TypeScript everywhere. One NestJS module per SRS module. Shared types + GraphQL ops + Prisma client in packages/*.
   Brand token: "Kavio". Add each feature's Prisma models + migration inside the prompt that introduces the feature (incremental schema).
+
+VERSIONING & MOBILE RELEASES (required for every change that ships in the native app):
+  The app version lives in the ROOT package.json and is copied into apps/api, apps/mobile and apps/web by
+  scripts/bump-version.mjs. Never edit those version fields by hand. apps/mobile loads the live web app, so web-only,
+  API-only, CI and docs changes need NO bump. When a change touches apps/mobile (native code, capacitor.config, icons,
+  sounds, plugins), bump the version in the same PR: `pnpm version:patch` (fixes, small tweaks), `pnpm version:minor`
+  (new native capability or noticeable behaviour change), `pnpm version:major` (breaking change that needs everyone to
+  update). Bump once per PR and say which bump and why in the PR description. Merging a PR that changes the root version
+  makes .github/workflows/mobile-release.yml tag vX.Y.Z and build: a signed APK artifact, a Google Play upload when the
+  Play service account secret is set, and an App Store Connect / TestFlight upload when the App Store Connect secrets are
+  set. Minor and patch stay <= 99 (Android versionCode = MAJOR*10000 + MINOR*100 + PATCH; iOS build number the same).
