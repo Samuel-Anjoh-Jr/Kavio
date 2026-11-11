@@ -1614,7 +1614,8 @@
     "saveMethod": "Save method",
     "actionFailed": "That action could not be completed. Please try again.",
     "disputeFrozenHint": "Funds stay frozen until an admin resolves the dispute.",
-    "noMethodOnFile": "Add a Mobile Money number to continue — it's saved for next time too."
+    "noMethodOnFile": "Add a Mobile Money number to continue — it's saved for next time too.",
+    "bookAgain": "Book this worker again"
   },
   "Disputes": {
     "title": "Dispute",
