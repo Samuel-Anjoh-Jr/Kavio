@@ -1,5 +1,7 @@
 PROJECT: Kavio, a trust-first local-services / skilled-labour marketplace for Cameroon (Douala and Yaoundé first).
-WEB-ONLY: a Next.js App Router app, installable as a PWA on mobile/desktop, or used on the web. NO native mobile app.
+WEB-FIRST: a Next.js App Router app, installable as a PWA on mobile/desktop, or used on the web. A thin Capacitor shell
+(apps/mobile, com.kavio.app) wraps the same /{locale}/app for Android/iOS ONLY to add native capabilities the browser lacks
+(FCM push that wakes a closed app, phone-call style ringing alerts, lock-screen full-screen ring). All product UI stays in apps/web.
 The moat is TRUST, not listings: a continuously updated Trust Engine (identity, professional, marketplace, financial),
 progressive verification (Tiers 0-3), portfolio evidence, transparent quotes, and escrow. Bilingual EN/FR. Currency XAF only.
 Payments via Campay. Users are mobile-first (phone browser), low-bandwidth, non-technical.
@@ -8,6 +10,8 @@ MONOREPO (pnpm workspaces, Bun runtime):
   apps/web   Next.js App Router (TypeScript), run on Bun. Marketing site + installable PWA app. TailwindCSS + shadcn/ui
              (copied in and fully restyled to TMDS) + Anime.js v4 + Lenis + Apollo Client + next-intl + next-themes + React Hook Form + Zod.
              Maps via Mapbox GL JS. Location via the browser Geolocation API.
+  apps/mobile Capacitor 8 shell (server.url = KAVIO_APP_URL/app). Native code only in android/.../alerts (KavioAlerts plugin)
+             and the iOS AppDelegate push bridge; no screens. Web detects it via lib/alerts/native-alerts.ts.
   apps/api   NestJS (TypeScript) on Bun. REST controllers + GraphQL resolvers + PostGIS. WebSocket gateways for real-time.
   packages/api-client        shared client config, GraphQL operations, REST mutation helpers.
   packages/database          Prisma client, migrations, PostGIS/OSM SQL views.

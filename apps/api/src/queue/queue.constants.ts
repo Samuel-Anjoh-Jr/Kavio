@@ -10,13 +10,19 @@ import type { JobsOptions } from 'bullmq';
 export const QUEUE_NAMES = {
   notifications: 'notifications',
   webhooks: 'webhooks',
+  /** Escalation ladder for unanswered ringing alerts (notifications/alerts). */
+  alerts: 'alert-escalation',
   deadLetter: 'dead-letter',
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
 
 /** Queues that carry real work and get a dead-letter safety net. */
-export const WORK_QUEUES: QueueName[] = [QUEUE_NAMES.notifications, QUEUE_NAMES.webhooks];
+export const WORK_QUEUES: QueueName[] = [
+  QUEUE_NAMES.notifications,
+  QUEUE_NAMES.webhooks,
+  QUEUE_NAMES.alerts,
+];
 
 /**
  * Default retry/backoff policy applied to every enqueued job. Exponential

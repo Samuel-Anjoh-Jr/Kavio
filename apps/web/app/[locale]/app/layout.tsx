@@ -5,6 +5,7 @@ import { MotionProvider } from '@/components/motion/motion-provider';
 import { PageTransition } from '@/components/motion/page-transition';
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
+import { RingSheet } from '@/components/alerts/ring-sheet';
 import { OfflineIndicator } from '@/components/pwa/offline-indicator';
 import { OfflineSync } from '@/components/pwa/offline-sync';
 import { SkipLink } from '@/components/a11y/skip-link';
@@ -128,6 +129,8 @@ export default async function AppLayout({
             <AppBottomNav />
           </div>
           <InstallPrompt />
+          {/* Phone-call style ring for funded bookings / job invitations (NOT-02). */}
+          <RingSheet />
         </FavoritesProvider>
       </LocationProvider>
     </MotionProvider>

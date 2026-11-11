@@ -1400,6 +1400,17 @@
       "DECLINED": "Refusée",
       "EXPIRED": "Expirée",
       "CANCELLED": "Annulée"
+    },
+    "contactCard": {
+      "yourWorker": "Votre prestataire",
+      "yourClient": "Votre client",
+      "call": "Appeler",
+      "whatsapp": "WhatsApp",
+      "hintClient": "Il a déjà reçu une alerte comme un appel. S'il ne répond pas vite, appelez-le pour lui dire que vous attendez.",
+      "hintWorker": "Appelez votre client si vous avez besoin d'indications ou de détails avant d'arriver.",
+      "lockedUntilFunded": "Le numéro apparaît ici dès que le paiement est sécurisé en séquestre. D'ici là, utilisez la messagerie Kavio.",
+      "closed": "Cette réservation est clôturée, le numéro n'est plus affiché.",
+      "error": "Impossible de charger le contact. Actualisez ou réessayez."
     }
   },
   "Quotes": {
@@ -3033,5 +3044,15 @@
     "reasonInvalid": "Indiquez au moins {min} caractères.",
     "confirmReject": "Refuser",
     "rejectedToast": "Demande de {name} refusée."
+  },
+  "Alerts": {
+    "bookingFunded": "Réservation payée",
+    "jobInvitation": "Invitation à un travail",
+    "viewBooking": "Voir la réservation",
+    "viewJob": "Voir le travail",
+    "later": "Plus tard",
+    "tapForSound": "Touchez pour activer la sonnerie",
+    "secondsShort": "{seconds} s",
+    "escalationHint": "Si vous ne l'ouvrez pas, Kavio vous relancera par WhatsApp, SMS, puis par un appel."
   }
 }

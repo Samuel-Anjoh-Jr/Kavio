@@ -1,0 +1,23 @@
+{
+  "name": "@kavio/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kavio Android/iOS app: a Capacitor shell around the Kavio app (apps/web /{locale}/app) with native ringing alerts.",
+  "scripts": {
+    "sync": "cap sync",
+    "android:open": "cap open android",
+    "ios:open": "cap open ios",
+    "android:apk": "cap sync android && cd android && ./gradlew assembleRelease",
+    "android:bundle": "cap sync android && cd android && ./gradlew bundleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.3",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.4.3",
+    "@capacitor/push-notifications": "^8.1.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.3.0",
+    "typescript": "^5"
+  }
+}

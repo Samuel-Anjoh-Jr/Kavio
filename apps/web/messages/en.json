@@ -1400,6 +1400,17 @@
       "DECLINED": "Declined",
       "EXPIRED": "Expired",
       "CANCELLED": "Cancelled"
+    },
+    "contactCard": {
+      "yourWorker": "Your worker",
+      "yourClient": "Your client",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "hintClient": "They have already been alerted like a phone call. If they don't respond quickly, call them to let them know you're waiting.",
+      "hintWorker": "Call your client if you need directions or details before you arrive.",
+      "lockedUntilFunded": "The phone number appears here once the payment is secured in escrow. Until then, use Kavio messages.",
+      "closed": "This booking is closed, so the phone number is no longer shown.",
+      "error": "Couldn't load the contact details. Pull to refresh or try again."
     }
   },
   "Quotes": {
@@ -3033,5 +3044,15 @@
     "reasonInvalid": "Enter at least {min} characters.",
     "confirmReject": "Decline",
     "rejectedToast": "Request from {name} declined."
+  },
+  "Alerts": {
+    "bookingFunded": "Booking funded",
+    "jobInvitation": "Job invitation",
+    "viewBooking": "View booking",
+    "viewJob": "View job",
+    "later": "Later",
+    "tapForSound": "Tap to turn the ring sound on",
+    "secondsShort": "{seconds}s",
+    "escalationHint": "If you don't open it, Kavio will remind you by WhatsApp, SMS, then a call."
   }
 }

@@ -3405,6 +3405,9 @@ model LocationPing {
 /// modelled so a future channel is an appended value, not a schema reshape.
 enum DevicePlatform {
   WEB
+  /// Native Capacitor app (apps/mobile). `endpoint` holds "fcm:<token>".
+  ANDROID
+  IOS
 }
 
 /// One web-push subscription for one device (NOT-01). `endpoint` is globally
@@ -3429,6 +3432,10 @@ model DeviceRegistration {
   /// Deactivated on the first delivery failure (410 Gone / 404) so the dispatcher
   /// stops selecting it. Kept rather than deleted for the device-history view.
   isActive Boolean @default(true)
+
+  /// Native builds that ring by themselves from data-only FCM messages send 2;
+  /// web subscriptions and older builds stay 0.
+  alertsVersion Int @default(0)
 
   lastSeenAt DateTime @default(now())
   createdAt  DateTime @default(now())
@@ -3682,4 +3689,30 @@ model PortfolioShowcase {
   /// The public read: what is published, in order. Also serves the admin
   /// list, which filters on nothing and sorts the same way.
   @@index([isPublished, order])
+}
+
+/// One ringing alert (a funded booking for a worker to accept, a direct job
+/// invitation, an SOS) sent to one person. Drives the escalation ladder
+/// (re-push → WhatsApp → SMS → voice call) until acknowledged or the booking
+/// no longer needs them. Settings: SystemSetting "notifications.alerts".
+model AlertDelivery {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  templateKey String
+  /// "booking" | "job" | "sos"
+  entityType String
+  entityId   String
+  title      String
+  body       String
+  path       String
+  locale     String    @default("fr")
+  sentAt     DateTime  @default(now())
+  ackedAt    DateTime?
+  ackSource  String?
+  step       Int       @default(0)
+  outcomes   Json?
+
+  @@index([entityType, entityId, ackedAt])
+  @@index([userId, ackedAt])
+  @@index([sentAt])
 }

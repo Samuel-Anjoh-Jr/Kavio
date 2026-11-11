@@ -6,6 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { getAppBaseUrl } from '../notification.config';
 import { extractRelevantRole, resolveDeepLink } from '../notification-links';
 import { NotificationSoundPreferenceService } from '../notification-sound-preference.service';
+import type { AlertService } from '../alerts/alert.service';
 import type {
   DeliveryContext,
   NotificationChannelProvider,
@@ -41,6 +42,9 @@ export class WebPushProvider implements NotificationChannelProvider {
     private readonly prisma: PrismaService,
     private readonly sounds: NotificationSoundPreferenceService,
     env: NodeJS.ProcessEnv = process.env,
+    // Alert profiles + native app (FCM) delivery + rings. Optional so tests
+    // that build the provider by hand keep the plain web-push behaviour.
+    private readonly alerts?: AlertService,
   ) {
     if (env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
       this.vapid = {
@@ -52,7 +56,8 @@ export class WebPushProvider implements NotificationChannelProvider {
   }
 
   isEnabled(): boolean {
-    return Boolean(this.vapid);
+    // Native app tokens (FCM) need no VAPID keys.
+    return Boolean(this.vapid) || Boolean(this.alerts && hasFirebaseConfig());
   }
 
   /**
@@ -70,6 +75,10 @@ export class WebPushProvider implements NotificationChannelProvider {
   async send(userId: string, message: RenderedMessage, context?: DeliveryContext): Promise<void> {
     if (message.channel !== 'WEB_PUSH') {
       throw new Error(`WebPushProvider received a ${message.channel} message`);
+    }
+    if (this.alerts) {
+      await this.deliverWithAlerts(userId, message.content, context);
+      return;
     }
     if (!this.vapid) {
       throw new Error('Web push is not configured (VAPID keys missing)');
@@ -162,6 +171,58 @@ export class WebPushProvider implements NotificationChannelProvider {
       throw new Error(`Web push failed for all ${transientFailures} device(s)`);
     }
   }
+
+  /**
+   * Alerts path: profile (ring / once / silent), web-push AND native app
+   * devices, ringing bookkeeping. Distinct notices get distinct tags; only
+   * the same conversation / dispute / job collapses — before, a missing id
+   * fell back to the category, so a second payment notice silently replaced
+   * the first one in the tray.
+   */
+  private async deliverWithAlerts(
+    userId: string,
+    content: { title: string; body: string; url?: string },
+    context?: DeliveryContext,
+  ): Promise<void> {
+    const meta = context?.metadata ?? {};
+    const templateKey = context?.templateKey ?? 'system.notification';
+    const url =
+      content.url ?? resolveDeepLink(templateKey, context?.metadata, getAppBaseUrl()) ?? undefined;
+    const soundKey = context
+      ? await this.sounds.resolve(context.userId ?? userId, context.category)
+      : null;
+    const bookingId = firstString(meta.bookingId);
+    const jobId = firstString(meta.jobId);
+    const entity =
+      templateKey === 'safety.sos_triggered'
+        ? { type: 'sos' as const, id: firstString(meta.sosId, meta.alertId) ?? userId }
+        : bookingId
+          ? { type: 'booking' as const, id: bookingId }
+          : jobId
+            ? { type: 'job' as const, id: jobId }
+            : null;
+    const result = await this.alerts!.deliver({
+      userId,
+      templateKey,
+      category: context?.category,
+      userSoundKey: soundKey,
+      locale: context?.locale === 'en' ? 'en' : 'fr',
+      title: content.title,
+      body: content.body,
+      url,
+      tag: firstString(meta.conversationId, meta.disputeId, meta.jobId),
+      relevantRole: extractRelevantRole(context?.metadata) ?? undefined,
+      entity,
+    });
+    if (result.delivered === 0 && result.transientFailures > 0) {
+      throw new Error(`Push failed for all ${result.transientFailures} device(s)`);
+    }
+  }
+}
+
+/** Firebase service-account env for native app pushes. */
+function hasFirebaseConfig(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(env.FIREBASE_PROJECT_ID && env.FIREBASE_CLIENT_EMAIL && env.FIREBASE_PRIVATE_KEY);
 }
 
 /** The first value that is a non-empty string, or undefined. */
