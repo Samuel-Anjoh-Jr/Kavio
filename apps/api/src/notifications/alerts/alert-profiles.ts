@@ -112,9 +112,9 @@ export const DEFAULT_ESCALATION: AlertSettings['escalation'] = {
   ],
   channels: {
     push: { enabled: true },
-    whatsapp: { enabled: false, provider: 'twilio' },
-    sms: { enabled: false, provider: 'twilio' },
-    voice: { enabled: false, provider: 'twilio' },
+    whatsapp: { enabled: false, provider: 'meta' },
+    sms: { enabled: false, provider: 'africastalking' },
+    voice: { enabled: false, provider: 'africastalking' },
   },
 };
 
@@ -178,15 +178,15 @@ export function normalizeAlertSettings(raw: unknown, ringLoopSeconds?: unknown):
         push: { enabled: bool(asObj(ch.push).enabled, d.channels.push.enabled) },
         whatsapp: {
           enabled: bool(whatsapp.enabled, false),
-          provider: whatsapp.provider === 'meta' ? 'meta' : 'twilio',
+          provider: whatsapp.provider === 'twilio' ? 'twilio' : 'meta',
         },
         sms: {
           enabled: bool(sms.enabled, false),
-          provider: sms.provider === 'africastalking' ? 'africastalking' : 'twilio',
+          provider: sms.provider === 'twilio' ? 'twilio' : 'africastalking',
         },
         voice: {
           enabled: bool(voice.enabled, false),
-          provider: voice.provider === 'africastalking' ? 'africastalking' : 'twilio',
+          provider: voice.provider === 'twilio' ? 'twilio' : 'africastalking',
         },
       },
     },

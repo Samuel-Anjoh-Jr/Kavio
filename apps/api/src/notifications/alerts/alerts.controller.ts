@@ -15,11 +15,7 @@ import type { AuthenticatedUser } from '../../auth/auth.types';
 import { CurrentUser, Public } from '../../auth/decorators/auth.decorators';
 import { ZodValidationPipe } from '../../lib/zod-validation.pipe';
 import { AlertService } from './alert.service';
-import {
-  africasTalkingVoiceXml,
-  pendingVoiceScripts,
-  toE164Cameroon,
-} from './escalation-providers';
+import { africasTalkingVoiceXml, loadVoiceScript, toE164Cameroon } from './escalation-providers';
 
 const voiceCallbackSchema = z
   .object({
@@ -80,8 +76,10 @@ export class AlertsController {
   @Post('voice/africastalking')
   @HttpCode(HttpStatus.OK)
   @Header('Content-Type', 'application/xml')
-  voiceCallback(@Body(new ZodValidationPipe(voiceCallbackSchema)) body: VoiceCallbackDto): string {
+  async voiceCallback(
+    @Body(new ZodValidationPipe(voiceCallbackSchema)) body: VoiceCallbackDto,
+  ): Promise<string> {
     const to = toE164Cameroon(body.destinationNumber ?? body.callerNumber ?? '');
-    return africasTalkingVoiceXml(to ? pendingVoiceScripts.get(to) : undefined);
+    return africasTalkingVoiceXml(to ? await loadVoiceScript(to) : undefined);
   }
 }

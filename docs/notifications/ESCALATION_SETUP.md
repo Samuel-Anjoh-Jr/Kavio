@@ -57,9 +57,9 @@ keeps silence, except for rings.
       { "afterSeconds": 900, "channel": "voice" }
     ],
     "channels": {
-      "whatsapp": { "enabled": true, "provider": "twilio" },
-      "sms": { "enabled": true, "provider": "twilio" },
-      "voice": { "enabled": false, "provider": "twilio" }
+      "whatsapp": { "enabled": true, "provider": "meta" },
+      "sms": { "enabled": true, "provider": "africastalking" },
+      "voice": { "enabled": false, "provider": "africastalking" }
     }
   }
 }
@@ -68,19 +68,24 @@ keeps silence, except for rings.
 A channel that is enabled but has no keys is skipped and logged; it never
 fails the ladder.
 
-## 1. Which provider to choose
+## 1. Which provider to choose (defaults)
 
-| Need | Recommended | Why |
-|---|---|---|
-| WhatsApp + SMS + voice in one place | **Twilio** | One account and one set of keys covers all three channels to +237 numbers; inline voice script (no callback server); per-message logs in their console |
-| Cheapest WhatsApp | **Meta WhatsApp Cloud API** | Direct from Meta, no reseller margin; needs an approved template |
-| Alternative SMS / voice | Africa's Talking | Popular in Africa; **check that your account covers Cameroon** before relying on it |
+| Channel | Default | Alternative (admin switch) | Why |
+|---|---|---|---|
+| WhatsApp | **Meta WhatsApp Cloud API** | Twilio WhatsApp | Direct from Meta, no reseller margin; needs approved templates (EN + FR) |
+| SMS | **Africa's Talking** | Twilio SMS | Cheapest for Cameroon (+237) numbers |
+| Voice call | **Africa's Talking** | Twilio Voice | Cheapest for Cameroon; needs the callback URL below |
 
-Start with Twilio for everything. Switch WhatsApp to Meta later if volume
-makes the price difference matter. Prices change: check each provider's
-pricing page for Cameroon before switching a channel on.
+These are the defaults when nothing is chosen. The admin can switch any
+channel to Twilio at any time without a deploy; a channel whose provider has
+no keys is skipped and shown as "Keys missing". Set up Meta and Africa's
+Talking first (sections 3 and 4); Twilio (section 2) is optional.
 
-## 2. Twilio (SMS, voice, WhatsApp)
+Africa's Talking voice asks our API what to say when the call connects. The
+script is kept in Redis for 10 minutes, so this works with several API
+replicas.
+
+## 2. Twilio (optional: SMS, voice, WhatsApp)
 
 1. Create an account at twilio.com and **upgrade it** (trial accounts can only
    message numbers you verified by hand).
@@ -109,7 +114,7 @@ pricing page for Cameroon before switching a channel on.
    `TWILIO_WHATSAPP_CONTENT_SID_EN` and `TWILIO_WHATSAPP_CONTENT_SID_FR`.
    Variables sent: 1 = title, 2 = body, 3 = link to the booking.
 
-## 3. Meta WhatsApp Cloud API (optional, instead of Twilio WhatsApp)
+## 3. Meta WhatsApp Cloud API (default for WhatsApp)
 
 1. developers.facebook.com → Create app → *Business* → add the **WhatsApp**
    product. Add and verify your business phone number.
@@ -124,14 +129,13 @@ pricing page for Cameroon before switching a channel on.
    template name if you chose another.
 5. In the admin setting `notifications.alerts`, set `escalation.channels.whatsapp.provider` to `"meta"`.
 
-## 4. Africa's Talking (optional)
+## 4. Africa's Talking (default for SMS and voice)
 
 1. Create an account, confirm Cameroon is supported for SMS/voice on it.
 2. Settings → API key → `AFRICASTALKING_API_KEY`; your username →
    `AFRICASTALKING_USERNAME`. Optional sender ID → `AFRICASTALKING_SMS_FROM`.
 3. Voice: buy a voice number → `AFRICASTALKING_VOICE_FROM`, and set the
    number's callback URL to `https://<api-host>/alerts/voice/africastalking`.
-   (Single API instance only; with several replicas use Twilio voice.)
 
 ## 5. Server settings
 

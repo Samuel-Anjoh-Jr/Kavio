@@ -11,6 +11,8 @@
  * digits of the destination and the provider's message/call id are logged.
  */
 
+import Redis from 'ioredis';
+
 export type EscalationChannelName = 'whatsapp' | 'sms' | 'voice';
 
 export interface EscalationMessage {
@@ -319,11 +321,48 @@ export class AfricasTalkingSmsProvider implements EscalationProvider {
 
 /**
  * Africa's Talking voice asks OUR server what to say when the call connects,
- * so the spoken text is parked here (keyed by destination) for the callback
- * at POST /alerts/voice/africastalking. Single-instance memory: fine for one
- * API replica; use Twilio voice (inline TwiML) when running several.
+ * so the spoken text is parked (keyed by destination) for the callback at
+ * POST /alerts/voice/africastalking. It is stored in Redis (10 min) so any API
+ * replica can answer the callback; the in-memory map is only the fallback
+ * when Redis is unavailable.
  */
 export const pendingVoiceScripts = new Map<string, { text: string; lang: string; at: number }>();
+
+type VoiceScript = { text: string; lang: string; at: number };
+const VOICE_SCRIPT_TTL_S = 600;
+let voiceRedis: Redis | null | undefined;
+function voiceScriptRedis(): Redis | null {
+  if (voiceRedis === undefined) {
+    const url = process.env.REDIS_URL;
+    voiceRedis = url
+      ? new Redis(url, { maxRetriesPerRequest: 1, enableOfflineQueue: false })
+      : null;
+    voiceRedis?.on('error', () => undefined);
+  }
+  return voiceRedis;
+}
+const voiceKey = (to: string) => `alerts:voice-script:${to}`;
+
+export async function storeVoiceScript(to: string, script: VoiceScript): Promise<void> {
+  pendingVoiceScripts.set(to, script);
+  for (const [k, v] of pendingVoiceScripts)
+    if (Date.now() - v.at > VOICE_SCRIPT_TTL_S * 1000) pendingVoiceScripts.delete(k);
+  try {
+    await voiceScriptRedis()?.set(voiceKey(to), JSON.stringify(script), 'EX', VOICE_SCRIPT_TTL_S);
+  } catch {
+    // Memory copy above still serves a single-replica deployment.
+  }
+}
+
+export async function loadVoiceScript(to: string): Promise<VoiceScript | undefined> {
+  try {
+    const raw = await voiceScriptRedis()?.get(voiceKey(to));
+    if (raw) return JSON.parse(raw) as VoiceScript;
+  } catch {
+    // Fall back to this replica's memory.
+  }
+  return pendingVoiceScripts.get(to);
+}
 
 export class AfricasTalkingVoiceProvider implements EscalationProvider {
   readonly name = 'africastalking';
@@ -337,13 +376,11 @@ export class AfricasTalkingVoiceProvider implements EscalationProvider {
     );
   }
   async send(m: EscalationMessage) {
-    pendingVoiceScripts.set(m.to, {
+    await storeVoiceScript(m.to, {
       text: m.voiceText,
       lang: m.locale === 'fr' ? 'fr-FR' : 'en-US',
       at: Date.now(),
     });
-    for (const [k, v] of pendingVoiceScripts)
-      if (Date.now() - v.at > 10 * 60_000) pendingVoiceScripts.delete(k);
     const { status, json } = await post('https://voice.africastalking.com/call', {
       headers: {
         apiKey: this.env.AFRICASTALKING_API_KEY!,
