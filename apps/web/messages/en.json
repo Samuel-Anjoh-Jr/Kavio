@@ -1870,7 +1870,8 @@
       "title": "Sign in to use the Safety Center",
       "body": "Emergency contacts and SOS history are private to your account.",
       "signIn": "Sign in"
-    }
+    },
+    "checklistComplete": "Fully set up: every safety step is done"
   },
   "ProfileSettings": {
     "title": "Your profile",

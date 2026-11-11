@@ -1870,7 +1870,8 @@
       "title": "Connectez-vous pour utiliser le Centre de sécurité",
       "body": "Les contacts d’urgence et l’historique SOS sont privés.",
       "signIn": "Se connecter"
-    }
+    },
+    "checklistComplete": "Tout est prêt : toutes les étapes de sécurité sont faites"
   },
   "ProfileSettings": {
     "title": "Votre profil",
