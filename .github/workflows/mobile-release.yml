@@ -317,6 +317,9 @@ jobs:
           retention-days: 30
           compression-level: 0
 
+      # Most apps: Play sends the change for review itself, and refuses the
+      # request if changesNotSentForReview is set. Apps with managed publishing
+      # need the flag instead, so retry with it only if the first try fails.
       - name: Upload to Google Play (internal testing)
         id: play_completed
         if: steps.play.outputs.upload == 'true'
@@ -328,12 +331,24 @@ jobs:
           releaseFiles: dist/${{ steps.files.outputs.base }}.aab
           track: internal
           status: completed
+
+      - name: Upload to Google Play (managed publishing)
+        id: play_held
+        if: steps.play.outputs.upload == 'true' && steps.play_completed.outcome == 'failure'
+        continue-on-error: true
+        uses: r0adkll/upload-google-play@935ef9c68bb393a8e6116b1575626a7f5be3a7fb # v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ env.PLAY_JSON }}
+          packageName: com.kavio.app
+          releaseFiles: dist/${{ steps.files.outputs.base }}.aab
+          track: internal
+          status: completed
           changesNotSentForReview: true
 
-      # Play refuses "completed" while the app is still in draft/review state.
+      # Play refuses "completed" while the app itself is still a draft.
       - name: Upload to Google Play (draft fallback)
         id: play_draft
-        if: steps.play.outputs.upload == 'true' && steps.play_completed.outcome == 'failure'
+        if: steps.play.outputs.upload == 'true' && steps.play_completed.outcome == 'failure' && steps.play_held.outcome == 'failure'
         uses: r0adkll/upload-google-play@935ef9c68bb393a8e6116b1575626a7f5be3a7fb # v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ env.PLAY_JSON }}
@@ -341,7 +356,6 @@ jobs:
           releaseFiles: dist/${{ steps.files.outputs.base }}.aab
           track: internal
           status: draft
-          changesNotSentForReview: true
 
       - name: Summary
         if: always()
@@ -356,6 +370,8 @@ jobs:
               echo "- Google Play: skipped (no service account secret or no release key)."
             elif [ "${{ steps.play_completed.outcome }}" = "success" ]; then
               echo "- Google Play: uploaded to **internal testing** (rolled out)."
+            elif [ "${{ steps.play_held.outcome }}" = "success" ]; then
+              echo "- Google Play: uploaded to **internal testing**; send the change for review in Play Console (managed publishing)."
             elif [ "${{ steps.play_draft.outcome }}" = "success" ]; then
               echo "- Google Play: uploaded to internal testing as a **draft** (finish it in Play Console)."
             else
