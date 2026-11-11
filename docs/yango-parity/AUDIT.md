@@ -179,6 +179,7 @@ impossible to ignore, then escalate.
 | One-time branded sounds per activity (money, updates, delivered, messages) | ✅ | ✅ | ✅ |
 | Escalation ladder: re-push → WhatsApp → SMS → voice call | 🔑 | 🔑 | 🔑 |
 | Escalation channels admin on/off with key status | ✅ | ✅ | ✅ |
+| Rider/driver offer search survives a server restart or deploy | — | ✅ (existing Redis dispatch queue) | ✅ (DB + queue, resumes on boot) |
 | Push urgency / TTL / priority set correctly | ✅ | ✅ | ✅ |
 | Live order card in the notification shade, updated in place | 🔜 (same-tag replace only) | ✅ | ✅ |
 | Notification tag collisions fixed, branded tray icon | ✅ | ✅ | ✅ |
@@ -298,5 +299,4 @@ Known limits after this round:
 
 - Full Android Gradle builds were not run in the build container (Maven Central rate limits); all native Java was compiled with `javac` against Android 36 and the real AndroidX/Firebase jars. Build once in Android Studio before release.
 - iOS cannot loop a ring past 30 s or show a call screen for a marketplace app; the time-sensitive push plus the escalation ladder covers it. Kavio iOS needs FirebaseMessaging added in Xcode (one step, documented).
-- Eats rider-offer ring timers still live in API memory (as before); a restart during an offer drops its timer. Moving them to the BullMQ queue is the next reliability step.
 - Web browsers cannot be told to stop a ring remotely (every push must show a notification); a web ring stops on its own after the loop length.
