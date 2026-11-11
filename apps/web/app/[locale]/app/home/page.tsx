@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { TierBadge } from '@/components/trust/tier-badge';
 import { BusinessUpgradeHint } from '@/components/business/business-upgrade-hint';
 import { WorkerVerificationBanner } from '@/components/verification/worker-verification-banner';
+import { AddPhotoBanner } from '@/components/profile/add-photo-banner';
 import { FeaturedStatusCard } from '@/components/featured/featured-status-card';
 import { TrustScoreRing } from '@/components/trust/trust-score-ring';
 import { DiscoverRail } from '@/components/home/discover-rail';
@@ -156,6 +157,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           showing them a verification wall would be a lie about what we ask of
           them. The banner hides itself once the profile is listable. */}
       {roleKey === 'WORKER' && <WorkerVerificationBanner />}
+      <AddPhotoBanner />
 
       {roleKey === 'WORKER' && <WorkerHome userId={userId} />}
       {roleKey === 'CLIENT' && <ClientHome />}

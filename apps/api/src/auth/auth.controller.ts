@@ -19,6 +19,7 @@ import {
   toggleTwoFactorSchema,
   twoFactorVerifySchema,
   updateProfileSchema,
+  updateAvatarSchema,
   verifyOtpSchema,
 } from './dto/auth.dto';
 import type {
@@ -35,6 +36,7 @@ import type {
   ToggleTwoFactorDto,
   TwoFactorVerifyDto,
   UpdateProfileDto,
+  UpdateAvatarDto,
   VerifyOtpDto,
 } from './dto/auth.dto';
 import { signUpSchema } from './dto/sign-up.dto';
@@ -194,6 +196,15 @@ export class AuthController {
     @Body(new ZodValidationPipe(updateProfileSchema)) dto: UpdateProfileDto,
   ): Promise<{ name: string }> {
     return this.profile.updateName(user.id, dto);
+  }
+
+  @Post('avatar')
+  @HttpCode(HttpStatus.OK)
+  async updateAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(updateAvatarSchema)) dto: UpdateAvatarDto,
+  ): Promise<{ avatar: string | null }> {
+    return this.profile.updateAvatar(user.id, dto);
   }
 
   @Post('phone')

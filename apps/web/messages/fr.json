@@ -1881,7 +1881,26 @@
     "phoneBody": "Utilisé pour vous joindre, et comme numéro Mobile Money par défaut pour les paiements. La modification est immédiate ici — la vérification par SMS et WhatsApp n'est pas encore disponible.",
     "phoneLabel": "Numéro de téléphone",
     "save": "Enregistrer",
-    "saved": "Enregistré."
+    "saved": "Enregistré.",
+    "photo": {
+      "title": "Photo de profil",
+      "hint": "Une photo nette de votre visage inspire confiance : on réserve plus volontiers quelqu'un qu'on reconnaît.",
+      "alt": "Votre photo de profil",
+      "choose": "Choisir une photo de profil",
+      "add": "Ajouter une photo",
+      "change": "Changer la photo",
+      "remove": "Retirer",
+      "saved": "Photo de profil enregistrée.",
+      "failed": "Impossible d'enregistrer la photo. Réessayez.",
+      "notImage": "Choisissez une image (JPG, PNG ou WebP).",
+      "tooBig": "Cette photo est trop lourde. Utilisez-en une de moins de 5 Mo."
+    },
+    "photoBanner": {
+      "title": "Ajoutez une photo de profil.",
+      "body": "On répond plus vite à un visage : meilleur service et plus de confiance.",
+      "cta": "Ajouter",
+      "dismiss": "Masquer pour l'instant"
+    }
   },
   "Notifications": {
     "title": "Notifications",

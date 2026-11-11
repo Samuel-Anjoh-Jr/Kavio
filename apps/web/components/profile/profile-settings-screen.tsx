@@ -12,6 +12,7 @@ import { useAuthErrorMessage } from '@/lib/auth-errors';
 import { ApiError } from '@/lib/api-error';
 import { ME_QUERY, type MeQueryResult } from '@/lib/graphql/documents';
 import { restPost } from '@/lib/rest-api';
+import { ProfilePhotoSection } from '@/components/profile/profile-photo-section';
 
 /**
  * Name and phone number, editable independently of sign-up and onboarding.
@@ -46,6 +47,7 @@ export function ProfileSettingsScreen() {
               server (a fresh load, not this component's own save) starts each
               section from the right place — never resynced afterward, so
               typing here behaves like the onboarding fields, not against them. */}
+          <ProfilePhotoSection avatar={me.avatar} />
           <NameSection key={`name-${me.name ?? ''}`} initialName={me.name ?? ''} />
           <PhoneSection key={`phone-${me.phone ?? ''}`} initialPhone={me.phone ?? ''} />
         </>

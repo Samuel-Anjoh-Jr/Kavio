@@ -1,11 +1,12 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Prisma } from '@kavio/database';
+import { MediaAssetKind, MediaVisibility, Prisma } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import { createLogger } from '../lib/logger';
 import { normalizeToE164 } from '../lib/phone.util';
 import { isSmsEnabled, isWhatsappEnabled } from '../notifications/notification.config';
 import { PrismaService } from '../prisma/prisma.service';
-import type { ChangePhoneDto, UpdateProfileDto } from './dto/auth.dto';
+import { StorageService } from '../storage/storage.service';
+import type { ChangePhoneDto, UpdateAvatarDto, UpdateProfileDto } from './dto/auth.dto';
 
 const logger = createLogger('auth:profile');
 
@@ -25,7 +26,41 @@ const logger = createLogger('auth:profile');
  */
 @Injectable()
 export class ProfileService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
+
+  /**
+   * Sets (or removes) the profile photo from an uploaded PROFILE_PHOTO asset
+   * owned by this user. The public URL is stored on User.avatar, which every
+   * profile, quote and booking view already reads.
+   */
+  async updateAvatar(userId: string, dto: UpdateAvatarDto): Promise<{ avatar: string | null }> {
+    if (dto.assetId === null) {
+      await this.prisma.client.user.update({ where: { id: userId }, data: { avatar: null } });
+      logger.info('Profile photo removed', { result: { userId } });
+      return { avatar: null };
+    }
+    const asset = await this.prisma.client.mediaAsset.findFirst({
+      where: {
+        id: dto.assetId,
+        ownerId: userId,
+        kind: MediaAssetKind.PROFILE_PHOTO,
+        deletedAt: null,
+      },
+      select: { s3Key: true },
+    });
+    if (!asset) {
+      throw new AppException(HttpStatus.BAD_REQUEST, 'VALIDATION_ERROR', 'Choose a photo.', {
+        assetId: ['Upload a profile photo first.'],
+      });
+    }
+    const avatar = await this.storage.urlFor(asset.s3Key, MediaVisibility.PUBLIC);
+    await this.prisma.client.user.update({ where: { id: userId }, data: { avatar } });
+    logger.info('Profile photo updated', { result: { userId } });
+    return { avatar };
+  }
 
   async updateName(userId: string, dto: UpdateProfileDto): Promise<{ name: string }> {
     const name = dto.name.trim();

@@ -1538,6 +1538,9 @@ enum MediaAssetKind {
   /// A voice note shared inside a conversation (MSG-01). PRIVATE, same rule as
   /// MESSAGE_IMAGE — audio evidence of a negotiation is between the parties.
   MESSAGE_VOICE
+  /// The person's profile photo (User.avatar). PUBLIC: a face is shown next to
+  /// the name on profiles, quotes and bookings because it builds trust.
+  PROFILE_PHOTO
   /// A photo attached to a review (REV-01). PUBLIC, because a review without its
   /// evidence is just an opinion — but its own kind rather than PORTFOLIO_IMAGE:
   /// this is the CLIENT's photo of delivered work and must never be counted as

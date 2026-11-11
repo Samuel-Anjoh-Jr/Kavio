@@ -1,13 +1,19 @@
 import { Prisma } from '@kavio/database';
 import { AppException } from '../lib/app-exception';
 import type { PrismaService } from '../prisma/prisma.service';
+import type { StorageService } from '../storage/storage.service';
 import { ProfileService } from './profile.service';
 
 process.env.AUTH_SECRET_PEPPER = 'test-pepper';
 
-function makeService(update: jest.Mock) {
-  const prisma = { client: { user: { update } } } as unknown as PrismaService;
-  return new ProfileService(prisma);
+function makeService(update: jest.Mock, findFirst: jest.Mock = jest.fn()) {
+  const prisma = {
+    client: { user: { update }, mediaAsset: { findFirst } },
+  } as unknown as PrismaService;
+  const storage = {
+    urlFor: jest.fn((key: string) => Promise.resolve(`https://cdn.example/${key}`)),
+  } as unknown as StorageService;
+  return new ProfileService(prisma, storage);
 }
 
 describe('ProfileService', () => {
@@ -101,6 +107,41 @@ describe('ProfileService', () => {
       expect(error).toBeInstanceOf(AppException);
       expect((error as AppException).code).toBe('PHONE_CHANGE_VERIFICATION_REQUIRED');
       expect(update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateAvatar', () => {
+    it("sets the public URL of the user's own profile photo", async () => {
+      const update = jest.fn().mockResolvedValue({});
+      const findFirst = jest.fn().mockResolvedValue({ s3Key: 'avatars/u1.jpg' });
+      const service = makeService(update, findFirst);
+
+      const result = await service.updateAvatar('user-1', {
+        assetId: '7a7b7c7d-0000-4000-8000-000000000001',
+      });
+
+      expect(result).toEqual({ avatar: 'https://cdn.example/avatars/u1.jpg' });
+      expect(findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ ownerId: 'user-1', kind: 'PROFILE_PHOTO' }),
+        }),
+      );
+    });
+
+    it("refuses an asset that is not the user's profile photo", async () => {
+      const service = makeService(jest.fn(), jest.fn().mockResolvedValue(null));
+      await expect(
+        service.updateAvatar('user-1', { assetId: '7a7b7c7d-0000-4000-8000-000000000002' }),
+      ).rejects.toBeInstanceOf(AppException);
+    });
+
+    it('removes the photo', async () => {
+      const update = jest.fn().mockResolvedValue({});
+      const service = makeService(update);
+      await expect(service.updateAvatar('user-1', { assetId: null })).resolves.toEqual({
+        avatar: null,
+      });
+      expect(update).toHaveBeenCalledWith({ where: { id: 'user-1' }, data: { avatar: null } });
     });
   });
 });

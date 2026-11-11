@@ -1881,7 +1881,26 @@
     "phoneBody": "Used to reach you, and as the default Mobile Money number for payments. Changing it here is instant — SMS and WhatsApp verification are not live yet.",
     "phoneLabel": "Phone number",
     "save": "Save",
-    "saved": "Saved."
+    "saved": "Saved.",
+    "photo": {
+      "title": "Profile photo",
+      "hint": "A clear photo of your face builds trust: clients and workers book people they can recognise.",
+      "alt": "Your profile photo",
+      "choose": "Choose a profile photo",
+      "add": "Add a photo",
+      "change": "Change photo",
+      "remove": "Remove",
+      "saved": "Profile photo saved.",
+      "failed": "Couldn't save the photo. Try again.",
+      "notImage": "Choose an image (JPG, PNG or WebP).",
+      "tooBig": "That photo is too large. Use one under 5 MB."
+    },
+    "photoBanner": {
+      "title": "Add a profile photo.",
+      "body": "People respond faster to a face: better service and more trust.",
+      "cta": "Add photo",
+      "dismiss": "Hide for now"
+    }
   },
   "Notifications": {
     "title": "Notifications",
