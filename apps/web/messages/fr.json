@@ -1966,6 +1966,37 @@
       "title": "Connectez-vous pour voir vos notifications",
       "body": "Vos notifications sont privées.",
       "signIn": "Se connecter"
+    },
+    "hub": {
+      "groupsLabel": "Groupes de notifications",
+      "groups": {
+        "ALL": "Tout",
+        "ACTIVITY": "Activité",
+        "SUPPORT": "Assistance",
+        "ANNOUNCEMENTS": "Annonces",
+        "WARNINGS": "Alertes"
+      },
+      "nudgesTitle": "Renforcez votre confiance",
+      "nudgesProgress": "{done} sur {total} faits",
+      "nudgesDone": "Étapes faites",
+      "nudges": {
+        "phone": {
+          "title": "Ajoutez votre téléphone",
+          "body": "Pour être joignable après une réservation"
+        },
+        "photo": {
+          "title": "Ajoutez une photo de profil",
+          "body": "Un vrai visage obtient plus de réservations et un meilleur service"
+        },
+        "identity": {
+          "title": "Vérifiez votre identité",
+          "body": "Passez au niveau 2 et affichez le badge vérifié"
+        },
+        "contact": {
+          "title": "Ajoutez un contact de confiance",
+          "body": "Une personne que nous prévenons en cas de SOS"
+        }
+      }
     }
   },
   "Report": {

@@ -1966,6 +1966,37 @@
       "title": "Sign in to see your notifications",
       "body": "Your notifications are private to your account.",
       "signIn": "Sign in"
+    },
+    "hub": {
+      "groupsLabel": "Notification groups",
+      "groups": {
+        "ALL": "All",
+        "ACTIVITY": "Activity",
+        "SUPPORT": "Support",
+        "ANNOUNCEMENTS": "Announcements",
+        "WARNINGS": "Warnings"
+      },
+      "nudgesTitle": "Build your trust",
+      "nudgesProgress": "{done} of {total} done",
+      "nudgesDone": "Steps done",
+      "nudges": {
+        "phone": {
+          "title": "Add your phone",
+          "body": "So clients and workers can reach you after booking"
+        },
+        "photo": {
+          "title": "Add a profile photo",
+          "body": "A real face gets more bookings and better service"
+        },
+        "identity": {
+          "title": "Verify your identity",
+          "body": "Reach Tier 2 and show the verified badge"
+        },
+        "contact": {
+          "title": "Add a trusted contact",
+          "body": "Someone we alert if you ever trigger SOS"
+        }
+      }
     }
   },
   "Report": {
