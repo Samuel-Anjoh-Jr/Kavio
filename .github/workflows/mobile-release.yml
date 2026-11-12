@@ -300,9 +300,37 @@ jobs:
           echo "base=$BASE" >> "$GITHUB_OUTPUT"
           ls -lh dist
 
+      # Fails the build if an APK is unsigned or corrupt, and prints what a
+      # phone checks at install: signer, package, version and SDK levels.
+      - name: Verify APKs
+        shell: bash
+        run: |
+          set -euo pipefail
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          {
+            echo "### APK check"
+            for apk in dist/*.apk; do
+              echo "**$(basename "$apk")** ($(du -h "$apk" | cut -f1))"
+              echo '```'
+              "$BT/apksigner" verify --print-certs -v "$apk" \
+                | grep -E "^Verified using v[0-9]+ scheme|^Signer #1 certificate (DN|SHA-256)" || true
+              "$BT/aapt2" dump badging "$apk" \
+                | grep -E "^package:|^(min|target)SdkVersion|^native-code" || true
+              echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          for apk in dist/*.apk; do
+            "$BT/apksigner" verify "$apk"
+            if "$BT/apksigner" verify --print-certs "$apk" | grep -q "CN=Android Debug"; then
+              echo "::warning::$(basename "$apk") is debug-signed. It will not update a release-signed install."
+            fi
+          done
+
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
+          # Upload the file itself, not a zip: the download is the .apk/.aab.
+          archive: false
           name: ${{ steps.files.outputs.base }}.apk
           path: dist/${{ steps.files.outputs.base }}.apk
           retention-days: 30
@@ -312,6 +340,8 @@ jobs:
         if: steps.play.outputs.upload == 'true'
         uses: actions/upload-artifact@v7
         with:
+          # Upload the file itself, not a zip: the download is the .apk/.aab.
+          archive: false
           name: ${{ steps.files.outputs.base }}.aab
           path: dist/${{ steps.files.outputs.base }}.aab
           retention-days: 30
