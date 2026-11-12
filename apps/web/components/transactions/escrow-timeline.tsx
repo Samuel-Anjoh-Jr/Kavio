@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertTriangle, Loader2, Lock, Wallet } from 'lucide-react';
+import { AlertTriangle, Loader2, Lock, RotateCcw, Wallet } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,7 @@ import {
   isEscrowException,
 } from '@/lib/quotes';
 import { MY_BOOKINGS_QUERY, type Booking, type MyBookingsQueryResult } from '@/lib/graphql/quotes';
+import { ME_QUERY, type MeQueryResult } from '@/lib/graphql/documents';
 import {
   DEFAULT_MOMO_METHOD_QUERY,
   type DefaultMomoMethod,
@@ -91,6 +92,8 @@ function EscrowCard({ booking, onPaid }: { booking: Booking; onPaid: () => void 
   const currentIndex = escrowMilestoneIndex(booking.status);
   const exception = isEscrowException(booking.status);
   const released = booking.status === 'RELEASED';
+  const { data: meData } = useQuery<MeQueryResult>(ME_QUERY, { fetchPolicy: 'cache-first' });
+  const isClient = Boolean(meData?.me && meData.me.id === booking.clientId);
   const funded = currentIndex >= 1 && !exception; // PAID or beyond
 
   const steps: Milestone[] = ESCROW_MILESTONES.map((milestone) => ({
@@ -161,6 +164,16 @@ function EscrowCard({ booking, onPaid }: { booking: Booking; onPaid: () => void 
         )}
 
         {booking.status === 'PENDING_PAYMENT' && <PayNowDialog booking={booking} onPaid={onPaid} />}
+
+        {/* One tap back to the same worker, with the quote request open. */}
+        {isClient && (booking.status === 'COMPLETED' || booking.status === 'RELEASED') && (
+          <Button asChild variant="outline" className="self-start">
+            <Link href={`/app/workers/${booking.workerId}?rebook=1`}>
+              <RotateCcw aria-hidden />
+              {t('bookAgain')}
+            </Link>
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

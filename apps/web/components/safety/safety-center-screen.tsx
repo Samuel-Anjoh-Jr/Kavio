@@ -9,6 +9,7 @@ import { ACTIVE_SOS_QUERY, type ActiveSosQueryResult } from '@/lib/graphql/safet
 import { SosButton } from './sos-button';
 import { EmergencyContacts } from './emergency-contacts';
 import { SosHistory } from './sos-history';
+import { SafetyChecklist } from './safety-checklist';
 
 /**
  * The Safety Center (SOS-01, SOS-02, SOS-03): the SOS control, the persistent
@@ -49,6 +50,8 @@ export function SafetyCenterScreen() {
           <p className="text-sm font-medium">{t('sos.activeBanner')}</p>
         </div>
       )}
+
+      <SafetyChecklist />
 
       <div className="flex flex-col items-center gap-2 rounded-card border border-border bg-surface p-8">
         <SosButton onTriggered={() => void refetch()} />

@@ -26,6 +26,7 @@ import { ReportDialog } from '@/components/moderation/report-dialog';
 import { MilestoneStepper, type Milestone } from '@/components/transactions/milestone-stepper';
 import { JobWorkerActions } from '@/components/jobs/job-worker-actions';
 import { JobPosterApplicants } from '@/components/jobs/job-poster-applicants';
+import { BookingContactCard } from '@/components/jobs/booking-contact-card';
 import { ApiError } from '@/lib/api-error';
 import { formatXaf } from '@/lib/discovery';
 import { formatDateTime } from '@/lib/datetime';
@@ -260,6 +261,9 @@ export function JobDetailScreen({ jobId }: { jobId: string }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Phone + WhatsApp of the other party, shown once escrow is funded. */}
+      {booking && <BookingContactCard bookingId={booking.id} />}
 
       {/* ── Actions ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3">

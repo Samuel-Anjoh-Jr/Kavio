@@ -1,5 +1,7 @@
 PROJECT: Kavio, a trust-first local-services / skilled-labour marketplace for Cameroon (Douala and Yaoundé first).
-WEB-ONLY: a Next.js App Router app, installable as a PWA on mobile/desktop, or used on the web. NO native mobile app.
+WEB-FIRST: a Next.js App Router app, installable as a PWA on mobile/desktop, or used on the web. A thin Capacitor shell
+(apps/mobile, com.kavio.app) wraps the same /{locale}/app for Android/iOS ONLY to add native capabilities the browser lacks
+(FCM push that wakes a closed app, phone-call style ringing alerts, lock-screen full-screen ring). All product UI stays in apps/web.
 The moat is TRUST, not listings: a continuously updated Trust Engine (identity, professional, marketplace, financial),
 progressive verification (Tiers 0-3), portfolio evidence, transparent quotes, and escrow. Bilingual EN/FR. Currency XAF only.
 Payments via Campay. Users are mobile-first (phone browser), low-bandwidth, non-technical.
@@ -8,6 +10,8 @@ MONOREPO (pnpm workspaces, Bun runtime):
   apps/web   Next.js App Router (TypeScript), run on Bun. Marketing site + installable PWA app. TailwindCSS + shadcn/ui
              (copied in and fully restyled to TMDS) + Anime.js v4 + Lenis + Apollo Client + next-intl + next-themes + React Hook Form + Zod.
              Maps via Mapbox GL JS. Location via the browser Geolocation API.
+  apps/mobile Capacitor 8 shell (server.url = KAVIO_APP_URL/app). Native code only in android/.../alerts (KavioAlerts plugin)
+             and the iOS AppDelegate push bridge; no screens. Web detects it via lib/alerts/native-alerts.ts.
   apps/api   NestJS (TypeScript) on Bun. REST controllers + GraphQL resolvers + PostGIS. WebSocket gateways for real-time.
   packages/api-client        shared client config, GraphQL operations, REST mutation helpers.
   packages/database          Prisma client, migrations, PostGIS/OSM SQL views.
@@ -74,3 +78,14 @@ DEFINITION OF DONE (every PR): typechecks; lints; tests for new logic; reads via
 
 CONVENTIONS: TypeScript everywhere. One NestJS module per SRS module. Shared types + GraphQL ops + Prisma client in packages/*.
   Brand token: "Kavio". Add each feature's Prisma models + migration inside the prompt that introduces the feature (incremental schema).
+
+VERSIONING & MOBILE RELEASES (required for every change that ships in the native app):
+  The app version lives in the ROOT package.json and is copied into apps/api, apps/mobile and apps/web by
+  scripts/bump-version.mjs. Never edit those version fields by hand. apps/mobile loads the live web app, so web-only,
+  API-only, CI and docs changes need NO bump. When a change touches apps/mobile (native code, capacitor.config, icons,
+  sounds, plugins), bump the version in the same PR: `pnpm version:patch` (fixes, small tweaks), `pnpm version:minor`
+  (new native capability or noticeable behaviour change), `pnpm version:major` (breaking change that needs everyone to
+  update). Bump once per PR and say which bump and why in the PR description. Merging a PR that changes the root version
+  makes .github/workflows/mobile-release.yml tag vX.Y.Z and build: a signed APK artifact, a Google Play upload when the
+  Play service account secret is set, and an App Store Connect / TestFlight upload when the App Store Connect secrets are
+  set. Minor and patch stay <= 99 (Android versionCode = MAJOR*10000 + MINOR*100 + PATCH; iOS build number the same).

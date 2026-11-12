@@ -18,6 +18,36 @@ export class DeviceRegistrationService {
   constructor(private readonly prisma: PrismaService) {}
 
   async register(userId: string, dto: RegisterDeviceDto): Promise<{ id: string }> {
+    if ('fcmToken' in dto) {
+      // Native app: the FCM token is the address; stored as "fcm:<token>" so
+      // it shares the unique endpoint index with web-push subscriptions.
+      const endpoint = `fcm:${dto.fcmToken}`;
+      const native = await this.prisma.client.deviceRegistration.upsert({
+        where: { endpoint },
+        create: {
+          userId,
+          platform: dto.platform === 'IOS' ? DevicePlatform.IOS : DevicePlatform.ANDROID,
+          endpoint,
+          p256dh: '',
+          auth: '',
+          deviceName: dto.deviceName ?? null,
+          alertsVersion: dto.alertsVersion ?? 0,
+        },
+        update: {
+          userId,
+          deviceName: dto.deviceName ?? null,
+          alertsVersion: dto.alertsVersion ?? 0,
+          isActive: true,
+          lastSeenAt: new Date(),
+        },
+        select: { id: true },
+      });
+      logger.info('Native app registered for push', {
+        payload: { userId, platform: dto.platform },
+      });
+      return native;
+    }
+
     const device = await this.prisma.client.deviceRegistration.upsert({
       where: { endpoint: dto.endpoint },
       create: {

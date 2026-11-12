@@ -120,7 +120,13 @@ export type LogoutDto = z.infer<typeof logoutSchema>;
 export type ForgotPasswordDto = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
 export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;
+export const updateAvatarSchema = z.object({
+  /** An uploaded PROFILE_PHOTO asset (POST /uploads), or null to remove the photo. */
+  assetId: z.string().uuid('Choose a photo.').nullable(),
+});
+
 export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;
+export type UpdateAvatarDto = z.infer<typeof updateAvatarSchema>;
 export type ChangePhoneDto = z.infer<typeof changePhoneSchema>;
 export type ToggleTwoFactorDto = z.infer<typeof toggleTwoFactorSchema>;
 export type SwitchRoleDto = z.infer<typeof switchRoleSchema>;

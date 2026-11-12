@@ -1400,6 +1400,17 @@
       "DECLINED": "Declined",
       "EXPIRED": "Expired",
       "CANCELLED": "Cancelled"
+    },
+    "contactCard": {
+      "yourWorker": "Your worker",
+      "yourClient": "Your client",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "hintClient": "They have already been alerted like a phone call. If they don't respond quickly, call them to let them know you're waiting.",
+      "hintWorker": "Call your client if you need directions or details before you arrive.",
+      "lockedUntilFunded": "The phone number appears here once the payment is secured in escrow. Until then, use Kavio messages.",
+      "closed": "This booking is closed, so the phone number is no longer shown.",
+      "error": "Couldn't load the contact details. Pull to refresh or try again."
     }
   },
   "Quotes": {
@@ -1603,7 +1614,8 @@
     "saveMethod": "Save method",
     "actionFailed": "That action could not be completed. Please try again.",
     "disputeFrozenHint": "Funds stay frozen until an admin resolves the dispute.",
-    "noMethodOnFile": "Add a Mobile Money number to continue — it's saved for next time too."
+    "noMethodOnFile": "Add a Mobile Money number to continue — it's saved for next time too.",
+    "bookAgain": "Book this worker again"
   },
   "Disputes": {
     "title": "Dispute",
@@ -1858,7 +1870,8 @@
       "title": "Sign in to use the Safety Center",
       "body": "Emergency contacts and SOS history are private to your account.",
       "signIn": "Sign in"
-    }
+    },
+    "checklistComplete": "Fully set up: every safety step is done"
   },
   "ProfileSettings": {
     "title": "Your profile",
@@ -1870,7 +1883,26 @@
     "phoneBody": "Used to reach you, and as the default Mobile Money number for payments. Changing it here is instant — SMS and WhatsApp verification are not live yet.",
     "phoneLabel": "Phone number",
     "save": "Save",
-    "saved": "Saved."
+    "saved": "Saved.",
+    "photo": {
+      "title": "Profile photo",
+      "hint": "A clear photo of your face builds trust: clients and workers book people they can recognise.",
+      "alt": "Your profile photo",
+      "choose": "Choose a profile photo",
+      "add": "Add a photo",
+      "change": "Change photo",
+      "remove": "Remove",
+      "saved": "Profile photo saved.",
+      "failed": "Couldn't save the photo. Try again.",
+      "notImage": "Choose an image (JPG, PNG or WebP).",
+      "tooBig": "That photo is too large. Use one under 5 MB."
+    },
+    "photoBanner": {
+      "title": "Add a profile photo.",
+      "body": "People respond faster to a face: better service and more trust.",
+      "cta": "Add photo",
+      "dismiss": "Hide for now"
+    }
   },
   "Notifications": {
     "title": "Notifications",
@@ -1955,6 +1987,37 @@
       "title": "Sign in to see your notifications",
       "body": "Your notifications are private to your account.",
       "signIn": "Sign in"
+    },
+    "hub": {
+      "groupsLabel": "Notification groups",
+      "groups": {
+        "ALL": "All",
+        "ACTIVITY": "Activity",
+        "SUPPORT": "Support",
+        "ANNOUNCEMENTS": "Announcements",
+        "WARNINGS": "Warnings"
+      },
+      "nudgesTitle": "Build your trust",
+      "nudgesProgress": "{done} of {total} done",
+      "nudgesDone": "Steps done",
+      "nudges": {
+        "phone": {
+          "title": "Add your phone",
+          "body": "So clients and workers can reach you after booking"
+        },
+        "photo": {
+          "title": "Add a profile photo",
+          "body": "A real face gets more bookings and better service"
+        },
+        "identity": {
+          "title": "Verify your identity",
+          "body": "Reach Tier 2 and show the verified badge"
+        },
+        "contact": {
+          "title": "Add a trusted contact",
+          "body": "Someone we alert if you ever trigger SOS"
+        }
+      }
     }
   },
   "Report": {
@@ -3033,5 +3096,15 @@
     "reasonInvalid": "Enter at least {min} characters.",
     "confirmReject": "Decline",
     "rejectedToast": "Request from {name} declined."
+  },
+  "Alerts": {
+    "bookingFunded": "Booking funded",
+    "jobInvitation": "Job invitation",
+    "viewBooking": "View booking",
+    "viewJob": "View job",
+    "later": "Later",
+    "tapForSound": "Tap to turn the ring sound on",
+    "secondsShort": "{seconds}s",
+    "escalationHint": "If you don't open it, Kavio will remind you by WhatsApp, SMS, then a call."
   }
 }

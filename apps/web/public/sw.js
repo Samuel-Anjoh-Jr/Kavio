@@ -38,7 +38,7 @@
 
 // Bump on any change to caching behaviour: activation deletes every `kavio-*`
 // cache that is not current, so a new version never reads an old layout.
-const VERSION = 'v4';
+const VERSION = 'v5';
 const STATIC_CACHE = `kavio-static-${VERSION}`;
 const PAGES_CACHE = `kavio-pages-${VERSION}`;
 const SESSION_CACHE = `kavio-session-${VERSION}`;
@@ -448,19 +448,49 @@ self.addEventListener('push', (event) => {
     payload = {};
   }
 
+  // Alerts v2 (notifications/alerts on the API): a ring was answered on
+  // another device, so take the banner down here too.
+  if (payload.kv === '2' && payload.tier === 'cancel') {
+    event.waitUntil(
+      Promise.all([closeByTag(payload.tag), relayToOpenClients({ ...payload, cancelled: true })]),
+    );
+    return;
+  }
+
+  const ring = payload.kv === '2' && payload.tier === 'ring';
+  const silent = payload.kv === '2' && payload.tier === 'silent';
   const title = payload.title || 'Kavio';
+  const actions = Array.isArray(payload.actions)
+    ? payload.actions
+        .filter((a) => a && typeof a.id === 'string' && typeof a.title === 'string')
+        .slice(0, 2)
+        .map((a) => ({ action: a.id, title: a.title }))
+    : [];
   const options = {
     body: payload.body || '',
-    icon: payload.icon || '/window.svg',
-    badge: payload.badge || '/window.svg',
+    icon: payload.icon || BRAND_ICON,
+    badge: payload.badge || BRAND_BADGE,
     // The deep link and the role it's about travel in `data` so the click
     // handler can read them. Defaults to the app home so a click is never a
     // dead end.
-    data: { url: payload.url || '/app/home', relevantRole: payload.relevantRole || null },
+    data: {
+      url: payload.url || '/app/home',
+      relevantRole: payload.relevantRole || null,
+      alertId: payload.alertId || null,
+      ackUrl: payload.ackUrl || null,
+    },
     // Collapse repeats of the same subject (e.g. several messages in one thread)
     // into one notification rather than stacking them.
     tag: payload.tag || undefined,
-    renotify: Boolean(payload.tag),
+    renotify: Boolean(payload.tag) && !silent,
+    // A ring stays on screen until the person acts (Chrome/Edge desktop and
+    // Android); everything else times out normally.
+    requireInteraction: ring,
+    silent,
+    vibrate:
+      Array.isArray(payload.vibration) && payload.vibration.length ? payload.vibration : undefined,
+    actions,
+    timestamp: Date.now(),
   };
 
   event.waitUntil(
@@ -468,12 +498,31 @@ self.addEventListener('push', (event) => {
       self.registration.showNotification(title, options),
       // Relay the raw payload to any open tab — that's the ONLY place a custom
       // sound can actually play (no browser lets a site pick the OS push
-      // sound), and it also lets an open Notification Center refresh its
-      // badge the instant this arrives rather than waiting for the next poll.
+      // sound), and where a ring opens the full-screen ring sheet with a loop.
       relayToOpenClients(payload),
     ]),
   );
 });
+
+const BRAND_ICON = '/brand/kavio-mark.png';
+const BRAND_BADGE = '/brand/kavio-badge-72.png';
+
+async function closeByTag(tag) {
+  if (!tag) return;
+  const shown = await self.registration.getNotifications({ tag });
+  shown.forEach((n) => n.close());
+}
+
+/** Tells the API the person saw/answered a ring so escalation stops. */
+async function ackAlert(data) {
+  if (!data || !data.ackUrl) return;
+  try {
+    const url = new URL(data.ackUrl);
+    await fetch(url.href, { method: 'POST', mode: 'cors', credentials: 'omit' });
+  } catch {
+    // Offline: the ladder continues, which is the safe failure.
+  }
+}
 
 async function relayToOpenClients(payload) {
   const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
@@ -489,23 +538,32 @@ self.addEventListener('notificationclick', (event) => {
   const target = data.url || '/app/home';
   const relevantRole = data.relevantRole || null;
 
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Prefer focusing an already-open app tab and navigating it, so a click
-      // does not pile up duplicate tabs.
-      for (const client of clientList) {
-        if (client.url.includes('/app') && 'focus' in client) {
-          client.postMessage({ type: 'notification-click', url: target, relevantRole });
-          return client.focus();
-        }
-      }
-      // Otherwise open a fresh tab at the deep link. Role-switching only
-      // applies to an already-open session; a fresh tab's own load picks up
-      // whatever role is already active server-side.
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(target);
-      }
-      return undefined;
-    }),
-  );
+  // "Later" on a ring only silences this device; the ladder keeps going so a
+  // funded booking is never forgotten.
+  if (event.action === 'decline') {
+    event.waitUntil(relayToOpenClients({ kv: '2', tier: 'cancel', tag: event.notification.tag }));
+    return;
+  }
+
+  event.waitUntil(Promise.all([ackAlert(data), openOrFocus(target, relevantRole)]));
 });
+
+function openOrFocus(target, relevantRole) {
+  return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+    // Prefer focusing an already-open app tab and navigating it, so a click
+    // does not pile up duplicate tabs.
+    for (const client of clientList) {
+      if (client.url.includes('/app') && 'focus' in client) {
+        client.postMessage({ type: 'notification-click', url: target, relevantRole });
+        return client.focus();
+      }
+    }
+    // Otherwise open a fresh tab at the deep link. Role-switching only
+    // applies to an already-open session; a fresh tab's own load picks up
+    // whatever role is already active server-side.
+    if (self.clients.openWindow) {
+      return self.clients.openWindow(target);
+    }
+    return undefined;
+  });
+}

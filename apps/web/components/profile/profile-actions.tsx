@@ -69,6 +69,15 @@ export function ProfileActions({
   const { toast } = useToast();
   const { isSaved, toggle } = useFavorites();
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+  // "Book this worker again" from a finished booking lands here with
+  // ?rebook=1: open the quote request straight away (for non-owners).
+  useEffect(() => {
+    if (isOwner) return;
+    if (new URLSearchParams(window.location.search).get('rebook') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the URL once after mount
+      setQuoteDialogOpen(true);
+    }
+  }, [isOwner]);
   const saved = isSaved(workerUserId);
   // navigator.share exists only on some browsers, and only over HTTPS. Read as
   // an external store so the server render (no share sheet) and the client's

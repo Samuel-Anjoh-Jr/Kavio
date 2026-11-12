@@ -78,6 +78,14 @@ export const UPLOAD_POLICIES: Readonly<Record<MediaAssetKind, UploadPolicy>> = {
     visibility: MediaVisibility.PUBLIC,
     prefix: 'business',
   },
+  [MediaAssetKind.PROFILE_PHOTO]: {
+    // The face next to the name on profiles, quotes and bookings. PUBLIC and
+    // small: it is shown everywhere the person appears.
+    mimeTypes: IMAGE_TYPES,
+    maxBytes: 5 * MB,
+    visibility: MediaVisibility.PUBLIC,
+    prefix: 'avatars',
+  },
   [MediaAssetKind.WORKER_COVER]: {
     // Its own kind rather than reusing PORTFOLIO_IMAGE: the Trust Engine scores
     // portfolio uploads as evidence of work performed, and a decorative banner

@@ -19,6 +19,9 @@ import { NotificationProviderRegistry } from './providers/provider.registry';
 import { SmsProvider } from './providers/sms.provider';
 import { WebPushProvider } from './providers/web-push.provider';
 import { WhatsappProvider } from './providers/whatsapp.provider';
+import { AlertService } from './alerts/alert.service';
+import { AlertsController } from './alerts/alerts.controller';
+import { AlertsListener } from './alerts/alerts.listener';
 
 /**
  * Notifications module (SRS §17, §26.1, NOT-01, NOT-02).
@@ -37,14 +40,18 @@ import { WhatsappProvider } from './providers/whatsapp.provider';
 @Global()
 @Module({
   imports: [PrismaModule],
-  controllers: [NotificationsController, DeviceRegistrationController],
+  controllers: [NotificationsController, DeviceRegistrationController, AlertsController],
   providers: [
     { provide: EmailProvider, useFactory: () => new EmailProvider(process.env) },
+    AlertService,
     {
       provide: WebPushProvider,
-      useFactory: (prisma: PrismaService, sounds: NotificationSoundPreferenceService) =>
-        new WebPushProvider(prisma, sounds, process.env),
-      inject: [PrismaService, NotificationSoundPreferenceService],
+      useFactory: (
+        prisma: PrismaService,
+        sounds: NotificationSoundPreferenceService,
+        alerts: AlertService,
+      ) => new WebPushProvider(prisma, sounds, process.env, alerts),
+      inject: [PrismaService, NotificationSoundPreferenceService, AlertService],
     },
     { provide: SmsProvider, useFactory: () => new SmsProvider(process.env) },
     { provide: WhatsappProvider, useFactory: () => new WhatsappProvider(process.env) },
@@ -58,6 +65,7 @@ import { WhatsappProvider } from './providers/whatsapp.provider';
     NotificationDispatcher,
     NotificationDeliveryProcessor,
     DeviceRegistrationService,
+    AlertsListener,
     NotificationDashboardService,
     NotificationDashboardResolver,
     NotificationCenterService,

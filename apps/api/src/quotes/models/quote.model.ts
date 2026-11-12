@@ -135,3 +135,30 @@ export class BookingView {
   @Field(() => Date)
   createdAt!: Date;
 }
+
+@ObjectType({
+  description:
+    "The other party's contact on a funded booking (call / WhatsApp). Only the booking's client and worker can read it, and only from PAID through COMPLETED, so deals stay on-platform until money is in escrow.",
+})
+export class BookingContactView {
+  @Field(() => Boolean, { description: 'False until the booking is funded (escrow PAID).' })
+  available!: boolean;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Why the contact is hidden: NOT_FUNDED or CLOSED.',
+  })
+  reason!: string | null;
+
+  @Field(() => String, { nullable: true })
+  name!: string | null;
+
+  @Field(() => String, { nullable: true, description: 'E.164 phone, e.g. +237670000000.' })
+  phone!: string | null;
+
+  @Field(() => String, { nullable: true, description: 'wa.me link for the same number.' })
+  whatsappUrl!: string | null;
+
+  @Field(() => String, { description: 'Who the contact is: WORKER or CLIENT.' })
+  role!: string;
+}

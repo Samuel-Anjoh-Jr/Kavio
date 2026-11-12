@@ -1,7 +1,7 @@
 import { Args, ID, Query, Resolver } from '@nestjs/graphql';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser, RequirePermissions } from '../auth/decorators/auth.decorators';
-import { BookingView, QuoteInboxView, QuoteView } from './models/quote.model';
+import { BookingContactView, BookingView, QuoteInboxView, QuoteView } from './models/quote.model';
 import { QuotesReadService } from './quotes-read.service';
 
 /**
@@ -60,5 +60,17 @@ export class QuotesResolver {
   })
   async myBookings(@CurrentUser() user: AuthenticatedUser): Promise<BookingView[]> {
     return this.read.myBookings(user);
+  }
+
+  @Query(() => BookingContactView, {
+    nullable: true,
+    description:
+      "The other party's phone on a funded booking (escrow PAID onward), for the client and worker only.",
+  })
+  async bookingContact(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args('bookingId', { type: () => ID }) bookingId: string,
+  ): Promise<BookingContactView | null> {
+    return this.read.bookingContact(user, bookingId);
   }
 }

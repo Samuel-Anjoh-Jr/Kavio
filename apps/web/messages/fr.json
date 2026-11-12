@@ -1400,6 +1400,17 @@
       "DECLINED": "Refusée",
       "EXPIRED": "Expirée",
       "CANCELLED": "Annulée"
+    },
+    "contactCard": {
+      "yourWorker": "Votre prestataire",
+      "yourClient": "Votre client",
+      "call": "Appeler",
+      "whatsapp": "WhatsApp",
+      "hintClient": "Il a déjà reçu une alerte comme un appel. S'il ne répond pas vite, appelez-le pour lui dire que vous attendez.",
+      "hintWorker": "Appelez votre client si vous avez besoin d'indications ou de détails avant d'arriver.",
+      "lockedUntilFunded": "Le numéro apparaît ici dès que le paiement est sécurisé en séquestre. D'ici là, utilisez la messagerie Kavio.",
+      "closed": "Cette réservation est clôturée, le numéro n'est plus affiché.",
+      "error": "Impossible de charger le contact. Actualisez ou réessayez."
     }
   },
   "Quotes": {
@@ -1603,7 +1614,8 @@
     "saveMethod": "Enregistrer",
     "actionFailed": "Cette action n’a pas pu aboutir. Veuillez réessayer.",
     "disputeFrozenHint": "Les fonds restent gelés jusqu’à ce qu’un administrateur règle le litige.",
-    "noMethodOnFile": "Ajoutez un numéro Mobile Money pour continuer — il sera aussi enregistré pour la prochaine fois."
+    "noMethodOnFile": "Ajoutez un numéro Mobile Money pour continuer — il sera aussi enregistré pour la prochaine fois.",
+    "bookAgain": "Réserver à nouveau ce prestataire"
   },
   "Disputes": {
     "title": "Litige",
@@ -1858,7 +1870,8 @@
       "title": "Connectez-vous pour utiliser le Centre de sécurité",
       "body": "Les contacts d’urgence et l’historique SOS sont privés.",
       "signIn": "Se connecter"
-    }
+    },
+    "checklistComplete": "Tout est prêt : toutes les étapes de sécurité sont faites"
   },
   "ProfileSettings": {
     "title": "Votre profil",
@@ -1870,7 +1883,26 @@
     "phoneBody": "Utilisé pour vous joindre, et comme numéro Mobile Money par défaut pour les paiements. La modification est immédiate ici — la vérification par SMS et WhatsApp n'est pas encore disponible.",
     "phoneLabel": "Numéro de téléphone",
     "save": "Enregistrer",
-    "saved": "Enregistré."
+    "saved": "Enregistré.",
+    "photo": {
+      "title": "Photo de profil",
+      "hint": "Une photo nette de votre visage inspire confiance : on réserve plus volontiers quelqu'un qu'on reconnaît.",
+      "alt": "Votre photo de profil",
+      "choose": "Choisir une photo de profil",
+      "add": "Ajouter une photo",
+      "change": "Changer la photo",
+      "remove": "Retirer",
+      "saved": "Photo de profil enregistrée.",
+      "failed": "Impossible d'enregistrer la photo. Réessayez.",
+      "notImage": "Choisissez une image (JPG, PNG ou WebP).",
+      "tooBig": "Cette photo est trop lourde. Utilisez-en une de moins de 5 Mo."
+    },
+    "photoBanner": {
+      "title": "Ajoutez une photo de profil.",
+      "body": "On répond plus vite à un visage : meilleur service et plus de confiance.",
+      "cta": "Ajouter",
+      "dismiss": "Masquer pour l'instant"
+    }
   },
   "Notifications": {
     "title": "Notifications",
@@ -1955,6 +1987,37 @@
       "title": "Connectez-vous pour voir vos notifications",
       "body": "Vos notifications sont privées.",
       "signIn": "Se connecter"
+    },
+    "hub": {
+      "groupsLabel": "Groupes de notifications",
+      "groups": {
+        "ALL": "Tout",
+        "ACTIVITY": "Activité",
+        "SUPPORT": "Assistance",
+        "ANNOUNCEMENTS": "Annonces",
+        "WARNINGS": "Alertes"
+      },
+      "nudgesTitle": "Renforcez votre confiance",
+      "nudgesProgress": "{done} sur {total} faits",
+      "nudgesDone": "Étapes faites",
+      "nudges": {
+        "phone": {
+          "title": "Ajoutez votre téléphone",
+          "body": "Pour être joignable après une réservation"
+        },
+        "photo": {
+          "title": "Ajoutez une photo de profil",
+          "body": "Un vrai visage obtient plus de réservations et un meilleur service"
+        },
+        "identity": {
+          "title": "Vérifiez votre identité",
+          "body": "Passez au niveau 2 et affichez le badge vérifié"
+        },
+        "contact": {
+          "title": "Ajoutez un contact de confiance",
+          "body": "Une personne que nous prévenons en cas de SOS"
+        }
+      }
     }
   },
   "Report": {
@@ -3033,5 +3096,15 @@
     "reasonInvalid": "Indiquez au moins {min} caractères.",
     "confirmReject": "Refuser",
     "rejectedToast": "Demande de {name} refusée."
+  },
+  "Alerts": {
+    "bookingFunded": "Réservation payée",
+    "jobInvitation": "Invitation à un travail",
+    "viewBooking": "Voir la réservation",
+    "viewJob": "Voir le travail",
+    "later": "Plus tard",
+    "tapForSound": "Touchez pour activer la sonnerie",
+    "secondsShort": "{seconds} s",
+    "escalationHint": "Si vous ne l'ouvrez pas, Kavio vous relancera par WhatsApp, SMS, puis par un appel."
   }
 }

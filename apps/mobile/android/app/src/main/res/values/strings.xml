@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kavio</string>
+    <string name="title_activity_main">Kavio</string>
+    <string name="package_name">com.kavio.app</string>
+    <string name="custom_url_scheme">com.kavio.app</string>
+</resources>

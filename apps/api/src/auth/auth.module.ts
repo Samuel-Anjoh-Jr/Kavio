@@ -1,4 +1,5 @@
 import { Global, Module } from '@nestjs/common';
+import { StorageModule } from '../storage/storage.module';
 import { JwtModule } from '@nestjs/jwt';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -25,7 +26,7 @@ import { TokenService } from './token.service';
  */
 @Global()
 @Module({
-  imports: [PrismaModule, NotificationsModule, JwtModule.register({})],
+  imports: [PrismaModule, NotificationsModule, StorageModule, JwtModule.register({})],
   controllers: [AuthController],
   providers: [
     AuthService,

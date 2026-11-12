@@ -177,3 +177,34 @@ export const MY_BOOKINGS_QUERY = gql`
 export interface MyBookingsQueryResult {
   myBookings: Booking[];
 }
+
+/**
+ * The other party's phone on a booking (Yango-parity "call the worker").
+ * Revealed only once the client has funded escrow (PAID onward) and only to
+ * the two parties; before that `available` is false with reason NOT_FUNDED.
+ */
+export const BOOKING_CONTACT_QUERY = gql`
+  query BookingContact($bookingId: ID!) {
+    bookingContact(bookingId: $bookingId) {
+      available
+      reason
+      name
+      phone
+      whatsappUrl
+      role
+    }
+  }
+`;
+
+export interface BookingContact {
+  available: boolean;
+  reason: 'NOT_FUNDED' | 'CLOSED' | null;
+  name: string | null;
+  phone: string | null;
+  whatsappUrl: string | null;
+  role: 'WORKER' | 'CLIENT';
+}
+
+export interface BookingContactQueryResult {
+  bookingContact: BookingContact | null;
+}

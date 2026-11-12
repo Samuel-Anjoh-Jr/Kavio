@@ -1,6 +1,6 @@
 {
   "name": "kavio",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@11.8.0",
   "engines": {
@@ -10,6 +10,10 @@
   },
   "scripts": {
     "prepare": "husky",
+    "version:patch": "node scripts/bump-version.mjs patch",
+    "version:minor": "node scripts/bump-version.mjs minor",
+    "version:major": "node scripts/bump-version.mjs major",
+    "version:sync": "node scripts/bump-version.mjs sync",
     "env:sync": "node scripts/sync-env.mjs",
     "dev": "pnpm env:sync && turbo run dev",
     "dev:web": "pnpm env:sync && turbo run dev --filter=@kavio/web",

@@ -38,8 +38,9 @@ export function NotificationBell() {
     if (status !== 'authenticated') return;
 
     const onPush = (event: Event) => {
-      const detail = (event as CustomEvent<{ soundKey?: string }>).detail;
-      playNotificationSound(detail?.soundKey);
+      const detail = (event as CustomEvent<{ soundKey?: string; kv?: string }>).detail;
+      // Alerts v2 payloads are sounded by the ring sheet (brand sounds, loops).
+      if (detail?.kv !== '2') playNotificationSound(detail?.soundKey);
       void refetch();
     };
 

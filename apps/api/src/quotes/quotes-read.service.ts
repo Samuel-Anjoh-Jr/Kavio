@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { MediaVisibility, QuoteStatus } from '@kavio/database';
+import { BookingStatus, MediaVisibility, QuoteStatus } from '@kavio/database';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { FeaturedService } from '../featured/featured.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import type { WorkerPreviewView } from '../jobs/models/job.model';
-import type { BookingView, QuoteInboxView, QuoteView } from './models/quote.model';
+import type {
+  BookingContactView,
+  BookingView,
+  QuoteInboxView,
+  QuoteView,
+} from './models/quote.model';
 
 /**
  * Quote & booking READS (PROMPTS 59-61; QTE-04). Each method backs a GraphQL
@@ -260,5 +265,68 @@ export class QuotesReadService {
       });
     }
     return previews;
+  }
+
+  /**
+   * The counterparty's phone for a funded booking (call / WhatsApp from the
+   * booking screen). Hidden before escrow is PAID so contact cannot take the
+   * deal off-platform, and after the booking closes. Null for anyone who is
+   * not the booking's client or worker. Every reveal is audit-logged (the
+   * number itself is not written to the log).
+   */
+  async bookingContact(
+    viewer: AuthenticatedUser,
+    bookingId: string,
+  ): Promise<BookingContactView | null> {
+    const booking = await this.prisma.client.booking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true,
+        status: true,
+        clientId: true,
+        workerId: true,
+        client: { select: { name: true, phone: true } },
+        worker: { select: { name: true, phone: true } },
+      },
+    });
+    if (!booking || (booking.clientId !== viewer.id && booking.workerId !== viewer.id)) return null;
+
+    const viewerIsClient = booking.clientId === viewer.id;
+    const other = viewerIsClient ? booking.worker : booking.client;
+    const role = viewerIsClient ? 'WORKER' : 'CLIENT';
+    const funded = new Set<BookingStatus>([
+      BookingStatus.PAID,
+      BookingStatus.ACCEPTED,
+      BookingStatus.IN_PROGRESS,
+      BookingStatus.COMPLETED,
+    ]);
+    if (!funded.has(booking.status)) {
+      return {
+        available: false,
+        reason: booking.status === BookingStatus.PENDING_PAYMENT ? 'NOT_FUNDED' : 'CLOSED',
+        name: other?.name ?? null,
+        phone: null,
+        whatsappUrl: null,
+        role,
+      };
+    }
+
+    const phone = other?.phone ?? null;
+    await this.prisma.client.auditLog.create({
+      data: {
+        actorId: viewer.id,
+        action: 'booking.contact_revealed',
+        target: `Booking:${booking.id}`,
+        meta: { role, hasPhone: Boolean(phone) },
+      },
+    });
+    return {
+      available: Boolean(phone),
+      reason: phone ? null : 'NO_PHONE',
+      name: other?.name ?? null,
+      phone,
+      whatsappUrl: phone ? `https://wa.me/${phone.replace(/[^\d]/g, '')}` : null,
+      role,
+    };
   }
 }

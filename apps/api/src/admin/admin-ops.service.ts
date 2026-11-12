@@ -47,6 +47,16 @@ export const SETTING_REGISTRY: Record<string, { category: string; description: s
     category: 'notifications',
     description: 'Master switch for the (deferred) SMS channel. OFF at launch.',
   },
+  'notifications.ringLoopSeconds': {
+    category: 'notifications',
+    description:
+      'How long a ringing alert (funded booking, job invitation, SOS) loops its ringtone and vibration, 5–120 seconds. Default 30.',
+  },
+  'notifications.alerts': {
+    category: 'notifications',
+    description:
+      'Alert profiles and escalation (JSON). templates: per templateKey {tier: ring|once|silent, sound, vibrate, escalate, loopSeconds}; escalation: {enabled, steps:[{afterSeconds, channel: push|whatsapp|sms|voice}], channels:{whatsapp|sms|voice:{enabled, provider}}}. Paid channels also need provider keys. See docs/notifications/ESCALATION_SETUP.md.',
+  },
   'notifications.digestHourUtc': {
     category: 'notifications',
     description: 'Hour of day, UTC, at which digest notifications are sent.',

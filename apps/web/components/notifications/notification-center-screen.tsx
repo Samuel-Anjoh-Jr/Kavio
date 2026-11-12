@@ -1,6 +1,10 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { ME_QUERY, type MeQueryResult } from '@/lib/graphql/documents';
+import { EMERGENCY_CONTACTS_QUERY, type EmergencyContactsQueryResult } from '@/lib/graphql/safety';
+import { HUB_GROUPS, hubGroupOf, trustNudges, type HubGroup } from '@/lib/notification-hub';
+import { TrustStories } from '@/components/notifications/trust-stories';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useSession } from 'next-auth/react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -62,7 +66,36 @@ export function NotificationCenterScreen() {
   });
 
   const feed = data?.myNotifications;
-  const items = feed?.items ?? [];
+  const allItems = useMemo(() => feed?.items ?? [], [feed]);
+  const [group, setGroup] = useState<HubGroup>('ALL');
+  const items = useMemo(
+    () => (group === 'ALL' ? allItems : allItems.filter((n) => hubGroupOf(n) === group)),
+    [allItems, group],
+  );
+  const groupUnread = useMemo(() => {
+    const counts: Record<HubGroup, number> = {
+      ALL: 0,
+      ACTIVITY: 0,
+      SUPPORT: 0,
+      ANNOUNCEMENTS: 0,
+      WARNINGS: 0,
+    };
+    for (const n of allItems) {
+      if (n.readAt) continue;
+      counts.ALL += 1;
+      counts[hubGroupOf(n)] += 1;
+    }
+    return counts;
+  }, [allItems]);
+
+  const { data: meData } = useQuery<MeQueryResult>(ME_QUERY, {
+    skip: status !== 'authenticated',
+  });
+  const { data: contactsData } = useQuery<EmergencyContactsQueryResult>(EMERGENCY_CONTACTS_QUERY, {
+    skip: status !== 'authenticated',
+    errorPolicy: 'all',
+  });
+  const nudges = trustNudges(meData?.me, (contactsData?.myEmergencyContacts?.length ?? 0) > 0);
 
   const onOpen = useCallback(
     async (notification: AppNotification) => {
@@ -106,6 +139,36 @@ export function NotificationCenterScreen() {
             <Settings aria-hidden />
           </Link>
         </Button>
+      </div>
+
+      <TrustStories nudges={nudges} />
+
+      <div
+        className="-mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6 [scrollbar-width:none]"
+        role="tablist"
+        aria-label={t('hub.groupsLabel')}
+      >
+        {HUB_GROUPS.map((key) => (
+          <button
+            key={key}
+            role="tab"
+            aria-selected={group === key}
+            onClick={() => setGroup(key)}
+            className={cn(
+              'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              group === key
+                ? 'border-foreground bg-foreground text-background'
+                : key === 'WARNINGS' && groupUnread.WARNINGS > 0
+                  ? 'border-danger/40 bg-surface text-danger hover:bg-muted'
+                  : 'border-input bg-surface text-muted-foreground hover:bg-muted',
+            )}
+          >
+            {t(`hub.groups.${key}`)}
+            {groupUnread[key] > 0 ? (
+              <span className="font-numeric text-xs">{groupUnread[key]}</span>
+            ) : null}
+          </button>
+        ))}
       </div>
 
       <div className="flex items-center justify-between gap-2">
